@@ -125,7 +125,7 @@ else {
 
 // packet size reduced by subtracting bias on server and adding on client
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
-var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/local-current-cue'
+var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 var cueFromServer = { 'cue': 0, 'time': 0 };
 function updateCueNumber() {
