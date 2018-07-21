@@ -15,7 +15,7 @@
 <div id="Content">
 
   <div id="HeaderWrapper"> <!-- full-width wrapper for title and short description -->
-    <h1>TITLE</h1>
+    <h1>TITLE-</h1>
     <p>SHORT DESCRIPTION with <a href="#">test link</a></p>
   </div> <!-- /#HeaderWrapper -->
 
@@ -25,7 +25,7 @@
     <div class="displayToggle"> <!-- "More information" -->
       <a href="#" class="preventDefault"><span class="disclosureTriangle">&#9658; </span>More Information</a>
     </div>
-    <div class="hiddenContent"> 
+    <div class="hiddenContent">
       <p class="moreInfoQuestion">Question 1</p>
       <p class="moreInfoAnswer">Answer 1</p>
       <p class="moreInfoQuestion">Question 2</p>
@@ -34,7 +34,7 @@
     <div class="displayToggle"> <!-- "test tone" -->
       <a href="#" class="preventDefault"><span class="disclosureTriangle">&#9658; </span>Test tone</a>
     </div>
-    <div id="TestToneLabel" class="hiddenContent"> 
+    <div id="TestToneLabel" class="hiddenContent">
       <p>The button below will produce a filtered sawtooth wave (a buzzy sound) with the oscillator frequency controlled on the x-axis and filter cutoff frequency controlled on the y-axis. (When you tilt your device to the left, the sound will be lower; when you tip your device upside down, the sound will be more buzzy.)</p>
       <button id="TestToneButton" class="soundOff">test</button>
       <p id="IntroStatusLabel"></p>
@@ -115,7 +115,7 @@ ToneMotion.delayBeforePlaying = "+0.3";
 ToneMotion.deviceShouldSelfCalibrate = false;
 ToneMotion.print = false;
 ToneMotion.shouldSyncToUTC = true;
-// sets lookAhead. "interactive": lookAhead = 0.1; "playback": 0.8; "balanced": 0.25; "fastest": 0.01; 
+// sets lookAhead. "interactive": lookAhead = 0.1; "playback": 0.8; "balanced": 0.25; "fastest": 0.01;
 Tone.context.latencyHint = ToneMotion.updateInterval / 2.0;
 
 
@@ -151,7 +151,7 @@ TMScore.setCue(1);
 *******************************************************************/
 TMScore.instructionsForCue[1] = "Section 1: instructions";
 // following block scheduled to be called at beginning of this section
-Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){ 
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
   TMScore.nextCue();
 }, time) }, TMScore.st);
 
@@ -219,7 +219,7 @@ function updateSoundsInCue2() {
 TMScore.st += TMScore.durForCue[2]; // duration of each section set by SCORE MAP at top
 TMScore.instructionsForCue[3] = "Section 3: instructions";
 // following block scheduled to be called at beginning of this section
-Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){ 
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
   TMScore.nextCue();
 }, time) }, TMScore.st);
 
