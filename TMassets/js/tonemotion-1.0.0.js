@@ -120,23 +120,6 @@ else {
   ToneMotion.deviceIsAndroid = false;
 }
 
-// packet size reduced by subtracting bias on server and adding on client
-// at time of coding (2018-07-18) Date.now() returns 1531970463500
-var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
-const timestampBias = 1531970463500;
-var cueFromServer = { 'cue': 0, 'time': 0 };
-var cueOnClient = 0; // current cue number on client side
-function updateCueNumber() {
-  fetch(url)
-  .then(response => response.json())
-  .then(jsonRes => {
-    cueFromServer.cue = jsonRes.c;
-    cueFromServer.time = jsonRes.t;
-  })
-  // TODO: implement a "public" error message on mobile interface
-  .catch(error => console.error(`Fetch Error =\n`, error));
-}
-
 // sets ToneMotion.x and .y by polling and normalizing motion data. called in response to "devicemotion"
 function handleMotionEvent(event) {
   // get the raw accelerometer values (invert if Android)
@@ -198,6 +181,23 @@ function handleMotionEvent(event) {
   ToneMotion.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
 }
 
+// packet size reduced by subtracting bias on server and adding on client
+// at time of coding (2018-07-18) Date.now() returns 1531970463500
+var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const timestampBias = 1531970463500;
+var cueFromServer = { 'cue': 0, 'time': 0 };
+var cueOnClient = 0; // current cue number on client side
+function updateCueNumber() {
+  fetch(url)
+  .then(response => response.json())
+  .then(jsonRes => {
+    cueFromServer.cue = jsonRes.c;
+    cueFromServer.time = jsonRes.t;
+  })
+  // TODO: implement a "public" error message on mobile interface
+  .catch(error => console.error(`Fetch Error =\n`, error));
+}
+
 /*
 ** MAKE SOUNDS INTERACTIVE
 ** Some Tone.js object properties are signals and can be chained to ToneMotion signals, e.g.:
@@ -207,7 +207,6 @@ function handleMotionEvent(event) {
 // updateInteractiveSounds() is called once per ToneMotion.updateInterval (default: 0.05 seconds)
 // not called until interface is set up and parameters (e.g., ToneMotion.updateInterval) are set
 function updateInteractiveSounds() {
-
   // check cue number against server cueEnablesButtons
   if (cueOnClient !== cueFromServer.cue) {
     cueOnClient = cueFromServer.cue;
