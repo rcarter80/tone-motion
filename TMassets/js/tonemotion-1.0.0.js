@@ -185,14 +185,16 @@ function handleMotionEvent(event) {
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
 var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
-var cueFromServer = { 'cue': 0, 'time': 0 };
 var cueOnClient = 0; // current cue number on client side
 function updateCueNumber() {
   fetch(url)
   .then(response => response.json())
   .then(jsonRes => {
-    cueFromServer.cue = jsonRes.c;
-    cueFromServer.time = jsonRes.t;
+    // check cue number against server cueEnablesButtons
+    if (cueOnClient !== jsonRes.c) { // jsonRes.c is cue from server
+      cueOnClient = jsonRes.c;
+      console.log('New cue ' + cueOnClient + ' at time ' + (jsonRes.t+timestampBias));
+    } // else no new cue and control falls through 
   })
   // TODO: implement a "public" error message on mobile interface
   .catch(error => console.error(`Fetch Error =\n`, error));
@@ -207,12 +209,6 @@ function updateCueNumber() {
 // updateInteractiveSounds() is called once per ToneMotion.updateInterval (default: 0.05 seconds)
 // not called until interface is set up and parameters (e.g., ToneMotion.updateInterval) are set
 function updateInteractiveSounds() {
-  // check cue number against server cueEnablesButtons
-  if (cueOnClient !== cueFromServer.cue) {
-    cueOnClient = cueFromServer.cue;
-    console.log('New cue ' + cueFromServer.cue + ' at time ' + (cueFromServer.time+timestampBias));
-  }
-
   if (ToneMotion.status === "deviceDoesReportMotion") {
     // If device reports motion, ToneMotion.x and .y are set by accelerometer. Use those to set smooth control signals.
     ToneMotion.xSig.linearRampToValue(ToneMotion.x, ToneMotion.updateInterval); // smooths signals to avoid zipper noise
