@@ -3,12 +3,10 @@
 ** Tests if device reports accelerometer values. If so, reports X and Y values as Tone.Signal objects.
 ** If not, adds an XY-pad to simulate tilting the device.
 **
-** ISSUE: devicemotion will be deprecated from insecure origin in future. need HTTPS
-** see: https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins
 ** TODO: add ToneMotionActivityMonitor object to check if people are interacting and dim interface if not
 */
 
-/* 
+/*
 ** CREATE GLOBAL OBJECT FOR MOTION DATA: ToneMotion
 */
 // instantiate Tone.Signal objects to connect to Tone.js sounds
@@ -41,9 +39,13 @@ var ToneMotion = {
 if ("DeviceMotionEvent" in window) {
   window.addEventListener("devicemotion", handleMotionEvent, true);
   // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
-} 
+}
 else {
   ToneMotion.status = "deviceDoesNotReportMotion";
+  // need to run event loop on desktop to receive cues from server
+  // full support needs to put this elsewhere
+  console.log('hi');
+  desktopCueCheckLoop = setInterval(checkCueNumber, 200);
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
 var motionCheckIntervId; // interval ID for checking motion detection
@@ -64,7 +66,7 @@ var testForMotion = (function() {
     if ( (ToneMotion.x > loThreshold && ToneMotion.x < hiThreshold) && (ToneMotion.y > loThreshold & ToneMotion.y < hiThreshold) ) {
       // no motion detected. check if motionFailCount is exceeded and increment counter.
       if (ToneMotion.print) { console.log("No device motion detected. motionFailCount: " + counter); }
-      if (counter > motionFailCount || ToneMotion.status === "deviceDoesNotReportMotion") { 
+      if (counter > motionFailCount || ToneMotion.status === "deviceDoesNotReportMotion") {
         // Either the device isn't moving or it will not report motion
         ToneMotion.status = "deviceDoesNotReportMotion";
         window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
@@ -119,6 +121,17 @@ else {
   ToneMotion.deviceIsAndroid = false;
 }
 
+// I want to put cue check in handMotionEvent loop for optimized mobile
+// but that loop doesn't happen on desktop, so add event loop
+var cueOnClient = 0; // current cue number on client side
+var cueFromServer = 1; // cue number set by server
+function checkCueNumber() {
+  if (cueOnClient !== cueFromServer) {
+    cueOnClient = cueFromServer;
+    console.log('new cue number: ' + cueOnClient);
+  }
+}
+
 // sets ToneMotion.x and .y by polling and normalizing motion data. called in response to "devicemotion"
 function handleMotionEvent(event) {
   // get the raw accelerometer values (invert if Android)
@@ -166,7 +179,7 @@ function handleMotionEvent(event) {
   else {
     accelRange.tempX = accelRange.rawX;
   }
-  if (accelRange.rawY < accelRange.loY) { 
+  if (accelRange.rawY < accelRange.loY) {
     accelRange.tempY = accelRange.loY;
   }
   else if (accelRange.rawY > accelRange.hiY) {
@@ -320,7 +333,7 @@ var TMScore = {
         var seconds = time % 60;
         // display seconds with leading zero so we see e.g., 3:02 instead of 3:2
         var paddedSec = (seconds < 10) ? ("0" + seconds) : seconds;
-        console.log("TMScore.timeAtCue(" + cue + "): " + time + " seconds (" + minutes + ":" + paddedSec + ")"); 
+        console.log("TMScore.timeAtCue(" + cue + "): " + time + " seconds (" + minutes + ":" + paddedSec + ")");
       }
       return time;
     }
@@ -390,7 +403,7 @@ var TMScore = {
   },
   nextCue: function() {
     // increment cue list and set buttons states and instructions for this cue
-    if (this.currentCue == this.MAX_CUES) { 
+    if (this.currentCue == this.MAX_CUES) {
       console.log("Cue list already at maximum value of " + this.MAX_CUES);
     }
     else {
