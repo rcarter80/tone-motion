@@ -37,17 +37,11 @@ var ToneMotion = {
 ** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
 */
 if ("DeviceMotionEvent" in window) {
-  console.log('DeviceMotionEvent in window, apparently');
   window.addEventListener("devicemotion", handleMotionEvent, true);
   // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
 }
 else {
   ToneMotion.status = "deviceDoesNotReportMotion";
-  // need to run event loop on desktop to receive cues from server
-  // full support needs to put this elsewhere
-  console.log('DeviceMotionEvent not in window');
-  desktopCueCheckLoop = setInterval(checkCueNumber, 200);
-  cueIntervalID = setInterval(updateCueNumber, 500);
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
 var motionCheckIntervId; // interval ID for checking motion detection
@@ -60,6 +54,9 @@ var loThreshold = 0.5 - motionCheckSensitivity; // 0.5 is perfectly level
 var hiThreshold = 0.5 + motionCheckSensitivity;
 function beginMotionDetection() {
   motionCheckIntervId = setInterval(testForMotion, motionCheckInterval);
+
+  // TODO: move cue check to after PLAY button is tapped
+  cueIntervalID = setInterval(updateCueNumber, 500);
 }
 // closure keeps counter of failed attempts at polling device motion
 var testForMotion = (function() {
@@ -128,6 +125,7 @@ else {
 var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 var cueFromServer = { 'cue': 0, 'time': 0 };
+var cueOnClient = 0; // current cue number on client side
 function updateCueNumber() {
   fetch(url)
   .then(response => response.json())
@@ -137,15 +135,6 @@ function updateCueNumber() {
   })
   // TODO: implement a "public" error message on mobile interface
   .catch(error => console.error(`Fetch Error =\n`, error));
-}
-// I want to put cue check in handMotionEvent loop for optimized mobile
-// but that loop doesn't happen on desktop, so add event loop
-var cueOnClient = 0; // current cue number on client side
-function checkCueNumber() {
-  if (cueOnClient !== cueFromServer.cue) {
-    cueOnClient = cueFromServer.cue;
-    console.log('New cue ' + cueFromServer.cue + ' at time ' + (cueFromServer.time+timestampBias));
-  }
 }
 
 // sets ToneMotion.x and .y by polling and normalizing motion data. called in response to "devicemotion"
@@ -218,6 +207,13 @@ function handleMotionEvent(event) {
 // updateInteractiveSounds() is called once per ToneMotion.updateInterval (default: 0.05 seconds)
 // not called until interface is set up and parameters (e.g., ToneMotion.updateInterval) are set
 function updateInteractiveSounds() {
+
+  // check cue number against server cueEnablesButtons
+  if (cueOnClient !== cueFromServer.cue) {
+    cueOnClient = cueFromServer.cue;
+    console.log('New cue ' + cueFromServer.cue + ' at time ' + (cueFromServer.time+timestampBias));
+  }
+
   if (ToneMotion.status === "deviceDoesReportMotion") {
     // If device reports motion, ToneMotion.x and .y are set by accelerometer. Use those to set smooth control signals.
     ToneMotion.xSig.linearRampToValue(ToneMotion.x, ToneMotion.updateInterval); // smooths signals to avoid zipper noise
