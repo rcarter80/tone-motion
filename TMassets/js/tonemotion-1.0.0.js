@@ -44,7 +44,7 @@ else {
   ToneMotion.status = "deviceDoesNotReportMotion";
   // need to run event loop on desktop to receive cues from server
   // full support needs to put this elsewhere
-  console.log('hi');
+  console.log('hi there');
   desktopCueCheckLoop = setInterval(checkCueNumber, 200);
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
