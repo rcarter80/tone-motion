@@ -1,0 +1,6 @@
+known issues:
+
+ToneMotionInterface.js (line 116): missing additional button to remove
+
+Cached files can be problematic and require emptying cache
+Could fix by including version number in file name (e.g., ToneMotion_v1-0)

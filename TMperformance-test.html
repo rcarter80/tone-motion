@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>TITLE</title>
+  <meta name="description" content="Web-based algorithmic generation of interactive music">
+  <meta name="author" content="Ryan Carter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./TMassets/css/TMstyles_v1-2.css">
+  <link rel="icon" type="image/png" href="./TMassets/img/favicon.ico">
+</head>
+<body>
+
+<div id="Content">
+  <button id="TransportButton">go</button>
+  <div id="DeviceMotionInWindow">...</div>
+  <div id="BeginToneMotionUpdates">...</div>
+
+  <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
+  <audio style="display:none;"><source src="./TMassets/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+</div> <!-- /#Content -->
+
+<script src="./TMassets/js/jquery.min.js"></script>
+<script src="./TMassets/js/Tone.js"></script>
+<script src="./TMassets/js/draggabilly.js"></script>
+<script src="./TMassets/js/StartAudioContext.js"></script>
+
+<script src="./TMassets/js/ToneMotion-perf-test.js"></script>
+
+<script>
+
+ToneMotion.updateInterval = 0.5;
+ToneMotion.print = false;
+
+// Must start Audio Context through touch event on iOS device
+StartAudioContext(Tone.context, "#TransportButton").then(function(){
+  if (ToneMotion.showStatusLabels) {
+    $("#AudioContextStatusLabel").html("AudioContext is started");
+  }
+});
+
+document.getElementById("TransportButton").onclick = function() {
+
+  // user sees accelerometer data with test tone, but those are removed when play starts
+  clearInterval(updateIntroStatusLabelIntervId);
+
+  Tone.Transport.start();
+}
+
+// test for dropouts with very simple script
+var testSynth1 = new Tone.Synth().toMaster();
+testSynth1.volume.value = -12;
+var testPart1 = new Tone.Part(function(time, note){
+  testSynth1.triggerAttackRelease(note, "16n", time);
+}, [
+  ["0:0:0", "C5"], ["0:0:2", "D5"], ["0:1:0", "E5"], ["0:1:2", "F5"],
+  ["0:2:0", "G5"], ["0:2:2", "A5"], ["0:3:0", "B5"], ["0:3:2", "C6"],
+  ["1:0:0", "C6"], ["1:0:2", "D6"], ["1:1:0", "E6"], ["1:1:2", "F6"],
+  ["1:2:0", "G6"], ["1:2:2", "A6"], ["1:3:0", "B6"], ["1:3:2", "C7"]
+]).start(0.1);
+testPart1.loopEnd = "2m";
+testPart1.loop = 8;
+
+</script>
+
+<script src="./TMassets/js/ToneMotionInterface-perf-test.js"></script>
+
+</body>
+</html>
