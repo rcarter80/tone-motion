@@ -66,3 +66,4 @@ typings/
 
 # folders not needed under source control
 /backups/*
+/audio/*
