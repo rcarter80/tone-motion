@@ -37,6 +37,7 @@ var ToneMotion = {
 ** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
 */
 if ("DeviceMotionEvent" in window) {
+  console.log('DeviceMotionEvent in window, apparently');
   window.addEventListener("devicemotion", handleMotionEvent, true);
   // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
 }
@@ -44,8 +45,9 @@ else {
   ToneMotion.status = "deviceDoesNotReportMotion";
   // need to run event loop on desktop to receive cues from server
   // full support needs to put this elsewhere
-  console.log('hi there');
+  console.log('DeviceMotionEvent not in window');
   desktopCueCheckLoop = setInterval(checkCueNumber, 200);
+  cueIntervalID = setInterval(updateCueNumber, 500);
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
 var motionCheckIntervId; // interval ID for checking motion detection
@@ -121,14 +123,28 @@ else {
   ToneMotion.deviceIsAndroid = false;
 }
 
+// packet size reduced by subtracting bias on server and adding on client
+// at time of coding (2018-07-18) Date.now() returns 1531970463500
+var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/local-current-cue'
+const timestampBias = 1531970463500;
+var cueFromServer = { 'cue': 0, 'time': 0 };
+function updateCueNumber() {
+  fetch(url)
+  .then(response => response.json())
+  .then(jsonRes => {
+    cueFromServer.cue = jsonRes.c;
+    cueFromServer.time = jsonRes.t;
+  })
+  // TODO: implement a "public" error message on mobile interface
+  .catch(error => console.error(`Fetch Error =\n`, error));
+}
 // I want to put cue check in handMotionEvent loop for optimized mobile
 // but that loop doesn't happen on desktop, so add event loop
 var cueOnClient = 0; // current cue number on client side
-var cueFromServer = 1; // cue number set by server
 function checkCueNumber() {
-  if (cueOnClient !== cueFromServer) {
-    cueOnClient = cueFromServer;
-    console.log('new cue number: ' + cueOnClient);
+  if (cueOnClient !== cueFromServer.cue) {
+    cueOnClient = cueFromServer.cue;
+    console.log('New cue ' + cueFromServer.cue + ' at time ' + (cueFromServer.time+timestampBias));
   }
 }
 
