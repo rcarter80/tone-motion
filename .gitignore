@@ -59,3 +59,10 @@ typings/
 
 # next.js build output
 .next
+
+# OS junk files
+[Th]humbs.db
+*.DS_Store
+
+# folders not needed under source control
+/backups/*
