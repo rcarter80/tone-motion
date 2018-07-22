@@ -305,7 +305,7 @@ cueList[8].goCue = function() {
 
 cueList[9] = new TMCue(-1);
 cueList[9].goCue = function() {
-  console.log('cueList[9].goCue() called AS SOON AS I CAN');
+  console.log('cueList[9].goCue() called AS SOON AS I CAN at ' + Date.now());
 }
 
 /*
