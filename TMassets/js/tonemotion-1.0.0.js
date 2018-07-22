@@ -245,6 +245,9 @@ function goCue(cue, serverTime) {
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
   } else {
+    // TODO: check delay time to make sure it's not excessive
+    // if so, maybe time zone is set wrong? post public error
+    // TODO: check synchrony with Adam in Alaska and Sasha in France 
     wait(delay).then(() => {
       try { cueList[cue].goCue(); } catch(e) { console.log(e); }
       cueList[cue].isPlaying = true;
