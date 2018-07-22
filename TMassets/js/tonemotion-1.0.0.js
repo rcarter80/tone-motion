@@ -181,6 +181,8 @@ function handleMotionEvent(event) {
   ToneMotion.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
 }
 
+// TODO: IMPORTANT!
+// DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
 // packet size reduced by subtracting bias on server and adding on client
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
 var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
