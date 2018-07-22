@@ -192,8 +192,10 @@ function updateCueNumber() {
   fetch(url)
   .then(response => response.json())
   .then(jsonRes => {
-    // check if cue from server is different from cue on client
-    if (cueOnClient !== jsonRes.c) { // trigger new cue
+    // check if there's a new cue
+    // checks cue *time* (not number) because in rehearsal the same cue
+    // could be retriggered. same cue number, different time.
+    if (cueTimeFromServer !== jsonRes.t+timestampBias) { // go new cue
       cueOnClient = jsonRes.c;
       cueTimeFromServer = jsonRes.t + timestampBias;
       goCue(cueOnClient, cueTimeFromServer);
@@ -202,6 +204,12 @@ function updateCueNumber() {
   // TODO: implement a "public" error message on mobile interface
   .catch(error => console.error(`Fetch Error =\n`, error));
 }
+
+// wrap setTimeout in Promise
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// estimate latency from POST request to server. move elsewhere later
+const serverLatency = 100; // milliseconds
 
 function goCue(cue, time) {
   // clear all current cues
@@ -214,9 +222,17 @@ function goCue(cue, time) {
   }
 
   // if cue exists, trigger it
-  if (cueList[cue]) {
+  if (cueList[cue] && cueList[cue].waitTime == 0) {
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
+  } else if (cueList[cue] && cueList[cue].waitTime > 0) {
+    console.log('cue time ' + time + ' latency ' + serverLatency + ' wait ' + cueList[cue].waitTime + ' receipt time ' + Date.now());
+    console.log('remaining time ' + (time - serverLatency + cueList[cue].waitTime - Date.now()));
+    wait(cueList[cue].waitTime).then(() => {
+      cueList[cue].goCue();
+      cueList[cue].isPlaying = true;
+    })
+    // .catch( console.log('Error playing cue ' + cue); );
   }
   else {
     console.log('Cue number ' + cue + ' does not exist.');
@@ -251,6 +267,11 @@ cueList[2] = new TMCue(0, 0);
 cueList[7] = new TMCue(0, 0);
 cueList[7].goCue = function() {
   console.log('cueList[7].goCue() called');
+}
+
+cueList[8] = new TMCue(3000, 0);
+cueList[8].goCue = function() {
+  console.log('cueList[8].goCue() called');
 }
 
 /*
