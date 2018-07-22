@@ -185,19 +185,72 @@ function handleMotionEvent(event) {
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
 var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
-var cueOnClient = 0; // current cue number on client side
+// cueOnClient is set when cue from server doesn't match.
+var cueOnClient = -1; // wait period of piece begins at 0
+var cueTimeFromServer = 0;
 function updateCueNumber() {
   fetch(url)
   .then(response => response.json())
   .then(jsonRes => {
-    // check cue number against server cueEnablesButtons
-    if (cueOnClient !== jsonRes.c) { // jsonRes.c is cue from server
+    // check if cue from server is different from cue on client
+    if (cueOnClient !== jsonRes.c) { // trigger new cue
       cueOnClient = jsonRes.c;
-      console.log('New cue ' + cueOnClient + ' at time ' + (jsonRes.t+timestampBias));
-    } // else no new cue and control falls through 
+      cueTimeFromServer = jsonRes.t + timestampBias;
+      goCue(cueOnClient, cueTimeFromServer);
+    } // else no new cue and control falls through
   })
   // TODO: implement a "public" error message on mobile interface
   .catch(error => console.error(`Fetch Error =\n`, error));
+}
+
+function goCue(cue, time) {
+  // clear all current cues
+  // TODO: decide if clear should be immediate or when cue is triggered
+  for (var i = 0; i < cueList.length; i++) {
+    if (cueList[i] && cueList[i].isPlaying) {
+      // stop this cue
+      cueList[i].isPlaying = false;
+    }
+  }
+
+  // if cue exists, trigger it
+  if (cueList[cue]) {
+    try { cueList[cue].goCue(); } catch(e) { console.log(e); }
+    cueList[cue].isPlaying = true;
+  }
+  else {
+    console.log('Cue number ' + cue + ' does not exist.');
+  }
+}
+
+// empty array to fill with cues
+var cueList = [];
+
+/**
+ * Create a new musical section
+ * @param {number} waitTime - Delay before cue is triggered
+ * @param {number} openWindow - How late a cue can be triggered
+ * @param {boolean} isPlaying - Set to true when cue is playing
+ */
+function TMCue(waitTime, openWindow) {
+  this.waitTime = waitTime;
+  this.openWindow = openWindow;
+  this.isPlaying = false; // not set by constructor
+}
+TMCue.prototype.goCue = function() {
+  // override this method in score
+  console.log('No music coded for this section.');
+}
+
+cueList[0] = new TMCue(0, 0);
+cueList[0].goCue = function() {
+  console.log('cueList[0].goCue() called');
+}
+cueList[2] = new TMCue(0, 0);
+
+cueList[7] = new TMCue(0, 0);
+cueList[7].goCue = function() {
+  console.log('cueList[7].goCue() called');
 }
 
 /*
