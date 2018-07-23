@@ -213,7 +213,12 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 // estimate latency from POST request to server. move elsewhere later
 const serverLatency = 40; // milliseconds
 
+var testLabel = document.querySelector('#Instructions');
+
 function goCue(cue, serverTime) {
+  var timestamp = Date.now();
+  testLabel.innerHTML = 'server time: ' + serverTime + ' client time: ' + timestamp + ' latency: ' + (timestamp-serverTime);
+
   // clear all current cues
   // TODO: implement .clearPreviousCues = true (default) property
   for (var i = 0; i < cueList.length; i++) {
@@ -225,7 +230,6 @@ function goCue(cue, serverTime) {
 
   // trigger cue with minimum latency if waitTime is -1
   if (cueList[cue] && (cueList[cue].waitTime == -1)) {
-    console.log(serverTime + ' ' + serverLatency + ' ' + cueList[cue].waitTime + ' ' + Date.now() + ' delay: ' + delay);
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
     return;
@@ -234,7 +238,6 @@ function goCue(cue, serverTime) {
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
     var delay = serverTime - serverLatency + cueList[cue].waitTime - Date.now();
-    console.log(serverTime + ' ' + serverLatency + ' ' + cueList[cue].waitTime + ' ' + Date.now() + ' delay: ' + delay);
   } else {
     console.log('Cue number ' + cue + ' does not exist.');
     return;
