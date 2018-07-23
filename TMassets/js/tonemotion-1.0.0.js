@@ -215,15 +215,17 @@ const serverLatency = 40; // milliseconds
 
 function goCue(cue, serverTime) {
   // clear all current cues
+  // TODO: implement .clearPreviousCues = true (default) property
   for (var i = 0; i < cueList.length; i++) {
     if (cueList[i] && cueList[i].isPlaying) {
-      // stop this cue
+      // TODO: stop this cue
       cueList[i].isPlaying = false;
     }
   }
 
   // trigger cue with minimum latency if waitTime is -1
   if (cueList[cue] && (cueList[cue].waitTime == -1)) {
+    console.log(serverTime + ' ' + serverLatency + ' ' + cueList[cue].waitTime + ' ' + Date.now() + ' delay: ' + delay);
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
     return;
@@ -232,6 +234,7 @@ function goCue(cue, serverTime) {
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
     var delay = serverTime - serverLatency + cueList[cue].waitTime - Date.now();
+    console.log(serverTime + ' ' + serverLatency + ' ' + cueList[cue].waitTime + ' ' + Date.now() + ' delay: ' + delay);
   } else {
     console.log('Cue number ' + cue + ' does not exist.');
     return;
@@ -239,7 +242,8 @@ function goCue(cue, serverTime) {
 
   // trigger new cue (immediately or after wait time)
   if ((cueList[cue].openWindow + delay) < 0) {
-    console.log('you missed your cue!'); // TODO: PUBLIC ERROR
+    // TODO: PUBLIC ERROR
+    console.log('You missed your cue by ' + (-delay) + ' milliseconds!');
   } else if (delay < 4) {
     // no need for delay shorter than 4ms
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
@@ -247,7 +251,7 @@ function goCue(cue, serverTime) {
   } else {
     // TODO: check delay time to make sure it's not excessive
     // if so, maybe time zone is set wrong? post public error
-    // TODO: check synchrony with Adam in Alaska and Sasha in France 
+    // TODO: check synchrony with Adam in Alaska and Sasha in France
     wait(delay).then(() => {
       try { cueList[cue].goCue(); } catch(e) { console.log(e); }
       cueList[cue].isPlaying = true;
@@ -291,7 +295,15 @@ cueList[1].goCue = function() {
   console.log('cueList[1].goCue() called');
 }
 
-cueList[2] = new TMCue(0, 300);
+cueList[2] = new TMCue(0, 0);
+cueList[2].goCue = function() {
+  console.log('cueList[2].goCue() called');
+}
+
+cueList[3] = new TMCue(500, 0);
+cueList[3].goCue = function() {
+  console.log('cueList[3].goCue() called');
+}
 
 cueList[4] = new TMCue(3000, 0);
 cueList[4].goCue = function() {
