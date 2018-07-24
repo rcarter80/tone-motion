@@ -218,6 +218,10 @@ const serverLatency = 40; // milliseconds
 var testLabel = document.querySelector('#Instructions');
 
 // try to synchronize client and server clocks
+var shortestRoundtrip = Number.POSITIVE_INFINITY;
+var clientServerOffset = 0;
+var clientServerOffset1 = 0;
+var clientServerOffset2 = 0;
 function syncClocks() {
   var oReq = new XMLHttpRequest();
   oReq.addEventListener("load", function() {
@@ -226,7 +230,15 @@ function syncClocks() {
     var syncTime3 = Date.now();
     console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
     console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
-    testLabel.innerHTML = 'client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2);
+
+    var roundtrip = syncTime3 - syncTime1;
+    console.log('roundtrip is ' + roundtrip);
+    if (roundtrip < shortestRoundtrip) {
+      shortestRoundtrip = roundtrip;
+      console.log('new shortest roundtrip: ' + roundtrip);
+      clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+    }
+    testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
   });
   oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
   var syncTime1 = Date.now();
