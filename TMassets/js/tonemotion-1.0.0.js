@@ -57,24 +57,9 @@ function beginMotionDetection() {
 
   // TODO: move cue check to after PLAY button is tapped
   // cueIntervalID = setInterval(updateCueNumber, 500);
-  syncClocks();
+  clockSyncID = setInterval(syncClocks, 1000);
 }
 
-// try to synchronize client and server clocks
-function syncClocks() {
-  var oReq = new XMLHttpRequest();
-  oReq.addEventListener("load", function() {
-    var syncTime2 = this.responseText;
-    console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
-    var syncTime3 = Date.now();
-    console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
-    console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
-  });
-  oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
-  var syncTime1 = Date.now();
-  console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
-  oReq.send();
-}
 // closure keeps counter of failed attempts at polling device motion
 var testForMotion = (function() {
   var counter = 1; // counter incremented *after* test
@@ -231,6 +216,23 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const serverLatency = 40; // milliseconds
 
 var testLabel = document.querySelector('#Instructions');
+
+// try to synchronize client and server clocks
+function syncClocks() {
+  var oReq = new XMLHttpRequest();
+  oReq.addEventListener("load", function() {
+    var syncTime2 = this.responseText;
+    console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
+    var syncTime3 = Date.now();
+    console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
+    console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
+    testLabel.innerHTML = 'client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2);
+  });
+  oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
+  var syncTime1 = Date.now();
+  console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
+  oReq.send();
+}
 
 function goCue(cue, serverTime) {
   // clear all current cues
