@@ -223,6 +223,7 @@ var clientServerOffset = 0;
 var clientServerOffset1 = 0;
 var clientServerOffset2 = 0;
 function syncClocks() {
+  // loop a number of times. maybe 6? would take 5 seconds
   var oReq = new XMLHttpRequest();
   oReq.addEventListener("load", function() {
     var syncTime2 = this.responseText;
@@ -236,6 +237,9 @@ function syncClocks() {
     if (roundtrip < shortestRoundtrip) {
       shortestRoundtrip = roundtrip;
       console.log('new shortest roundtrip: ' + roundtrip);
+      // shortest roundtrip considered most accurate
+      // subtract clientServerOffset from current time to get real time
+      // if roundtrip is never less than, say, 2 seconds, throw error?
       clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
     }
     testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
