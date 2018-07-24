@@ -60,20 +60,19 @@ function beginMotionDetection() {
   syncClocks();
 }
 
-function reqListener () {
-  var syncTime2 = this.responseText;
-  console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
-  var syncTime3 = Date.now();
-  console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
-}
-
 // try to synchronize client and server clocks
 function syncClocks() {
   var oReq = new XMLHttpRequest();
-  oReq.addEventListener("load", reqListener);
+  oReq.addEventListener("load", function() {
+    var syncTime2 = this.responseText;
+    console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
+    var syncTime3 = Date.now();
+    console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
+    console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
+  });
+  oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
   var syncTime1 = Date.now();
   console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
-  oReq.open("GET", "http://localhost:3000/test-server/clock-sync");
   oReq.send();
 }
 // closure keeps counter of failed attempts at polling device motion
