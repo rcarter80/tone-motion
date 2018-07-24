@@ -56,8 +56,7 @@ function beginMotionDetection() {
   motionCheckIntervId = setInterval(testForMotion, motionCheckInterval);
 
   // TODO: move cue check to after PLAY button is tapped
-  // cueIntervalID = setInterval(updateCueNumber, 500);
-  clockSyncID = setInterval(syncClocks, 1000);
+  cueIntervalID = setInterval(updateCueNumber, 500);
 }
 
 // closure keeps counter of failed attempts at polling device motion
@@ -187,6 +186,7 @@ function handleMotionEvent(event) {
 // DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
 // packet size reduced by subtracting bias on server and adding on client
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
+// TODO: if this is a global variable, give better name
 var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
@@ -213,41 +213,49 @@ function updateCueNumber() {
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // estimate latency from POST request to server. move elsewhere later
-const serverLatency = 40; // milliseconds
+// TODO: decide whether to use estimated serverLatency
+const serverLatency = 0; // milliseconds
 
 var testLabel = document.querySelector('#Instructions');
 
 // try to synchronize client and server clocks
-var shortestRoundtrip = Number.POSITIVE_INFINITY;
 var clientServerOffset = 0;
-var clientServerOffset1 = 0;
-var clientServerOffset2 = 0;
 function syncClocks() {
-  // loop a number of times. maybe 6? would take 5 seconds
-  var oReq = new XMLHttpRequest();
-  oReq.addEventListener("load", function() {
-    var syncTime2 = this.responseText;
-    console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
-    var syncTime3 = Date.now();
-    console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
-    console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
+  var syncClockCounter = 0;
+  var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
-    var roundtrip = syncTime3 - syncTime1;
-    console.log('roundtrip is ' + roundtrip);
-    if (roundtrip < shortestRoundtrip) {
-      shortestRoundtrip = roundtrip;
-      console.log('new shortest roundtrip: ' + roundtrip);
-      // shortest roundtrip considered most accurate
-      // subtract clientServerOffset from current time to get real time
-      // if roundtrip is never less than, say, 2 seconds, throw error?
-      clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+  var syncClockID = setInterval(function () {
+    // loop a number of times. maybe 6? would take 5 seconds
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", function() {
+      var syncTime2 = this.responseText;
+      console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
+      var syncTime3 = Date.now();
+      console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
+      console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
+
+      var roundtrip = syncTime3 - syncTime1;
+      console.log('roundtrip is ' + roundtrip);
+      if (roundtrip < shortestRoundtrip) {
+        shortestRoundtrip = roundtrip;
+        console.log('new shortest roundtrip: ' + roundtrip);
+        // shortest roundtrip considered most accurate
+        // subtract clientServerOffset from current time to get real time
+        // if roundtrip is never less than, say, 2 seconds, throw error?
+        clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+      }
+      testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
+    });
+    oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
+    var syncTime1 = Date.now();
+    console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
+    oReq.send();
+
+    // stop after 6 checks (5 seconds)
+    if (++syncClockCounter === 6) {
+      window.clearInterval(syncClockID);
     }
-    testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
-  });
-  oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
-  var syncTime1 = Date.now();
-  console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
-  oReq.send();
+  }, 1000);
 }
 
 function goCue(cue, serverTime) {
@@ -267,18 +275,11 @@ function goCue(cue, serverTime) {
   }
 
   // lower priority cue (may be deliberately delayed). check client time
-  var timestamp = Date.now();
-  testLabel.innerHTML = 'server time: ' + serverTime + ' client time: ' + timestamp + ' latency: ' + (timestamp-serverTime);
-
-  if (timestamp < serverTime) {
-    // TODO: public error. and should this prevent cue?
-    console.log('clock is off');
-    return;
-  }
+  var timestamp = Date.now() - clientServerOffset;
 
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
-    var delay = serverTime - serverLatency + cueList[cue].waitTime - Date.now();
+    var delay = serverTime - serverLatency + cueList[cue].waitTime - timestamp;
   } else {
     console.log('Cue number ' + cue + ' does not exist.');
     return;
@@ -293,9 +294,11 @@ function goCue(cue, serverTime) {
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
   } else {
-    // TODO: check delay time to make sure it's not excessive
-    // if so, maybe time zone is set wrong? post public error
-    // TODO: check synchrony with Adam in Alaska and Sasha in France
+    if (delay > 10000) {
+      //// TODO: public error
+      console.log('delay time exceeds 10000: ' + delay);
+      return;
+    }
     wait(delay).then(() => {
       try { cueList[cue].goCue(); } catch(e) { console.log(e); }
       cueList[cue].isPlaying = true;
