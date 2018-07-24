@@ -56,7 +56,25 @@ function beginMotionDetection() {
   motionCheckIntervId = setInterval(testForMotion, motionCheckInterval);
 
   // TODO: move cue check to after PLAY button is tapped
-  cueIntervalID = setInterval(updateCueNumber, 500);
+  // cueIntervalID = setInterval(updateCueNumber, 500);
+  syncClocks();
+}
+
+function reqListener () {
+  var syncTime2 = this.responseText;
+  console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
+  var syncTime3 = Date.now();
+  console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
+}
+
+// try to synchronize client and server clocks
+function syncClocks() {
+  var oReq = new XMLHttpRequest();
+  oReq.addEventListener("load", reqListener);
+  var syncTime1 = Date.now();
+  console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
+  oReq.open("GET", "http://localhost:3000/test-server/clock-sync");
+  oReq.send();
 }
 // closure keeps counter of failed attempts at polling device motion
 var testForMotion = (function() {
@@ -216,11 +234,7 @@ const serverLatency = 40; // milliseconds
 var testLabel = document.querySelector('#Instructions');
 
 function goCue(cue, serverTime) {
-  var timestamp = Date.now();
-  testLabel.innerHTML = 'server time: ' + serverTime + ' client time: ' + timestamp + ' latency: ' + (timestamp-serverTime);
-
   // clear all current cues
-  // TODO: implement .clearPreviousCues = true (default) property
   for (var i = 0; i < cueList.length; i++) {
     if (cueList[i] && cueList[i].isPlaying) {
       // TODO: stop this cue
@@ -232,6 +246,16 @@ function goCue(cue, serverTime) {
   if (cueList[cue] && (cueList[cue].waitTime == -1)) {
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
+    return;
+  }
+
+  // lower priority cue (may be deliberately delayed). check client time
+  var timestamp = Date.now();
+  testLabel.innerHTML = 'server time: ' + serverTime + ' client time: ' + timestamp + ' latency: ' + (timestamp-serverTime);
+
+  if (timestamp < serverTime) {
+    // TODO: public error. and should this prevent cue?
+    console.log('clock is off');
     return;
   }
 
