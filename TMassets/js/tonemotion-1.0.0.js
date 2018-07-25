@@ -218,25 +218,19 @@ const serverLatency = 0; // milliseconds
 
 var testLabel = document.querySelector('#Instructions');
 
-// try to synchronize client and server clocks
+// synchronize client time to server time
 var clientServerOffset = 0;
 function syncClocks() {
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
   var syncClockID = setInterval(function () {
-    // loop a number of times. maybe 6? would take 5 seconds
-    // TODO: replace with fetch() and add error handling?
-    var oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function() {
+    var clockReq = new XMLHttpRequest();
+    clockReq.addEventListener("load", function() {
       var syncTime2 = this.responseText;
-      console.log('Response from server sent at: ' + syncTime2 + ' (server clock time)');
       var syncTime3 = Date.now();
-      console.log('Response from server received at: ' + syncTime3 + ' (client clock time)');
-      console.log('client to server: ' + (syncTime2-syncTime1) + ' server to client: ' + (syncTime3-syncTime2));
-
       var roundtrip = syncTime3 - syncTime1;
-      console.log('roundtrip is ' + roundtrip);
+      console.log('Roundtrip latency: ' + roundtrip);
       if (roundtrip < shortestRoundtrip) {
         // safari caches response despite my very nice request not to
         // it releases cache after first iteration, but if first try
@@ -250,16 +244,20 @@ function syncClocks() {
           clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
         }
       }
-      testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
+      testLabel.innerHTML = 'clientServerOffset: ' + clientServerOffset;
     });
-    oReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
+    clockReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
     var syncTime1 = Date.now();
     console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
-    oReq.send();
+    clockReq.send();
 
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
+      if (shortestRoundtrip > 0) {
+        // TODO: public error
+        console.log('There appears to be a lot of latency');
+      }
     }
   }, 1000);
 }
