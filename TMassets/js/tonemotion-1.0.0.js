@@ -226,6 +226,7 @@ function syncClocks() {
 
   var syncClockID = setInterval(function () {
     // loop a number of times. maybe 6? would take 5 seconds
+    // TODO: replace with fetch() and add error handling?
     var oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function() {
       var syncTime2 = this.responseText;
@@ -237,12 +238,17 @@ function syncClocks() {
       var roundtrip = syncTime3 - syncTime1;
       console.log('roundtrip is ' + roundtrip);
       if (roundtrip < shortestRoundtrip) {
-        shortestRoundtrip = roundtrip;
-        console.log('new shortest roundtrip: ' + roundtrip);
-        // shortest roundtrip considered most accurate
-        // subtract clientServerOffset from current time to get real time
-        // if roundtrip is never less than, say, 2 seconds, throw error?
-        clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+        // safari caches response despite my very nice request not to
+        // it releases cache after first iteration, but if first try
+        // is super short roundtrip (e.g., 1 ms), the result is b.s.
+        if (syncClockCounter > 1 || roundtrip > 10) {
+          shortestRoundtrip = roundtrip;
+          console.log('new shortest roundtrip: ' + roundtrip);
+          // shortest roundtrip considered most accurate
+          // subtract clientServerOffset from current time to get real time
+          // if roundtrip is never less than, say, 2 seconds, throw error?
+          clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+        }
       }
       testLabel.innerHTML = 'client to server: ' + (syncTime2-(syncTime1-clientServerOffset)) + ' server to client: ' + ((syncTime3-clientServerOffset)-syncTime2 + ' clientServerOffset: ' + clientServerOffset);
     });
@@ -279,7 +285,8 @@ function goCue(cue, serverTime) {
 
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
-    var delay = serverTime - serverLatency + cueList[cue].waitTime - timestamp;
+    var delay = Math.floor(serverTime - serverLatency + cueList[cue].waitTime - timestamp);
+    console.log(delay);
   } else {
     console.log('Cue number ' + cue + ' does not exist.');
     return;
@@ -289,8 +296,8 @@ function goCue(cue, serverTime) {
   if ((cueList[cue].openWindow + delay) < 0) {
     // TODO: PUBLIC ERROR
     console.log('You missed your cue by ' + (-delay) + ' milliseconds!');
-  } else if (delay < 4) {
-    // no need for delay shorter than 4ms
+  } else if (delay < 20) {
+    // shorter delay than 20ms is definitely not aurally perceptible
     try { cueList[cue].goCue(); } catch(e) { console.log(e); }
     cueList[cue].isPlaying = true;
   } else {
