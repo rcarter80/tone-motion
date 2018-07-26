@@ -246,33 +246,30 @@ function syncClocks() {
       var syncTime2 = this.responseText;
       var syncTime3 = Date.now();
       var roundtrip = syncTime3 - syncTime1;
-      console.log('Roundtrip latency: ' + roundtrip);
+      if (TM.debug) {
+        publicLog('Time request sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
+      }
       if (roundtrip < shortestRoundtrip) {
         // safari caches response despite my very nice request not to
         // it releases cache after first iteration, but if first try
         // is super short roundtrip (e.g., 1 ms), the result is b.s.
         if (syncClockCounter > 1 || roundtrip > 10) {
           shortestRoundtrip = roundtrip;
-          console.log('new shortest roundtrip: ' + roundtrip);
           // shortest roundtrip considered most accurate
           // subtract TM.clientServerOffset from current time to get real time
           // if roundtrip is never less than, say, 2 seconds, throw error?
           TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
-          if (TM.debug) {
-            publicLog('Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
-          }
         }
       }
     });
     clockReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
     var syncTime1 = Date.now();
-    console.log('Request for server time sent at: ' + syncTime1 + ' (client clock time)');
     clockReq.send();
 
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
-      if (shortestRoundtrip > 2000) {
+      if (shortestRoundtrip > 1) {
         // TODO: public error
         console.log('There appears to be a lot of latency');
       } else {

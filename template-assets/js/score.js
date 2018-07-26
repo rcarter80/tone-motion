@@ -1,5 +1,5 @@
 /*
-** ToneMotion is an object of global scope that exposes device motion
+** TM is an object of global scope that exposes device motion
 ** properties and default values:
 ** x (current x-axis value): 0.5
 ** y (current y-axis value): 0.5
@@ -33,13 +33,13 @@
 /******************************************************************
 ************************* GENERAL PARAMETERS **********************
 *******************************************************************/
-ToneMotion.showStatusLabels = false;
-ToneMotion.delayBeforePlaying = "+0.3";
-ToneMotion.deviceShouldSelfCalibrate = false;
-ToneMotion.print = false;
-ToneMotion.shouldSyncToUTC = true;
+TM.showStatusLabels = false;
+TM.delayBeforePlaying = "+0.3";
+TM.deviceShouldSelfCalibrate = false;
+TM.print = false;
+TM.shouldSyncToUTC = true;
 // sets lookAhead. "interactive": lookAhead = 0.1; "playback": 0.8; "balanced": 0.25; "fastest": 0.01;
-Tone.context.latencyHint = ToneMotion.updateInterval / 2.0;
+Tone.context.latencyHint = TM.updateInterval / 2.0;
 
 
 // TODO: delete this buffer that is used to test loading animation
@@ -59,7 +59,7 @@ TMScore.durForCue[2] = 32;
 TMScore.durForCue[3] = 32;
 function setIntroInstructions() {
   // called when buffers have loaded and music is ready to play
-  if (ToneMotion.status == "deviceDoesReportMotion") {
+  if (TM.status == "deviceDoesReportMotion") {
     setInstructions("The page has loaded. You can now set your device to Airplane Mode. You may also want to set the Orientation Lock to prevent the screen from rotating. When everyone is ready, tap the play button to begin the piece.");
   }
   else {
@@ -95,11 +95,11 @@ testPart1.loop = 8;
 // Action button methods
 TMScore.cueEnablesButtons[1] = [1,0,0]; // cue 1 enables action button 1, but disables actions buttons 2 and 3
 function goButton1Cue1() {
-  if (ToneMotion.print) { console.log("goButton1Cue1() called"); }
+  if (TM.print) { console.log("goButton1Cue1() called"); }
 }
 // Interactive sounds in this cue
 function updateSoundsInCue1() {
-  if (ToneMotion.print) { console.log("updating cue 1 sounds"); }
+  if (TM.print) { console.log("updating cue 1 sounds"); }
 }
 
 /******************************************************************
@@ -126,14 +126,14 @@ testPart1.loop = 8;
 // Action button methods
 TMScore.cueEnablesButtons[2] = [1,1,0];
 function goButton1Cue2() {
-  if (ToneMotion.print) { console.log("goButton1Cue2() called"); }
+  if (TM.print) { console.log("goButton1Cue2() called"); }
 }
 function goButton2Cue2() {
-  if (ToneMotion.print) { console.log("goButton2Cue2() called"); }
+  if (TM.print) { console.log("goButton2Cue2() called"); }
 }
 // Interactive sounds in this cue
 function updateSoundsInCue2() {
-  if (ToneMotion.print) { console.log("updating cue 2 sounds"); }
+  if (TM.print) { console.log("updating cue 2 sounds"); }
 }
 
 /******************************************************************
@@ -160,17 +160,17 @@ testPart1.loop = 8;
 // Action button methods
 TMScore.cueEnablesButtons[3] = [1,1,1];
 function goButton1Cue3() {
-  if (ToneMotion.print) { console.log("goButton1Cue3() called"); }
+  if (TM.print) { console.log("goButton1Cue3() called"); }
 }
 function goButton2Cue3() {
-  if (ToneMotion.print) { console.log("goButton2Cue3() called"); }
+  if (TM.print) { console.log("goButton2Cue3() called"); }
 }
 function goButton3Cue3() {
-  if (ToneMotion.print) { console.log("goButton3Cue3() called"); }
+  if (TM.print) { console.log("goButton3Cue3() called"); }
 }
 // Interactive sounds in this cue
 function updateSoundsInCue3() {
-  if (ToneMotion.print) { console.log("updating cue 3 sounds"); }
+  if (TM.print) { console.log("updating cue 3 sounds"); }
 }
 
 /******************************************************************
@@ -179,7 +179,7 @@ function updateSoundsInCue3() {
 TMScore.st += TMScore.durForCue[3];
 Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
   // setInstructions("(All done)");
-  // clean-up and reset of interface handled in ToneMotionInterface.js
+  // clean-up and reset of interface handled in TMInterface.js
   // musicHasFinishedPlaying();
 
   // loop everything by just going back to cue 1
@@ -203,7 +203,7 @@ Tone.Master.volume.value = 3; // makeup gain
 function stopScript() {
   // shut down sounds here
 
-  if (ToneMotion.print) { console.log("stopScript() called"); }
-  ToneMotion.shutdown();
-  ToneMotionInterface.shutdown();
+  if (TM.print) { console.log("stopScript() called"); }
+  TM.shutdown();
+  TMInterface.shutdown();
 }
