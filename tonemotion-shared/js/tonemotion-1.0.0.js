@@ -34,6 +34,25 @@ var ToneMotion = {
 };
 
 /*
+** DOM HOOKS
+*/
+
+const consoleCheckbox = document.querySelector('#consoleCheckbox')
+const publicConsoleLabel = document.querySelector('#publicConsole');
+
+/*
+** CONSOLE MESSAGES
+*/
+
+// If publicConsole checkbox is checked, show this on interface
+function publicLog(message) {
+  console.log(message);
+  if (consoleCheckbox.checked) {
+    publicConsoleLabel.innerHTML = message;
+  }
+}
+
+/*
 ** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
 */
 if ("DeviceMotionEvent" in window) {
