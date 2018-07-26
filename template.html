@@ -18,6 +18,60 @@
   <button id="inforDisclosureButton" type="button">+</button>
 </header>
 
+<main> <!-- center panel showing app status, messages, controls -->
+  <div id="statusLabel">
+    <p>(status label goes here)</p>
+  </div>
+  <!-- button is not displayed until page loads, then shows "start" -->
+  <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
+  <!-- when piece is done, button goes away -->
+  <button id="startStopButton" type="button">start</button>
+  <div id="messageLabel">
+    <p>(important messages go here)</p>
+  </div>
+</main>
+
+<section id="helpPanel"> <!-- left panel with instructions and help -->
+  <div>
+    <h2>Set up your device</h2>
+    <p>(instructions go here)</p>
+    <p>(define tilt, shake, tacet)</p>
+  </div>
+  <div>
+    <h2>Instructions for this section</h2>
+    <p id="sectionInstructions">(instructions go here)</p>
+  </div>
+  <div>
+    <h2>Show motion data</h2>
+    <p>(may affect performance)</p>
+    <input type="checkbox" id="motionDataCheckbox">
+    <p id="motionDataLabel">(motion data goes here)</p>
+  </div>
+  <div>
+    <h2>Show console messages</h2>
+    <p>(may affect performance)</p>
+    <input type="checkbox" id="consoleCheckbox">
+    <p id="publicConsole">(public console messages go here)</p>
+  </section>
+
+  <section id="infoPanel"> <!-- right panel with links and more info -->
+    <div>
+      <h2>About this piece</h2>
+      <p>(link to suboptimal and my site and iMonkeypants)</p>
+    </div>
+    <div>
+      <h2>Compatibility and Accessibility</h2>
+      <p>(statment on compatibility and accessibility) Recommended browsers safari iOS and chrome android. Explain windows phone lack of support</p>
+    </div>
+    <div>
+      <h2>Credits</h2>
+      <p>(links to Tone.js)</p>
+      <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic</p>
+    </div>
+
+
+
+
 <script src="tonemotion-shared/js/Tone.js"></script>
 <script src="tonemotion-shared/js/StartAudioContext.js"></script>
 <script src="tonemotion-shared/js/tonemotion-1.0.0.js"></script>
