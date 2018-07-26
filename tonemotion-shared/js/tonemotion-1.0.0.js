@@ -102,6 +102,8 @@ var testForMotion = (function() {
   };
 }());
 // check for motion reporting even if browser says it responds to 'devicemotion' because that might be a lie
+// Google reference also puts start audio context here:
+// https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
 window.onload = beginMotionDetection();
 
 /*
