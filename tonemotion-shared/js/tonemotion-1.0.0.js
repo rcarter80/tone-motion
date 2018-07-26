@@ -269,7 +269,7 @@ function syncClocks() {
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
-      if (shortestRoundtrip > 1) {
+      if (shortestRoundtrip > 2000) {
         // TODO: public error
         console.log('There appears to be a lot of latency');
       } else {
