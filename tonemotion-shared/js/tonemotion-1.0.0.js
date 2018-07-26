@@ -1,19 +1,11 @@
 /*
-** MOTION HANDLING - DEPENDS ON TONE.js
-** Tests if device reports accelerometer values. If so, reports X and Y values as Tone.Signal objects.
-** If not, adds an XY-pad to simulate tilting the device.
-**
-** TODO: add ToneMotionActivityMonitor object to check if people are interacting and dim interface if not
-*/
-
-/*
-** CREATE GLOBAL OBJECT FOR MOTION DATA: ToneMotion
+** CREATE GLOBAL TONE MOTION OBJECT FOR MOTION DATA: TM
 */
 // instantiate Tone.Signal objects to connect to Tone.js sounds
 var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0. default: 0.5
 var yTilt = new Tone.Signal(0.5);
-// ToneMotion is a global object with properties visible to Tone.js scripts
-var ToneMotion = {
+// TM is a global object with properties visible to Tone.js scripts
+var TM = {
   x: 0.5,
   y: 0.5,
   xSig: xTilt, // connects accelerometer to Tone.Signal objects
@@ -26,10 +18,12 @@ var ToneMotion = {
   shouldSyncToUTC: false, // if true, Tone.Transport is set to UTC so all devices will sync anywhere
   deviceShouldSelfCalibrate: false, // if true, device continuously scales troughs to 0.0 and peaks to 1.0
   deviceIsAndroid: false, // Android motion axes are inverted relative to iOS. Will invert if needed.
+  debug: true, // Set to default of false for production
+  clientServerOffset: 0, // will update with syncClocks()
   shutdown: function() {
     window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
     clearInterval(motionCheckIntervId);
-    if (this.print) { console.log("ToneMotion.shutdown() called"); }
+    if (this.print) { console.log("TM.shutdown() called"); }
   }
 };
 
@@ -48,7 +42,9 @@ const publicConsoleLabel = document.querySelector('#publicConsole');
 function publicLog(message) {
   console.log(message);
   if (consoleCheckbox.checked) {
-    publicConsoleLabel.innerHTML = message;
+    var logMessage = document.createElement('p');
+    logMessage.innerHTML = message;
+    publicConsoleLabel.appendChild(logMessage);
   }
 }
 
@@ -60,7 +56,7 @@ if ("DeviceMotionEvent" in window) {
   // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
 }
 else {
-  ToneMotion.status = "deviceDoesNotReportMotion";
+  TM.status = "deviceDoesNotReportMotion";
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
 var motionCheckIntervId; // interval ID for checking motion detection
@@ -82,19 +78,19 @@ function beginMotionDetection() {
 var testForMotion = (function() {
   var counter = 1; // counter incremented *after* test
   return function() {
-    if ( (ToneMotion.x > loThreshold && ToneMotion.x < hiThreshold) && (ToneMotion.y > loThreshold & ToneMotion.y < hiThreshold) ) {
+    if ( (TM.x > loThreshold && TM.x < hiThreshold) && (TM.y > loThreshold & TM.y < hiThreshold) ) {
       // no motion detected. check if motionFailCount is exceeded and increment counter.
-      if (ToneMotion.print) { console.log("No device motion detected. motionFailCount: " + counter); }
-      if (counter > motionFailCount || ToneMotion.status === "deviceDoesNotReportMotion") {
+      if (TM.print) { console.log("No device motion detected. motionFailCount: " + counter); }
+      if (counter > motionFailCount || TM.status === "deviceDoesNotReportMotion") {
         // Either the device isn't moving or it will not report motion
-        ToneMotion.status = "deviceDoesNotReportMotion";
+        TM.status = "deviceDoesNotReportMotion";
         window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
         clearInterval(motionCheckIntervId);
       }
       return counter++;
     }
     else {
-      ToneMotion.status = "deviceDoesReportMotion";
+      TM.status = "deviceDoesReportMotion";
       counter = 0; // motion detected. reset counter and use in future if letting user test again
       clearInterval(motionCheckIntervId); // stops testing for motion handling
       return counter;
@@ -122,7 +118,7 @@ var accelRange = {
   hiY: 10.0,
   scaleY: 20.0,
   tempY: 0.0,
-  shouldReset: true // if (ToneMotion.deviceShouldSelfCalibrate), must reset thresholds once first
+  shouldReset: true // if (TM.deviceShouldSelfCalibrate), must reset thresholds once first
 }
 // self-calibrating device will call this often at first, then only with extreme motion
 function updateAccelRange() {
@@ -136,16 +132,16 @@ function updateAccelRange() {
 // Could also have user select checkbox to invert axes, but that requires more setup of device
 const userAgent = window.navigator.userAgent;
 if (userAgent.match(/Android/i)) {
-  ToneMotion.deviceIsAndroid = true;
+  TM.deviceIsAndroid = true;
 }
 else {
-  ToneMotion.deviceIsAndroid = false;
+  TM.deviceIsAndroid = false;
 }
 
-// sets ToneMotion.x and .y by polling and normalizing motion data. called in response to "devicemotion"
+// sets TM.x and .y by polling and normalizing motion data. called in response to "devicemotion"
 function handleMotionEvent(event) {
   // get the raw accelerometer values (invert if Android)
-  if (ToneMotion.deviceIsAndroid) {
+  if (TM.deviceIsAndroid) {
     accelRange.rawX = -(event.accelerationIncludingGravity.x);
     accelRange.rawY = -(event.accelerationIncludingGravity.y);
   }
@@ -154,7 +150,7 @@ function handleMotionEvent(event) {
     accelRange.rawY = event.accelerationIncludingGravity.y;
   }
   // calibrate range of values for clamp (only if device is set to self-calibrate)
-  if (ToneMotion.deviceShouldSelfCalibrate) {
+  if (TM.deviceShouldSelfCalibrate) {
     if (accelRange.shouldReset) { // only true initially
       accelRange.loX = Number.POSITIVE_INFINITY; // anything will be less than this
       accelRange.hiX = Number.NEGATIVE_INFINITY; // anything will be greater than this
@@ -180,7 +176,7 @@ function handleMotionEvent(event) {
     }
   }
   // clamp: if device does not self-calibrate, default to iOS range (typically -10 to 10)
-  if (accelRange.rawX < accelRange.loX) { // thresholds are immutable if ToneMotion.deviceShouldSelfCalibrate == false
+  if (accelRange.rawX < accelRange.loX) { // thresholds are immutable if TM.deviceShouldSelfCalibrate == false
     accelRange.tempX = accelRange.loX;
   }
   else if (accelRange.rawX > accelRange.hiX) {
@@ -199,8 +195,8 @@ function handleMotionEvent(event) {
     accelRange.tempY = accelRange.rawY;
   }
   // normalize to 0.0 to 1.0
-  ToneMotion.x  = (accelRange.tempX - accelRange.loX) / accelRange.scaleX; // set properties of ToneMotion object
-  ToneMotion.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
+  TM.x  = (accelRange.tempX - accelRange.loX) / accelRange.scaleX; // set properties of TM object
+  TM.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
 }
 
 // TODO: IMPORTANT!
@@ -240,7 +236,6 @@ const serverLatency = 0; // milliseconds
 var testLabel = document.querySelector('#Instructions');
 
 // synchronize client time to server time
-var clientServerOffset = 0;
 function syncClocks() {
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
@@ -260,12 +255,14 @@ function syncClocks() {
           shortestRoundtrip = roundtrip;
           console.log('new shortest roundtrip: ' + roundtrip);
           // shortest roundtrip considered most accurate
-          // subtract clientServerOffset from current time to get real time
+          // subtract TM.clientServerOffset from current time to get real time
           // if roundtrip is never less than, say, 2 seconds, throw error?
-          clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+          TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+          if (TM.debug) {
+            publicLog('Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
+          }
         }
       }
-      testLabel.innerHTML = 'clientServerOffset: ' + clientServerOffset;
     });
     clockReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
     var syncTime1 = Date.now();
@@ -278,6 +275,8 @@ function syncClocks() {
       if (shortestRoundtrip > 2000) {
         // TODO: public error
         console.log('There appears to be a lot of latency');
+      } else {
+        publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
       }
     }
   }, 1000);
@@ -300,7 +299,7 @@ function goCue(cue, serverTime) {
   }
 
   // lower priority cue (may be deliberately delayed). check client time
-  var timestamp = Date.now() - clientServerOffset;
+  var timestamp = Date.now() - TM.clientServerOffset;
 
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
@@ -400,28 +399,28 @@ cueList[9].goCue = function() {
 
 /*
 ** MAKE SOUNDS INTERACTIVE
-** Some Tone.js object properties are signals and can be chained to ToneMotion signals, e.g.:
-** ToneMotion.ySig.chain(filterFreqScale, filter.frequency);
+** Some Tone.js object properties are signals and can be chained to TM signals, e.g.:
+** TM.ySig.chain(filterFreqScale, filter.frequency);
 ** Other properties must be set within repeated function calls, e.g., updateSoundsInCue1()
 */
-// updateInteractiveSounds() is called once per ToneMotion.updateInterval (default: 0.05 seconds)
-// not called until interface is set up and parameters (e.g., ToneMotion.updateInterval) are set
+// updateInteractiveSounds() is called once per TM.updateInterval (default: 0.05 seconds)
+// not called until interface is set up and parameters (e.g., TM.updateInterval) are set
 function updateInteractiveSounds() {
-  if (ToneMotion.status === "deviceDoesReportMotion") {
-    // If device reports motion, ToneMotion.x and .y are set by accelerometer. Use those to set smooth control signals.
-    ToneMotion.xSig.linearRampToValue(ToneMotion.x, ToneMotion.updateInterval); // smooths signals to avoid zipper noise
-    ToneMotion.ySig.linearRampToValue(ToneMotion.y, ToneMotion.updateInterval);
+  if (TM.status === "deviceDoesReportMotion") {
+    // If device reports motion, TM.x and .y are set by accelerometer. Use those to set smooth control signals.
+    TM.xSig.linearRampToValue(TM.x, TM.updateInterval); // smooths signals to avoid zipper noise
+    TM.ySig.linearRampToValue(TM.y, TM.updateInterval);
   }
-  else if (ToneMotion.status === "deviceDoesNotReportMotion") {
-    // If device doesn't report motion, signals are set by XY-pad simulator. Sample that to set ToneMotion.x and .y
-    ToneMotion.x = ToneMotion.xSig.value;
-    ToneMotion.y = ToneMotion.ySig.value;
+  else if (TM.status === "deviceDoesNotReportMotion") {
+    // If device doesn't report motion, signals are set by XY-pad simulator. Sample that to set TM.x and .y
+    TM.x = TM.xSig.value;
+    TM.y = TM.ySig.value;
   }
   // one solution for stepping through cue list. not great because it limits number of sections arbitrarily.
   switch (TMScore.currentCue) {
     case 0:
       // piece hasn't started yet. no error, but do nothing
-      if (ToneMotion.print) { console.log("Piece hasn't started yet. No interactive sounds to update."); }
+      if (TM.print) { console.log("Piece hasn't started yet. No interactive sounds to update."); }
       break;
     case 1:
       try { updateSoundsInCue1() } catch(e) { console.log(e); }
@@ -486,7 +485,7 @@ function updateInteractiveSounds() {
     default:
       console.log("No corresponding cue number found. This should never happen."); // should never happen
   }
-  if (ToneMotion.showStatusLabels) { updateStatusLabels(); }
+  if (TM.showStatusLabels) { updateStatusLabels(); }
 }
 
 /*
@@ -532,7 +531,7 @@ var TMScore = {
       for (var i = 0; i < cue; i++)  {
         time += this.durForCue[i];
       }
-      if (ToneMotion.print) {
+      if (TM.print) {
         // shows time at beginning of this cue (e.g., TMScore.timeAtCue(3): 162 seconds (2:42))
         var minutes = Math.floor(time / 60);
         var seconds = time % 60;
