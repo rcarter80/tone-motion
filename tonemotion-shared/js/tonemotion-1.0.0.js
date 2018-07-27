@@ -56,6 +56,7 @@ function publicMessage(message) {
 function publicWarning(message) {
   publicMessageLabel.className = 'warning';
   publicMessageLabel.innerHTML = message;
+  console.warn(message);
 }
 
 // Prints to message label (styled as error) AND sets TM.status to 'error' AND stops execution (with option to restart)
@@ -63,16 +64,17 @@ function publicError(message) {
   setStatus('error');
   publicMessageLabel.className = 'error';
   publicMessageLabel.innerHTML = message;
+  console.error(message);
 }
 
 // Prints to console.log and to interface if consoleCheckbox is checked
 function publicLog(message) {
-  console.log(message);
   if (consoleCheckbox.checked) {
     var logMessage = document.createElement('p');
     logMessage.innerHTML = message;
     publicConsoleLabel.appendChild(logMessage);
   }
+  console.log(message);
 }
 
 /*
@@ -260,15 +262,23 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const serverLatency = 0; // milliseconds
 
 // Synchronizes client time to server time
+const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
+
 function syncClocks() {
+  TM.status = 'synchronizing';
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
   var syncClockID = setInterval(function () {
-    var clockReq = new XMLHttpRequest();
-    clockReq.addEventListener("load", function() {
-      var syncTime2 = this.responseText;
-      var syncTime3 = Date.now();
+    var syncTime1 = Date.now(); // client-side timestamp
+    fetch(urlForClockSync)
+    .then(function(response) {
+      if (response.ok) { return response.text(); }
+      publicError('There was a network error.');
+    })
+    .then(function(response) {
+      var syncTime2 = response; // server-side timestamp
+      var syncTime3 = Date.now(); // client-side timestamp on receipt
       var roundtrip = syncTime3 - syncTime1;
       if (TM.debug) {
         publicLog('Time request sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
@@ -284,11 +294,10 @@ function syncClocks() {
           TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
         }
       }
+    })
+    .catch(function(error) {
+      publicError(error);
     });
-    clockReq.open("GET", "https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync");
-    var syncTime1 = Date.now();
-    clockReq.send();
-
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
@@ -297,6 +306,7 @@ function syncClocks() {
       } else {
         publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
       }
+      TM.status = 'ready';
     }
   }, 1000);
 }
