@@ -66,3 +66,6 @@ typings/
 
 # folders not needed under source control
 /backups/*
+
+# should not modify Tone.js
+Tone.js
