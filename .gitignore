@@ -68,4 +68,4 @@ typings/
 /backups/*
 
 # should not modify Tone.js
-tonemotion-shared/js/Tone.js
+/tonemotion-shared/js/Tone.js
