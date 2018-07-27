@@ -238,12 +238,10 @@ function syncClocks() {
 
   var syncClockID = setInterval(function () {
     var syncTime1 = Date.now(); // client-side timestamp
+
     fetch(urlForClockSync)
-    .then(function(response) {
-      if (response.ok) { return response.text(); }
-      publicError('There was a network error.');
-    })
-    .then(function(response) {
+    .then(response => response.text())
+    .then(response => {
       var syncTime2 = response; // server-side timestamp
       var syncTime3 = Date.now(); // client-side timestamp on receipt
       var roundtrip = syncTime3 - syncTime1;
@@ -262,9 +260,8 @@ function syncClocks() {
         }
       }
     })
-    .catch(function(error) {
-      publicError(error);
-    });
+    .catch(error => publicError(error));
+
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
@@ -300,8 +297,7 @@ function updateCueNumber() {
       goCue(cueOnClient, cueTimeFromServer);
     } // else no new cue and control falls through
   })
-  // TODO: implement a "public" error message on mobile interface
-  .catch(error => console.error(`Fetch Error =\n`, error));
+  .catch(error => publicError(error));
 }
 
 // wrap setTimeout in Promise
