@@ -33,19 +33,32 @@ var TM = {
 
 // Set application status
 function setStatus(status) {
+  // no need to reset status if there's no change in status
+  if (status === TM.status) {
+    return;
+  }
   TM.status = status;
+
+  if (TM.debug) {
+    publicLog('Application status set to: ' + status);
+  }
+
   // TODO: if error, also shut down
 }
 
-// TODO: deal with error handling for Tone.js loading. start here:
+// Monitor progress of loading Tone.Buffer objects for audio files 
 Tone.Buffer.on('progress', function() {
-  // all buffers are loaded.
-  console.log('buffer loading in progress');
+  setStatus('loading');
+  if (TM.debug) {
+    console.log('Audio buffers loading');
+  }
 });
 
 Tone.Buffer.on('load', function() {
-  // all buffers are loaded.
-  console.log('buffers loaded');
+  setStatus('readyToSync');
+  if (TM.debug) {
+    console.log('Audio buffers finished loading');
+  }
 });
 
 Tone.Buffer.on('error', function() {
