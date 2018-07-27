@@ -37,6 +37,12 @@ function setStatus(status) {
   // TODO: if error, also shut down
 }
 
+// TODO: deal with error handling for Tone.js loading. start here:
+Tone.Buffer.on('load', function(){
+  // all buffers are loaded.
+  console.log('buffers loaded');
+});
+
 /*
 ** DOM HOOKS
 */
