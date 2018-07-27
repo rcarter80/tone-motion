@@ -7,7 +7,7 @@
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/TMstyles_v1-2.css"> -->
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/TMstyles_v1-2.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
 </head>
 <body>
@@ -19,15 +19,15 @@
 </header>
 
 <main> <!-- center panel showing app status, messages, controls -->
-  <div id="statusLabel">
-    <p>(status label goes here)</p>
+  <div>
+    <p id="statusLabel">(status label goes here)</p>
   </div>
   <!-- button is not displayed until page loads, then shows "start" -->
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
   <button id="startStopButton" type="button">start</button>
-  <div id="messageLabel">
-    <p>(important messages go here)</p>
+  <div>
+    <p id="messageLabel">(important messages go here)</p>
   </div>
 </main>
 

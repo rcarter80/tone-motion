@@ -31,14 +31,26 @@ var TM = {
 ** DOM HOOKS
 */
 
-const consoleCheckbox = document.querySelector('#consoleCheckbox')
+const publicMessageLabel = document.querySelector('#messageLabel');
+const consoleCheckbox = document.querySelector('#consoleCheckbox');
 const publicConsoleLabel = document.querySelector('#publicConsole');
 
 /*
 ** CONSOLE MESSAGES
 */
 
-// If publicConsole checkbox is checked, show this on interface
+// Prints to message label on center panel
+function publicMessage(message) {
+  // TODO: remove any classes (e.g., warning or error)
+  publicMessageLabel.innerHTML = message;
+}
+
+function publicWarning(message) {
+  // TODO: remove any classes (e.g., warning or error)
+  publicMessageLabel.innerHTML = message;
+}
+
+// Prints to console.log and to interface if consoleCheckbox is checked
 function publicLog(message) {
   console.log(message);
   if (consoleCheckbox.checked) {
@@ -47,6 +59,7 @@ function publicLog(message) {
     publicConsoleLabel.appendChild(logMessage);
   }
 }
+
 
 /*
 ** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
@@ -232,8 +245,6 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 // estimate latency from POST request to server. move elsewhere later
 // TODO: decide whether to use estimated serverLatency
 const serverLatency = 0; // milliseconds
-
-var testLabel = document.querySelector('#Instructions');
 
 // synchronize client time to server time
 function syncClocks() {
