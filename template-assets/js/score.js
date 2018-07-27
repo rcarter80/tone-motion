@@ -1,5 +1,5 @@
 
-var needBufferForLoadingToComplete = new Tone.MultiPlayer({
+var needBufferForLoadingToComplete = new Tone.Players({
   "revCh2417D7": "./tonemotion-shared/audio/revChime-2417Hz-D7.mp3",
   // "biggerFileToMakeLoadTimeLonger": "./tonemotion-shared/audio/bigger-file.mp3"
 }, function() {
