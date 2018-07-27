@@ -38,9 +38,18 @@ function setStatus(status) {
 }
 
 // TODO: deal with error handling for Tone.js loading. start here:
-Tone.Buffer.on('load', function(){
+Tone.Buffer.on('progress', function() {
+  // all buffers are loaded.
+  console.log('buffer loading in progress');
+});
+
+Tone.Buffer.on('load', function() {
   // all buffers are loaded.
   console.log('buffers loaded');
+});
+
+Tone.Buffer.on('error', function() {
+  publicError('There was an error loading the sound files.');
 });
 
 /*
