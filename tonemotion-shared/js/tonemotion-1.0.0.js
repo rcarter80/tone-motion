@@ -22,7 +22,7 @@ var TM = {
   serverLatency: 0, // Compensates for latency in setting cue
   clientServerOffset: 0, // will update with syncClocks()
   status: 'loading', // application status
-  currentCue: 0, // will be replaced with TMCue object 
+  currentCue: 0, // will be replaced with TMCue object
   MAX_DELAY: 10000, // (ms.) maximum duration for scheduling into future
   shutdown: function() {
     window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
@@ -98,7 +98,7 @@ function clearConsole() {
 }
 
 /*
-** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
+** TEST IF DEVICE REPORTS MOTION.
 */
 if ("DeviceMotionEvent" in window) {
   window.addEventListener("devicemotion", handleMotionEvent, true);
@@ -542,148 +542,3 @@ function updateInteractiveSounds() {
   }
   if (TM.showStatusLabels) { updateStatusLabels(); }
 }
-
-/*
-** OBJECT FOR MANAGING CUE LIST: TMScore
-** different sections may have different interactive sounds and button functions. manage with cuelist
-*/
-var TMScore = {
-  // maximum number of sections set by MAX_CUES. changing this means changing a lot of code
-  st: 0, // current transport time to be incremented throughout score
-  MAX_CUES: 20, // should not be modified
-  currentCue: 0,
-  durForCue: { // set duration of each cue in main script
-    0: 0, // need for .timeAtCue(cue) function so that .timeAtCue(1) returns 0 (0'00")
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0,
-    7: 0,
-    8: 0,
-    9: 0,
-    10: 0,
-    11: 0,
-    12: 0,
-    13: 0,
-    14: 0,
-    15: 0,
-    16: 0,
-    17: 0,
-    18: 0,
-    19: 0,
-    20: 0
-  },
-  timeAtCue: function(cue) {
-    // returns time at beginning of any section
-    // allows asking for cue time from cue #1 (always 0:00) to cue #MAX_CUES+1 (i.e., end of score)
-    if (cue < 1 || cue > (this.MAX_CUES + 1)) {
-      console.log("Cue number must be from 1 to " + (this.MAX_CUES + 1));
-    }
-    else {
-      var time = 0;
-      for (var i = 0; i < cue; i++)  {
-        time += this.durForCue[i];
-      }
-      if (TM.print) {
-        // shows time at beginning of this cue (e.g., TMScore.timeAtCue(3): 162 seconds (2:42))
-        var minutes = Math.floor(time / 60);
-        var seconds = time % 60;
-        // display seconds with leading zero so we see e.g., 3:02 instead of 3:2
-        var paddedSec = (seconds < 10) ? ("0" + seconds) : seconds;
-        console.log("TMScore.timeAtCue(" + cue + "): " + time + " seconds (" + minutes + ":" + paddedSec + ")");
-      }
-      return time;
-    }
-  },
-  totalDur: function() {
-    // returns total duration of score by calculating time at "double-bar" (cue #MAX_CUES+1)
-    return this.timeAtCue(this.MAX_CUES + 1);
-  },
-  currentCueAtTime: function(time) {
-    // returns current section given any time, which may be in the middle of a section
-    if (time < 0 || time > this.totalDur()) {
-      console.log("TMScore.currentCueAtTime(time) called with time outside of score: " + time);
-      return -1;
-    }
-    else {
-      for (i = this.MAX_CUES; i > 0; i--) {
-        if (time >= this.timeAtCue(i)) {
-          return i;
-        }
-      }
-    }
-  },
-  instructionsForCue: { // write instructions as string property of this object to pass to setInstructions()
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-    5: "",
-    6: "",
-    7: "",
-    8: "",
-    9: "",
-    10: "",
-    11: "",
-    12: "",
-    13: "",
-    14: "",
-    15: "",
-    16: "",
-    17: "",
-    18: "",
-    19: "",
-    20: ""
-  },
-  cueEnablesButtons: { // TMScore.cueEnablesButtons[cue-number][action-buttons-to-enable:1,2,3]
-    0: [0,0,0], // all buttons disabled by default. use this property to enable buttons by section.
-    1: [0,0,0],
-    2: [0,0,0],
-    3: [0,0,0],
-    4: [0,0,0],
-    5: [0,0,0],
-    6: [0,0,0],
-    7: [0,0,0],
-    8: [0,0,0],
-    9: [0,0,0],
-    10: [0,0,0],
-    11: [0,0,0],
-    12: [0,0,0],
-    13: [0,0,0],
-    14: [0,0,0],
-    15: [0,0,0],
-    16: [0,0,0],
-    17: [0,0,0],
-    18: [0,0,0],
-    19: [0,0,0],
-    20: [0,0,0]
-  },
-  nextCue: function() {
-    // increment cue list and set buttons states and instructions for this cue
-    if (this.currentCue == this.MAX_CUES) {
-      console.log("Cue list already at maximum value of " + this.MAX_CUES);
-    }
-    else {
-      this.currentCue++;
-      setActionButtonStatesForCue(this.currentCue);
-      setInstructions(this.instructionsForCue[this.currentCue]);
-    }
-  },
-  setCue: function(cue) {
-    // jump immediately to this cue and set buttons states and instructions
-    if (cue > this.MAX_CUES) {
-      console.log("Can't set cue " + cue + " because it exceeds maximum value of " + this.MAX_CUES);
-    }
-    else {
-      this.currentCue = cue - 1; // main script increments to next cue through .nextCue()
-      // move Transport position to beginning of new cue
-      var transportTimeToAdd = 0;
-      for (i = 1; i < cue; i++) {
-        transportTimeToAdd += this.durForCue[i];
-      }
-      Tone.Transport.position = transportTimeToAdd;
-    }
-  }
-};
