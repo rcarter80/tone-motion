@@ -12,7 +12,7 @@ var TM = {
   ySig: yTilt,
   updateInterval: 0.05, // time (in seconds) for sampling signal and ramp to next value. latency vs. smoothness
   delayBeforePlaying: "+0.1", // longer delay can improve performance
-  status: "unknown", // use to determine if device reports motion
+  motionStatus: "unknown", // use to determine if device reports motion
   showStatusLabels: false, // use only for testing
   print: false, // if true, console logs messages in verbose mode
   shouldSyncToUTC: false, // if true, Tone.Transport is set to UTC so all devices will sync anywhere
@@ -20,12 +20,19 @@ var TM = {
   deviceIsAndroid: false, // Android motion axes are inverted relative to iOS. Will invert if needed.
   debug: true, // Set to default of false for production
   clientServerOffset: 0, // will update with syncClocks()
+  status: 'loading', // application status
   shutdown: function() {
     window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
     clearInterval(motionCheckIntervId);
     if (this.print) { console.log("TM.shutdown() called"); }
   }
 };
+
+// Set application status
+function setStatus(status) {
+  TM.status = status;
+  // TODO: if error, also shut down
+}
 
 /*
 ** DOM HOOKS
@@ -41,12 +48,20 @@ const publicConsoleLabel = document.querySelector('#publicConsole');
 
 // Prints to message label on center panel
 function publicMessage(message) {
-  // TODO: remove any classes (e.g., warning or error)
+  publicMessageLabel.className = ''; // remove existing classes
   publicMessageLabel.innerHTML = message;
 }
 
+// Prints to message label (styled as warning)
 function publicWarning(message) {
-  // TODO: remove any classes (e.g., warning or error)
+  publicMessageLabel.className = 'warning';
+  publicMessageLabel.innerHTML = message;
+}
+
+// Prints to message label (styled as error) AND sets TM.status to 'error' AND stops execution (with option to restart)
+function publicError(message) {
+  setStatus('error');
+  publicMessageLabel.className = 'error';
   publicMessageLabel.innerHTML = message;
 }
 
@@ -69,7 +84,7 @@ if ("DeviceMotionEvent" in window) {
   // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
 }
 else {
-  TM.status = "deviceDoesNotReportMotion";
+  TM.motionStatus = "deviceDoesNotReportMotion";
 }
 // If motion data doesn't change, either the device doesn't report motion or it's perfectly level
 var motionCheckIntervId; // interval ID for checking motion detection
@@ -94,16 +109,16 @@ var testForMotion = (function() {
     if ( (TM.x > loThreshold && TM.x < hiThreshold) && (TM.y > loThreshold & TM.y < hiThreshold) ) {
       // no motion detected. check if motionFailCount is exceeded and increment counter.
       if (TM.print) { console.log("No device motion detected. motionFailCount: " + counter); }
-      if (counter > motionFailCount || TM.status === "deviceDoesNotReportMotion") {
+      if (counter > motionFailCount || TM.motionStatus === "deviceDoesNotReportMotion") {
         // Either the device isn't moving or it will not report motion
-        TM.status = "deviceDoesNotReportMotion";
+        TM.motionStatus = "deviceDoesNotReportMotion";
         window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
         clearInterval(motionCheckIntervId);
       }
       return counter++;
     }
     else {
-      TM.status = "deviceDoesReportMotion";
+      TM.motionStatus = "deviceDoesReportMotion";
       counter = 0; // motion detected. reset counter and use in future if letting user test again
       clearInterval(motionCheckIntervId); // stops testing for motion handling
       return counter;
@@ -414,12 +429,12 @@ cueList[9].goCue = function() {
 // updateInteractiveSounds() is called once per TM.updateInterval (default: 0.05 seconds)
 // not called until interface is set up and parameters (e.g., TM.updateInterval) are set
 function updateInteractiveSounds() {
-  if (TM.status === "deviceDoesReportMotion") {
+  if (TM.motionStatus === "deviceDoesReportMotion") {
     // If device reports motion, TM.x and .y are set by accelerometer. Use those to set smooth control signals.
     TM.xSig.linearRampToValue(TM.x, TM.updateInterval); // smooths signals to avoid zipper noise
     TM.ySig.linearRampToValue(TM.y, TM.updateInterval);
   }
-  else if (TM.status === "deviceDoesNotReportMotion") {
+  else if (TM.motionStatus === "deviceDoesNotReportMotion") {
     // If device doesn't report motion, signals are set by XY-pad simulator. Sample that to set TM.x and .y
     TM.x = TM.xSig.value;
     TM.y = TM.ySig.value;
