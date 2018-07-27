@@ -39,14 +39,24 @@ function setStatus(status) {
   }
   TM.status = status;
 
+  switch (status) {
+    case 'readyToSync':
+      startStopButton.innerHTML = 'start';
+      break;
+    case 'error':
+      // TODO: shut everything down
+      break;
+
+    default:
+      publicError('Error setting application status');
+  }
+
   if (TM.debug) {
     publicLog('Application status set to: ' + status);
   }
-
-  // TODO: if error, also shut down
 }
 
-// Monitor progress of loading Tone.Buffer objects for audio files 
+// Monitor progress of loading Tone.Buffer objects for audio files
 Tone.Buffer.on('progress', function() {
   setStatus('loading');
   if (TM.debug) {
@@ -72,6 +82,7 @@ Tone.Buffer.on('error', function() {
 const publicMessageLabel = document.querySelector('#messageLabel');
 const consoleCheckbox = document.querySelector('#consoleCheckbox');
 const publicConsoleLabel = document.querySelector('#publicConsole');
+const startStopButton = document.querySelector('#startStopButton');
 
 /*
 ** CONSOLE MESSAGES
