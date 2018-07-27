@@ -19,6 +19,7 @@ var TM = {
   deviceShouldSelfCalibrate: false, // if true, device continuously scales troughs to 0.0 and peaks to 1.0
   deviceIsAndroid: false, // Android motion axes are inverted relative to iOS. Will invert if needed.
   debug: true, // Set to default of false for production
+  serverLatency: 0, // Compensates for latency in setting cue
   clientServerOffset: 0, // will update with syncClocks()
   status: 'loading', // application status
   shutdown: function() {
@@ -228,42 +229,8 @@ function handleMotionEvent(event) {
   TM.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
 }
 
-// TODO: IMPORTANT!
-// DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
-// packet size reduced by subtracting bias on server and adding on client
-// at time of coding (2018-07-18) Date.now() returns 1531970463500
-const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
-const timestampBias = 1531970463500;
-// cueOnClient is set when cue from server doesn't match.
-var cueOnClient = -1; // wait period of piece begins at 0
-var cueTimeFromServer = 0;
-function updateCueNumber() {
-  fetch(urlForCues)
-  .then(response => response.json())
-  .then(jsonRes => {
-    // check if there's a new cue
-    // checks cue *time* (not number) because in rehearsal the same cue
-    // could be retriggered. same cue number, different time.
-    if (cueTimeFromServer !== jsonRes.t+timestampBias) { // go new cue
-      cueOnClient = jsonRes.c;
-      cueTimeFromServer = jsonRes.t + timestampBias;
-      goCue(cueOnClient, cueTimeFromServer);
-    } // else no new cue and control falls through
-  })
-  // TODO: implement a "public" error message on mobile interface
-  .catch(error => console.error(`Fetch Error =\n`, error));
-}
-
-// wrap setTimeout in Promise
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-// estimate latency from POST request to server. move elsewhere later
-// TODO: decide whether to use estimated serverLatency
-const serverLatency = 0; // milliseconds
-
 // Synchronizes client time to server time
 const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
-
 function syncClocks() {
   TM.status = 'synchronizing';
   var syncClockCounter = 0;
@@ -311,6 +278,35 @@ function syncClocks() {
   }, 1000);
 }
 
+// TODO: IMPORTANT!
+// DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
+// packet size reduced by subtracting bias on server and adding on client
+// at time of coding (2018-07-18) Date.now() returns 1531970463500
+const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const timestampBias = 1531970463500;
+// cueOnClient is set when cue from server doesn't match.
+var cueOnClient = -1; // wait period of piece begins at 0
+var cueTimeFromServer = 0;
+function updateCueNumber() {
+  fetch(urlForCues)
+  .then(response => response.json())
+  .then(jsonRes => {
+    // check if there's a new cue
+    // checks cue *time* (not number) because in rehearsal the same cue
+    // could be retriggered. same cue number, different time.
+    if (cueTimeFromServer !== jsonRes.t+timestampBias) { // go new cue
+      cueOnClient = jsonRes.c;
+      cueTimeFromServer = jsonRes.t + timestampBias;
+      goCue(cueOnClient, cueTimeFromServer);
+    } // else no new cue and control falls through
+  })
+  // TODO: implement a "public" error message on mobile interface
+  .catch(error => console.error(`Fetch Error =\n`, error));
+}
+
+// wrap setTimeout in Promise
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 function goCue(cue, serverTime) {
   // clear all current cues
   for (var i = 0; i < cueList.length; i++) {
@@ -332,7 +328,7 @@ function goCue(cue, serverTime) {
 
   // check that cue exists. if so, calculate delay before triggering cue
   if (cueList[cue]) {
-    var delay = Math.floor(serverTime - serverLatency + cueList[cue].waitTime - timestamp);
+    var delay = Math.floor(serverTime - TM.serverLatency + cueList[cue].waitTime - timestamp);
     console.log(delay);
   } else {
     console.log('Cue number ' + cue + ' does not exist.');
