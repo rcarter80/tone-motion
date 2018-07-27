@@ -75,7 +75,6 @@ function publicLog(message) {
   }
 }
 
-
 /*
 ** TEST IF DEVICE REPORTS MOTION. If not, XY-pad will be added by interface.
 */
@@ -231,14 +230,13 @@ function handleMotionEvent(event) {
 // DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
 // packet size reduced by subtracting bias on server and adding on client
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
-// TODO: if this is a global variable, give better name
-var url = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
 var cueOnClient = -1; // wait period of piece begins at 0
 var cueTimeFromServer = 0;
 function updateCueNumber() {
-  fetch(url)
+  fetch(urlForCues)
   .then(response => response.json())
   .then(jsonRes => {
     // check if there's a new cue
@@ -261,7 +259,7 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 // TODO: decide whether to use estimated serverLatency
 const serverLatency = 0; // milliseconds
 
-// synchronize client time to server time
+// Synchronizes client time to server time
 function syncClocks() {
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
@@ -282,8 +280,7 @@ function syncClocks() {
         if (syncClockCounter > 1 || roundtrip > 10) {
           shortestRoundtrip = roundtrip;
           // shortest roundtrip considered most accurate
-          // subtract TM.clientServerOffset from current time to get real time
-          // if roundtrip is never less than, say, 2 seconds, throw error?
+          // subtract TM.clientServerOffset from client time to sync
           TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
         }
       }
@@ -296,8 +293,7 @@ function syncClocks() {
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
       if (shortestRoundtrip > 2000) {
-        // TODO: public error
-        console.log('There appears to be a lot of latency');
+        publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
       } else {
         publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
       }
