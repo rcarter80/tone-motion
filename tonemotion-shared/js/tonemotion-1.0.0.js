@@ -159,7 +159,7 @@ function beginMotionDetection() {
   motionCheckIntervId = setInterval(testForMotion, motionCheckInterval);
 
   // TODO: move cue check to after PLAY button is tapped
-  cueIntervalID = setInterval(updateCueNumber, 500);
+  // cueIntervalID = setInterval(updateCueNumber, 500);
 }
 
 // closure keeps counter of failed attempts at polling device motion
