@@ -22,6 +22,8 @@ var TM = {
   serverLatency: 0, // Compensates for latency in setting cue
   clientServerOffset: 0, // will update with syncClocks()
   status: 'loading', // application status
+  currentCue: 0, // will be replaced with TMCue object 
+  MAX_DELAY: 10000, // (ms.) maximum duration for scheduling into future
   shutdown: function() {
     window.removeEventListener("devicemotion", handleMotionEvent, true); // stops listening for motion
     clearInterval(motionCheckIntervId);
@@ -68,14 +70,31 @@ function publicError(message) {
   console.error(message);
 }
 
+// Clears message label
+// TODO: hide message div entirely? if so, must redisplay for messages
+function clearMessageLabel() {
+  publicMessageLabel.className = ''; // remove existing classes
+  publicMessageLabel.innerHTML = '';
+}
+
 // Prints to console.log and to interface if consoleCheckbox is checked
 function publicLog(message) {
   if (consoleCheckbox.checked) {
     var logMessage = document.createElement('p');
+    logMessage.className = 'logMessage';
     logMessage.innerHTML = message;
     publicConsoleLabel.appendChild(logMessage);
   }
   console.log(message);
+}
+
+// Clears console label in help panel
+function clearConsole() {
+  var logMessages = document.getElementsByClassName('logMessage');
+
+  while (logMessages[0]) {
+    logMessages[0].parentNode.removeChild(logMessages[0]);
+  }
 }
 
 /*
@@ -304,49 +323,50 @@ function updateCueNumber() {
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function goCue(cue, serverTime) {
+  // check that cue exists
+  if (cueList[cue]) {
+    TM.currentCue = cueList[cue];
+    clearMessageLabel();
+  } else {
+    publicError('Cue number ' + cue + ' does not exist.');
+    return;
+  }
+
   // clear all current cues
   for (var i = 0; i < cueList.length; i++) {
     if (cueList[i] && cueList[i].isPlaying) {
-      // TODO: stop this cue
+      cueList[i].stopCue();
       cueList[i].isPlaying = false;
     }
   }
 
-  // trigger cue with minimum latency if waitTime is -1
-  if (cueList[cue] && (cueList[cue].waitTime == -1)) {
-    try { cueList[cue].goCue(); } catch(e) { console.log(e); }
+  // immediately trigger cue with minimum latency if waitTime is -1
+  // This could be faster if moved to top of function,
+  // but that makes the code messy.
+  if (cueList[cue].waitTime == -1) {
+    try { cueList[cue].goCue(); } catch(e) { publicError(e); }
     cueList[cue].isPlaying = true;
     return;
   }
 
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - TM.clientServerOffset;
-
-  // check that cue exists. if so, calculate delay before triggering cue
-  if (cueList[cue]) {
-    var delay = Math.floor(serverTime - TM.serverLatency + cueList[cue].waitTime - timestamp);
-    console.log(delay);
-  } else {
-    console.log('Cue number ' + cue + ' does not exist.');
-    return;
-  }
+  var delay = Math.floor(serverTime - TM.serverLatency + cueList[cue].waitTime - timestamp);
 
   // trigger new cue (immediately or after wait time)
   if ((cueList[cue].openWindow + delay) < 0) {
-    // TODO: PUBLIC ERROR
-    console.log('You missed your cue by ' + (-delay) + ' milliseconds!');
+    publicWarning('Your device missed its cue by ' + (-delay) + ' milliseconds! If this keeps happening, there may be a problem with your connection.');
   } else if (delay < 20) {
     // shorter delay than 20ms is definitely not aurally perceptible
-    try { cueList[cue].goCue(); } catch(e) { console.log(e); }
+    try { cueList[cue].goCue(); } catch(e) { publicError(e); }
     cueList[cue].isPlaying = true;
   } else {
-    if (delay > 10000) {
-      //// TODO: public error
-      console.log('delay time exceeds 10000: ' + delay);
+    if (delay > TM.MAX_DELAY) {
+      publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + TM.MAX_DELAY + ' milliseconds.');
       return;
     }
     wait(delay).then(() => {
-      try { cueList[cue].goCue(); } catch(e) { console.log(e); }
+      try { cueList[cue].goCue(); } catch(e) { publicError(e); }
       cueList[cue].isPlaying = true;
     })
   }
@@ -371,10 +391,15 @@ function TMCue(waitTime, openWindow) {
   this.waitTime = waitTime;
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
+  this.mode = 'tacet'; // mode of interactivity
 }
 TMCue.prototype.goCue = function() {
   // override this method in score to code the music for this section
   console.log('No music coded for this section.');
+}
+TMCue.prototype.stopCue = function() {
+  // override this method in score to code the cleanup for this section
+  console.log('No clean-up implemented for this section.');
 }
 
 // test cues
@@ -384,6 +409,7 @@ cueList[0].goCue = function() {
 }
 
 cueList[1] = new TMCue(2000, 0);
+cueList[1].mode = 'tilt';
 cueList[1].goCue = function() {
   console.log('cueList[1].goCue() called');
 }
@@ -401,6 +427,14 @@ cueList[3].goCue = function() {
 cueList[4] = new TMCue(3000, 0);
 cueList[4].goCue = function() {
   console.log('cueList[4].goCue() called at ' + Date.now());
+}
+cueList[4].stopCue = function() {
+  console.log('cueList[4].stopCue() called at ' + Date.now());
+}
+
+cueList[5] = new TMCue(20000, 0);
+cueList[5].goCue = function() {
+  console.log('cueList[5].goCue() called at ' + Date.now());
 }
 
 cueList[7] = new TMCue(1000, 500);
