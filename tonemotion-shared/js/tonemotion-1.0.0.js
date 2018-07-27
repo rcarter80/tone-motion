@@ -57,6 +57,16 @@ function setStatus(status) {
 }
 
 // Monitor progress of loading Tone.Buffer objects for audio files
+
+// Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
+const bufferLoadingTestFile = new Tone.Players({
+  // TODO: simplify this: use PLayer instead of Players?
+  // set path to same audio file as <audio> shim
+  // verify that no callback or routing .toMaster() needed
+  // if this doesn't work, piece with no audio files will never load
+  "revCh2417D7": "./tonemotion-shared/audio/revChime-2417Hz-D7.mp3"
+});
+
 Tone.Buffer.on('progress', function() {
   setStatus('loading');
   if (TM.debug) {
