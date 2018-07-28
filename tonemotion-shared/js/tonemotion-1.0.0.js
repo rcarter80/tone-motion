@@ -53,6 +53,11 @@ function setStartStopButton(text, className) {
   startStopButton.innerHTML = text;
 }
 
+// Determines action associated with startStopButton
+startStopButton.onclick = function() {
+  syncClocks();
+}
+
 // Sets application status, updates status label and button in center
 function setStatus(status) {
   // no need to reset status if there's no change in status
@@ -67,27 +72,23 @@ function setStatus(status) {
       setStatusLabel('loading', 'active');
       setStartStopButton('', 'hidden');
       break;
-    case 'readyToSync':
-      setStatusLabel('ready to synchronize', 'default');
-      setStartStopButton('TAP TO START', 'inviting');
-      break;
     case 'synchronizing':
       setStatusLabel('synchronizing', 'active');
-      setStartStopButton('stop', 'stop');
+      setStartStopButton('', 'hidden');
       break;
     case 'readyToPlay':
       setStatusLabel('ready', 'default');
       setStartStopButton('stop', 'stop');
       break;
     case 'playing':
-      setStatusLabelForPlayingMode();
+      setInteractivityMode();
       break;
     case 'finished':
       setStatusLabel('finished', 'default');
       setStartStopButton('', 'hidden');
       break;
     case 'error':
-      // TODO: shut everything down
+      shutEverythingDown();
       setStatusLabel('error', 'error');
       setStartStopButton('try again', 'reload');
       break;
@@ -101,9 +102,12 @@ function setStatus(status) {
 }
 
 // Updates status label and button when application is 'playing'
-function setStatusLabelForPlayingMode() {
+function setInteractivityMode() {
   setStartStopButton('stop', 'stop');
   switch (TM.currentCue.mode) {
+    case 'waiting': // piece hasn't started yet
+      // TODO: decide how to handle
+      break;
     case 'tacet':
       setStatusLabel('tacet', 'default');
       break;
@@ -119,9 +123,18 @@ function setStatusLabelForPlayingMode() {
     case 'listen':
       setStatusLabel('just listen', 'default');
       break;
+    case 'finished':
+      // TODO: decide how to handle (setStatus ?)
+      break;
     default:
       publicError('Error setting interactivity mode')
   }
+}
+
+// Clears all sound, loops, motion handling, and network requests
+function shutEverythingDown() {
+  publicConsole('Shutting down');
+  // TODO: clear all cues
 }
 
 // Monitor progress of loading Tone.Buffer objects for audio files
@@ -142,7 +155,8 @@ Tone.Buffer.on('progress', function() {
 });
 
 Tone.Buffer.on('load', function() {
-  setStatus('readyToSync');
+  setStatus('synchronizing');
+  syncClocks(); // as soon as audio buffers load, sync client to server
   if (TM.debug) {
     console.log('Audio buffers finished loading');
   }
@@ -357,7 +371,6 @@ function handleMotionEvent(event) {
 // Synchronizes client time to server time
 const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
 function syncClocks() {
-  TM.status = 'synchronizing';
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
@@ -395,7 +408,7 @@ function syncClocks() {
       } else {
         publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
       }
-      TM.status = 'ready';
+      setStatus('readyToPlay');
     }
   }, 1000);
 }
@@ -483,7 +496,7 @@ function updateForNewCue(cue) {
     setStatus('playing');
   } else {
     // just need to update status label for interactivity mode
-    setStatusLabelForPlayingMode();
+    setInteractivityMode();
   }
   cueList[cue].isPlaying = true;
 }
@@ -507,7 +520,7 @@ function TMCue(waitTime, openWindow) {
   this.waitTime = waitTime;
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
-  this.mode = 'tacet'; // mode of interactivity
+  this.mode = 'waiting'; // mode of interactivity
 }
 TMCue.prototype.goCue = function() {
   // override this method in score to code the music for this section
@@ -518,54 +531,12 @@ TMCue.prototype.stopCue = function() {
   console.log('No clean-up implemented for this section.');
 }
 
-// test cues
+// Cue number 0 sets status to 'readyToPlay'
 cueList[0] = new TMCue(-1);
 cueList[0].goCue = function() {
   console.log('cueList[0].goCue() called');
-}
-
-cueList[1] = new TMCue(2000, 0);
-cueList[1].mode = 'tilt';
-cueList[1].goCue = function() {
-  console.log('cueList[1].goCue() called');
-}
-
-cueList[2] = new TMCue(0, 0);
-cueList[2].goCue = function() {
-  console.log('cueList[2].goCue() called');
-}
-
-cueList[3] = new TMCue(500, 0);
-cueList[3].goCue = function() {
-  console.log('cueList[3].goCue() called');
-}
-
-cueList[4] = new TMCue(3000, 0);
-cueList[4].goCue = function() {
-  console.log('cueList[4].goCue() called at ' + Date.now());
-}
-cueList[4].stopCue = function() {
-  console.log('cueList[4].stopCue() called at ' + Date.now());
-}
-
-cueList[5] = new TMCue(20000, 0);
-cueList[5].goCue = function() {
-  console.log('cueList[5].goCue() called at ' + Date.now());
-}
-
-cueList[7] = new TMCue(1000, 500);
-cueList[7].goCue = function() {
-  console.log('cueList[7].goCue() called');
-}
-
-cueList[8] = new TMCue(500, 0);
-cueList[8].goCue = function() {
-  console.log('cueList[8].goCue() called');
-}
-
-cueList[9] = new TMCue(-1);
-cueList[9].goCue = function() {
-  console.log('cueList[9].goCue() called AS SOON AS I CAN at ' + Date.now());
+  // TODO: decide whether to set this to new status: 'waiting'
+  setStatus('readyToPlay');
 }
 
 /*
