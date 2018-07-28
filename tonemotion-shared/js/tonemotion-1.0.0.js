@@ -31,22 +31,66 @@ var TM = {
   }
 };
 
-// Set application status
+/*
+** DOM HOOKS
+*/
+
+const statusLabel = document.querySelector('#statusLabel');
+const startStopButton = document.querySelector('#startStopButton');
+const publicMessageLabel = document.querySelector('#messageLabel');
+const consoleCheckbox = document.querySelector('#consoleCheckbox');
+const publicConsoleLabel = document.querySelector('#publicConsole');
+
+// Sets text and class name for main status label in center panel
+function setStatusLabel(text, className) {
+  statusLabel.className = className;
+  statusLabel.innerHTML = text;
+}
+
+// Sets text and class name for main button in center panel
+function setStartStopButton(text, className) {
+  startStopButton.className = className;
+  startStopButton.innerHTML = text;
+}
+
+// Sets application status, updates status label and button in center
 function setStatus(status) {
   // no need to reset status if there's no change in status
   if (status === TM.status) {
     return;
   }
   TM.status = status;
+  clearMessageLabel(); // clear any previous message from previous state
 
   switch (status) {
+    case 'loading':
+      setStatusLabel('loading', 'active');
+      setStartStopButton('', 'hidden');
+      break;
     case 'readyToSync':
-      startStopButton.innerHTML = 'start';
+      setStatusLabel('ready to synchronize', 'default');
+      setStartStopButton('TAP TO START', 'inviting');
+      break;
+    case 'synchronizing':
+      setStatusLabel('synchronizing', 'active');
+      setStartStopButton('stop', 'stop');
+      break;
+    case 'readyToPlay':
+      setStatusLabel('ready', 'default');
+      setStartStopButton('stop', 'stop');
+      break;
+    case 'playing':
+      setStatusLabelForPlayingMode();
+      break;
+    case 'finished':
+      setStatusLabel('finished', 'default');
+      setStartStopButton('', 'hidden');
       break;
     case 'error':
       // TODO: shut everything down
+      setStatusLabel('error', 'error');
+      setStartStopButton('try again', 'reload');
       break;
-
     default:
       publicError('Error setting application status');
   }
@@ -56,15 +100,38 @@ function setStatus(status) {
   }
 }
 
+// Updates status label and button when application is 'playing'
+function setStatusLabelForPlayingMode() {
+  setStartStopButton('stop', 'stop');
+  switch (TM.currentCue.mode) {
+    case 'tacet':
+      setStatusLabel('tacet', 'default');
+      break;
+    case 'tilt':
+      setStatusLabel('tilt', 'default');
+      break;
+    case 'shake':
+      setStatusLabel('shake', 'default');
+      break;
+    case 'tiltAndShake':
+      setStatusLabel('tilt and shake', 'default');
+      break;
+    case 'listen':
+      setStatusLabel('just listen', 'default');
+      break;
+    default:
+      publicError('Error setting interactivity mode')
+  }
+}
+
 // Monitor progress of loading Tone.Buffer objects for audio files
 
 // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
 const bufferLoadingTestFile = new Tone.Players({
   // TODO: simplify this: use PLayer instead of Players?
-  // set path to same audio file as <audio> shim
   // verify that no callback or routing .toMaster() needed
   // if this doesn't work, piece with no audio files will never load
-  "revCh2417D7": "./tonemotion-shared/audio/revChime-2417Hz-D7.mp3"
+  "bufferLoadingTestFile": "./tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"
 });
 
 Tone.Buffer.on('progress', function() {
@@ -86,21 +153,12 @@ Tone.Buffer.on('error', function() {
 });
 
 /*
-** DOM HOOKS
-*/
-
-const publicMessageLabel = document.querySelector('#messageLabel');
-const consoleCheckbox = document.querySelector('#consoleCheckbox');
-const publicConsoleLabel = document.querySelector('#publicConsole');
-const startStopButton = document.querySelector('#startStopButton');
-
-/*
-** CONSOLE MESSAGES
+** MESSAGES TO CENTER LABEL AND LEFT PANEL CONSOLE
 */
 
 // Prints to message label on center panel
 function publicMessage(message) {
-  publicMessageLabel.className = ''; // remove existing classes
+  publicMessageLabel.className = 'default';
   publicMessageLabel.innerHTML = message;
 }
 
@@ -120,9 +178,8 @@ function publicError(message) {
 }
 
 // Clears message label
-// TODO: hide message div entirely? if so, must redisplay for messages
 function clearMessageLabel() {
-  publicMessageLabel.className = ''; // remove existing classes
+  publicMessageLabel.className = 'hidden';
   publicMessageLabel.innerHTML = '';
 }
 
@@ -375,7 +432,6 @@ function goCue(cue, serverTime) {
   // check that cue exists
   if (cueList[cue]) {
     TM.currentCue = cueList[cue];
-    clearMessageLabel();
   } else {
     publicError('Cue number ' + cue + ' does not exist.');
     return;
@@ -394,7 +450,7 @@ function goCue(cue, serverTime) {
   // but that makes the code messy.
   if (cueList[cue].waitTime == -1) {
     try { cueList[cue].goCue(); } catch(e) { publicError(e); }
-    cueList[cue].isPlaying = true;
+    updateForNewCue(cue);
     return;
   }
 
@@ -408,7 +464,7 @@ function goCue(cue, serverTime) {
   } else if (delay < 20) {
     // shorter delay than 20ms is definitely not aurally perceptible
     try { cueList[cue].goCue(); } catch(e) { publicError(e); }
-    cueList[cue].isPlaying = true;
+    updateForNewCue(cue);
   } else {
     if (delay > TM.MAX_DELAY) {
       publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + TM.MAX_DELAY + ' milliseconds.');
@@ -416,9 +472,20 @@ function goCue(cue, serverTime) {
     }
     wait(delay).then(() => {
       try { cueList[cue].goCue(); } catch(e) { publicError(e); }
-      cueList[cue].isPlaying = true;
+      updateForNewCue(cue);
     })
   }
+}
+
+// Sets status to 'playing' (if not already), updates label, current cue
+function updateForNewCue(cue) {
+  if (TM.status !== 'playing') {
+    setStatus('playing');
+  } else {
+    // just need to update status label for interactivity mode
+    setStatusLabelForPlayingMode();
+  }
+  cueList[cue].isPlaying = true;
 }
 
 // empty array to fill with cues

@@ -1,7 +1,52 @@
-.warning {
+#statusLabel.default {
+  color: black;
+}
+
+#statusLabel.active {
+  color: green;
+}
+
+#statusLabel.error {
+  color: red;
+}
+
+#startStopButton.hidden {
+  display: none;
+}
+
+#startStopButton.inviting {
+  /* NEED TO RESET DISPLAY? */
+  color: blue;
+}
+
+#startStopButton.stop {
+  /* NEED TO RESET DISPLAY? */
+  color: red;
+}
+
+#startStopButton.start {
+  /* NEED TO RESET DISPLAY? */
+  color: black;
+}
+
+#startStopButton.reload {
+  /* NEED TO RESET DISPLAY? */
+  color: purple;
+}
+
+
+#messageLabel.default {
+  color: black;
+}
+
+#messageLabel.warning {
   color: orange;
 }
 
-.error {
+#messageLabel.error {
   color: red;
+}
+
+#messageLabel.hidden {
+  display: none;
 }
