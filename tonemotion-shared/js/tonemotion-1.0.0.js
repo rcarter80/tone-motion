@@ -56,7 +56,8 @@ function setStartStopButton(text, className) {
 // Sets application status, updates status label and button in center
 function setStatus(status) {
   // no need to reset status if there's no change in status
-  if (status === TM.status) {
+  // unless status is 'playing' because interactivity mode may change
+  if (status === TM.status && status !== 'playing') {
     return;
   }
   TM.status = status;
@@ -79,13 +80,13 @@ function setStatus(status) {
       setStatusLabel('waiting', 'active');
       setStartStopButton('stop', 'stop');
       publicMessage("The piece hasn't start yet, but you're all set. The music will start automatically.");
+      break;
     case 'playing':
-      setStartStopButton('stop', 'stop');
       setInteractivityMode();
       break;
     case 'stopped':
-      setStatusLabel('stopped', 'default')
-      setStartStopButton('start', 'start')
+      setStatusLabel('stopped', 'default');
+      setStartStopButton('start', 'start');
       break;
     case 'finished':
       setStatusLabel('finished', 'default');
@@ -107,6 +108,7 @@ function setStatus(status) {
 
 // Updates status label and button when application is 'playing'
 function setInteractivityMode() {
+  setStartStopButton('stop', 'stop');
   switch (TM.currentCue.mode) {
     case 'waiting': // piece hasn't started yet
       setStatus('waitingForPieceToStart');
@@ -143,13 +145,16 @@ startStopButton.onclick = function() {
       break;
     case 'waitingForPieceToStart':
       shutEverythingDown();
+      setStatus('stopped');
       break;
     case 'playing':
       shutEverythingDown();
+      setStatus('stopped');
       break;
     case 'stopped':
       cueIntervalID = setInterval(updateCueNumber, 500);
       // TODO: start audio context
+      setStatus('playing');
       break;
     case 'error':
       // Reload the current page, without using the cache
@@ -165,7 +170,6 @@ function shutEverythingDown() {
   publicLog('Shutting down');
   window.clearInterval(cueIntervalID);
   // TODO: clear all cues
-  setStatus('stopped');
 }
 
 // Monitor progress of loading Tone.Buffer objects for audio files
@@ -534,27 +538,65 @@ function updateForNewCue(cue) {
 
 // empty array to fill with cues
 var cueList = [];
+
+/**
+ * Create a new musical section
+ * @param {string} mode - Mode of interactivity. Can be: 'waiting',
+ * 'tacet', 'tilt', 'shake', 'tiltAndShake', 'listen', 'finished'
+ * @param {number} waitTime - Delay before cue is triggered.
+ * Use -1 for minimum latency response (no need for openWindow param)
+ * NB: sounds from previous cue cleared as soon as client gets cue, so
+ * a long waitTime can result in silence between cues
+ * @param {number} openWindow - How late a cue can be triggered
+ * For no limit, just use waitTime of -1 for immediate trigger
+ * (total tolerable latency for this cue is waitTime + openWindow)
+ * @param {boolean} isPlaying - Set to true when cue is playing
+ * No need to set while instantiating object
+ */
+const NO_LIMIT = Number.POSITIVE_INFINITY; // use for unlimited window
+function TMCue(mode, waitTime, openWindow) {
+  this.mode = mode;
+  this.waitTime = waitTime;
+  this.openWindow = openWindow;
+  this.isPlaying = false; // not set by constructor
+}
+TMCue.prototype.goCue = function() {
+  // override this method in score to code the music for this section
+  console.log('No music coded for this section.');
+}
+TMCue.prototype.stopCue = function() {
+  // override this method in score to code the cleanup for this section
+  console.log('No clean-up implemented for this section.');
+}
+// TODO: tilt parameters for this cue
+// TODO: shake gesture for this cue
+
+// Cue number 0 sets status to 'waitingForPieceToStart'
+cueList[0] = new TMCue('waiting', -1);
+cueList[0].goCue = function() {
+  console.log('cueList[0].goCue() called');
+}
+
 // BUG: if cues are added to array in separate source file, they dont' exist here and can't be called here
 // HACK: put all cues here until I find a solution
 
 // Test cues
-cueList[1] = new TMCue(2000, 0);
-cueList[1].mode = 'tilt';
+cueList[1] = new TMCue('tilt', 1000, NO_LIMIT);
 cueList[1].goCue = function() {
   console.log('cueList[1].goCue() called');
 }
 
-cueList[2] = new TMCue(0, 0);
+cueList[2] = new TMCue('tacet', 1000, NO_LIMIT);
 cueList[2].goCue = function() {
   console.log('cueList[2].goCue() called');
 }
 
-cueList[3] = new TMCue(500, 0);
+cueList[3] = new TMCue('shake', 1000, NO_LIMIT);
 cueList[3].goCue = function() {
   console.log('cueList[3].goCue() called');
 }
 
-cueList[4] = new TMCue(3000, 0);
+cueList[4] = new TMCue('waiting', -1);
 cueList[4].goCue = function() {
   console.log('cueList[4].goCue() called at ' + Date.now());
 }
@@ -580,42 +622,6 @@ cueList[8].goCue = function() {
 cueList[9] = new TMCue(-1);
 cueList[9].goCue = function() {
   console.log('cueList[9].goCue() called AS SOON AS I CAN at ' + Date.now());
-}
-
-
-/**
- * Create a new musical section
- * @param {number} waitTime - Delay before cue is triggered.
- * Use -1 for minimum latency response (no need for openWindow param)
- * NB: sounds from previous cue cleared as soon as client gets cue, so
- * a long waitTime can result in silence between cues
- * @param {number} openWindow - How late a cue can be triggered
- * For no limit, just use waitTime of -1 for immediate trigger
- * (total tolerable latency for this cue is waitTime + openWindow)
- * @param {boolean} isPlaying - Set to true when cue is playing
- * No need to set while instantiating object
- */
-function TMCue(waitTime, openWindow) {
-  this.waitTime = waitTime;
-  this.openWindow = openWindow;
-  this.isPlaying = false; // not set by constructor
-  this.mode = 'waiting'; // mode of interactivity
-}
-TMCue.prototype.goCue = function() {
-  // override this method in score to code the music for this section
-  console.log('No music coded for this section.');
-}
-TMCue.prototype.stopCue = function() {
-  // override this method in score to code the cleanup for this section
-  console.log('No clean-up implemented for this section.');
-}
-
-// Cue number 0 sets status to 'waitingForPieceToStart'
-cueList[0] = new TMCue(-1);
-cueList[0].goCue = function() {
-  console.log('cueList[0].goCue() called');
-  // TODO: decide whether to set this to new status: 'waiting'
-  setStatus('waitingForPieceToStart');
 }
 
 /*
