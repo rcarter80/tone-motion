@@ -133,7 +133,7 @@ function setInteractivityMode() {
 
 // Clears all sound, loops, motion handling, and network requests
 function shutEverythingDown() {
-  publicConsole('Shutting down');
+  publicLog('Shutting down');
   // TODO: clear all cues
 }
 
@@ -384,7 +384,7 @@ function syncClocks() {
       var syncTime3 = Date.now(); // client-side timestamp on receipt
       var roundtrip = syncTime3 - syncTime1;
       if (TM.debug) {
-        publicLog('Time request sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
+        publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
       }
       if (roundtrip < shortestRoundtrip) {
         // safari caches response despite my very nice request not to
@@ -397,18 +397,20 @@ function syncClocks() {
           TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
         }
       }
+      if (syncClockCounter === 6) { // last check 
+        if (shortestRoundtrip > 2000) {
+          publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
+        } else {
+          publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
+        }
+        setStatus('readyToPlay');
+      }
     })
     .catch(error => publicError(error));
 
     // stop after 6 checks (5 seconds)
     if (++syncClockCounter === 6) {
       window.clearInterval(syncClockID);
-      if (shortestRoundtrip > 2000) {
-        publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
-      } else {
-        publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + TM.clientServerOffset + ' milliseconds.');
-      }
-      setStatus('readyToPlay');
     }
   }, 1000);
 }
