@@ -53,12 +53,6 @@ function setStartStopButton(text, className) {
   startStopButton.innerHTML = text;
 }
 
-// Determines action associated with startStopButton
-startStopButton.onclick = function() {
-  // TODO: make contingent on app state
-  cueIntervalID = setInterval(updateCueNumber, 500);
-}
-
 // Sets application status, updates status label and button in center
 function setStatus(status) {
   // no need to reset status if there's no change in status
@@ -84,8 +78,14 @@ function setStatus(status) {
     case 'waitingForPieceToStart':
       setStatusLabel('waiting', 'active');
       setStartStopButton('stop', 'stop');
+      publicMessage("The piece hasn't start yet, but you're all set. The music will start automatically.");
     case 'playing':
+      setStartStopButton('stop', 'stop');
       setInteractivityMode();
+      break;
+    case 'stopped':
+      setStatusLabel('stopped', 'default')
+      setStartStopButton('start', 'start')
       break;
     case 'finished':
       setStatusLabel('finished', 'default');
@@ -107,10 +107,9 @@ function setStatus(status) {
 
 // Updates status label and button when application is 'playing'
 function setInteractivityMode() {
-  setStartStopButton('stop', 'stop');
   switch (TM.currentCue.mode) {
     case 'waiting': // piece hasn't started yet
-      // TODO: decide how to handle
+      setStatus('waitingForPieceToStart');
       break;
     case 'tacet':
       setStatusLabel('tacet', 'default');
@@ -135,10 +134,38 @@ function setInteractivityMode() {
   }
 }
 
+// Determines action associated with startStopButton
+startStopButton.onclick = function() {
+  switch (TM.status) {
+    case 'readyToPlay':
+      cueIntervalID = setInterval(updateCueNumber, 500);
+      // TODO: start audio context. All additional startup
+      break;
+    case 'waitingForPieceToStart':
+      shutEverythingDown();
+      break;
+    case 'playing':
+      shutEverythingDown();
+      break;
+    case 'stopped':
+      cueIntervalID = setInterval(updateCueNumber, 500);
+      // TODO: start audio context
+      break;
+    case 'error':
+      // Reload the current page, without using the cache
+      window.location.reload(true);
+      break;
+    default:
+      publicError('Error setting function for button');
+  }
+}
+
 // Clears all sound, loops, motion handling, and network requests
 function shutEverythingDown() {
   publicLog('Shutting down');
+  window.clearInterval(cueIntervalID);
   // TODO: clear all cues
+  setStatus('stopped');
 }
 
 // Monitor progress of loading Tone.Buffer objects for audio files
@@ -418,8 +445,6 @@ function syncClocks() {
   }, 1000);
 }
 
-// TODO: IMPORTANT!
-// DO NOT begin fetch() polling until StartAudioContext to prevent bots from driving up HTTP requests
 // packet size reduced by subtracting bias on server and adding on client
 // at time of coding (2018-07-18) Date.now() returns 1531970463500
 const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
