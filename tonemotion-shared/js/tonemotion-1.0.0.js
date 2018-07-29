@@ -127,8 +127,8 @@ function setInteractivityMode() {
       setStatusLabel('just listen', 'default');
       break;
     case 'finished':
-      // TODO: decide how to handle (setStatus ?)
-      break;
+    setStatus('finished');
+    break;
     default:
       publicError('Error setting interactivity mode')
   }
@@ -522,11 +522,12 @@ function goCue(cue, serverTime) {
 
 // Sets status to 'playing' (if not already), updates label, current cue
 function updateForNewCue(cue) {
-  if (TM.status !== 'playing') {
-    setStatus('playing');
+  if (TM.currentCue.mode === 'waiting') {
+    setStatus('waitingForPieceToStart');
+  } else if (TM.currentCue.mode === 'finished') {
+    setStatus('finished');
   } else {
-    // just need to update status label for interactivity mode
-    setInteractivityMode();
+    setStatus('playing');
   }
   cueList[cue].isPlaying = true;
 }
