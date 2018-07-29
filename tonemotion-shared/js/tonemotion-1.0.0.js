@@ -55,7 +55,8 @@ function setStartStopButton(text, className) {
 
 // Determines action associated with startStopButton
 startStopButton.onclick = function() {
-  syncClocks();
+  // TODO: make contingent on app state
+  cueIntervalID = setInterval(updateCueNumber, 500);
 }
 
 // Sets application status, updates status label and button in center
@@ -78,8 +79,11 @@ function setStatus(status) {
       break;
     case 'readyToPlay':
       setStatusLabel('ready', 'default');
-      setStartStopButton('stop', 'stop');
+      setStartStopButton('start', 'start');
       break;
+    case 'waitingForPieceToStart':
+      setStatusLabel('waiting', 'active');
+      setStartStopButton('stop', 'stop');
     case 'playing':
       setInteractivityMode();
       break;
@@ -238,9 +242,6 @@ var loThreshold = 0.5 - motionCheckSensitivity; // 0.5 is perfectly level
 var hiThreshold = 0.5 + motionCheckSensitivity;
 function beginMotionDetection() {
   motionCheckIntervId = setInterval(testForMotion, motionCheckInterval);
-
-  // TODO: move cue check to after PLAY button is tapped
-  // cueIntervalID = setInterval(updateCueNumber, 500);
 }
 
 // closure keeps counter of failed attempts at polling device motion
@@ -395,9 +396,11 @@ function syncClocks() {
           // shortest roundtrip considered most accurate
           // subtract TM.clientServerOffset from client time to sync
           TM.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+        } else {
+          publicLog('It looks like the last response was served from the disk cache and is invalid.');
         }
       }
-      if (syncClockCounter === 6) { // last check 
+      if (syncClockCounter === 6) { // last check
         if (shortestRoundtrip > 2000) {
           publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
         } else {
@@ -505,6 +508,54 @@ function updateForNewCue(cue) {
 
 // empty array to fill with cues
 var cueList = [];
+// BUG: if cues are added to array in separate source file, they dont' exist here and can't be called here
+// HACK: put all cues here until I find a solution
+
+// Test cues
+cueList[1] = new TMCue(2000, 0);
+cueList[1].mode = 'tilt';
+cueList[1].goCue = function() {
+  console.log('cueList[1].goCue() called');
+}
+
+cueList[2] = new TMCue(0, 0);
+cueList[2].goCue = function() {
+  console.log('cueList[2].goCue() called');
+}
+
+cueList[3] = new TMCue(500, 0);
+cueList[3].goCue = function() {
+  console.log('cueList[3].goCue() called');
+}
+
+cueList[4] = new TMCue(3000, 0);
+cueList[4].goCue = function() {
+  console.log('cueList[4].goCue() called at ' + Date.now());
+}
+cueList[4].stopCue = function() {
+  console.log('cueList[4].stopCue() called at ' + Date.now());
+}
+
+cueList[5] = new TMCue(20000, 0);
+cueList[5].goCue = function() {
+  console.log('cueList[5].goCue() called at ' + Date.now());
+}
+
+cueList[7] = new TMCue(1000, 500);
+cueList[7].goCue = function() {
+  console.log('cueList[7].goCue() called');
+}
+
+cueList[8] = new TMCue(500, 0);
+cueList[8].goCue = function() {
+  console.log('cueList[8].goCue() called');
+}
+
+cueList[9] = new TMCue(-1);
+cueList[9].goCue = function() {
+  console.log('cueList[9].goCue() called AS SOON AS I CAN at ' + Date.now());
+}
+
 
 /**
  * Create a new musical section
@@ -533,12 +584,12 @@ TMCue.prototype.stopCue = function() {
   console.log('No clean-up implemented for this section.');
 }
 
-// Cue number 0 sets status to 'readyToPlay'
+// Cue number 0 sets status to 'waitingForPieceToStart'
 cueList[0] = new TMCue(-1);
 cueList[0].goCue = function() {
   console.log('cueList[0].goCue() called');
   // TODO: decide whether to set this to new status: 'waiting'
-  setStatus('readyToPlay');
+  setStatus('waitingForPieceToStart');
 }
 
 /*
