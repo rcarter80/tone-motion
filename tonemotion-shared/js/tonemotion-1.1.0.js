@@ -25,12 +25,13 @@ function ToneMotion() {
   this.clientServerOffset = 0;
 }
 
+// Confirms that buffers are loaded and that device reports motion
 ToneMotion.prototype.init = function() {
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
   Tone.Buffer.on('progress', () => {
-    this.status = 'loading';
+    this.setStatus('loading');
     if (this.debug) {
       this.publicLog('Audio buffers loading');
     }
@@ -50,9 +51,50 @@ ToneMotion.prototype.init = function() {
   });
 
   // TODO: begin motion handling
+};
+
+// Manages application status and interface updates
+ToneMotion.prototype.setStatus = function(status) {
+  // no need to reset status if there's no change in status
+  // unless status is 'playing' because interactivity mode may change
+  if (status === this.status) {
+    return;
+  }
+  this.status = status;
+};
+
+/*
+** MESSAGES TO USER
+*/
+
+// Prints to message label on center panel
+ToneMotion.prototype.publicMessage = function(message) {
+  messageLabel.className = 'default';
+  messageLabel.innerHTML = message;
+};
+
+// Prints to message label (styled as warning), prints console warning
+ToneMotion.prototype.publicWarning = function(message) {
+  messageLabel.className = 'warning';
+  messageLabel.innerHTML = message;
+  console.warn(message);
+};
+
+// Prints to message label (styled as error) AND sets status to 'error' (which stops execution) AND throws error to console
+ToneMotion.prototype.publicError = function(message) {
+  this.setStatus('error');
+  messageLabel.className = 'error';
+  messageLabel.innerHTML = message;
+  console.error(message);
+};
+
+// Clears message label
+ToneMotion.prototype.clearMessageLabel = function() {
+  messageLabel.className = 'hidden';
+  messageLabel.innerHTML = '';
 }
 
-// Prints to console.log and to interface if consoleCheckbox is checked
+// Prints to console and to help panel if consoleCheckbox is checked
 ToneMotion.prototype.publicLog = function(message) {
   if (consoleCheckbox.checked) {
     var logMessage = document.createElement('p');
@@ -61,7 +103,17 @@ ToneMotion.prototype.publicLog = function(message) {
     publicConsole.appendChild(logMessage);
   }
   console.log(message);
+};
+
+// Clears console in help panel
+ToneMotion.prototype.clearConsole = function() {
+  var logMessages = document.getElementsByClassName('logMessage');
+
+  while (logMessages[0]) {
+    logMessages[0].parentNode.removeChild(logMessages[0]);
+  }
 }
+
 
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
@@ -71,7 +123,7 @@ ToneMotion.prototype.publicLog = function(message) {
 const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
 
 ToneMotion.prototype.syncClocks = function() {
-  this.status = 'synchronizing';
+  this.setStatus('synchronizing');
   var syncClockCounter = 0;
   var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
@@ -107,7 +159,7 @@ ToneMotion.prototype.syncClocks = function() {
         } else {
           this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
         }
-        this.status = 'readyToPlay';
+        this.setStatus('readyToPlay');
       }
     })
     // .catch(error => publicError(error));
@@ -117,7 +169,7 @@ ToneMotion.prototype.syncClocks = function() {
       window.clearInterval(syncClockID);
     }
   }, 1000);
-}
+};
 
 
 /*********************************************************************
@@ -145,11 +197,13 @@ function TMCue(mode, waitTime, openWindow) {
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
 }
+
 TMCue.prototype.goCue = function() {
   // override this method in score to code the music for this section
   console.log('No music coded for this section.');
-}
+};
+
 TMCue.prototype.stopCue = function() {
   // override this method in score to code the cleanup for this section
   console.log('No clean-up implemented for this section.');
-}
+};
