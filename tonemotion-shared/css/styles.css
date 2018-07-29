@@ -14,19 +14,14 @@
   display: none;
 }
 
-#startStopButton.inviting {
+#startStopButton.start {
   /* NEED TO RESET DISPLAY? */
-  color: blue;
+  color: black;
 }
 
 #startStopButton.stop {
   /* NEED TO RESET DISPLAY? */
   color: red;
-}
-
-#startStopButton.start {
-  /* NEED TO RESET DISPLAY? */
-  color: black;
 }
 
 #startStopButton.reload {

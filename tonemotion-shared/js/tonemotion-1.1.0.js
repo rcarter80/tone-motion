@@ -2,6 +2,8 @@
 ************************ APPLICATION SETUP ***************************
 *********************************************************************/
 
+// NOTE: This all depends on Tone.js, which must appear first
+
 /*
 ** DOM HOOKS
 */
@@ -16,12 +18,14 @@ const publicConsole = document.querySelector('#publicConsole');
  * Object to encapsulate properties and methods for Tone Motion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
+ * @param {number} numSyncChecks - # of client checks vs. server time
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  */
 
 function ToneMotion() {
   this.status = 'loading';
   this.debug = 'false';
+  this.numSyncChecks = 1;
   this.clientServerOffset = 0;
 }
 
@@ -47,7 +51,7 @@ ToneMotion.prototype.init = function() {
   });
 
   Tone.Buffer.on('error', () => {
-    console.log('error');
+    this.publicError('Error loading the audio files');
   });
 
   // TODO: begin motion handling
@@ -56,11 +60,79 @@ ToneMotion.prototype.init = function() {
 // Manages application status and interface updates
 ToneMotion.prototype.setStatus = function(status) {
   // no need to reset status if there's no change in status
-  // unless status is 'playing' because interactivity mode may change
   if (status === this.status) {
     return;
   }
   this.status = status;
+
+  // clear any previous message from previous state
+  this.clearMessageLabel();
+
+  switch (status) {
+    case 'loading':
+      this.setStatusLabel('loading', 'active');
+      this.setStartStopButton('', 'hidden');
+      break;
+    case 'synchronizing':
+      this.setStatusLabel('synchronizing', 'active');
+      this.setStartStopButton('', 'hidden');
+      break;
+    case 'readyToPlay':
+      this.setStatusLabel('ready', 'default');
+      this.setStartStopButton('start', 'start');
+      break;
+    case 'waitingForPieceToStart':
+      this.setStatusLabel('waiting', 'active');
+      this.setStartStopButton('stop', 'stop');
+      this.publicMessage("The piece hasn't start yet, but you're all set. The music will start automatically.");
+      break;
+    case 'playing_tacet':
+      this.setStatusLabel('tacet', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
+    case 'playing_tilt':
+      this.setStatusLabel('tilt', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
+    case 'playing_shake':
+      this.setStatusLabel('shake', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
+    case 'playing_tiltAndShake':
+      this.setStatusLabel('tilt and shake', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
+    case 'playing_listen':
+      this.setStatusLabel('just listen', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
+    case 'stopped':
+      this.setStatusLabel('stopped', 'default');
+      this.setStartStopButton('start', 'start');
+      break;
+    case 'finished':
+      this.setStatusLabel('finished', 'default');
+      this.setStartStopButton('', 'hidden');
+      break;
+    case 'error':
+      this.setStatusLabel('error', 'error');
+      this.setStartStopButton('try again', 'reload');
+      this.shutEverythingDown();
+      break;
+    default:
+      this.publicError('Error setting application status');
+    }
+
+    if (this.debug) {
+      this.publicLog('Application status set to ' + this.status);
+    }
+};
+
+// Clears all sound, loops, motion handling, and network requests
+ToneMotion.prototype.shutEverythingDown = function() {
+  this.publicLog('Shutting down');
+  // window.clearInterval(cueIntervalID);
+  // TODO: clear all cues
 };
 
 /*
@@ -114,6 +186,55 @@ ToneMotion.prototype.clearConsole = function() {
   }
 }
 
+/*
+** INTERFACE LABELS AND ACTIONS
+*/
+
+// Sets text and class name for main status label in center panel
+ToneMotion.prototype.setStatusLabel = function(text, className) {
+  statusLabel.className = className;
+  statusLabel.innerHTML = text;
+};
+
+// Sets text and class name for main button in center panel
+ToneMotion.prototype.setStartStopButton = function(text, className) {
+  startStopButton.className = className;
+  startStopButton.innerHTML = text;
+}
+
+// Determines action associated with startStopButton
+ToneMotion.prototype.startStopButtonClick = function() {
+  console.log('click');
+  // switch (this.status) {
+  //   case 'readyToPlay':
+  //     cueIntervalID = setInterval(updateCueNumber, 500);
+  //     // TODO: start audio context. All additional startup
+  //     break;
+  //   case 'waitingForPieceToStart':
+  //     shutEverythingDown();
+  //     setStatus('stopped');
+  //     break;
+  //   case 'playing':
+  //     shutEverythingDown();
+  //     setStatus('stopped');
+  //     break;
+  //   case 'stopped':
+  //     cueIntervalID = setInterval(updateCueNumber, 500);
+  //     // TODO: start audio context
+  //     setStatus('playing');
+  //     break;
+  //   case 'error':
+  //     // Reload the current page, without using the cache
+  //     window.location.reload(true);
+  //     break;
+  //   default:
+  //     publicError('Error setting function for button');
+  // }
+}
+// Binds method to button click
+startStopButton.onclick = function() {
+  console.log('easy click');
+}
 
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
@@ -146,26 +267,26 @@ ToneMotion.prototype.syncClocks = function() {
         if (syncClockCounter > 1 || roundtrip > 10) {
           shortestRoundtrip = roundtrip;
           // shortest roundtrip considered most accurate
-          // subtract TM.clientServerOffset from client time to sync
+          // subtract this.clientServerOffset from client time to sync
           this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
         } else {
           this.publicLog('It looks like the last response was served from the disk cache and is invalid.');
         }
       }
-      if (syncClockCounter === 6) { // last check
+      if (syncClockCounter === this.numSyncChecks) { // last check
         if (shortestRoundtrip > 2000) {
           ;
-          // publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
+          this.publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
         } else {
           this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
         }
         this.setStatus('readyToPlay');
       }
     })
-    // .catch(error => publicError(error));
+    .catch(error => this.publicError(error));
 
     // stop after 6 checks (5 seconds)
-    if (++syncClockCounter === 6) {
+    if (++syncClockCounter === this.numSyncChecks) {
       window.clearInterval(syncClockID);
     }
   }, 1000);
