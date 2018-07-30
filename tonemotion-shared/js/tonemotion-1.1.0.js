@@ -65,35 +65,7 @@ ToneMotion.prototype.clearTestTimeout = function() {
 // Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
 ToneMotion.prototype.init = function() {
 
-  // Bind click event to button
-  startStopButton.addEventListener("click", () => {
-    switch (this.status) {
-      case 'readyToPlay':
-        // cueIntervalID = setInterval(updateCueNumber, 500);
-        // TODO: start audio context. All additional startup
-        break;
-      case 'waitingForPieceToStart':
-      case 'playing_tacet':
-      case 'playing_tilt':
-      case 'playing_shake':
-      case 'playing_tiltAndShake':
-      case 'playing_listen':
-        this.setStatus('stopped');
-        this.shutEverythingDown();
-        break;
-      case 'stopped':
-        // cueIntervalID = setInterval(updateCueNumber, 500);
-        // TODO: start audio context
-        // must have goCue set status
-        break;
-      case 'error':
-        // Reload the current page, without using the cache
-        window.location.reload(true);
-        break;
-      default:
-        this.publicError('Error setting function for button');
-    }
-  });
+  this.bindButtonFunctions();
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
@@ -267,6 +239,56 @@ ToneMotion.prototype.setStartStopButton = function(text, className) {
   startStopButton.className = className;
   startStopButton.innerHTML = text;
 }
+
+// Handles click events from primary button (startStopButton)
+ToneMotion.prototype.bindButtonFunctions = function() {
+  startStopButton.addEventListener("click", () => {
+    switch (this.status) {
+      case 'readyToPlay':
+        // cueIntervalID = setInterval(updateCueNumber, 500);
+        // TODO: start audio context. All additional startup
+        break;
+      case 'waitingForPieceToStart':
+      case 'playing_tacet':
+      case 'playing_tilt':
+      case 'playing_shake':
+      case 'playing_tiltAndShake':
+      case 'playing_listen':
+        this.setStatus('stopped');
+        this.shutEverythingDown();
+        break;
+      case 'stopped':
+        // cueIntervalID = setInterval(updateCueNumber, 500);
+        // TODO: start audio context
+        // must have goCue set status
+        break;
+      case 'error':
+        // Reload the current page, without using the cache
+        window.location.reload(true);
+        break;
+      default:
+        this.publicError('Error setting function for button');
+    }
+  });
+};
+
+/*********************************************************************
+********************** DEVICE MOTION HANDLING ************************
+*********************************************************************/
+
+ToneMotion.prototype.beginMotionHandling = function() {
+  console.log('begin motion handling');
+
+  if ("DeviceMotionEvent" in window) {
+    window.addEventListener("devicemotion", () => {
+      this.publicMessage('yes motion. status: ' + this.status);
+    }, true);
+    // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
+  } else {
+    this.publicMessage('no motion. status: ' + this.status);
+  }
+};
+
 
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
