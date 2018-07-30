@@ -65,6 +65,7 @@ ToneMotion.prototype.clearTestTimeout = function() {
 // Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
 ToneMotion.prototype.init = function() {
 
+  // Set up click functions for main button
   this.bindButtonFunctions();
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
@@ -90,7 +91,8 @@ ToneMotion.prototype.init = function() {
     this.publicError('Error loading the audio files');
   });
 
-  // TODO: begin motion handling
+  // Begin motion handling
+  this.beginMotionHandling();
 };
 
 // Manages application status and interface updates
@@ -277,16 +279,23 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 *********************************************************************/
 
 ToneMotion.prototype.beginMotionHandling = function() {
-  console.log('begin motion handling');
+  if (this.debug) {
+    this.publicLog('Beginning motion detection')
+  }
 
   if ("DeviceMotionEvent" in window) {
-    console.log('chrome lies');
-    window.addEventListener("devicemotion", () => {
-      this.publicMessage('yes motion. status: ' + this.status);
+    if (this.debug) {
+      this.publicLog('Device claims to report motion, which may be a lie');
+    }
+
+    window.addEventListener("devicemotion", (event) => {
+      this.publicMessage(event.accelerationIncludingGravity.x);
     }, true);
-    // But wait! Chrome on my laptop sometimes says it reports motion but doesn't. Check for that case below.
+    
   } else {
-    this.publicMessage('no motion. status: ' + this.status);
+    if (this.debug) {
+      this.publicLog('Device does not report motion');
+    }
   }
 };
 
