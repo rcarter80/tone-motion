@@ -28,20 +28,44 @@ function ToneMotion() {
   this.debug = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
-
-  // this.testInterval = setTimeout(testTimeout, 1000);
 }
 
-function testTimeout() {
-  console.log('timeout');
-}
+
+
+// setInterval within object using bind()
+ToneMotion.prototype.testInterval = function() {
+  this.testIntervID = window.setInterval(this.testCallback.bind(this), 1000);
+};
+
+ToneMotion.prototype.testCallback = function() {
+  console.log(this.status);
+};
+
+ToneMotion.prototype.clearTestInterval = function() {
+  window.clearInterval(this.testIntervID);
+};
+
+// looping setTimeout within object using bind()
+ToneMotion.prototype.testTimeout = function() {
+  this.testTimeout = window.setTimeout(this.testCallback2.bind(this), 1000);
+};
+
+ToneMotion.prototype.testCallback2 = function() {
+  console.log(this.status);
+
+  this.testTimeout = window.setTimeout(this.testCallback2.bind(this), 1000);
+};
+
+ToneMotion.prototype.clearTestTimeout = function() {
+  window.clearTimeout(this.testTimeout);
+};
+
+
 
 // Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
 ToneMotion.prototype.init = function() {
+
   // Bind click event to button
-  // startStopButton.addEventListener("click", () => {
-  //   console.log(this.status);
-  // })
   startStopButton.addEventListener("click", () => {
     switch (this.status) {
       case 'readyToPlay':
