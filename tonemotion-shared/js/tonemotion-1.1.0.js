@@ -280,6 +280,7 @@ ToneMotion.prototype.beginMotionHandling = function() {
   console.log('begin motion handling');
 
   if ("DeviceMotionEvent" in window) {
+    console.log('chrome lies');
     window.addEventListener("devicemotion", () => {
       this.publicMessage('yes motion. status: ' + this.status);
     }, true);
