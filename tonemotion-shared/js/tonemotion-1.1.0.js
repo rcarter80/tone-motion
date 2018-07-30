@@ -21,6 +21,7 @@ const publicConsole = document.querySelector('#publicConsole');
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
+ * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
  */
 
 function ToneMotion() {
@@ -28,6 +29,7 @@ function ToneMotion() {
   this.debug = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
+  this.deviceIsAndroid = false;
 }
 
 
@@ -283,21 +285,76 @@ ToneMotion.prototype.beginMotionHandling = function() {
     this.publicLog('Beginning motion detection')
   }
 
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  // Could also have user select checkbox to invert axes, but that requires more setup of device
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    if (this.debug) {
+      this.publicLog('This device appears to be an Android');
+    }
+  }
+  else {
+    this.deviceIsAndroid = false;
+    if (this.debug) {
+      this.publicLog('This device does not appear to be an Android');
+    }
+  }
+
   if ("DeviceMotionEvent" in window) {
     if (this.debug) {
       this.publicLog('Device claims to report motion, which may be a lie');
     }
 
-    window.addEventListener("devicemotion", (event) => {
-      this.publicMessage(event.accelerationIncludingGravity.x);
-    }, true);
-    
+    // window.addEventListener("devicemotion", (event) => {
+    //   this.publicMessage(event.accelerationIncludingGravity.x);
+    // }, true);
+    window.addEventListener("devicemotion", this.handleMotionEvent, true);
+
   } else {
     if (this.debug) {
       this.publicLog('Device does not report motion');
     }
   }
 };
+
+// sets TM.x and .y by polling and normalizing motion data. called in response to "devicemotion"
+ToneMotion.prototype.handleMotionEvent = function(event) {
+  this.publicMessage(event.accelerationIncludingGravity.x);
+  // // get the raw accelerometer values (invert if Android)
+  // if (this.deviceIsAndroid) {
+  //   accelRange.rawX = -(event.accelerationIncludingGravity.x);
+  //   accelRange.rawY = -(event.accelerationIncludingGravity.y);
+  // }
+  // else {
+  //   accelRange.rawX = event.accelerationIncludingGravity.x;
+  //   accelRange.rawY = event.accelerationIncludingGravity.y;
+  // }
+  // // clamp: if device does not self-calibrate, default to iOS range (typically -10 to 10)
+  // if (accelRange.rawX < accelRange.loX) {
+  //   accelRange.tempX = accelRange.loX;
+  // }
+  // else if (accelRange.rawX > accelRange.hiX) {
+  //   accelRange.tempX = accelRange.hiX;
+  // }
+  // else {
+  //   accelRange.tempX = accelRange.rawX;
+  // }
+  // if (accelRange.rawY < accelRange.loY) {
+  //   accelRange.tempY = accelRange.loY;
+  // }
+  // else if (accelRange.rawY > accelRange.hiY) {
+  //   accelRange.tempY = accelRange.hiY;
+  // }
+  // else {
+  //   accelRange.tempY = accelRange.rawY;
+  // }
+  // // normalize to 0.0 to 1.0
+  // TM.x  = (accelRange.tempX - accelRange.loX) / accelRange.scaleX; // set properties of TM object
+  // TM.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
+}
 
 
 /*********************************************************************
