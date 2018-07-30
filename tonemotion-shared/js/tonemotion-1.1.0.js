@@ -91,7 +91,7 @@ ToneMotion.prototype.init = function() {
   });
 
   Tone.Buffer.on('error', () => {
-    this.publicError('Error loading the audio files');
+    this.publicError('Error loading the audio files.');
   });
 
   // TODO: begin motion handling
