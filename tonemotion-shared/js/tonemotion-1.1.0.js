@@ -18,19 +18,53 @@ const publicConsole = document.querySelector('#publicConsole');
  * Object to encapsulate properties and methods for Tone Motion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
- * @param {number} numSyncChecks - # of client checks vs. server time
+ * @param {boolean} shouldSyncToServer - Find time offset between client
+ *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  */
 
 function ToneMotion() {
   this.status = 'loading';
-  this.debug = 'false';
-  this.numSyncChecks = 1;
+  this.debug = false;
+  this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
 }
 
-// Confirms that buffers are loaded and that device reports motion
+// Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
 ToneMotion.prototype.init = function() {
+  // Bind click event to button
+  // startStopButton.addEventListener("click", () => {
+  //   console.log(this.status);
+  // })
+  startStopButton.addEventListener("click", () => {
+    switch (this.status) {
+      case 'readyToPlay':
+        // cueIntervalID = setInterval(updateCueNumber, 500);
+        // TODO: start audio context. All additional startup
+        break;
+      case 'waitingForPieceToStart':
+      case 'playing_tacet':
+      case 'playing_tilt':
+      case 'playing_shake':
+      case 'playing_tiltAndShake':
+      case 'playing_listen':
+        this.setStatus('stopped');
+        this.shutEverythingDown();
+        break;
+      case 'stopped':
+        // cueIntervalID = setInterval(updateCueNumber, 500);
+        // TODO: start audio context
+        // must have goCue set status
+        break;
+      case 'error':
+        // Reload the current page, without using the cache
+        window.location.reload(true);
+        break;
+      default:
+        this.publicError('Error setting function for button');
+    }
+  });
+
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
@@ -133,6 +167,8 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
   // window.clearInterval(cueIntervalID);
   // TODO: clear all cues
+
+  // do NOT set status here. could be 'error' OR 'stopped'
 };
 
 /*
@@ -202,40 +238,6 @@ ToneMotion.prototype.setStartStopButton = function(text, className) {
   startStopButton.innerHTML = text;
 }
 
-// Determines action associated with startStopButton
-ToneMotion.prototype.startStopButtonClick = function() {
-  console.log('click');
-  // switch (this.status) {
-  //   case 'readyToPlay':
-  //     cueIntervalID = setInterval(updateCueNumber, 500);
-  //     // TODO: start audio context. All additional startup
-  //     break;
-  //   case 'waitingForPieceToStart':
-  //     shutEverythingDown();
-  //     setStatus('stopped');
-  //     break;
-  //   case 'playing':
-  //     shutEverythingDown();
-  //     setStatus('stopped');
-  //     break;
-  //   case 'stopped':
-  //     cueIntervalID = setInterval(updateCueNumber, 500);
-  //     // TODO: start audio context
-  //     setStatus('playing');
-  //     break;
-  //   case 'error':
-  //     // Reload the current page, without using the cache
-  //     window.location.reload(true);
-  //     break;
-  //   default:
-  //     publicError('Error setting function for button');
-  // }
-}
-// Binds method to button click
-startStopButton.onclick = function() {
-  console.log('easy click');
-}
-
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
 *********************************************************************/
@@ -244,53 +246,59 @@ startStopButton.onclick = function() {
 const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
 
 ToneMotion.prototype.syncClocks = function() {
-  this.setStatus('synchronizing');
-  var syncClockCounter = 0;
-  var shortestRoundtrip = Number.POSITIVE_INFINITY;
+  if (this.shouldSyncToServer) {
+    this.setStatus('synchronizing');
+    var syncClockCounter = 0;
+    var shortestRoundtrip = Number.POSITIVE_INFINITY;
 
-  var syncClockID = setInterval( () => {
-    var syncTime1 = Date.now(); // client-side timestamp
+    var syncClockID = setInterval( () => {
+      var syncTime1 = Date.now(); // client-side timestamp
 
-    fetch(urlForClockSync)
-    .then(response => response.text())
-    .then(response => {
-      var syncTime2 = response; // server-side timestamp
-      var syncTime3 = Date.now(); // client-side timestamp on receipt
-      var roundtrip = syncTime3 - syncTime1;
-      if (this.debug) {
-        this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
-      }
-      if (roundtrip < shortestRoundtrip) {
-        // safari caches response despite my very nice request not to
-        // it releases cache after first iteration, but if first try
-        // is super short roundtrip (e.g., 1 ms), the result is b.s.
-        if (syncClockCounter > 1 || roundtrip > 10) {
-          shortestRoundtrip = roundtrip;
-          // shortest roundtrip considered most accurate
-          // subtract this.clientServerOffset from client time to sync
-          this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
-        } else {
-          this.publicLog('It looks like the last response was served from the disk cache and is invalid.');
+      fetch(urlForClockSync)
+      .then(response => response.text())
+      .then(response => {
+        var syncTime2 = response; // server-side timestamp
+        var syncTime3 = Date.now(); // client-side timestamp on receipt
+        var roundtrip = syncTime3 - syncTime1;
+        if (this.debug) {
+          this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
         }
-      }
-      if (syncClockCounter === this.numSyncChecks) { // last check
-        if (shortestRoundtrip > 2000) {
-          ;
-          this.publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
-        } else {
-          this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+        if (roundtrip < shortestRoundtrip) {
+          // safari caches response despite my very nice request not to
+          // it releases cache after first iteration, but if first try
+          // is super short roundtrip (e.g., 1 ms), the result is b.s.
+          if (syncClockCounter > 1 || roundtrip > 10) {
+            shortestRoundtrip = roundtrip;
+            // shortest roundtrip considered most accurate
+            // subtract this.clientServerOffset from client time to sync
+            this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+          } else {
+            this.publicLog('It looks like the last response was served from the disk cache and is invalid.');
+          }
         }
-        this.setStatus('readyToPlay');
-      }
-    })
-    .catch(error => this.publicError(error));
+        if (syncClockCounter === 6) { // last check
+          if (shortestRoundtrip > 2000) {
+            ;
+            this.publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
+          } else {
+            this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+          }
+          this.setStatus('readyToPlay');
+        }
+      })
+      .catch(error => this.publicError(error));
 
-    // stop after 6 checks (5 seconds)
-    if (++syncClockCounter === this.numSyncChecks) {
-      window.clearInterval(syncClockID);
-    }
-  }, 1000);
+      // stop after 6 checks (5 seconds)
+      if (++syncClockCounter === 6) {
+        window.clearInterval(syncClockID);
+      }
+    }, 1000);
+  } else {
+    // no client synchronizing (keep clientServerOffset to default of 0)
+    this.setStatus('readyToPlay');
+  }
 };
+
 
 
 /*********************************************************************
