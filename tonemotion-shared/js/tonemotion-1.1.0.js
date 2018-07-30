@@ -303,57 +303,23 @@ ToneMotion.prototype.beginMotionHandling = function() {
     }
   }
 
-  if ("DeviceMotionEvent" in window) {
-    if (this.debug) {
-      this.publicLog('Device claims to report motion, which may be a lie');
-    }
+  // Just sets accelerometer and gyroscope data to object properties
+  // clamp and normalize only once per event loop
+  window.addEventListener('devicemotion', (event) => {
+    this.accel.x = event.accelerationIncludingGravity.x;
+    this.accel.y = event.accelerationIncludingGravity.y;
+    this.gyro.x = event.acceleration.x;
+    this.gyro.y = event.acceleration.y;
+  });
 
-    // window.addEventListener("devicemotion", (event) => {
-    //   this.publicMessage(event.accelerationIncludingGravity.x);
-    // }, true);
-    window.addEventListener("devicemotion", this.handleMotionEvent, true);
-
-  } else {
-    if (this.debug) {
-      this.publicLog('Device does not report motion');
-    }
-  }
+  // just for testing
+  this.testMotionData();
 };
 
-// sets TM.x and .y by polling and normalizing motion data. called in response to "devicemotion"
-ToneMotion.prototype.handleMotionEvent = function(event) {
-  this.publicMessage(event.accelerationIncludingGravity.x);
-  // // get the raw accelerometer values (invert if Android)
-  // if (this.deviceIsAndroid) {
-  //   accelRange.rawX = -(event.accelerationIncludingGravity.x);
-  //   accelRange.rawY = -(event.accelerationIncludingGravity.y);
-  // }
-  // else {
-  //   accelRange.rawX = event.accelerationIncludingGravity.x;
-  //   accelRange.rawY = event.accelerationIncludingGravity.y;
-  // }
-  // // clamp: if device does not self-calibrate, default to iOS range (typically -10 to 10)
-  // if (accelRange.rawX < accelRange.loX) {
-  //   accelRange.tempX = accelRange.loX;
-  // }
-  // else if (accelRange.rawX > accelRange.hiX) {
-  //   accelRange.tempX = accelRange.hiX;
-  // }
-  // else {
-  //   accelRange.tempX = accelRange.rawX;
-  // }
-  // if (accelRange.rawY < accelRange.loY) {
-  //   accelRange.tempY = accelRange.loY;
-  // }
-  // else if (accelRange.rawY > accelRange.hiY) {
-  //   accelRange.tempY = accelRange.hiY;
-  // }
-  // else {
-  //   accelRange.tempY = accelRange.rawY;
-  // }
-  // // normalize to 0.0 to 1.0
-  // TM.x  = (accelRange.tempX - accelRange.loX) / accelRange.scaleX; // set properties of TM object
-  // TM.y  = (accelRange.tempY - accelRange.loY) / accelRange.scaleY;
+ToneMotion.prototype.testMotionData = function() {
+  var testMotionID = setInterval( () => {
+    this.publicLog(this.accel.x + ' ' + this.accel.y + ' ' + this.gyro.x + ' ' + this.gyro.y);
+  }
 }
 
 
