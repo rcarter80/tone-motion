@@ -28,6 +28,12 @@ function ToneMotion() {
   this.debug = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
+
+  // this.testInterval = setTimeout(testTimeout, 1000);
+}
+
+function testTimeout() {
+  console.log('timeout');
 }
 
 // Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
