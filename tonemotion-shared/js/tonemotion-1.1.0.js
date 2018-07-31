@@ -412,12 +412,15 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
   }
 
-  // TODO: handle shake gesture
+  // TODO: map accel values to "tilt" sounds
+
   // Trigger shake event if there hasn't been once recently
   if (this.shakeFlag && !(this.recentShakeFlag)) {
     this.recentShakeFlag = true;
     // Determine number of times through event loop before next possible shake gesture is allowed
     this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
+
+    // TODO: connect shake to sound
 
     if (this.debug) {
       var shakeTimestamp = new Date();
@@ -427,7 +430,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // If there's been a recent shake, decrement counter and reset flag
   if (this.recentShakeFlag) {
     if (this.shakeGapCounter-- === 0) {
-      // after waiting for shakeGap ms., reset boths flags
+      // After waiting for shakeGap ms., reset boths flags
       this.shakeFlag = false;
       this.recentShakeFlag = false;
     }
