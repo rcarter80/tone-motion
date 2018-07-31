@@ -67,7 +67,7 @@ function ToneMotion() {
 
 // setInterval within object using bind()
 ToneMotion.prototype.testInterval = function() {
-  this.testIntervID = window.setInterval(this.testCallback.bind(this), 1000);
+  this.testIntervID = setInterval(this.testCallback.bind(this), 1000);
 };
 
 ToneMotion.prototype.testCallback = function() {
@@ -75,23 +75,25 @@ ToneMotion.prototype.testCallback = function() {
 };
 
 ToneMotion.prototype.clearTestInterval = function() {
-  window.clearInterval(this.testIntervID);
+  clearInterval(this.testIntervID);
 };
 
 // looping setTimeout within object using bind()
 ToneMotion.prototype.testTimeout = function() {
-  this.testTimeout = window.setTimeout(this.testCallback2.bind(this), 1000);
+  this.testTimeout = setTimeout(this.testCallback2.bind(this), 1000);
 };
 
 ToneMotion.prototype.testCallback2 = function() {
   console.log(this.status);
 
-  this.testTimeout = window.setTimeout(this.testCallback2.bind(this), 1000);
+  this.testTimeout = setTimeout(this.testCallback2.bind(this), 1000);
 };
 
 ToneMotion.prototype.clearTestTimeout = function() {
-  window.clearTimeout(this.testTimeout);
+  clearTimeout(this.testTimeout);
 };
+
+
 
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
@@ -207,7 +209,7 @@ ToneMotion.prototype.setStatus = function(status) {
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
-  window.clearInterval(this.motionUpdateLoopID);
+  clearInterval(this.motionUpdateLoopID);
   // TODO: clear all cues
   // do NOT set status here. could be 'error' OR 'stopped'
 };
@@ -215,7 +217,7 @@ ToneMotion.prototype.shutEverythingDown = function() {
 // Restarts all loops, motion handling, and network requests
 ToneMotion.prototype.startEverythingUpAgain = function() {
   this.publicLog('Starting up again');
-  this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   // TODO: must have cue from server set status of app
 };
 
@@ -292,6 +294,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     switch (this.status) {
       case 'readyToPlay':
         this.beginMotionUpdates();
+        // TODO: make polling interval configurable
+        this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
         // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
@@ -396,7 +400,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   if (this.accel.rawX === undefined) {
     this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
   } else {
-    this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+    this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   }
 };
 
@@ -453,7 +457,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 };
 
 /*********************************************************************
-******************* CLIENT/SERVER SYNCHRONIZATION ********************
+*********** CLIENT/SERVER SYNCHRONIZATION AND COMMUNICATION **********
 *********************************************************************/
 
 // Synchronizes client time to server time
@@ -504,12 +508,93 @@ ToneMotion.prototype.syncClocks = function() {
 
       // stop after 6 checks (5 seconds)
       if (++syncClockCounter === 6) {
-        window.clearInterval(syncClockID);
+        clearInterval(syncClockID);
       }
     }, 1000);
   } else {
     // no client synchronizing (keep clientServerOffset to default of 0)
     this.setStatus('readyToPlay');
+  }
+};
+
+// packet size reduced by subtracting bias on server and adding on client
+// at time of coding (2018-07-18) Date.now() returns 1531970463500
+const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const timestampBias = 1531970463500;
+// cueOnClient is set when cue from server doesn't match.
+var cueOnClient = -1; // wait period of piece begins at 0
+var cueTimeFromServer = 0;
+ToneMotion.prototype.getCuesFromServer = function() {
+  fetch(urlForCues)
+  .then(response => response.json())
+  .then(jsonRes => {
+    // check if there's a new cue
+    // checks cue *time* (not number) because in rehearsal the same cue
+    // could be retriggered. same cue number, different time.
+    if (cueTimeFromServer !== jsonRes.t+timestampBias) { // go new cue
+      cueOnClient = jsonRes.c;
+      cueTimeFromServer = jsonRes.t + timestampBias;
+      if (this.debug) {
+        var readableTimestamp = new Date(cueTimeFromServer);
+        this.publicLog('New cue number ' + cueOnClient + ' fetched from server at ' + readableTimestamp);
+      }
+      // goCue(cueOnClient, cueTimeFromServer);
+    } // else no new cue and control falls through, on to next loop
+    this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
+  })
+  .catch(error => this.publicError(error));
+};
+
+
+// wrap setTimeout in Promise
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+ToneMotion.prototype.goCue = function(cue, serverTime) {
+  // check that cue exists
+  if (cueList[cue]) {
+    TM.currentCue = cueList[cue];
+  } else {
+    publicError('Cue number ' + cue + ' does not exist.');
+    return;
+  }
+
+  // clear all current cues
+  for (var i = 0; i < cueList.length; i++) {
+    if (cueList[i] && cueList[i].isPlaying) {
+      cueList[i].stopCue();
+      cueList[i].isPlaying = false;
+    }
+  }
+
+  // immediately trigger cue with minimum latency if waitTime is -1
+  // This could be faster if moved to top of function,
+  // but that makes the code messy.
+  if (cueList[cue].waitTime == -1) {
+    try { cueList[cue].goCue(); } catch(e) { publicError(e); }
+    updateForNewCue(cue);
+    return;
+  }
+
+  // lower priority cue (may be deliberately delayed). check client time
+  var timestamp = Date.now() - TM.clientServerOffset;
+  var delay = Math.floor(serverTime - TM.serverLatency + cueList[cue].waitTime - timestamp);
+
+  // trigger new cue (immediately or after wait time)
+  if ((cueList[cue].openWindow + delay) < 0) {
+    publicWarning('Your device missed its cue by ' + (-delay) + ' milliseconds! If this keeps happening, there may be a problem with your connection.');
+  } else if (delay < 20) {
+    // shorter delay than 20ms is definitely not aurally perceptible
+    try { cueList[cue].goCue(); } catch(e) { publicError(e); }
+    updateForNewCue(cue);
+  } else {
+    if (delay > TM.MAX_DELAY) {
+      publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + TM.MAX_DELAY + ' milliseconds.');
+      return;
+    }
+    wait(delay).then(() => {
+      try { cueList[cue].goCue(); } catch(e) { publicError(e); }
+      updateForNewCue(cue);
+    })
   }
 };
 
