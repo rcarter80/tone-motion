@@ -13,11 +13,14 @@ const startStopButton = document.querySelector('#startStopButton');
 const messageLabel = document.querySelector('#messageLabel');
 const consoleCheckbox = document.querySelector('#consoleCheckbox');
 const publicConsole = document.querySelector('#publicConsole');
+const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
+const motionDataLabel = document.querySelector('#motionDataLabel');
 
 /**
  * Object to encapsulate properties and methods for Tone Motion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
+ * @param {boolean} showConsoleOnLaunch - Shows console log by default
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
@@ -27,13 +30,19 @@ const publicConsole = document.querySelector('#publicConsole');
  *    "raw" values are as reported by device before normalizing
  * @param {object} gyro - x and y values for gyroscope. Same as accel.
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
+ * @param {number} shakeGap - (ms.) Min. time between shake gestures
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
+ * @param {boolean} recentShakeFlag - If shake gesture triggered within
+ *    the last <shakeGap> milliseconds, this is set to true
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
+ * @param {number} motionUpdateLoopInterval - (ms.) How often the main
+ * ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  */
 
 function ToneMotion() {
   this.status = 'loading';
   this.debug = false;
+  this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
@@ -50,8 +59,11 @@ function ToneMotion() {
     y: undefined,
   }
   this.shakeThreshold = 2;
+  this.shakeGap = 250;
   this.shakeFlag = false;
+  this.recentShakeFlag = false;
   this.shouldTestOnDesktop = true;
+  this.motionUpdateLoopInterval = 50;
 }
 
 
@@ -87,6 +99,10 @@ ToneMotion.prototype.clearTestTimeout = function() {
 // Registers event handler to interface button (not visible while loading), confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function() {
+  // Can automatically show console in left panel when page loads
+  if (this.showConsoleOnLaunch) {
+    consoleCheckbox.checked = true;
+  }
 
   // Set up click functions for main button
   this.bindButtonFunctions();
@@ -350,8 +366,12 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   }
 };
 
-// Tests if device actually reports motion or is lying. Start motionUpdateLoop.
+// Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
 ToneMotion.prototype.beginMotionUpdates = function() {
+  if (this.debug) {
+    this.publicLog('Motion mapping loop starting up');
+  }
+
   // Only mobile device are supported because the piece doesn't make sense on desktop, but for local testing, set all values to 0
   if (this.shouldTestOnDesktop) {
     this.accel.rawX = 0;
@@ -362,11 +382,11 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   if (this.accel.rawX === undefined) {
     this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
   } else {
-    // TODO: make loop update interval configurable
-    this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), 100);
+    this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   }
 };
 
+// Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
 ToneMotion.prototype.motionUpdateLoop = function() {
   if (this.accel.rawX < -10) { // clamp
     this.accel.x = 0; // no need to normalize
