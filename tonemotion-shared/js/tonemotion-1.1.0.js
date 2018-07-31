@@ -17,7 +17,7 @@ const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
 const motionDataLabel = document.querySelector('#motionDataLabel');
 
 /**
- * Object to encapsulate properties and methods for Tone Motion
+ * Object to encapsulate properties and methods for ToneMotion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
  * @param {boolean} showConsoleOnLaunch - Shows console log by default
@@ -364,6 +364,9 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
       this.shakeFlag = true; // enough motion to trigger shake
     }
   }
+
+  // TESTING ONLY 
+  this.publicMessage(event.acceleration.y);
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
