@@ -426,6 +426,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.publicLog(this.shakeGapCounter);
 
     if (this.shakeGapCounter-- === 0) {
+      // after waiting for shakeGap ms., reset boths flags
+      this.shakeFlag = false;
       this.recentShakeFlag = false;
     }
   }
