@@ -365,8 +365,10 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
     }
   }
 
-  // TESTING ONLY 
-  this.publicMessage(event.acceleration.y);
+  // TESTING ONLY
+  if (event.acceleration.y > this.shakeThreshold) {
+    this.publicMessage(event.acceleration.y);
+  }
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
