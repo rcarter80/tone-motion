@@ -319,7 +319,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 // Tests if device is Android, registers 'devicemotion' event listener
 ToneMotion.prototype.beginMotionHandling = function() {
   if (this.debug) {
-    this.publicLog('Beginning motion detection.')
+    this.publicLog('Beginning motion detection')
   }
 
   // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
@@ -366,7 +366,7 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   }
 
   // TESTING ONLY
-  if (event.acceleration.y > this.shakeThreshold) {
+  if (event.acceleration.y > this.shakeThreshold || event.acceleration.y < -this.shakeThreshold) {
     this.publicMessage(event.acceleration.y);
   }
 };
