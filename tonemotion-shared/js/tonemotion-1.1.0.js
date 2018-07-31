@@ -38,7 +38,11 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
- * ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
+ *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
+ * @param {number} cueOnClient - Current cue number client side.
+ *    Initialized as -1. Server starts at cue number 0.
+ * @param {number} cueTimeFromServer - Time when last cue was set on the
+ *    server. Default of 0 will never match time of last cue.
  */
 
 function ToneMotion() {
@@ -61,6 +65,8 @@ function ToneMotion() {
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = true;
   this.motionUpdateLoopInterval = 50;
+  this.cueOnClient = -1;
+  this.cueTimeFromServer = 0;
 }
 
 
@@ -210,6 +216,7 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
   clearInterval(this.motionUpdateLoopID);
+  clearTimeout(this.getCuesFromServer);
   // TODO: clear all cues
   // do NOT set status here. could be 'error' OR 'stopped'
 };
@@ -218,6 +225,8 @@ ToneMotion.prototype.shutEverythingDown = function() {
 ToneMotion.prototype.startEverythingUpAgain = function() {
   this.publicLog('Starting up again');
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+
+  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
   // TODO: must have cue from server set status of app
 };
 
@@ -522,8 +531,6 @@ ToneMotion.prototype.syncClocks = function() {
 const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
-var cueOnClient = -1; // wait period of piece begins at 0
-var cueTimeFromServer = 0;
 ToneMotion.prototype.getCuesFromServer = function() {
   fetch(urlForCues)
   .then(response => response.json())
@@ -531,14 +538,14 @@ ToneMotion.prototype.getCuesFromServer = function() {
     // check if there's a new cue
     // checks cue *time* (not number) because in rehearsal the same cue
     // could be retriggered. same cue number, different time.
-    if (cueTimeFromServer !== jsonRes.t+timestampBias) { // go new cue
-      cueOnClient = jsonRes.c;
-      cueTimeFromServer = jsonRes.t + timestampBias;
+    if (this.cueTimeFromServer !== jsonRes.t+timestampBias) {
+      // Trigger new cue
+      this.cueOnClient = jsonRes.c;
+      this.cueTimeFromServer = jsonRes.t + timestampBias;
       if (this.debug) {
-        var readableTimestamp = new Date(cueTimeFromServer);
-        this.publicLog('New cue number ' + cueOnClient + ' fetched from server at ' + readableTimestamp);
+        this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
       }
-      // goCue(cueOnClient, cueTimeFromServer);
+      // this.goCue(cueOnClient, cueTimeFromServer);
     } // else no new cue and control falls through, on to next loop
     this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
   })
