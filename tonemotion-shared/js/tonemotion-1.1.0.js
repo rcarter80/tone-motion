@@ -252,7 +252,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
     switch (this.status) {
       case 'readyToPlay':
-        // cueIntervalID = setInterval(updateCueNumber, 500);
+        // just for testing
+        this.testMotionData();
         // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
@@ -308,24 +309,15 @@ ToneMotion.prototype.beginMotionHandling = function() {
 
   // Just sets accelerometer and gyroscope data to object properties
   // clamp and normalize only once per event loop
-  // window.addEventListener('devicemotion', (event) => {
-  //   this.accel.x = event.accelerationIncludingGravity.x;
-  //   this.accel.y = event.accelerationIncludingGravity.y;
-  //   this.gyro.x = event.acceleration.x;
-  //   this.gyro.y = event.acceleration.y;
-  // });
   window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
 
-  // Only mobile device are supposed because the piece doesn't make sense on desktop, but for local testing, set all values to 0
+  // Only mobile device are supported because the piece doesn't make sense on desktop, but for local testing, set all values to 0
   if (this.shouldTestOnDesktop) {
     this.accel.x = 0;
     this.accel.y = 0;
     this.gyro.x = 0;
     this.gyro.y = 0;
   }
-
-  // just for testing
-  this.testMotionData();
 };
 
 ToneMotion.prototype.handleMotionEvent = function(event) {
@@ -336,11 +328,15 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 };
 
 ToneMotion.prototype.testMotionData = function() {
+  // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
+  if (this.accel.x === undefined) {
+    this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
+  }
+
   var testMotionID = setInterval( () => {
     this.publicMessage(this.accel.x + ' ' + this.accel.y + ' ' + this.gyro.x + ' ' + this.gyro.y);
-  }, 1000);
+  }, 100);
 }
-
 
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
@@ -402,8 +398,6 @@ ToneMotion.prototype.syncClocks = function() {
     this.setStatus('readyToPlay');
   }
 };
-
-
 
 /*********************************************************************
 ************************ CUE LIST MANAGEMENT *************************
