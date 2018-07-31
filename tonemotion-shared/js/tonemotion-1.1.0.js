@@ -30,6 +30,9 @@ function ToneMotion() {
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
+  this.accel = { x: undefined, y: undefined };
+  this.gyro = { x: undefined, y: undefined };
+  this.shouldTestOnDesktop = true;
 }
 
 
@@ -312,14 +315,22 @@ ToneMotion.prototype.beginMotionHandling = function() {
     this.gyro.y = event.acceleration.y;
   });
 
+  // Only mobile device are supposed because the piece doesn't make sense on desktop, but for local testing, set all values to 0
+  if (this.shouldTestOnDesktop) {
+    this.accel.x = 0;
+    this.accel.y = 0;
+    this.gyro.x = 0;
+    this.gyro.y = 0;
+  }
+
   // just for testing
   this.testMotionData();
 };
 
 ToneMotion.prototype.testMotionData = function() {
   var testMotionID = setInterval( () => {
-    this.publicLog(this.accel.x + ' ' + this.accel.y + ' ' + this.gyro.x + ' ' + this.gyro.y);
-  }
+    this.publicMessage(this.accel.x + ' ' + this.accel.y + ' ' + this.gyro.x + ' ' + this.gyro.y);
+  }, 1000);
 }
 
 
