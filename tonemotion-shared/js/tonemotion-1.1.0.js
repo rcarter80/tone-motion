@@ -298,6 +298,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 ********************** DEVICE MOTION HANDLING ************************
 *********************************************************************/
 
+// Tests if device is Android, registers 'devicemotion' event listener
 ToneMotion.prototype.beginMotionHandling = function() {
   if (this.debug) {
     this.publicLog('Beginning motion detection')
@@ -321,20 +322,14 @@ ToneMotion.prototype.beginMotionHandling = function() {
     }
   }
 
-  // Just sets accelerometer and gyroscope data to object properties
-  // clamp and normalize only once per event loop
+  // Just sets accelerometer data to object properties and determines
+  // if gyro data should set shake flag
   window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-
-  // Only mobile device are supported because the piece doesn't make sense on desktop, but for local testing, set all values to 0
-  if (this.shouldTestOnDesktop) {
-    this.accel.x = 0;
-    this.accel.y = 0;
-    this.gyro.x = 0;
-    this.gyro.y = 0;
-  }
 };
 
-// Sets ToneMotion object accel and gyro properties and sets shake flag
+// Sets ToneMotion object accel properties and sets shake flag
+// Bound to 'devicemotion' event listener, so this is called very often
+// but the polling interval is read-only
 ToneMotion.prototype.handleMotionEvent = function(event) {
   // Axes on Android on inverted relative to iOS
   if (this.deviceIsAndroid) {
@@ -353,9 +348,16 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   // no need to assign gyro values to object. just need to know if shake
 };
 
+// Tests if device actually reports motion or is lying. Start motionUpdateLoop.
 ToneMotion.prototype.beginMotionUpdates = function() {
+  // Only mobile device are supported because the piece doesn't make sense on desktop, but for local testing, set all values to 0
+  if (this.shouldTestOnDesktop) {
+    this.accel.rawX = 0;
+    this.accel.rawY = 0;
+  }
+
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
-  if (this.accel.x === undefined) {
+  if (this.accel.rawX === undefined) {
     this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
   } else {
     // TODO: make loop update interval configurable
