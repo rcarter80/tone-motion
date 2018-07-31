@@ -419,13 +419,13 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     // Determine number of times through event loop before next possible shake gesture is allowed
     this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
 
-    // SHAKE
+    if (this.debug) {
+      var shakeTimestamp = new Date();
+      this.publicLog('There was a shake gesture at ' + shakeTimestamp);
+    }
   }
   // If there's been a recent shake, decrement counter and reset flag
   if (this.recentShakeFlag) {
-    // TODO: figure out why this flag doesn't reset
-    this.publicLog(this.shakeGapCounter);
-
     if (this.shakeGapCounter-- === 0) {
       // after waiting for shakeGap ms., reset boths flags
       this.shakeFlag = false;
