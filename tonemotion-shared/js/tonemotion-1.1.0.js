@@ -39,6 +39,7 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
+ * @param {number} cuePollingInterval - (ms.) How often server is polled
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
  * @param {number} cueTimeFromServer - Time when last cue was set on the
@@ -65,6 +66,7 @@ function ToneMotion() {
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = true;
   this.motionUpdateLoopInterval = 50;
+  this.cuePollingInterval = 500;
   this.cueOnClient = -1;
   this.cueTimeFromServer = 0;
 }
@@ -216,7 +218,7 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
   clearInterval(this.motionUpdateLoopID);
-  clearTimeout(this.getCuesFromServer);
+  clearTimeout(this.cueFetchTimeout);
   // TODO: clear all cues
   // do NOT set status here. could be 'error' OR 'stopped'
 };
@@ -303,8 +305,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     switch (this.status) {
       case 'readyToPlay':
         this.beginMotionUpdates();
-        // TODO: make polling interval configurable
-        this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
+        this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
         // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
@@ -545,6 +546,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
       if (this.debug) {
         this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
       }
+      // TODO: trigger new cue
       // this.goCue(cueOnClient, cueTimeFromServer);
     } // else no new cue and control falls through, on to next loop
     this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
@@ -557,6 +559,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 ToneMotion.prototype.goCue = function(cue, serverTime) {
+  // TODO: update with object properties
   // check that cue exists
   if (cueList[cue]) {
     TM.currentCue = cueList[cue];
