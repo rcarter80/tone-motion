@@ -26,6 +26,7 @@ const publicConsole = document.querySelector('#publicConsole');
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
  * @param {object} gyro - x and y values for gyroscope. Same as accel.
+ * @param {number} shakeThreshold - gyro value to trigger shakeFlag
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  */
@@ -48,6 +49,7 @@ function ToneMotion() {
     x: undefined,
     y: undefined,
   }
+  this.shakeThreshold = 2;
   this.shakeFlag = false;
   this.shouldTestOnDesktop = true;
 }
@@ -335,17 +337,17 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   if (this.deviceIsAndroid) {
     this.accel.rawX = -(event.accelerationIncludingGravity.x);
     this.accel.rawY = -(event.accelerationIncludingGravity.y);
+    if (event.acceleration.y < -this.shakeThreshold) {
+      this.shakeFlag = true; // enough motion to trigger shake
+    }
   }
   else {
     this.accel.rawX = event.accelerationIncludingGravity.x;
     this.accel.rawY = event.accelerationIncludingGravity.y;
+    if (event.acceleration.y > this.shakeThreshold) {
+      this.shakeFlag = true; // enough motion to trigger shake
+    }
   }
-
-  // TODO: after testing to find threshold for gyro flag, delete all gyro properties
-  this.gyro.rawX = event.acceleration.x;
-  this.gyro.rawY = event.acceleration.y;
-  // TODO: put shake flag here, to handle in slower loop
-  // no need to assign gyro values to object. just need to know if shake
 };
 
 // Tests if device actually reports motion or is lying. Start motionUpdateLoop.
