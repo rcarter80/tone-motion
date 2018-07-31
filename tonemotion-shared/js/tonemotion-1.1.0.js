@@ -408,7 +408,9 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
   }
 
-  this.publicMessage(this.accel.rawX + ' ' + this.accel.rawY + ' ' + this.accel.x + ' ' + this.accel.y);
+  if (motionDataCheckbox.checked) {
+    motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+  }
 };
 
 /*********************************************************************
