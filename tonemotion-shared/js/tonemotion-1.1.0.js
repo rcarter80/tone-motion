@@ -423,6 +423,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
   // If there's been a recent shake, decrement counter and reset flag
   if (this.recentShakeFlag) {
+    // TODO: figure out why this flag doesn't reset
     this.publicLog(this.shakeGapCounter);
 
     if (this.shakeGapCounter-- === 0) {
