@@ -28,7 +28,6 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
- * @param {object} gyro - x and y values for gyroscope. Same as accel.
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
  * @param {number} shakeGap - (ms.) Min. time between shake gestures
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
@@ -50,12 +49,6 @@ function ToneMotion() {
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
   this.accel = {
-    rawX: undefined,
-    rawY: undefined,
-    x: undefined,
-    y: undefined,
-  }
-  this.gyro = {
     rawX: undefined,
     rawY: undefined,
     x: undefined,
@@ -214,9 +207,16 @@ ToneMotion.prototype.setStatus = function(status) {
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
-  // window.clearInterval(cueIntervalID);
+  window.clearInterval(this.motionUpdateLoopID);
   // TODO: clear all cues
   // do NOT set status here. could be 'error' OR 'stopped'
+};
+
+// Restarts all loops, motion handling, and network requests
+ToneMotion.prototype.startEverythingUpAgain = function() {
+  this.publicLog('Starting up again');
+  this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  // TODO: must have cue from server set status of app
 };
 
 /*
@@ -304,9 +304,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.shutEverythingDown();
         break;
       case 'stopped':
-        // cueIntervalID = setInterval(updateCueNumber, 500);
-        // TODO: start audio context
-        // must have goCue set status
+        this.startEverythingUpAgain();
         break;
       case 'error':
         // Reload the current page, without using the cache
