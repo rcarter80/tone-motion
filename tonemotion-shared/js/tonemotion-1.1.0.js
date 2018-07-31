@@ -364,11 +364,6 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
       this.shakeFlag = true; // enough motion to trigger shake
     }
   }
-
-  // TESTING ONLY
-  if (event.acceleration.y > this.shakeThreshold || event.acceleration.y < -this.shakeThreshold) {
-    this.publicMessage(event.acceleration.y);
-  }
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
@@ -412,7 +407,21 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   else {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
   }
+  // TODO: handle shake gesture
+  if (this.shakeFlag && !(this.recentShakeFlag)) {
+    this.recentShakeFlag = true;
 
+    var shakeCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
+
+    // SHAKE
+    this.publicLog(shakeCounter);
+    
+    if (shakeCounter-- === 0) {
+      this.recentShakeFlag = false;
+    }
+  }
+
+  // Left panel has checkbox to allow monitoring of accel values
   if (motionDataCheckbox.checked) {
     motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
   }
