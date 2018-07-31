@@ -267,8 +267,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
     switch (this.status) {
       case 'readyToPlay':
-        // just for testing
-        this.testMotionData();
+        this.beginMotionUpdates();
         // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
@@ -354,36 +353,39 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   // no need to assign gyro values to object. just need to know if shake
 };
 
-ToneMotion.prototype.testMotionData = function() {
+ToneMotion.prototype.beginMotionUpdates = function() {
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
   if (this.accel.x === undefined) {
     this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
+  } else {
+    // TODO: make loop update interval configurable
+    this.motionUpdateLoopID = window.setInterval(this.motionUpdateLoop.bind(this), 100);
+  }
+};
+
+ToneMotion.prototype.motionUpdateLoop = function() {
+  if (this.accel.rawX < -10) { // clamp
+    this.accel.x = 0; // no need to normalize
+  }
+  else if (this.accel.rawX > 10) {
+    this.accel.y = 1;
+  }
+  else {
+    this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
   }
 
-  var testMotionID = setInterval( () => {
+  if (this.accel.rawY < -10) { // clamp
+    this.accel.y = 0; // no need to normalize
+  }
+  else if (this.accel.rawY > 10) {
+    this.accel.y = 1;
+  }
+  else {
+    this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
+  }
 
-    if (this.accel.rawX < -10) { // clamp
-      this.accel.x = 0; // no need to normalize
-    }
-    else if (this.accel.rawX > 10) {
-      this.accel.y = 1;
-    }
-    else {
-      this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
-    }
-    if (accelRange.rawY < accelRange.loY) {
-      accelRange.tempY = accelRange.loY;
-    }
-    else if (accelRange.rawY > accelRange.hiY) {
-      accelRange.tempY = accelRange.hiY;
-    }
-    else {
-      accelRange.tempY = accelRange.rawY;
-    }
-
-    this.publicMessage(this.accel.rawX + ' ' + this.accel.rawY + ' ' + this.gyro.rawX + ' ' + this.accel.x);
-  }, 100);
-}
+  this.publicMessage(this.accel.rawX + ' ' + this.accel.rawY + ' ' + this.accel.x + ' ' + this.accel.y);
+};
 
 /*********************************************************************
 ******************* CLIENT/SERVER SYNCHRONIZATION ********************
