@@ -22,6 +22,12 @@ const publicConsole = document.querySelector('#publicConsole');
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
+ * @param {object} accel - x and y values for accelerometer. Values
+ *    undefined by default, to be set by devicemotion OR desktop testing
+ *    "raw" values are as reported by device before normalizing
+ * @param {object} gyro - x and y values for gyroscope. Same as accel.
+ * @param {boolean} shakeFlag - If gyro values exceed threshold, true
+ * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  */
 
 function ToneMotion() {
@@ -30,8 +36,19 @@ function ToneMotion() {
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
-  this.accel = { x: undefined, y: undefined };
-  this.gyro = { x: undefined, y: undefined };
+  this.accel = {
+    rawX: undefined,
+    rawY: undefined,
+    x: undefined,
+    y: undefined,
+  }
+  this.gyro = {
+    rawX: undefined,
+    rawY: undefined,
+    x: undefined,
+    y: undefined,
+  }
+  this.shakeFlag = false;
   this.shouldTestOnDesktop = true;
 }
 
@@ -65,9 +82,8 @@ ToneMotion.prototype.clearTestTimeout = function() {
   window.clearTimeout(this.testTimeout);
 };
 
-
-
-// Registers event handler to interface button (not visible while loading), confirms that buffers are loaded and device reports motion
+// Registers event handler to interface button (not visible while loading), confirms that buffers are loaded, begins devicemotion handling
+// Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function() {
 
   // Set up click functions for main button
@@ -176,7 +192,6 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.publicLog('Shutting down');
   // window.clearInterval(cueIntervalID);
   // TODO: clear all cues
-
   // do NOT set status here. could be 'error' OR 'stopped'
 };
 
@@ -320,11 +335,23 @@ ToneMotion.prototype.beginMotionHandling = function() {
   }
 };
 
+// Sets ToneMotion object accel and gyro properties and sets shake flag
 ToneMotion.prototype.handleMotionEvent = function(event) {
-  this.accel.x = event.accelerationIncludingGravity.x;
-  this.accel.y = event.accelerationIncludingGravity.y;
-  this.gyro.x = event.acceleration.x;
-  this.gyro.y = event.acceleration.y;
+  // Axes on Android on inverted relative to iOS
+  if (this.deviceIsAndroid) {
+    this.accel.rawX = -(event.accelerationIncludingGravity.x);
+    this.accel.rawY = -(event.accelerationIncludingGravity.y);
+  }
+  else {
+    this.accel.rawX = event.accelerationIncludingGravity.x;
+    this.accel.rawY = event.accelerationIncludingGravity.y;
+  }
+
+  // TODO: after testing to find threshold for gyro flag, delete all gyro properties
+  this.gyro.rawX = event.acceleration.x;
+  this.gyro.rawY = event.acceleration.y;
+  // TODO: put shake flag here, to handle in slower loop
+  // no need to assign gyro values to object. just need to know if shake
 };
 
 ToneMotion.prototype.testMotionData = function() {
@@ -334,7 +361,27 @@ ToneMotion.prototype.testMotionData = function() {
   }
 
   var testMotionID = setInterval( () => {
-    this.publicMessage(this.accel.x + ' ' + this.accel.y + ' ' + this.gyro.x + ' ' + this.gyro.y);
+
+    if (this.accel.rawX < -10) { // clamp
+      this.accel.x = 0; // no need to normalize
+    }
+    else if (this.accel.rawX > 10) {
+      this.accel.y = 1;
+    }
+    else {
+      this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
+    }
+    if (accelRange.rawY < accelRange.loY) {
+      accelRange.tempY = accelRange.loY;
+    }
+    else if (accelRange.rawY > accelRange.hiY) {
+      accelRange.tempY = accelRange.hiY;
+    }
+    else {
+      accelRange.tempY = accelRange.rawY;
+    }
+
+    this.publicMessage(this.accel.rawX + ' ' + this.accel.rawY + ' ' + this.gyro.rawX + ' ' + this.accel.x);
   }, 100);
 }
 
