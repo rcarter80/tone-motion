@@ -34,6 +34,9 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
  * @param {boolean} recentShakeFlag - If shake gesture triggered within
  *    the last <shakeGap> milliseconds, this is set to true
+ * @param {number} shakeGapCounter - To prevent immediate successive
+ *    shake gestures, counter counts down (shakeGap /
+ *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  * ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
@@ -62,6 +65,7 @@ function ToneMotion() {
   this.shakeGap = 250;
   this.shakeFlag = false;
   this.recentShakeFlag = false;
+  this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = true;
   this.motionUpdateLoopInterval = 50;
 }
@@ -407,16 +411,21 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   else {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
   }
+
   // TODO: handle shake gesture
+  // Trigger shake event if there hasn't been once recently
   if (this.shakeFlag && !(this.recentShakeFlag)) {
     this.recentShakeFlag = true;
-
-    var shakeCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
+    // Determine number of times through event loop before next possible shake gesture is allowed
+    this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
 
     // SHAKE
-    this.publicLog(shakeCounter);
-    
-    if (shakeCounter-- === 0) {
+  }
+  // If there's been a recent shake, decrement counter and reset flag
+  if (this.recentShakeFlag) {
+    this.publicLog(this.shakeGapCounter);
+
+    if (this.shakeGapCounter-- === 0) {
       this.recentShakeFlag = false;
     }
   }
