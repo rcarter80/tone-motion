@@ -45,3 +45,11 @@
 #messageLabel.hidden {
   display: none;
 }
+
+#publicConsole.hidden {
+  display: none;
+}
+
+#publicConsole.visible {
+  display: block;
+}

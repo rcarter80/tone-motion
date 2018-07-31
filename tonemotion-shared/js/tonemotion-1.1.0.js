@@ -100,7 +100,7 @@ ToneMotion.prototype.clearTestTimeout = function() {
   window.clearTimeout(this.testTimeout);
 };
 
-// Registers event handler to interface button (not visible while loading), confirms that buffers are loaded, begins devicemotion handling
+// Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function() {
   // Can automatically show console in left panel when page loads
@@ -110,6 +110,8 @@ ToneMotion.prototype.init = function() {
 
   // Set up click functions for main button
   this.bindButtonFunctions();
+  // Allow hiding and clearing of console
+  this.bindConsoleCheckboxFunctions();
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
@@ -314,6 +316,16 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.publicError('Error setting function for button');
     }
   });
+};
+
+// Clears console in left panel when checkbox is unchecked
+ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
+  consoleCheckbox.addEventListener('change', () => {
+    if (!consoleCheckbox.checked) {
+      // Checkbox is unchecked and console should be cleared
+      this.clearConsole();
+    }
+  })
 };
 
 /*********************************************************************
