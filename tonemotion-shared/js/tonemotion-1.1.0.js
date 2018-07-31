@@ -308,12 +308,13 @@ ToneMotion.prototype.beginMotionHandling = function() {
 
   // Just sets accelerometer and gyroscope data to object properties
   // clamp and normalize only once per event loop
-  window.addEventListener('devicemotion', (event) => {
-    this.accel.x = event.accelerationIncludingGravity.x;
-    this.accel.y = event.accelerationIncludingGravity.y;
-    this.gyro.x = event.acceleration.x;
-    this.gyro.y = event.acceleration.y;
-  });
+  // window.addEventListener('devicemotion', (event) => {
+  //   this.accel.x = event.accelerationIncludingGravity.x;
+  //   this.accel.y = event.accelerationIncludingGravity.y;
+  //   this.gyro.x = event.acceleration.x;
+  //   this.gyro.y = event.acceleration.y;
+  // });
+  window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
 
   // Only mobile device are supposed because the piece doesn't make sense on desktop, but for local testing, set all values to 0
   if (this.shouldTestOnDesktop) {
@@ -325,6 +326,13 @@ ToneMotion.prototype.beginMotionHandling = function() {
 
   // just for testing
   this.testMotionData();
+};
+
+ToneMotion.prototype.handleMotionEvent = function(event) {
+  this.accel.x = event.accelerationIncludingGravity.x;
+  this.accel.y = event.accelerationIncludingGravity.y;
+  this.gyro.x = event.acceleration.x;
+  this.gyro.y = event.acceleration.y;
 };
 
 ToneMotion.prototype.testMotionData = function() {
