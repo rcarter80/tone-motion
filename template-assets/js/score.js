@@ -15,7 +15,7 @@ tm.cue[0].goCue = function() {
 };
 
 // Test cues
-tm.cue[1] = new TMCue('tilt', -1;
+tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called');
 }
