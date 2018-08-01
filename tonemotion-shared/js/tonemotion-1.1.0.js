@@ -46,8 +46,7 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  *    server. Default of 0 will never match time of last cue.
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
- * @param {number} currentCue - The number of the current cue, which is
- *    is checked against the cue numbers that exist in this.cue
+ * @param {TMCue} currentCue - Reference to the current cue
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -77,12 +76,10 @@ function ToneMotion() {
   this.cueOnClient = -1;
   this.cueTimeFromServer = 0;
   this.cue = [];
-  this.currentCue = -1;
+  this.currentCue = {};
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
 }
-
-
 
 // setInterval within object using bind()
 ToneMotion.prototype.testInterval = function() {
@@ -231,15 +228,21 @@ ToneMotion.prototype.shutEverythingDown = function() {
   clearInterval(this.motionUpdateLoopID);
   clearTimeout(this.cueFetchTimeout);
   this.clearActiveCues();
+
+  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
+  this.cueTimeFromServer = 0;
 };
 
 // Restarts all loops, motion handling, and network requests
-ToneMotion.prototype.startEverythingUpAgain = function() {
-  this.publicLog('Starting up again');
+ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
+  this.publicLog('Starting motion updates and cue fetching');
 
-  this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  startStopButton.className = 'disabled'; // while waiting for cue
+  statusLabel.innerHTML = ''; // label will update with cue
 
-  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
+  this.beginMotionUpdates();
+
+  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
 
 /*
@@ -314,8 +317,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
     switch (this.status) {
       case 'readyToPlay':
-        this.beginMotionUpdates();
-        this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+        this.startMotionUpdatesAndCueFetching();
         // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
@@ -328,7 +330,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.shutEverythingDown();
         break;
       case 'stopped':
-        this.startEverythingUpAgain();
+        this.startMotionUpdatesAndCueFetching();
         break;
       case 'error':
         // Reload the current page, without using the cache

@@ -24,6 +24,11 @@
   color: red;
 }
 
+#startStopButton.disabled {
+  /* NEED TO RESET DISPLAY? */
+  color: gray;
+}
+
 #startStopButton.reload {
   /* NEED TO RESET DISPLAY? */
   color: purple;
