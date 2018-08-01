@@ -199,6 +199,7 @@ ToneMotion.prototype.setStatus = function(status) {
     case 'finished':
       this.setStatusLabel('finished', 'default');
       this.setStartStopButton('', 'hidden');
+      this.shutEverythingDown();
       break;
     case 'error':
       this.setStatusLabel('error', 'error');
