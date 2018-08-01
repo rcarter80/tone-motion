@@ -124,6 +124,12 @@ ToneMotion.prototype.init = function() {
   // Allow hiding and clearing of console
   this.bindConsoleCheckboxFunctions();
 
+  // On iOS, the context will be started on the first valid user action on the #startStopButton element
+  // see https://github.com/tambien/StartAudioContext
+  StartAudioContext(Tone.context, '#startStopButton').then( () => {
+    this.publicLog('Audio context started');
+  });
+
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 

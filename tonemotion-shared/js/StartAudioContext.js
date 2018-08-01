@@ -139,7 +139,7 @@
 			//if it's an element, create a TapListener
 			var tap = new TapListener(element, context)
 			tapListeners.push(tap)
-		} 
+		}
 	}
 
 	/**
