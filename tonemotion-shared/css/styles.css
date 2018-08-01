@@ -24,6 +24,7 @@
   color: red;
 }
 
+/* use after button has been tapped but cue is being fetched */
 #startStopButton.disabled {
   /* NEED TO RESET DISPLAY? */
   color: gray;

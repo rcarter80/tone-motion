@@ -126,7 +126,7 @@ ToneMotion.prototype.init = function() {
 
   // On iOS, the context will be started on the first valid user action on the #startStopButton element
   // see https://github.com/tambien/StartAudioContext
-  // Chrome complains about adding "non-passive event listener to a scroll-blocked 'touchmove' event" but this only creates jerkiness for pages that are supposed to scroll, and this isn't 
+  // Chrome complains about adding "non-passive event listener to a scroll-blocked 'touchmove' event" but this only creates jerkiness for pages that are supposed to scroll, and this isn't
   StartAudioContext(Tone.context, '#startStopButton').then( () => {
     this.publicLog('Audio context started');
   });
@@ -324,8 +324,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
     switch (this.status) {
       case 'readyToPlay':
+      case 'stopped':
         this.startMotionUpdatesAndCueFetching();
-        // TODO: start audio context. All additional startup
         break;
       case 'waitingForPieceToStart':
       case 'playing_tacet':
@@ -335,9 +335,6 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'playing_listen':
         this.setStatus('stopped');
         this.shutEverythingDown();
-        break;
-      case 'stopped':
-        this.startMotionUpdatesAndCueFetching();
         break;
       case 'error':
         // Reload the current page, without using the cache
