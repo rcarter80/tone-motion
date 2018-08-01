@@ -432,6 +432,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
 ToneMotion.prototype.motionUpdateLoop = function() {
+  // NORMALIZE ACCELEROMETER DATA
   if (this.accel.rawX < -10) { // clamp
     this.accel.x = 0; // no need to normalize
   }
@@ -452,27 +453,34 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
   }
 
-  // TODO: map accel values to "tilt" sounds
-
-  // Trigger shake event if there hasn't been once recently
-  if (this.shakeFlag && !(this.recentShakeFlag)) {
-    this.recentShakeFlag = true;
-    // Determine number of times through event loop before next possible shake gesture is allowed
-    this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
-
-    // TODO: connect shake to sound
-
-    if (this.debug) {
-      var shakeTimestamp = new Date();
-      this.publicLog('There was a shake gesture at ' + shakeTimestamp);
-    }
+  // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS (only if cue uses tilt)
+  if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
+    // TODO: implement accel mapping 
   }
-  // If there's been a recent shake, decrement counter and reset flag
-  if (this.recentShakeFlag) {
-    if (this.shakeGapCounter-- === 0) {
-      // After waiting for shakeGap ms., reset boths flags
-      this.shakeFlag = false;
-      this.recentShakeFlag = false;
+
+  // TRIGGER SHAKE EVENT (only if cue uses shake)
+  if (this.currentCue.mode === 'shake' || this.currentCue.mode === 'tiltAndShake') {
+    // Trigger shake event if there hasn't been once recently
+    if (this.shakeFlag && !(this.recentShakeFlag)) {
+      this.recentShakeFlag = true;
+      // Determine number of times through event loop before next possible shake gesture is allowed
+      this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
+
+      // Shake gesture triggered here
+      this.currentCue.triggerShakeSound();
+
+      if (this.debug) {
+        var shakeTimestamp = new Date();
+        this.publicLog('There was a shake gesture at ' + shakeTimestamp);
+      }
+    }
+    // If there's been a recent shake, decrement counter and reset flag
+    if (this.recentShakeFlag) {
+      if (this.shakeGapCounter-- === 0) {
+        // After waiting for shakeGap ms., reset boths flags
+        this.shakeFlag = false;
+        this.recentShakeFlag = false;
+      }
     }
   }
 
@@ -690,3 +698,17 @@ TMCue.prototype.goCue = function() {
 TMCue.prototype.stopCue = function() {
   console.log('No clean-up implemented for this section.');
 };
+
+// Override this method in score to make "tilt" interactive sounds
+TMCue.prototype.updateTiltSounds = function() {
+  if (this.debug) {
+    statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now();
+  }
+}
+
+// Override this method in score to make "shake" interactive sounds
+TMCue.prototype.triggerShakeSound = function() {
+  if (this.debug) {
+    statusLabel.innerHTML = 'triggerShakeSound() called at ' + Date.now();
+  }
+}
