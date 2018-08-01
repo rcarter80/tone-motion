@@ -455,7 +455,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS (only if cue uses tilt)
   if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
-    // TODO: implement accel mapping 
+    // TODO: implement accel mapping
   }
 
   // TRIGGER SHAKE EVENT (only if cue uses shake)
@@ -701,14 +701,12 @@ TMCue.prototype.stopCue = function() {
 
 // Override this method in score to make "tilt" interactive sounds
 TMCue.prototype.updateTiltSounds = function() {
-  if (this.debug) {
-    statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now();
-  }
+  // This will get real annoying unless this method is overridden
+  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now();
 }
 
 // Override this method in score to make "shake" interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
-  if (this.debug) {
-    statusLabel.innerHTML = 'triggerShakeSound() called at ' + Date.now();
-  }
+  // This will get real annoying unless this method is overridden
+  statusLabel.innerHTML = 'triggerShakeSound() called at ' + Date.now();
 }
