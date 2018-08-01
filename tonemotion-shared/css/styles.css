@@ -100,6 +100,17 @@ input[type="checkbox"] {
 }
 /********************************************************/
 
+:root {
+  --dark-gray: #eee;
+}
+
+div {
+  background-color: var(--dark-gray);
+}
+
+h1 {
+  color: var(--dark-gray);
+}
 
 /*
  * styles I wrote during development
