@@ -231,16 +231,15 @@ ToneMotion.prototype.shutEverythingDown = function() {
   clearInterval(this.motionUpdateLoopID);
   clearTimeout(this.cueFetchTimeout);
   this.clearActiveCues();
-  // do NOT set status here. could be 'error' OR 'stopped'
 };
 
 // Restarts all loops, motion handling, and network requests
 ToneMotion.prototype.startEverythingUpAgain = function() {
   this.publicLog('Starting up again');
+
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
-  // TODO: must have cue from server set status of app
 };
 
 /*
@@ -582,7 +581,7 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
   // but that makes the code messy.
   if (this.cue[cue].waitTime == -1) {
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
-    this.updateForNewCue(cue);
+    this.setStatusForNewCue(cue);
     return;
   }
 
@@ -596,7 +595,7 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
   } else if (delay < 20) {
     // shorter delay than 20ms is definitely not aurally perceptible
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
-    this.updateForNewCue(cue);
+    this.setStatusForNewCue(cue);
   } else {
     if (delay > this.MAX_DELAY) {
       this.publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + this.MAX_DELAY + ' milliseconds.');
@@ -604,7 +603,7 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
     }
     setTimeout( () => {
       try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
-      this.updateForNewCue(cue);
+      this.setStatusForNewCue(cue);
     }, delay);
   }
 };
@@ -619,18 +618,35 @@ ToneMotion.prototype.clearActiveCues = function() {
   }
 };
 
-ToneMotion.prototype.updateForNewCue = function(cue) {
-  // TODO: implement
-  console.log('updateForNewCue() called');
+// Sets application status from interactivity mode for this new cue
+ToneMotion.prototype.setStatusForNewCue = function(cue) {
+  switch (this.cue[cue].mode) {
+    case 'waiting':
+      this.setStatus('waitingForPieceToStart');
+      break;
+    case 'tacet':
+      this.setStatus('playing_tacet');
+      break;
+    case 'tilt':
+      this.setStatus('playing_tilt');
+      break;
+    case 'shake':
+      this.setStatus('playing_shake');
+      break;
+    case 'tiltAndShake':
+      this.setStatus('playing_tiltAndShake');
+      break;
+    case 'listen':
+      this.setStatus('playing_listen');
+      break;
+    case 'finished':
+      this.setStatus('finished');
+      break;
+    default:
+      this.publicError('Error setting application status for new cue');
+  }
 
-  // if (this.currentCue.mode === 'waiting') {
-  //   setStatus('waitingForPieceToStart');
-  // } else if (TM.currentCue.mode === 'finished') {
-  //   setStatus('finished');
-  // } else {
-  //   setStatus('playing');
-  // }
-  // cueList[cue].isPlaying = true;
+  this.cue[cue].isPlaying = true;
 };
 
 /*********************************************************************
