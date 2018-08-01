@@ -51,10 +51,8 @@ tm.cue[7].goCue = function() {
   console.log('tm.cue[7].goCue() called');
 }
 
-tm.cue[8] = new TMCue('listen', 500, 0);
-tm.cue[8].goCue = function() {
-  console.log('tm.cue[8].goCue() called');
-}
+tm.cue[8] = new TMCue('listen', 0, 0);
+// this cue is impossible to make on time and will throw missed cue
 
 tm.cue[9] = new TMCue('tiltAndShake', -1);
 tm.cue[9].goCue = function() {

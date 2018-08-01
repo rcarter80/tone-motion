@@ -188,6 +188,10 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStatusLabel('just listen', 'default');
       this.setStartStopButton('stop', 'stop');
       break;
+    case 'missedCue':
+      this.setStatusLabel('(wait for next cue)', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
     case 'stopped':
       this.setStatusLabel('stopped', 'default');
       this.setStartStopButton('start', 'start');
@@ -314,6 +318,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'playing_shake':
       case 'playing_tiltAndShake':
       case 'playing_listen':
+      case 'missedCue':
         this.setStatus('stopped');
         this.shutEverythingDown();
         break;
@@ -596,6 +601,7 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
+    this.setStatus('missedCue');
     this.publicWarning('Your device missed its cue by ' + (-delay) + ' milliseconds! If this keeps happening, there may be a problem with your connection.');
   } else if (delay < 20) {
     // shorter delay than 20ms is definitely not aurally perceptible
