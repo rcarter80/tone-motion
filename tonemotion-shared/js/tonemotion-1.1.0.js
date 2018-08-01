@@ -16,6 +16,13 @@ const publicConsole = document.querySelector('#publicConsole');
 const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
 const motionDataLabel = document.querySelector('#motionDataLabel');
 
+/*
+** Tone.Signal objects: set by accelerometer to act as control signals
+*/
+
+var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
+var yTilt = new Tone.Signal(0.5);
+
 /**
  * Object to encapsulate properties and methods for ToneMotion
  * @param {string} status - Application status (set automatically)
@@ -28,6 +35,8 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
+ * @param {Tone.Signal} xSig - Control signal mapped to x-axis of accel
+ * @param {Tone.Signal} ySig - Control signal mapped to y-axis of accel
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
  * @param {number} shakeGap - (ms.) Min. time between shake gestures
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
@@ -65,6 +74,8 @@ function ToneMotion() {
     x: undefined,
     y: undefined,
   }
+  this.xSig = xTilt;
+  this.ySig = yTilt;
   this.shakeThreshold = 2;
   this.shakeGap = 250;
   this.shakeFlag = false;
@@ -80,36 +91,6 @@ function ToneMotion() {
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
 }
-
-// setInterval within object using bind()
-ToneMotion.prototype.testInterval = function() {
-  this.testIntervID = setInterval(this.testCallback.bind(this), 1000);
-};
-
-ToneMotion.prototype.testCallback = function() {
-  console.log(this.status);
-};
-
-ToneMotion.prototype.clearTestInterval = function() {
-  clearInterval(this.testIntervID);
-};
-
-// looping setTimeout within object using bind()
-ToneMotion.prototype.testTimeout = function() {
-  this.testTimeout = setTimeout(this.testCallback2.bind(this), 1000);
-};
-
-ToneMotion.prototype.testCallback2 = function() {
-  console.log(this.status);
-
-  this.testTimeout = setTimeout(this.testCallback2.bind(this), 1000);
-};
-
-ToneMotion.prototype.clearTestTimeout = function() {
-  clearTimeout(this.testTimeout);
-};
-
-
 
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
@@ -431,6 +412,11 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
+/*
+** Some Tone.js object properties are signals and can be chained:
+** (e.g.,) this.ySig.chain(filterFreqScale, filter.frequency);
+** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
+*/
 ToneMotion.prototype.motionUpdateLoop = function() {
   // NORMALIZE ACCELEROMETER DATA
   if (this.accel.rawX < -10) { // clamp
@@ -454,8 +440,13 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS (only if cue uses tilt)
+  this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+
+  this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
+
   if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
-    // TODO: implement accel mapping
+    // smooths signals to avoid zipper noise
+    this.currentCue.updateTiltSounds();
   }
 
   // TRIGGER SHAKE EVENT (only if cue uses shake)
@@ -702,7 +693,7 @@ TMCue.prototype.stopCue = function() {
 // Override this method in score to make "tilt" interactive sounds
 TMCue.prototype.updateTiltSounds = function() {
   // This will get real annoying unless this method is overridden
-  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now();
+  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
 }
 
 // Override this method in score to make "shake" interactive sounds

@@ -19,6 +19,9 @@ tm.cue[1] = new TMCue('tilt', 1000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   console.log('tm.cue[1].goCue() called');
 }
+tm.cue[1].updateTiltSounds = function() {
+  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with value of ' + tm.xSig.value;
+}
 
 tm.cue[2] = new TMCue('tacet', 1000, NO_LIMIT);
 tm.cue[2].goCue = function() {
