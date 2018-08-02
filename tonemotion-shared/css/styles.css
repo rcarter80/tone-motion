@@ -2,6 +2,13 @@
  * GENERAL STYLING AND RESETTING
  */
 
+:root {
+ --dark-gray: #232920;
+} /* TODO: decide on global colors and set as variables like below */
+div.example {
+  background-color: var(--dark-gray);
+}
+
 *,
 *::before,
 *::after {
@@ -27,6 +34,34 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0.5rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+/* TODO: delete unused selectors (e.g., will I use h6? probs not) */
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
 }
 
 p {
@@ -93,6 +128,41 @@ button::-moz-focus-inner,
   border-style: none;
 }
 
+.btn {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.btn:hover, .btn:focus {
+  text-decoration: none;
+}
+
+.btn:focus, .btn.focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn.disabled, .btn:disabled {
+  opacity: 0.65;
+}
+
+.btn:not(:disabled):not(.disabled) {
+  cursor: pointer;
+}
+
 input[type="radio"],
 input[type="checkbox"] {
   box-sizing: border-box;
@@ -100,17 +170,7 @@ input[type="checkbox"] {
 }
 /********************************************************/
 
-:root {
-  --dark-gray: #232920;
-}
 
-div {
-  background-color: var(--dark-gray);
-}
-
-h1 {
-  color: var(--dark-gray);
-}
 
 /*
  * styles I wrote during development
