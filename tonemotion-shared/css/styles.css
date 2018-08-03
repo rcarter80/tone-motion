@@ -1,6 +1,6 @@
 /*
- * GENERAL STYLING AND RESETTING
- */
+** GENERAL STYLING AND RESETTING
+**/
 
 :root {
  --dark-gray: #232920;
@@ -29,6 +29,8 @@ body {
   color: #000;
   text-align: left;
   background-color: #fff;
+
+  /* TODO: add overflow-x: hidden; ? */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -171,10 +173,74 @@ input[type="checkbox"] {
 /********************************************************/
 
 
+/*
+** PANEL LAYOUT
+**/
+
+header {
+  background-color: gray;
+
+  z-index: 0;
+}
+
+main {
+  background-color: green;
+/* TODO: if positioning is static, z-index has NO EFFECT */
+  z-index: 0;
+}
+
+#helpPanel {
+  background-color: yellow;
+  overflow-y: scroll;
+  z-index: 1;
+
+  height: 100%;
+  position: fixed;
+  top: 0;
+  transition: left 0.4s ease 0s;
+  width: 90%;
+}
+#helpPanel.slide-out {
+  left: -110%;
+}
+#helpPanel.slide-in {
+  left: 0;
+}
+#helpDisclosureButton {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+#infoPanel {
+  background-color: pink;
+  overflow-y: scroll;
+  z-index: 1;
+
+  height: 100%;
+  position: fixed;
+  top: 0;
+  transition: left 0.4s ease 0s;
+  width: 90%;
+}
+#infoPanel.slide-out {
+  left: 110%;
+}
+#infoPanel.slide-in {
+  left: 10%;
+}
+#infoDisclosureButton {
+  position: fixed;
+  top: 0;
+  left: 90%;
+  z-index: 2;
+}
+
 
 /*
- * styles I wrote during development
- */
+** styles I wrote during development
+**/
 
 #statusLabel.default {
   color: black;

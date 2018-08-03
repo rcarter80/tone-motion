@@ -16,6 +16,29 @@ const publicConsole = document.querySelector('#publicConsole');
 const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
 const motionDataLabel = document.querySelector('#motionDataLabel');
 
+const infoDisclosureButton = document.querySelector('#infoDisclosureButton');
+const infoPanel = document.querySelector('#infoPanel');
+const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
+const helpPanel = document.querySelector('#helpPanel');
+// TODO: tidy this up
+infoDisclosureButton.onclick = function() {
+  if (infoPanel.className === 'slide-out') {
+    helpPanel.className = 'slide-out';
+    infoPanel.className = 'slide-in';
+  } else {
+    infoPanel.className = 'slide-out';
+  }
+}
+
+helpDisclosureButton.onclick = function() {
+  if (helpPanel.className === 'slide-out') {
+    infoPanel.className = 'slide-out';
+    helpPanel.className = 'slide-in';
+  } else {
+    helpPanel.className = 'slide-out';
+  }
+}
+
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
 */
