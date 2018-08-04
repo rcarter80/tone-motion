@@ -151,10 +151,6 @@ main {
 }
 
 #status-container {
-  /* position: fixed;
-  z-index: 0;
-  top: calc(50% - 100px);
-  left: calc(50% - 100px); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -218,6 +214,35 @@ main {
   border-color: red;
 }
 
+#message-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 75vw;
+  margin: 25px auto;
+  padding: 20px 50px;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+}
+#messageLabel.default {
+  color: #fff;
+}
+
+#messageLabel.warning {
+  color: orange;
+}
+
+#messageLabel.error {
+  color: red;
+}
+
+#messageLabel.hidden {
+  display: none;
+}
+
+
+
 #helpPanel,
 #infoPanel {
   position: absolute;
@@ -277,27 +302,6 @@ main {
 /*
 ** styles I wrote during development
 **/
-
-
-
-
-
-
-#messageLabel.default {
-  color: black;
-}
-
-#messageLabel.warning {
-  color: orange;
-}
-
-#messageLabel.error {
-  color: red;
-}
-
-#messageLabel.hidden {
-  display: none;
-}
 
 #publicConsole.hidden {
   display: none;
