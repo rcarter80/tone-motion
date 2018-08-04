@@ -3,10 +3,11 @@
 **/
 
 :root {
- --dark-gray: #232920;
+ --bright-blue: #0061ff;
+ --medium-blue: #386cc1;
 } /* TODO: decide on global colors and set as variables like below */
 div.example {
-  background-color: var(--dark-gray);
+  background-color: var( --bright-blue);
 }
 
 *,
@@ -22,13 +23,14 @@ html {
 /* TODO: decide on font and colors */
 body {
   margin: 0;
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  height: 100vh;
+  font-family: Tahoma, Arial, sans-serif;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
   color: #000;
   text-align: left;
-  background-color: #ccc;
+  background: linear-gradient(#0061ff, #386cc1);
   overflow-x: hidden;
 }
 
@@ -42,11 +44,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 2.5rem;
-  width: calc(100% - 100px);
-  margin: 0 auto;
+  width: calc(100% - 180px);
+  margin: 25px auto;
   text-align: center;
-  background-color: red;
+  font-size: 1.5rem;
+  letter-spacing: 0.1rem;
+  color: #fff;
 }
 
 h2 {
@@ -86,95 +89,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/********************************************************/
-/* TODO: edit button and checkbox appearance. below was copied from bootstrap */
-/* button {
-  border-radius: 0;
-}
-
-button:focus {
-  outline: 1px dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-}
-
-input,
-button,
-select,
-optgroup,
-textarea {
-  margin: 0;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-button,
-input {
-  overflow: visible;
-}
-
-button,
-select {
-  text-transform: none;
-}
-
-button,
-html [type="button"],
-[type="reset"],
-[type="submit"] {
-  -webkit-appearance: button;
-}
-
-button::-moz-focus-inner,
-[type="button"]::-moz-focus-inner,
-[type="reset"]::-moz-focus-inner,
-[type="submit"]::-moz-focus-inner {
-  padding: 0;
-  border-style: none;
-}
-
-.btn {
-  display: inline-block;
-  font-weight: 400;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  border: 1px solid transparent;
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 0.25rem;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.btn:hover, .btn:focus {
-  text-decoration: none;
-}
-
-.btn:focus, .btn.focus {
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.btn.disabled, .btn:disabled {
-  opacity: 0.65;
-}
-
-.btn:not(:disabled):not(.disabled) {
-  cursor: pointer;
-}
-
-input[type="radio"],
-input[type="checkbox"] {
-  box-sizing: border-box;
-  padding: 0;
-} */
-/********************************************************/
-
 /*
 ** BUTTONS
 **/
@@ -184,30 +98,42 @@ button:hover,
 button:active,
 button:focus {
   display: inline-block;
-  font-weight: 400;
+  font-weight: 800;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  border: 1px solid transparent;
+  border: 2px solid var(--bright-blue);
   padding: 0;
   font-size: 1rem;
   line-height: 1.5;
   margin: 0;
   font-family: inherit;
   font-size: inherit;
-  color: black;
+  color: var(--bright-blue);
+  background-color: #fff;
+  box-shadow: 0 0 16px rgba(0,0,0,.28);;
 }
 
 #helpDisclosureButton,
 #infoDisclosureButton {
+  position: fixed;
+  z-index: 2;
+  top: 0;
   height: 50px;
   width: 50px;
+  margin: 20px;
   border-radius: 100%;
   font-size: 1.5rem;
   line-height: 1;
+}
+#helpDisclosureButton {
+  left: 0;
+}
+#infoDisclosureButton {
+  right: 0;
 }
 
 
@@ -216,13 +142,80 @@ button:focus {
 **/
 
 header {
-  background-color: gray;
+  background-color: transparent;
 }
 
 main {
-  background-color: green;
-/* TODO: if positioning is static, z-index has NO EFFECT */
+  background-color: transparent;
+  margin 0;
+}
+
+#status-container {
+  /* position: fixed;
   z-index: 0;
+  top: calc(50% - 100px);
+  left: calc(50% - 100px); */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 200px;
+  margin-top: calc(25vh - 75px);
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+}
+#statusLabel,
+#statusLabel.default {
+  padding: 20px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+#statusLabel.active {
+  animation: pulsing 2s ease-out 0s infinite alternate;
+}
+@keyframes pulsing {
+  from { opacity: 1; }
+  to   { opacity: 0.2; }
+}
+
+#statusLabel.error {
+  color: red;
+}
+
+#startStopButton {
+  display: block;
+  margin-top: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 50px;
+  min-width: 100px;
+  border-radius: 10px;
+  padding: 10px;
+  letter-spacing: 0.05rem;
+}
+#startStopButton.hidden {
+  display: none;
+}
+
+#startStopButton.start,
+#startStopButton.stop {
+  color: var(--bright-blue);
+}
+
+/* use after button has been tapped but cue is being fetched */
+#startStopButton.disabled {
+  opacity: 0.5;
+}
+
+#startStopButton.reload {
+  color: red;
+  border-color: red;
 }
 
 #helpPanel,
@@ -280,60 +273,14 @@ main {
   }
 }
 
-#helpDisclosureButton {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
-}
-#infoDisclosureButton {
-  position: fixed;
-  top: 0;
-  left: 90%;
-  z-index: 2;
-}
-
 
 /*
 ** styles I wrote during development
 **/
 
-#statusLabel.default {
-  color: black;
-}
 
-#statusLabel.active {
-  color: green;
-}
 
-#statusLabel.error {
-  color: red;
-}
 
-#startStopButton.hidden {
-  display: none;
-}
-
-#startStopButton.start {
-  /* NEED TO RESET DISPLAY? */
-  color: black;
-}
-
-#startStopButton.stop {
-  /* NEED TO RESET DISPLAY? */
-  color: red;
-}
-
-/* use after button has been tapped but cue is being fetched */
-#startStopButton.disabled {
-  /* NEED TO RESET DISPLAY? */
-  color: gray;
-}
-
-#startStopButton.reload {
-  /* NEED TO RESET DISPLAY? */
-  color: purple;
-}
 
 
 #messageLabel.default {
