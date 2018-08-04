@@ -189,7 +189,7 @@ ToneMotion.prototype.setStatus = function(status) {
     case 'waitingForPieceToStart':
       this.setStatusLabel('waiting', 'active');
       this.setStartStopButton('stop', 'stop');
-      this.publicMessage("The piece hasn't start yet, but you're all set. The music will start automatically.");
+      this.publicMessage("The piece hasn't started yet, but you're all set. The music will start automatically.");
       break;
     case 'playing_tacet':
       this.setStatusLabel('tacet', 'default');
