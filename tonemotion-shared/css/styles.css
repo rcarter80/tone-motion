@@ -6,6 +6,8 @@
  --theme-color-light: #032dc1;
  --theme-color-dark: #384577;
  --theme-color-error: #ff5151;
+ --theme-color-error-light: #fcc4c4;
+ --theme-color-error-dark: #b50000;
 }
 
 *,
@@ -74,9 +76,10 @@ h6 {
 
 p {
   margin: 0.5rem 0;
-
   color: inherit;
   font-size: inherit;
+  font-weight: inherit;
+  text-align: inherit;
 }
 
 /* TODO: decide on link appearance and touch behavior */
@@ -116,7 +119,7 @@ button:focus {
   font-size: inherit;
   color: var(--theme-color-light);
   background-color: #fff;
-  box-shadow: 0 0 16px rgba(255,255,255,.28);;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
 }
 
 #helpDisclosureButton,
@@ -152,7 +155,8 @@ main {
   margin 0;
 }
 
-#status_container {
+#status_container,
+#status_container.default {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -164,9 +168,6 @@ main {
   border: 2px dashed #fff;
   border-radius: 10px;
   background-color: transparent;
-}
-#statusLabel,
-#statusLabel.default {
   padding: 20px;
   color: #fff;
   font-weight: 500;
@@ -174,7 +175,7 @@ main {
   text-align: center;
 }
 
-#statusLabel.active {
+#status_container.active {
   animation: pulsing 2s ease-out 0s infinite alternate;
 }
 @keyframes pulsing {
@@ -182,8 +183,14 @@ main {
   to   { opacity: 0.2; }
 }
 
-#statusLabel.error {
-  color: var(--theme-color-error);
+#status_container.error {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
+}
+
+#statusLabel {
+  padding: 20px;
 }
 
 #startStopButton {
@@ -203,7 +210,11 @@ main {
 
 #startStopButton.start,
 #startStopButton.stop {
-  color: var(--theme-color-light);
+  animation: glowing 1s linear 0s infinite alternate;
+}
+@keyframes glowing {
+  from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
+  to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
 }
 
 /* use after button has been tapped but cue is being fetched */
@@ -212,8 +223,8 @@ main {
 }
 
 #startStopButton.reload {
-  color: var(--theme-color-error);
-  border-color: var(--theme-color-error);
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
 }
 
 #message_container,
@@ -235,7 +246,9 @@ main {
 }
 
 #message_container.error {
-  color: var(--theme-color-error);
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
 }
 
 #message_container.hidden {

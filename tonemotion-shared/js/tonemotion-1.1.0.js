@@ -10,6 +10,8 @@
 
 const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
 
+const status_container = document.querySelector('#status_container');
+
 const statusLabel = document.querySelector('#statusLabel');
 
 const startStopButton = document.querySelector('#startStopButton');
@@ -216,9 +218,9 @@ ToneMotion.prototype.setStatus = function(status) {
       this.shutEverythingDown();
       break;
     case 'error':
+      this.shutEverythingDown();
       this.setStatusLabel('error', 'error');
       this.setStartStopButton('try again', 'reload');
-      this.shutEverythingDown();
       break;
     default:
       this.publicError('Error setting application status');
@@ -231,9 +233,9 @@ ToneMotion.prototype.setStatus = function(status) {
 
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
-  this.publicLog('Shutting down');
-  clearInterval(this.motionUpdateLoopID);
   clearTimeout(this.cueFetchTimeout);
+  clearInterval(this.motionUpdateLoopID);
+  this.publicLog('Shutting down');
   this.clearActiveCues();
 
   // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
@@ -309,7 +311,7 @@ ToneMotion.prototype.clearConsole = function() {
 
 // Sets text and class name for main status label in center panel
 ToneMotion.prototype.setStatusLabel = function(text, className) {
-  statusLabel.className = className;
+  status_container.className = className;
   statusLabel.innerHTML = text;
 };
 
@@ -591,7 +593,10 @@ ToneMotion.prototype.getCuesFromServer = function() {
       if (this.debug) {
         this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
       }
-      this.goCue(this.cueOnClient, this.cueTimeFromServer);
+      // Prevent cue triggering if an error has occurred
+      if (this.status !== 'error') {
+        this.goCue(this.cueOnClient, this.cueTimeFromServer);
+      }
     } // else no new cue and control falls through, on to next loop
   })
   .catch(error => this.publicError(error));
