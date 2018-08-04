@@ -3,8 +3,8 @@
 **/
 
 :root {
- --bright-blue: #0061ff;
- --medium-blue: #386cc1;
+ --bright-blue: #032dc1;
+ --medium-blue: #384577;
 } /* TODO: decide on global colors and set as variables like below */
 div.example {
   background-color: var( --bright-blue);
@@ -18,6 +18,7 @@ div.example {
 
 html {
   -webkit-text-size-adjust: 100%;
+  background-color: var(--medium-blue);
 }
 
 /* TODO: decide on font and colors */
@@ -31,7 +32,7 @@ body {
   line-height: 1.5;
   color: #000;
   text-align: left;
-  background: linear-gradient(#0061ff, #386cc1);
+  background: linear-gradient(#032dc1, #384577);
   overflow-x: hidden;
 }
 
@@ -45,8 +46,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  width: calc(100% - 180px);
-  margin: 25px auto;
+  margin: 0;
+  padding: 25px 90px;
   text-align: center;
   font-size: 1.5rem;
   letter-spacing: 0.1rem;
@@ -74,8 +75,10 @@ h6 {
 }
 
 p {
-  margin-top: 0;
-  margin-bottom: 1rem;
+  margin: 0.5rem 0;
+
+  color: inherit;
+  font-size: inherit;
 }
 
 /* TODO: decide on link appearance and touch behavior */
@@ -106,7 +109,7 @@ button:focus {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  border: 2px solid var(--bright-blue);
+  border: 1px solid var(--bright-blue);
   padding: 0;
   font-size: 1rem;
   line-height: 1.5;
@@ -115,7 +118,7 @@ button:focus {
   font-size: inherit;
   color: var(--bright-blue);
   background-color: #fff;
-  box-shadow: 0 0 16px rgba(0,0,0,.28);;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);;
 }
 
 #helpDisclosureButton,
@@ -151,7 +154,7 @@ main {
   margin 0;
 }
 
-#status-container {
+#status_container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,31 +218,32 @@ main {
   border-color: red;
 }
 
-#message-container {
+#message_container,
+#message_container.default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 75vw;
-  margin: 25px auto;
+  /* width: 75vw; */
+  margin: 25px 50px;
   padding: 20px;
   border: 2px dashed #fff;
   border-radius: 10px;
   background-color: transparent;
-}
-#messageLabel.default {
+  opacity: 1;
   color: #fff;
 }
-
-#messageLabel.warning {
+#message_container.warning {
   color: orange;
 }
 
-#messageLabel.error {
+#message_container.error {
   color: red;
+  border-color: red;
+  background-color: #fff;
 }
 
-#messageLabel.hidden {
-  display: none;
+#message_container.hidden {
+  opacity: 0;
 }
 
 

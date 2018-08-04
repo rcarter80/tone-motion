@@ -8,36 +8,27 @@
 ** DOM HOOKS
 */
 
+const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
+
 const statusLabel = document.querySelector('#statusLabel');
+
 const startStopButton = document.querySelector('#startStopButton');
+
+const message_container = document.querySelector('#message_container');
+
 const messageLabel = document.querySelector('#messageLabel');
-const consoleCheckbox = document.querySelector('#consoleCheckbox');
-const publicConsole = document.querySelector('#publicConsole');
+
+const helpPanel = document.querySelector('#helpPanel');
+
+const sectionInstructions = document.querySelector('#sectionInstructions');
+
 const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
+
 const motionDataLabel = document.querySelector('#motionDataLabel');
 
-const infoDisclosureButton = document.querySelector('#infoDisclosureButton');
-const infoPanel = document.querySelector('#infoPanel');
-const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
-const helpPanel = document.querySelector('#helpPanel');
-// TODO: tidy this up
-infoDisclosureButton.onclick = function() {
-  if (infoPanel.className === 'slide-out') {
-    helpPanel.className = 'slide-out';
-    infoPanel.className = 'slide-in';
-  } else {
-    infoPanel.className = 'slide-out';
-  }
-}
+const consoleCheckbox = document.querySelector('#consoleCheckbox');
 
-helpDisclosureButton.onclick = function() {
-  if (helpPanel.className === 'slide-out') {
-    infoPanel.className = 'slide-out';
-    helpPanel.className = 'slide-in';
-  } else {
-    helpPanel.className = 'slide-out';
-  }
-}
+const publicConsole = document.querySelector('#publicConsole');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -267,13 +258,13 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
 // Prints to message label on center panel
 ToneMotion.prototype.publicMessage = function(message) {
-  messageLabel.className = 'default';
+  message_container.className = 'default';
   messageLabel.innerHTML = message;
 };
 
 // Prints to message label (styled as warning), prints console warning
 ToneMotion.prototype.publicWarning = function(message) {
-  messageLabel.className = 'warning';
+  message_container.className = 'warning';
   messageLabel.innerHTML = message;
   console.warn(message);
 };
@@ -281,14 +272,14 @@ ToneMotion.prototype.publicWarning = function(message) {
 // Prints to message label (styled as error) AND sets status to 'error' (which stops execution) AND throws error to console
 ToneMotion.prototype.publicError = function(message) {
   this.setStatus('error');
-  messageLabel.className = 'error';
+  message_container.className = 'error';
   messageLabel.innerHTML = message;
   console.error(message);
 };
 
 // Clears message label
 ToneMotion.prototype.clearMessageLabel = function() {
-  messageLabel.className = 'hidden';
+  message_container.className = 'hidden';
   messageLabel.innerHTML = '';
 }
 
@@ -365,6 +356,17 @@ ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
     }
   })
 };
+
+// Slides side panel in and out
+helpDisclosureButton.onclick = function() {
+  if (helpPanel.className === 'slide-out') {
+    helpPanel.className = 'slide-in';
+    helpDisclosureButton.className = 'slide-in';
+  } else {
+    helpPanel.className = 'slide-out';
+    helpDisclosureButton.className = 'slide-out';
+  }
+}
 
 /*********************************************************************
 ********************** DEVICE MOTION HANDLING ************************
