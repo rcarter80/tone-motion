@@ -5,9 +5,9 @@
 :root {
  --theme-color-light: #032dc1;
  --theme-color-dark: #384577;
- --theme-color-error: #ff5151;
  --theme-color-error-light: #fcc4c4;
  --theme-color-error-dark: #b50000;
+ --theme-color-warning: #ffcc84;
 }
 
 *,
@@ -32,6 +32,7 @@ body {
   line-height: 1.5;
   color: #000;
   text-align: left;
+  /* gradient goes from theme-color-light to theme-color-dark */
   background: linear-gradient(#032dc1, #384577);
   overflow-x: hidden;
 }
@@ -123,22 +124,23 @@ button:focus {
 }
 
 #helpDisclosureButton,
-#infoDisclosureButton {
+#helpDisclosureButton.slide-out {
   position: fixed;
   z-index: 2;
   top: 0;
+  left: 0;
   height: 50px;
   width: 50px;
   margin: 20px;
   border-radius: 100%;
   font-size: 1.5rem;
   line-height: 1;
+  transition: transform 0.25s;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
 }
-#helpDisclosureButton {
-  left: 0;
-}
-#infoDisclosureButton {
-  right: 0;
+#helpDisclosureButton.slide-in {
+  transform: rotate(90deg);
+  box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
 }
 
 
@@ -153,6 +155,7 @@ header {
 main {
   background-color: transparent;
   margin 0;
+  padding-bottom: 25px;
 }
 
 #status_container,
@@ -173,6 +176,7 @@ main {
   font-weight: 500;
   font-size: 1.75rem;
   text-align: center;
+  transition: all .2s linear;
 }
 
 #status_container.active {
@@ -208,14 +212,15 @@ main {
   display: none;
 }
 
-#startStopButton.start,
-#startStopButton.stop {
+#startStopButton.start {
   animation: glowing 1s linear 0s infinite alternate;
 }
 @keyframes glowing {
   from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
   to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
 }
+
+/* TODO: do I need anythign for 'stop' state? */
 
 /* use after button has been tapped but cue is being fetched */
 #startStopButton.disabled {
@@ -232,7 +237,6 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* width: 75vw; */
   margin: 25px 50px;
   padding: 20px;
   border: 2px dashed #fff;
@@ -240,9 +244,11 @@ main {
   background-color: transparent;
   opacity: 1;
   color: #fff;
+  transition: all .2s linear;
 }
 #message_container.warning {
-  color: orange;
+  color: var(--theme-color-warning);
+  border-color: var(--theme-color-warning);
 }
 
 #message_container.error {
@@ -257,31 +263,27 @@ main {
 
 
 
-#helpPanel,
-#infoPanel {
-  position: fixed;
+#helpPanel {
+  position: absolute;
   z-index: 1;
   top: 0;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: yellow;
-  box-shadow: 0 0 16px rgba(0,0,0,.28); /* TODO: white box-shadow? */
+  padding: 100px 20px 20px;
+  background-color: #fff;
+  color: var(--theme-color-light);
+  border-right: 1px solid var(--theme-color-light);
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
 }
 #helpPanel.slide-in {
   visibility: visible;
   transform: translateX(0);
   transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0s;
 }
-#infoPanel.slide-in {
-  visibility: visible;
-  transform: translateX(10%);
-  transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0s;
-}
 
 @media (max-width: 767px) {
-  #helpPanel,
-  #infoPanel {
+  #helpPanel {
     width: 90%;
   }
   #helpPanel.slide-out {
@@ -289,15 +291,9 @@ main {
     transform: translateX(-110%);
     transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
   }
-  #infoPanel.slide-out {
-    visibility: hidden;
-    transform: translateX(110%);
-    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
-  }
 }
 @media (min-width: 768px) {
-  #helpPanel,
-  #infoPanel {
+  #helpPanel {
     width: 400px;
   }
   #helpPanel.slide-out {
@@ -305,22 +301,25 @@ main {
     transform: translateX(-416px); /* TODO: decide size of box-shadow */
     transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
   }
-  #infoPanel.slide-out {
-    visibility: hidden;
-    transform: translateX(416px);
-    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
-  }
 }
 
-
-/*
-** styles I wrote during development
-**/
-
-#publicConsole.hidden {
-  display: none;
+#helpPanel h2 {
+  border-left: 5px solid var(--theme-color-dark);
+  padding-left: 10px;
+  font-size: 1.5rem;
 }
 
-#publicConsole.visible {
-  display: block;
+#helpPanel div {
+  margin-bottom: 20px;
+}
+
+#console_container,
+#motion_container {
+  max-height: 200px;
+  overflow-y: scroll;
+  padding: 10px;
+  border: 1px solid var(--theme-color-dark);
+  font-size: 80%;
+  font-family: Courier, monospace;
+  color: var(--theme-color-dark);
 }

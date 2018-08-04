@@ -30,7 +30,7 @@ const motionDataLabel = document.querySelector('#motionDataLabel');
 
 const consoleCheckbox = document.querySelector('#consoleCheckbox');
 
-const publicConsole = document.querySelector('#publicConsole');
+const console_container = document.querySelector('#console_container');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -291,7 +291,7 @@ ToneMotion.prototype.publicLog = function(message) {
     var logMessage = document.createElement('p');
     logMessage.className = 'logMessage';
     logMessage.innerHTML = message;
-    publicConsole.appendChild(logMessage);
+    console_container.appendChild(logMessage);
   }
   console.log(message);
 };
