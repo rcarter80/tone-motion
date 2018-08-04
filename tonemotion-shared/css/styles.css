@@ -3,11 +3,9 @@
 **/
 
 :root {
- --bright-blue: #032dc1;
- --medium-blue: #384577;
-} /* TODO: decide on global colors and set as variables like below */
-div.example {
-  background-color: var( --bright-blue);
+ --theme-color-light: #032dc1;
+ --theme-color-dark: #384577;
+ --theme-color-error: #ff5151;
 }
 
 *,
@@ -18,7 +16,7 @@ div.example {
 
 html {
   -webkit-text-size-adjust: 100%;
-  background-color: var(--medium-blue);
+  background-color: var(--theme-color-dark);
 }
 
 /* TODO: decide on font and colors */
@@ -109,14 +107,14 @@ button:focus {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  border: 1px solid var(--bright-blue);
+  border: 1px solid var(--theme-color-light);
   padding: 0;
   font-size: 1rem;
   line-height: 1.5;
   margin: 0;
   font-family: inherit;
   font-size: inherit;
-  color: var(--bright-blue);
+  color: var(--theme-color-light);
   background-color: #fff;
   box-shadow: 0 0 16px rgba(255,255,255,.28);;
 }
@@ -185,7 +183,7 @@ main {
 }
 
 #statusLabel.error {
-  color: red;
+  color: var(--theme-color-error);
 }
 
 #startStopButton {
@@ -205,7 +203,7 @@ main {
 
 #startStopButton.start,
 #startStopButton.stop {
-  color: var(--bright-blue);
+  color: var(--theme-color-light);
 }
 
 /* use after button has been tapped but cue is being fetched */
@@ -214,8 +212,8 @@ main {
 }
 
 #startStopButton.reload {
-  color: red;
-  border-color: red;
+  color: var(--theme-color-error);
+  border-color: var(--theme-color-error);
 }
 
 #message_container,
@@ -237,9 +235,7 @@ main {
 }
 
 #message_container.error {
-  color: red;
-  border-color: red;
-  background-color: #fff;
+  color: var(--theme-color-error);
 }
 
 #message_container.hidden {
