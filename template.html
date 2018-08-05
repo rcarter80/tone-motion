@@ -57,19 +57,18 @@
     <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic</p>
   </div>
   <div>
-    <h2>Show motion data</h2>
-    <p>(may affect performance)</p>
+    <h2>Motion monitor</h2>
     <input type="checkbox" id="motionDataCheckbox">
-    <div id="motion_container">
-      <p id="motionDataLabel">(motion data goes here)</p>
+    <label for="motionDataCheckbox">Show motion data (may affect performance)</label>
+    <div id="motion_container" class="hidden">
+      <p id="motionDataLabel"></p>
     </div>
   </div>
   <div id="publicConsole">
-    <h2>Show console messages</h2>
-    <p>(may affect performance)</p>
+    <h2>Console</h2>
     <input type="checkbox" id="consoleCheckbox">
-    <p>(public console messages go here)</p>
-    <div id="console_container">
+    <label for="consoleCheckbox">Show console messages (may affect performance)</label>
+    <div id="console_container" class="hidden">
     </div>
   </section>
 

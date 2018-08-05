@@ -114,12 +114,14 @@ ToneMotion.prototype.init = function() {
   // Can automatically show console in left panel when page loads
   if (this.showConsoleOnLaunch) {
     consoleCheckbox.checked = true;
+    console_container.className = '';
   }
 
   // Set up click functions for main button
   this.bindButtonFunctions();
-  // Allow hiding and clearing of console
+  // Allow hiding and clearing of console and motion data monitor
   this.bindConsoleCheckboxFunctions();
+  this.bindMotionCheckboxFunctions();
 
   // On iOS, the context will be started on the first valid user action on the #startStopButton element
   // see https://github.com/tambien/StartAudioContext
@@ -298,8 +300,8 @@ ToneMotion.prototype.publicLog = function(message) {
 
 // Clears console in help panel
 ToneMotion.prototype.clearConsole = function() {
+  console_container.className = 'hidden';
   var logMessages = document.getElementsByClassName('logMessage');
-
   while (logMessages[0]) {
     logMessages[0].parentNode.removeChild(logMessages[0]);
   }
@@ -349,12 +351,28 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   });
 };
 
-// Clears console in left panel when checkbox is unchecked
+// Toggles display for console in side panel. Hiding clears log.
 ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
   consoleCheckbox.addEventListener('change', () => {
-    if (!consoleCheckbox.checked) {
+    if (consoleCheckbox.checked) {
+      // Console is now displayed. Print message to confirm.
+      console_container.className = '';
+      this.publicLog('(Console messages will go here)');
+    } else {
       // Checkbox is unchecked and console should be cleared
       this.clearConsole();
+    }
+  })
+};
+
+// Toggles display for motion data monitor in side panel.
+ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
+  motionDataCheckbox.addEventListener('change', () => {
+    if (motionDataCheckbox.checked) {
+      motion_container.className = '';
+      motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+    } else {
+      motion_container.className = 'hidden';
     }
   })
 };
