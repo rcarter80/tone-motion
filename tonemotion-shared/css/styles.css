@@ -201,7 +201,8 @@ main {
   padding: 20px;
 }
 
-#startStopButton {
+#startStopButton,
+#simulateShakeButton {
   display: block;
   margin-top: 25px;
   margin-left: auto;
@@ -237,7 +238,8 @@ main {
 }
 
 #message_container,
-#message_container.default {
+#message_container.default,
+fieldset {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,3 +336,23 @@ main {
 #motion_container.hidden {
   display: none;
 }
+
+/*
+** MOTION SIMULATION ON DESKTOP
+**/
+
+fieldset {
+  flex-direction: column;
+}
+
+input[type="range"] {
+  margin: 15px 0 35px 0;
+  width: 75%;
+  max-width: 240px;
+}
+
+#simulateShakeButton:hover {
+  box-shadow: 0 0 40px rgba(255,255,255,.28);
+}
+
+/* TODO: style elements to be disabled if not usable */

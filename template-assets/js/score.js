@@ -1,10 +1,11 @@
 const tm = new ToneMotion();
 tm.debug = true;
 tm.showConsoleOnLaunch = true;
-tm.shouldSyncToServer = true; // to speed up load time while testing
+tm.shouldSyncToServer = false; // to speed up load time while testing
 
 window.onload = function() {
   tm.init();
+  tm.testWithoutMotion();
 };
 
 // Cue number 0 sets status to 'waitingForPieceToStart'

@@ -559,7 +559,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
-      motionDataLabel.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
+      motionDataLabel.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
     }
   }
 };
