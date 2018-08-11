@@ -388,6 +388,15 @@ helpDisclosureButton.onclick = function() {
   }
 }
 
+// Adds sliders for accelerometer simulation and a "shake" button
+ToneMotion.prototype.testWithoutMotion = function() {
+  this.shouldTestOnDesktop = true;
+
+  // Add slider properties to ToneMotion object
+  this.sliderX = document.querySelector('#x_slider');
+  this.sliderY = document.querySelector('#y_slider');
+};
+
 /*********************************************************************
 ********************** DEVICE MOTION HANDLING ************************
 *********************************************************************/
@@ -455,11 +464,13 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   }
 
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
+  // However, this test won't fail if shouldTestOnDesktop is true and accel.rawX is assigned a value above.
   if (this.accel.rawX === undefined) {
     this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
   } else {
     this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   }
+  // TODO: add debugging console message to read out motion polling interval, which is read-only
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
@@ -488,6 +499,14 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
   else {
     this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
+  }
+
+  // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
+  if (this.shouldTestOnDesktop) {
+    this.accel.x = this.sliderX.value;
+    this.accel.y = this.sliderY.value;
+    // TODO: could put this in if-else with block above
+    // TODO: add shake button
   }
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS (only if cue uses tilt)

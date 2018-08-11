@@ -31,6 +31,16 @@
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
   <audio style="display:none;"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+  <!-- append sliders and "shake" button here -->
+  <fieldset>
+    <legend>Motion simulation</legend>
+    <label for="accel_x">X-axis of accelerometer</label>
+    <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
+    <label for="accel_y">Y-axis of accelerometer</label>
+    <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
+  </fieldset>
+
 </main>
 
 <section id="helpPanel" class="slide-out"> <!-- left panel with instructions and help -->
