@@ -97,7 +97,7 @@ function ToneMotion() {
   this.shakeFlag = false;
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
-  this.shouldTestOnDesktop = true;
+  this.shouldTestOnDesktop = false;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
   this.cueOnClient = -1;
@@ -395,6 +395,11 @@ ToneMotion.prototype.testWithoutMotion = function() {
   // Add slider properties to ToneMotion object
   this.sliderX = document.querySelector('#x_slider');
   this.sliderY = document.querySelector('#y_slider');
+  this.shakeButton = document.querySelector('#simulateShakeButton');
+
+  this.shakeButton.addEventListener("click", () => {
+    this.currentCue.triggerShakeSound();
+  });
 };
 
 /*********************************************************************
@@ -449,6 +454,12 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
       this.shakeFlag = true; // enough motion to trigger shake
     }
   }
+
+  // For debugging, add property to read DeviceMotionEvent interval
+  // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
+  if (this.debug) {
+    this.motionPollingInterval = event.interval;
+  }
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
@@ -480,42 +491,41 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
 ToneMotion.prototype.motionUpdateLoop = function() {
-  // NORMALIZE ACCELEROMETER DATA
-  if (this.accel.rawX < -10) { // clamp
-    this.accel.x = 0; // no need to normalize
-  }
-  else if (this.accel.rawX > 10) {
-    this.accel.y = 1;
-  }
-  else {
-    this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
-  }
-
-  if (this.accel.rawY < -10) { // clamp
-    this.accel.y = 0; // no need to normalize
-  }
-  else if (this.accel.rawY > 10) {
-    this.accel.y = 1;
-  }
-  else {
-    this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
-  }
-
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldTestOnDesktop) {
     this.accel.x = this.sliderX.value;
     this.accel.y = this.sliderY.value;
-    // TODO: could put this in if-else with block above
     // TODO: add shake button
+  } else {
+    // NORMALIZE ACCELEROMETER DATA
+    if (this.accel.rawX < -10) { // clamp
+      this.accel.x = 0; // no need to normalize
+    }
+    else if (this.accel.rawX > 10) {
+      this.accel.y = 1;
+    }
+    else {
+      this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
+    }
+
+    if (this.accel.rawY < -10) { // clamp
+      this.accel.y = 0; // no need to normalize
+    }
+    else if (this.accel.rawY > 10) {
+      this.accel.y = 1;
+    }
+    else {
+      this.accel.y = (this.accel.rawY + 10) / 20; // normalize to 0 - 1
+    }
   }
 
-  // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS (only if cue uses tilt)
+  // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
+  // smooths signals to avoid zipper noise
   this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
 
   this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
   if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
-    // smooths signals to avoid zipper noise
     this.currentCue.updateTiltSounds();
   }
 
@@ -548,6 +558,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // Left panel has checkbox to allow monitoring of accel values
   if (motionDataCheckbox.checked) {
     motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+
+    // Will display DeviceMotionEvent interval if debugging
+    if (this.debug) {
+      motionDataLabel.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
+    }
   }
 };
 
