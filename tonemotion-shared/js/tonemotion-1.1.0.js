@@ -481,7 +481,6 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   } else {
     this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   }
-  // TODO: add debugging console message to read out motion polling interval, which is read-only
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
@@ -495,7 +494,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   if (this.shouldTestOnDesktop) {
     this.accel.x = this.sliderX.value;
     this.accel.y = this.sliderY.value;
-    // TODO: add shake button
   } else {
     // NORMALIZE ACCELEROMETER DATA
     if (this.accel.rawX < -10) { // clamp
