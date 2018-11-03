@@ -20,7 +20,7 @@ tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called');
 }
 tm.cue[1].updateTiltSounds = function() {
-  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with value of ' + tm.xSig.value;
+  statusLabel.innerHTML = 'updateTiltSounds() called with x value of ' + tm.xSig.value;
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
