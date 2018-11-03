@@ -5,7 +5,7 @@ tm.shouldSyncToServer = false; // to speed up load time while testing
 
 window.onload = function() {
   tm.init();
-  tm.testWithoutMotion();
+  // tm.testWithoutMotion();
 };
 
 // Cue number 0 sets status to 'waitingForPieceToStart'
@@ -15,12 +15,15 @@ tm.cue[0].goCue = function() {
 };
 
 // Test cues
-tm.cue[1] = new TMCue('tilt', -1);
+tm.cue[1] = new TMCue('tilt', 2000, 0);
 tm.cue[1].goCue = function() {
-  tm.publicLog('tm.cue[1].goCue() called');
+  tm.publicLog('tm.cue[1].goCue() called.');
+
+  var synth = new Tone.Synth().toMaster();
+  synth.triggerAttackRelease("C4", 4);
 }
 tm.cue[1].updateTiltSounds = function() {
-  statusLabel.innerHTML = 'updateTiltSounds() called with x value of ' + tm.xSig.value;
+  statusLabel.innerHTML = 'updateTiltSounds() called with an x value of ' + tm.xSig.value;
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
