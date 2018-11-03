@@ -23,7 +23,7 @@ tm.cue[1].goCue = function() {
   synth.triggerAttackRelease("C4", 4);
 }
 tm.cue[1].updateTiltSounds = function() {
-  statusLabel.innerHTML = 'updateTiltSounds() called with an x value of ' + tm.xSig.value;
+  // TODO: add pitch handling or filtering here?
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
@@ -37,6 +37,7 @@ tm.cue[3].goCue = function() {
 }
 tm.cue[3].triggerShakeSound = function() {
   tm.publicLog('Shake gesture triggered at ' + Date.now());
+  synth.triggerAttackRelease("C4", 4);
 }
 
 tm.cue[4] = new TMCue('waiting', -1);
