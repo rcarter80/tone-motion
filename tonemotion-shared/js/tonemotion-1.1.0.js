@@ -536,6 +536,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
 
       // Shake gesture triggered here
+      // TODO: prevent premature shake if cue is delayed
       this.currentCue.triggerShakeSound();
 
       if (this.debug) {
