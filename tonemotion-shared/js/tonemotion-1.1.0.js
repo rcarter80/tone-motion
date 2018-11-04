@@ -592,6 +592,7 @@ ToneMotion.prototype.syncClocks = function() {
           // safari caches response despite my very nice request not to
           // it releases cache after first iteration, but if first try
           // is super short roundtrip (e.g., 1 ms), the result is b.s.
+          // TODO: consider longer than 10 ms. for b.s. result
           if (syncClockCounter > 1 || roundtrip > 10) {
             shortestRoundtrip = roundtrip;
             // shortest roundtrip considered most accurate
