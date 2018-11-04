@@ -30,7 +30,8 @@
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <audio style="display:none;"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+  <!-- TODO: update and optimize this workaround -->
+  <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
   <!-- TODO: add or make this visible only if on desktop -->
@@ -92,6 +93,20 @@
 
 <!-- Score for this piece -->
 <script src="demo-assets/js/score.js"></script>
+
+<script>
+// TODO: clean this up. finding <audio> shim workaround inspired by:
+ // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
+ let audioElem = document.getElementById("setAudioSession");
+ let playButton = document.getElementById("startStopButton");
+ playButton.addEventListener("click", handlePlayButton, false);
+ // simply playing back 1-sec. silent file when tapping a button allows
+ // audio to sound with ring/silent switch on silent.
+ // keeps sound on after 1-sec. silent file elapses.
+ function handlePlayButton() {
+   audioElem.play();
+ }
+ </script>
 
 </body>
 </html>
