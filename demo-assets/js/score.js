@@ -77,7 +77,7 @@ tm.cue[2].goCue = function() {
   tm.publicLog('tm.cue[2].goCue() called');
 }
 
-tm.cue[3] = new TMCue('shake', -1);
+tm.cue[3] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   // trigger random chime at beginning of SHAKE section
   var thisChime = chimeArray[Math.floor(Math.random()*chimeArray.length)];
