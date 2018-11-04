@@ -12,10 +12,14 @@ window.onload = function() {
 var synth = new Tone.Synth().toMaster();
 
 var chimePlayer = new Tone.Players({
-  "ch1714": "demo-assets/audio/chime-1714Hz-A6.mp3",
-  "ch1748": "demo-assets/audio/chime-1748Hz-A6.mp3"
+  "ch1654": "demo-assets/audio/chime-1654Hz-Ab6.mp3",
+  "ch1661": "demo-assets/audio/chime-1661Hz-Ab6.mp3",
+  "ch1748": "demo-assets/audio/chime-1748Hz-A6.mp3",
+  "ch1929": "demo-assets/audio/chime-1929Hz-B6.mp3",
+  "ch2417": "demo-assets/audio/chime-2417Hz-D7.mp3",
+  "ch2568": "demo-assets/audio/chime-2568Hz-E7.mp3",
 }).toMaster();
-var chimeArray = ["ch1714", "ch1748"];
+var chimeArray = ["ch1654", "ch1661", "ch1748", "ch1929", "ch2417", "ch2568"];
 
 // Cue number 0 sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', -1);
