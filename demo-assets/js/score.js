@@ -2,7 +2,7 @@ const tm = new ToneMotion();
 tm.debug = true;
 tm.showConsoleOnLaunch = true;
 // TODO: change back to shouldSyncToServer = true
-tm.shouldSyncToServer = false; // to speed up load time while testing
+tm.shouldSyncToServer = true; // to speed up load time while testing
 
 window.onload = function() {
   tm.init();
