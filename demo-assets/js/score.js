@@ -6,11 +6,26 @@ tm.shouldSyncToServer = false; // to speed up load time while testing
 
 window.onload = function() {
   tm.init();
+  // TODO: comment out for mobile testing
+  // tm.testWithoutMotion();
 };
 
 // Instruments need global scope within this file
 var synth = new Tone.Synth().toMaster();
 
+// Granulator
+var c1_granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
+var c1_granulator = new Tone.GrainPlayer({
+  "url": "demo-assets/audio/c1_grFileB.mp3",
+  "overlap": 0.01,
+  "grainSize": c1_granulatorGrainSize * 2,
+  "loop": true,
+  "detune": 0
+}).toMaster();
+var c1_granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
+var c1_granulatorDur = 22;
+
+// Chime player
 var chimePlayer = new Tone.Players({
   "ch1654": "demo-assets/audio/chime-1654Hz-Ab6.mp3",
   "ch1661": "demo-assets/audio/chime-1661Hz-Ab6.mp3",
@@ -32,10 +47,29 @@ tm.cue[1] = new TMCue('tilt', 2000, 0);
 tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called.');
 
-  synth.triggerAttackRelease("C4", 4);
+  // TODO: find a better place to start Transport
+  Tone.Transport.start();
+
+  Tone.Transport.scheduleRepeat(function(time) {
+    // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
+    // Known issue - if try fails, the grain player still scrubs but detune is reset to 0
+    try { c1_granulator.seek(c1_granulatorOffset); } catch(e) { console.log(e); }
+  }, c1_granulatorGrainSize);
 }
 tm.cue[1].updateTiltSounds = function() {
-  // TODO: add pitch handling or filtering here?
+  if (tm.accel.y < 0.33) {
+    c1_granulator.volume.value = -60 + (60 * (tm.accel.y * 3));
+  }
+  else {
+    c1_granulator.volume.value = 0;
+  }
+  // .seek() invoked by .scheduleRepeat()
+  c1_granulatorOffset = tm.accel.x * c1_granulatorDur;
+}
+tm.cue[1].stopCue = function() {
+  tm.publicLog('tm.cue[1].stopCue() called.');
+  // TODO: find a better place to stop Transport
+  Tone.Transport.stop();
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
