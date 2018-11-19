@@ -389,8 +389,9 @@ helpDisclosureButton.onclick = function() {
 }
 
 // Resets height of help panel if document changes height
+// TODO: fix this or delete it
 ToneMotion.prototype.resetHelpPanelHeight = function() {
-  helpPanel.setAttribute("style", "color:red; height: 25%;");
+  helpPanel.setAttribute("style", "color:red; overflow-y:scroll;");
 };
 
 // Adds sliders for accelerometer simulation and a "shake" button
