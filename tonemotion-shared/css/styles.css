@@ -345,6 +345,13 @@ fieldset {
   flex-direction: column;
 }
 
+fieldset.hidden {
+  display: none;
+}
+fieldset.visible {
+  display: flex;
+}
+
 input[type="range"] {
   margin: 15px 0 35px 0;
   width: 75%;

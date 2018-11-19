@@ -391,6 +391,12 @@ helpDisclosureButton.onclick = function() {
 // Adds sliders for accelerometer simulation and a "shake" button
 ToneMotion.prototype.testWithoutMotion = function() {
   this.shouldTestOnDesktop = true;
+  this.accel.rawX = 0; // initialize values to be set later by sliders
+  this.accel.rawY = 0;
+
+  // Add fieldset to ToneMotion object and make visible
+  this.sliderFieldset = document.querySelector('#sliderFieldset');
+  sliderFieldset.className = 'visible';
 
   // Add slider properties to ToneMotion object
   this.sliderX = document.querySelector('#x_slider');
@@ -400,6 +406,10 @@ ToneMotion.prototype.testWithoutMotion = function() {
   this.shakeButton.addEventListener("click", () => {
     this.currentCue.triggerShakeSound();
   });
+
+  if (this.debug) {
+    this.publicLog('This device does not appear to report motion. Sliders can be used to simulate motion.');
+  }
 };
 
 /*********************************************************************
@@ -468,19 +478,13 @@ ToneMotion.prototype.beginMotionUpdates = function() {
     this.publicLog('Motion mapping loop starting up');
   }
 
-  // Only mobile device are supported because the piece doesn't make sense on desktop, but for local testing, set all values to 0
-  if (this.shouldTestOnDesktop) {
-    this.accel.rawX = 0;
-    this.accel.rawY = 0;
+  // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
+  // Automatically make sliders visible for desktop testing if needed
+  if (this.accel.rawX === undefined) {
+    this.testWithoutMotion();
   }
 
-  // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
-  // However, this test won't fail if shouldTestOnDesktop is true and accel.rawX is assigned a value above.
-  if (this.accel.rawX === undefined) {
-    this.publicError('This device does not appear to report motion. This is a piece for audience participation on mobile devices, so only mobile devices are supported.');
-  } else {
-    this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
-  }
+  this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
