@@ -590,18 +590,18 @@ ToneMotion.prototype.syncClocks = function() {
           this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
         }
         if (roundtrip < shortestRoundtrip) {
-          // safari caches response despite my very nice request not to
-          // it releases cache after first iteration, but if first try
-          // is super short roundtrip (e.g., 1 ms), the result is b.s.
-          // TODO: consider longer than 10 ms. for b.s. result. Maybe
-          // just discard first test entirely. Still have 5 tests
-          if (syncClockCounter > 1 || roundtrip > 10) {
+          // Safari caches response despite my very nice request not to
+          // It releases cache after first iteration, but first result
+          // can't really be trusted
+          if (syncClockCounter > 1) {
             shortestRoundtrip = roundtrip;
             // shortest roundtrip considered most accurate
             // subtract this.clientServerOffset from client time to sync
             this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
           } else {
-            this.publicLog('It looks like the last response was served from the disk cache and is invalid.');
+            if (this.debug) {
+              this.publicLog('The first response may be served from the disk cache and may not be reliable, so it is disregarded.');
+            }
           }
         }
         if (syncClockCounter === 6) { // last check
