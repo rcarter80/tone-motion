@@ -643,12 +643,12 @@ ToneMotion.prototype.getCuesFromServer = function() {
       // Trigger new cue
       this.cueOnClient = jsonRes.c;
       this.cueTimeFromServer = jsonRes.t + timestampBias;
-      if (this.debug) {
-        this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
-      }
       // Prevent cue triggering if an error has occurred
       if (this.status !== 'error') {
         this.goCue(this.cueOnClient, this.cueTimeFromServer);
+        if (this.debug) {
+          this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
+        }
       }
     } // else no new cue and control falls through, on to next loop
   })
