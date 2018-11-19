@@ -388,6 +388,11 @@ helpDisclosureButton.onclick = function() {
   }
 }
 
+// Resets height of help panel if document changes height
+ToneMotion.prototype.resetHelpPanelHeight = function() {
+  helpPanel.setAttribute("style", "color:red; height: 25%;");
+};
+
 // Adds sliders for accelerometer simulation and a "shake" button
 ToneMotion.prototype.testWithoutMotion = function() {
   this.shouldTestOnDesktop = true;
