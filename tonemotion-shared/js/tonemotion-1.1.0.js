@@ -131,7 +131,7 @@ ToneMotion.prototype.init = function() {
   });
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
-  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
+  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/Xsilent-buffer-to-set-audio-session.mp3');
 
   Tone.Buffer.on('progress', () => {
     this.setStatus('loading');
@@ -159,8 +159,9 @@ ToneMotion.prototype.init = function() {
 
 // Manages application status and interface updates
 ToneMotion.prototype.setStatus = function(status) {
+  // prevent new status if status is currently error
   // no need to reset status if there's no change in status
-  if (status === this.status) {
+  if (this.status === 'error' || status === this.status) {
     return;
   }
   this.status = status;
