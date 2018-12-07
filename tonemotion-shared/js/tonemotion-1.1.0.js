@@ -1,3 +1,16 @@
+// COMMENTS FOR ANDREW
+/*
+Hi Andrew! Thanks for agreeing to consult on this project!
+The basic application structure is:
+One of the musicians (or anyone running electronics from any device) logs into the server and has control over what the current musical section is (the "cue"). They can set the cue directly or use a pedal to increment a counter; I'll be adding a feature to also decrement the counter because the device that the JACK Quartet will be using has two pedals.
+
+Anyone in the audience -- or anywhere in the world, actually -- can go to the site (e.g., ryancarter.org/jack) and "play" along by controlling certain aspects of sounds that are composed to be interactive with the musicians. A cue may also silence all the audience devices (i.e., if it's a "tacet" cue).
+
+I prioritize tight synchrony over low latency because in a musical context, we know what's coming up and we want to be able to synchronize events. Musicians may, for example, be playing at 120 beats per minute and we want a big event to be synchronized at measure 48. All I need to do is write in the score that the musicians should tap the pedal on the downbeat of measure 47 and code this cue to be triggered 2 seconds (i.e., 4 beats at 120 bpm) later. This approach tolerates high latency -- I think this will work fine over cellular. I'm just using rapid polling at 500 millisecond intervals, so ideal delay times between setting a cue on the server and triggering the event on the clients is in the 1-2 second range (about the musical equivalent of one measure or a couple beats).
+
+I'm still adding some stuff, but it's basically there. The main known issue is that if an iOS device screen locks, it chokes the motion sensors (not on Android from what I've seen) and this means I need to prevent screen lock. I've encountered this before with my iOS app. In a native iOS app, you can just disable the idle timer, but you can't do that in a browser. I'm thinking the best workaround may be to embed a video (that is not visible and is a very small file) and have that play in response to user tapping the play button. Let me know if you have other thoughts. Thanks!
+*/
+
 /*********************************************************************
 ************************ APPLICATION SETUP ***************************
 *********************************************************************/
