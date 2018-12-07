@@ -78,7 +78,7 @@ var yTilt = new Tone.Signal(0.5);
  */
 
 function ToneMotion() {
-  this.status = '';
+  this.status = 'loading';
   this.debug = false;
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
@@ -131,7 +131,7 @@ ToneMotion.prototype.init = function() {
   });
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
-  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
+  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/Xsilent-buffer-to-set-audio-session.mp3');
 
   Tone.Buffer.on('progress', () => {
     this.setStatus('loading');
@@ -207,6 +207,8 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStatusLabel('just listen', 'default');
       this.setStartStopButton('stop', 'stop');
       break;
+    // NB: there is no application status for "hidden" cues because
+    // the application status should stay the same
     case 'missedCue':
       this.setStatusLabel('(wait for next cue)', 'default');
       this.setStartStopButton('stop', 'stop');
@@ -282,12 +284,6 @@ ToneMotion.prototype.publicError = function(message) {
   console.error(message);
 };
 
-// Clears message label
-ToneMotion.prototype.clearMessageLabel = function() {
-  message_container.className = 'hidden';
-  messageLabel.innerHTML = '';
-}
-
 // Prints to console and to help panel if consoleCheckbox is checked
 ToneMotion.prototype.publicLog = function(message) {
   if (consoleCheckbox.checked) {
@@ -298,6 +294,12 @@ ToneMotion.prototype.publicLog = function(message) {
   }
   console.log(message);
 };
+
+// Clears message label
+ToneMotion.prototype.clearMessageLabel = function() {
+  message_container.className = 'hidden';
+  messageLabel.innerHTML = '';
+}
 
 // Clears console in help panel
 ToneMotion.prototype.clearConsole = function() {
@@ -666,14 +668,18 @@ ToneMotion.prototype.getCuesFromServer = function() {
 ToneMotion.prototype.goCue = function(cue, serverTime) {
   // check that cue exists
   if (this.cue[cue]) {
-    this.currentCue = this.cue[cue];
+    if (this.cue[cue].mode === 'hidden') {
+      // currentCue should not increment if cue is "hidden"
+      // previously playing cue should keep playing
+    } else {
+      this.currentCue = this.cue[cue];
+      // clear all current cues
+      this.clearActiveCues();
+    }
   } else {
     this.publicError('Cue number ' + cue + ' does not exist.');
     return;
   }
-
-  // clear all current cues
-  this.clearActiveCues();
 
   // immediately trigger cue with minimum latency if waitTime is -1
   // This could be faster if moved to top of function,
@@ -738,6 +744,9 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
       break;
     case 'listen':
       this.setStatus('playing_listen');
+      break;
+    case 'hidden':
+      // Status should stay the same in order to maintain interactivity
       break;
     case 'finished':
       this.setStatus('finished');
