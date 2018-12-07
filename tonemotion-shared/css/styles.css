@@ -225,7 +225,7 @@ main {
   to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
 }
 
-/* TODO: do I need anythign for 'stop' state? */
+/* TODO: do I need anything for 'stop' state? */
 
 /* use after button has been tapped but cue is being fetched */
 #startStopButton.disabled {

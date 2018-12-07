@@ -78,7 +78,7 @@ var yTilt = new Tone.Signal(0.5);
  */
 
 function ToneMotion() {
-  this.status = 'loading';
+  this.status = '';
   this.debug = false;
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
@@ -131,7 +131,7 @@ ToneMotion.prototype.init = function() {
   });
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
-  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/Xsilent-buffer-to-set-audio-session.mp3');
+  const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
   Tone.Buffer.on('progress', () => {
     this.setStatus('loading');
