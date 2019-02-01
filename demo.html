@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Title of the Piece.</h1>
+  <h1>Title of the Piece..</h1>
   <button id="helpDisclosureButton" type="button">?</button>
 </header>
 
@@ -32,6 +32,10 @@
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
   <!-- TODO: update and optimize this workaround -->
   <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+  <!-- TODO: tidy up this video test area -->
+  <!-- TODO: check mobile browser support for MP4 -->
+  <video id="preventScreenLock" controls width="250"><source src="tonemotion-shared/video/small.mp4" type="video/mp4"></video>
 
   <!-- append sliders and "shake" button here -->
   <fieldset id="sliderFieldset" class="hidden">
@@ -97,6 +101,7 @@
 // TODO: clean this up. finding <audio> shim workaround inspired by:
  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
  let audioElem = document.getElementById("setAudioSession");
+ let videoElem = document.getElementById("preventScreenLock");
  let playButton = document.getElementById("startStopButton");
  playButton.addEventListener("click", handlePlayButton, false);
  // simply playing back 1-sec. silent file when tapping a button allows
@@ -104,6 +109,8 @@
  // keeps sound on after 1-sec. silent file elapses.
  function handlePlayButton() {
    audioElem.play();
+   videoElem.loop = true;
+   videoElem.play();
  }
  </script>
 
