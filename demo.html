@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Title of the Piece..</h1>
+  <h1>Title of the Piece...</h1>
   <button id="helpDisclosureButton" type="button">?</button>
 </header>
 
@@ -93,17 +93,25 @@
 <!-- Score for this piece -->
 <script src="demo-assets/js/score.js"></script>
 
+<!-- TODO: find best place for NoSleep.js if it works -->
+<script src="tonemotion-shared/js/NoSleep.js"></script>
+
 <script>
 // TODO: clean this up. finding <audio> shim workaround inspired by:
  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
  let audioElem = document.getElementById("setAudioSession");
  let playButton = document.getElementById("startStopButton");
+
+ // NoSleep from https://github.com/richtr/NoSleep.js
+ var noSleep = new NoSleep();
+
  playButton.addEventListener("click", handlePlayButton, false);
  // simply playing back 1-sec. silent file when tapping a button allows
  // audio to sound with ring/silent switch on silent.
  // keeps sound on after 1-sec. silent file elapses.
  function handlePlayButton() {
    audioElem.play();
+   noSleep.enable();
  }
  </script>
 
