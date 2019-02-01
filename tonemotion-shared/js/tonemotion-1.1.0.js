@@ -588,7 +588,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 *********************************************************************/
 
 // Synchronizes client time to server time
-const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
+const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/test-server/clock-sync';
 ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
@@ -647,7 +647,7 @@ ToneMotion.prototype.syncClocks = function() {
 
 // Polls servers for new cues
 // Packet size reduced by subtracting bias on server and adding on client. At time of coding (2018-07-18) Date.now() returns 1531970463500
-const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const urlForCues = 'https://tonemotion-cue-manager.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
 ToneMotion.prototype.getCuesFromServer = function() {
