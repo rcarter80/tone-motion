@@ -104,6 +104,7 @@
  let playButton = document.getElementById("startStopButton");
  // NoSleep from https://github.com/richtr/NoSleep.js
  // TODO: could removeEventListener after click (see code above)
+ // should disable noSleep with stop button in future
  var noSleep = new NoSleep();
 
  playButton.addEventListener("click", handlePlayButton, false);
