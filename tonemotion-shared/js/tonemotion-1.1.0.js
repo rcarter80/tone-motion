@@ -251,16 +251,19 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.shutEverythingDown = function() {
   clearTimeout(this.cueFetchTimeout);
   clearInterval(this.motionUpdateLoopID);
-  this.publicLog('Shutting down');
+  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
   this.clearActiveCues();
+  Tone.Transport.stop();
 
   // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
   this.cueTimeFromServer = 0;
 };
 
-// Restarts all loops, motion handling, and network requests
+// Starts Transport, loops, motion handling, and network requests
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
-  this.publicLog('Starting motion updates and cue fetching');
+  this.publicLog('Starting Transport, motion updates, and cue fetching');
+
+  Tone.Transport.start();
 
   startStopButton.className = 'disabled'; // while waiting for cue
   statusLabel.innerHTML = ''; // label will update with cue

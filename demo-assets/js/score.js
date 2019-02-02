@@ -45,9 +45,6 @@ tm.cue[1] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called.');
 
-  // TODO: find a better place to start Transport
-  Tone.Transport.start();
-
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
     // Known issue - if try fails, the grain player still scrubs but detune is reset to 0
@@ -66,8 +63,6 @@ tm.cue[1].updateTiltSounds = function() {
 }
 tm.cue[1].stopCue = function() {
   tm.publicLog('tm.cue[1].stopCue() called.');
-  // TODO: find a better place to stop Transport
-  Tone.Transport.stop();
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
