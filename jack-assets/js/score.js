@@ -138,11 +138,11 @@ tm.cue[6].triggerShakeSound = function() {
   vibesArray[randomVibe].start();
 };
 
-// test cue for updates
+// CUE 7: hidden cue with non-interactive reversed cymbal
+var revCym = new Tone.Player("jack-assets/audio/revCym.mp3").toMaster();
 tm.cue[7] = new TMCue('hidden');
 tm.cue[7].goCue = function() {
-  vibeE4.start();
-  tm.publicLog('hidden cue number 7 triggered');
+  revCym.start();
 }
 // test cue for updates
 tm.cue[8] = new TMCue('hidden');
