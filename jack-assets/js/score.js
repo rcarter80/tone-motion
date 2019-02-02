@@ -125,6 +125,7 @@ tm.cue[6].goCue = function() {
 };
 tm.cue[6].triggerShakeSound = function() {
   // testing how to change sounds throughout section
+  // TODO: refactor this to tonemotion library as tm.getSectionCounter()
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
   var durationOfSection = 50000; // just short of end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
