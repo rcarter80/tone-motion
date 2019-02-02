@@ -9,6 +9,7 @@ window.onload = function() {
 };
 
 // Instruments need global scope within this file
+Tone.Transport.bpm.value = 76;
 var synth = new Tone.Synth().toMaster();
 var chimeSynth = new Tone.MetalSynth().toMaster();
 
@@ -107,12 +108,15 @@ tm.cue[5].goCue = function() {
 };
 
 // Warping shake chimes
-// change time back to 1579 ms.
-tm.cue[6] = new TMCue('shake', 4000, NO_LIMIT); // 4 beats @ 152bpm
+tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
 tm.cue[6].goCue = function() {
-  // todo trigger flourish of vibes on first downbeat of section
+  // triplet flourish of vibes on downbeat (could clean up)
   var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
   thisVibe.start();
+  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
+  thisVibe.start('+8t');
+  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
+  thisVibe.start('+4t');
 };
 tm.cue[6].triggerShakeSound = function() {
   var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
