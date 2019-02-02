@@ -85,6 +85,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
  * @param {TMCue} currentCue - Reference to the current cue
+ * @param {number} currentCueStartedAt - Time when cue began
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -117,6 +118,7 @@ function ToneMotion() {
   this.cueTimeFromServer = 0;
   this.cue = [];
   this.currentCue = {};
+  this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
 }
@@ -251,16 +253,19 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.shutEverythingDown = function() {
   clearTimeout(this.cueFetchTimeout);
   clearInterval(this.motionUpdateLoopID);
-  this.publicLog('Shutting down');
+  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
   this.clearActiveCues();
+  Tone.Transport.stop();
 
   // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
   this.cueTimeFromServer = 0;
 };
 
-// Restarts all loops, motion handling, and network requests
+// Starts Transport, loops, motion handling, and network requests
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
-  this.publicLog('Starting motion updates and cue fetching');
+  this.publicLog('Starting Transport, motion updates, and cue fetching');
+
+  Tone.Transport.start();
 
   startStopButton.className = 'disabled'; // while waiting for cue
   statusLabel.innerHTML = ''; // label will update with cue
@@ -546,7 +551,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // TRIGGER SHAKE EVENT (only if cue uses shake)
-  if (this.currentCue.mode === 'shake' || this.currentCue.mode === 'tiltAndShake') {
+  if (this.status === 'playing_shake' || this.status === 'playing_tiltAndShake') {
     // Trigger shake event if there hasn't been once recently
     if (this.shakeFlag && !(this.recentShakeFlag)) {
       this.recentShakeFlag = true;
@@ -700,6 +705,8 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - this.clientServerOffset;
   var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
+  //  use this timestamp to facilitate gradual process during a section
+  this.currentCueStartedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
