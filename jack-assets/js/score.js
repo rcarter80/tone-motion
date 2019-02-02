@@ -35,6 +35,12 @@ var chimePlayer = new Tone.Players({
 }).toMaster();
 var chimeArray = ["ch1654", "ch1661", "ch1748", "ch1929", "ch2417", "ch2568"];
 
+var vibeE4 = new Tone.Player("jack-assets/audio/vibe-E4.mp3").toMaster();
+var vibeD5 = new Tone.Player("jack-assets/audio/vibe-D5.mp3").toMaster();
+var vibeB5 = new Tone.Player("jack-assets/audio/vibe-B5.mp3").toMaster();
+var vibeGsharp6 = new Tone.Player("jack-assets/audio/vibe-Gsharp6.mp3").toMaster();
+var vibesArray = [vibeE4, vibeB5, vibeD5, vibeGsharp6];
+
 // Cue number 0 sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', -1);
 tm.cue[0].goCue = function() {
@@ -103,11 +109,13 @@ tm.cue[5].goCue = function() {
 // Warping shake chimes
 tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
 tm.cue[6].goCue = function() {
-  chimeSynth.triggerAttackRelease("G#6", 1);
+  // todo trigger flourish of vibes on first downbeat of section
+  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
+  thisVibe.start();
 };
 tm.cue[6].triggerShakeSound = function() {
-  tm.publicLog('shake');
-  chimeSynth.triggerAttackRelease("G#6", 1);
+  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
+  thisVibe.start();
 };
 
 // TODO: update number of final cue
