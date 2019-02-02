@@ -40,8 +40,8 @@ tm.cue[0].goCue = function() {
   tm.publicLog('tm.cue[0].goCue() called. Instrument setup could go here');
 };
 
-// Test cues
-tm.cue[1] = new TMCue('tilt', 2000, NO_LIMIT);
+// Tutorial cues: cue 1 is tilt tutorial
+tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called.');
 
