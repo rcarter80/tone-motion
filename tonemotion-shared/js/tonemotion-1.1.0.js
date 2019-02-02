@@ -249,18 +249,6 @@ ToneMotion.prototype.setStatus = function(status) {
     }
 };
 
-// Clears all sound, loops, motion handling, and network requests
-ToneMotion.prototype.shutEverythingDown = function() {
-  clearTimeout(this.cueFetchTimeout);
-  clearInterval(this.motionUpdateLoopID);
-  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
-  this.clearActiveCues();
-  Tone.Transport.stop();
-
-  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
-  this.cueTimeFromServer = 0;
-};
-
 // Starts Transport, loops, motion handling, and network requests
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
@@ -273,6 +261,18 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.beginMotionUpdates();
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+};
+
+// Clears all sound, loops, motion handling, and network requests
+ToneMotion.prototype.shutEverythingDown = function() {
+  clearTimeout(this.cueFetchTimeout);
+  clearInterval(this.motionUpdateLoopID);
+  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
+  this.clearActiveCues();
+  Tone.Transport.stop();
+
+  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
+  this.cueTimeFromServer = 0;
 };
 
 /*
@@ -546,7 +546,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
-  if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
+  if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
   }
 
@@ -559,7 +559,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
 
       // Shake gesture triggered here
-      // TODO: prevent premature shake if cue is delayed
       this.currentCue.triggerShakeSound();
 
       if (this.debug) {
@@ -668,7 +667,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
       this.cueTimeFromServer = jsonRes.t + timestampBias;
       // Prevent cue triggering if an error has occurred
       if (this.status !== 'error') {
-        this.goCue(this.cueOnClient, this.cueTimeFromServer);
+        this.triggerCue(this.cueOnClient, this.cueTimeFromServer);
         if (this.debug) {
           this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
         }
@@ -681,8 +680,16 @@ ToneMotion.prototype.getCuesFromServer = function() {
 };
 
 // Called when server has new cue
-ToneMotion.prototype.goCue = function(cue, serverTime) {
-  // check that cue exists
+ToneMotion.prototype.triggerCue = function(cue, serverTime) {
+  // A 'hidden' cue is triggered immediately and does NOT set app status
+  // and does NOT clear currently playing cue
+  // Use for additional sounds that don't interrupt current interaction
+  if (this.cue[cue].mode === 'hidden') {
+    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+    return;
+  }
+
+  // For all other modes, check that cue exists
   if (this.cue[cue]) {
     this.currentCue = this.cue[cue];
   } else {
@@ -777,6 +784,7 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
  * Create a new musical section
  * @param {string} mode - Mode of interactivity. Can be: 'waiting',
  * 'tacet', 'tilt', 'shake', 'tiltAndShake', 'listen', 'finished'
+ * or 'hidden' (immediate cue without changing application status)
  * @param {number} waitTime - Delay before cue is triggered.
  * Use -1 for minimum latency response (no need for openWindow param)
  * NB: sounds from previous cue cleared as soon as client gets cue, so

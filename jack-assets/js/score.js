@@ -138,8 +138,22 @@ tm.cue[6].triggerShakeSound = function() {
   vibesArray[randomVibe].start();
 };
 
+// test cue for updates
+tm.cue[7] = new TMCue('hidden');
+tm.cue[7].goCue = function() {
+  vibeE4.start();
+  tm.publicLog('hidden cue number 7 triggered');
+}
+// test cue for updates
+tm.cue[8] = new TMCue('hidden');
+tm.cue[8].goCue = function() {
+  vibeD5.start();
+  tm.publicLog('hidden cue number 8 triggered');
+}
+
 // TODO: update number of final cue
-tm.cue[999] = new TMCue('finished', -1);
-tm.cue[999].goCue = function() {
+// Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
+tm.cue[9] = new TMCue('finished', -1);
+tm.cue[9].goCue = function() {
   tm.publicLog('The piece is done.');
 }
