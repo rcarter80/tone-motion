@@ -107,7 +107,8 @@ tm.cue[5].goCue = function() {
 };
 
 // Warping shake chimes
-tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
+// change time back to 1579 ms.
+tm.cue[6] = new TMCue('shake', 4000, NO_LIMIT); // 4 beats @ 152bpm
 tm.cue[6].goCue = function() {
   // todo trigger flourish of vibes on first downbeat of section
   var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];

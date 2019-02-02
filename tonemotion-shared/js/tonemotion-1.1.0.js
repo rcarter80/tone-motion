@@ -549,7 +549,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // TRIGGER SHAKE EVENT (only if cue uses shake)
-  if (this.currentCue.mode === 'shake' || this.currentCue.mode === 'tiltAndShake') {
+  if (this.status === 'playing_shake' || this.status === 'playing_tiltAndShake') {
     // Trigger shake event if there hasn't been once recently
     if (this.shakeFlag && !(this.recentShakeFlag)) {
       this.recentShakeFlag = true;
