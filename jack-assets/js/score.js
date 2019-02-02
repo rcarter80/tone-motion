@@ -177,7 +177,7 @@ var pizzLoop = new Tone.Loop(function(time) {
     }
   }
 }, "8t");
-tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[8] = new TMCue('tilt', 1579, 0); // TODO: think about openWindow
 tm.cue[8].goCue = function() {
   pizzLoop.start();
 };
