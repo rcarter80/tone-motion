@@ -36,12 +36,6 @@ var chimePlayer = new Tone.Players({
 }).toMaster();
 var chimeArray = ["ch1654", "ch1661", "ch1748", "ch1929", "ch2417", "ch2568"];
 
-var vibeE4 = new Tone.Player("jack-assets/audio/vibe-E4.mp3").toMaster();
-var vibeD5 = new Tone.Player("jack-assets/audio/vibe-D5.mp3").toMaster();
-var vibeB5 = new Tone.Player("jack-assets/audio/vibe-B5.mp3").toMaster();
-var vibeGsharp6 = new Tone.Player("jack-assets/audio/vibe-Gsharp6.mp3").toMaster();
-var vibesArray = [vibeE4, vibeB5, vibeD5, vibeGsharp6];
-
 // Cue number 0 sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', -1);
 tm.cue[0].goCue = function() {
@@ -107,7 +101,18 @@ tm.cue[5].goCue = function() {
   tm.publicLog('The piece has started.');
 };
 
-// Warping shake chimes
+// CUE 6: Warping shake chimes
+var vibeE4 = new Tone.Player("jack-assets/audio/vibe-E4.mp3").toMaster();
+var vibeD5 = new Tone.Player("jack-assets/audio/vibe-D5.mp3").toMaster();
+var vibeB5 = new Tone.Player("jack-assets/audio/vibe-B5.mp3").toMaster();
+var vibeGsharp6 = new Tone.Player("jack-assets/audio/vibe-Gsharp6.mp3").toMaster();
+// TODO: could fine tune playbackRate to get just intonation
+var vibesArray = [vibeE4, vibeD5, vibeB5, vibeGsharp6];
+// array for pitch bending intervals of vibes
+// must be same length as vibesArray. refactor with error checking
+// down 2 half steps, 3 half steps, 4 half steps, 3 half steps
+var vibesBendArray = [0.109, 0.159, 0.206, 0.159];
+
 tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
 tm.cue[6].goCue = function() {
   // triplet flourish of vibes on downbeat (could clean up)
@@ -119,8 +124,16 @@ tm.cue[6].goCue = function() {
   thisVibe.start('+4t');
 };
 tm.cue[6].triggerShakeSound = function() {
-  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
-  thisVibe.start();
+  // testing how to change sounds throughout section
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var durationOfSection = 50000; // just short of end of section
+  // clamp counter at 1.0 (in case section takes longer than expected)
+  var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
+  tm.publicLog(sectionCounter);
+
+  var randomVibe = Math.floor(Math.random() * vibesArray.length);
+  vibesArray[randomVibe].playbackRate = 1 - (vibesBendArray[randomVibe] * sectionCounter);
+  vibesArray[randomVibe].start();
 };
 
 // TODO: update number of final cue

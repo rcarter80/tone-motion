@@ -85,6 +85,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
  * @param {TMCue} currentCue - Reference to the current cue
+ * @param {number} currentCueStartedAt - Time when cue began
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -117,6 +118,7 @@ function ToneMotion() {
   this.cueTimeFromServer = 0;
   this.cue = [];
   this.currentCue = {};
+  this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
 }
@@ -703,6 +705,8 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - this.clientServerOffset;
   var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
+  //  use this timestamp to facilitate gradual process during a section
+  this.currentCueStartedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
