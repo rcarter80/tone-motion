@@ -144,16 +144,57 @@ tm.cue[7] = new TMCue('hidden');
 tm.cue[7].goCue = function() {
   revCym.start();
 }
-// test cue for updates
-tm.cue[8] = new TMCue('hidden');
+
+// CUE 8: pulsing cello pizzicati
+var pzFsharp2 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp2.mp3").toMaster();
+var pzFsharp3 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp3.mp3").toMaster();
+var pzFsharp4 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp4.mp3").toMaster();
+var pzFsharp5 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp5.mp3").toMaster();
+var pzG2 = new Tone.Player("jack-assets/audio/vc-pz-G2.mp3").toMaster();
+var pzD4 = new Tone.Player("jack-assets/audio/vc-pz-D4.mp3").toMaster();
+var pzG4 = new Tone.Player("jack-assets/audio/vc-pz-G4.mp3").toMaster();
+var pzB4 = new Tone.Player("jack-assets/audio/vc-pz-B4.mp3").toMaster();
+var pizzLoop = new Tone.Loop(function(time) {
+  if (tm.accel.y < 0.5) {
+    if (tm.accel.x < 0.25) {
+      pzG2.start();
+    } else if (tm.accel.x < 0.5) {
+      pzD4.start();
+    } else if (tm.accel.x < 0.75) {
+      pzG4.start();
+    } else {
+      pzB4.start();
+    }
+  } else {
+    if (tm.accel.x < 0.25) {
+      pzFsharp2.start();
+    } else if (tm.accel.x < 0.5) {
+      pzFsharp3.start();
+    } else if (tm.accel.x < 0.75) {
+      pzFsharp4.start();
+    } else {
+      pzFsharp5.start();
+    }
+  }
+}, "8t");
+tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
-  vibeD5.start();
-  tm.publicLog('hidden cue number 8 triggered');
-}
+  pizzLoop.start();
+};
+tm.cue[8].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[8].stopCue = function() {
+  pizzLoop.stop();
+};
+
+// CUE 9: just stopping cue 8 for now
+tm.cue[9] = new TMCue('tacet', -1);
 
 // TODO: update number of final cue
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
-tm.cue[9] = new TMCue('finished', -1);
-tm.cue[9].goCue = function() {
+tm.cue[999] = new TMCue('finished', -1);
+tm.cue[999].goCue = function() {
   tm.publicLog('The piece is done.');
 }

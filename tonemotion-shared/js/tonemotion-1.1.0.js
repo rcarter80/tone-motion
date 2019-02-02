@@ -681,16 +681,15 @@ ToneMotion.prototype.getCuesFromServer = function() {
 
 // Called when server has new cue
 ToneMotion.prototype.triggerCue = function(cue, serverTime) {
-  // A 'hidden' cue is triggered immediately and does NOT set app status
-  // and does NOT clear currently playing cue
-  // Use for additional sounds that don't interrupt current interaction
-  if (this.cue[cue].mode === 'hidden') {
-    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
-    return;
-  }
-
-  // For all other modes, check that cue exists
+  // Check that cue exists
   if (this.cue[cue]) {
+    // A 'hidden' cue is triggered immediately, does NOT set app status
+    // and does NOT clear currently playing cue
+    // Use for additional sounds that don't interrupt current interaction
+    if (this.cue[cue].mode === 'hidden') {
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      return;
+    }
     this.currentCue = this.cue[cue];
   } else {
     this.publicError('Cue number ' + cue + ' does not exist.');
