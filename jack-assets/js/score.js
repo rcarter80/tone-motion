@@ -139,6 +139,7 @@ tm.cue[6].triggerShakeSound = function() {
 };
 
 // CUE 7: hidden cue with non-interactive reversed cymbal
+// duration of revCym is 4467 ms.
 var revCym = new Tone.Player("jack-assets/audio/revCym.mp3").toMaster();
 tm.cue[7] = new TMCue('hidden');
 tm.cue[7].goCue = function() {
@@ -146,6 +147,7 @@ tm.cue[7].goCue = function() {
 }
 
 // CUE 8: pulsing cello pizzicati
+// TODO: shorten these audio files to prevent retrigger 
 var pzFsharp2 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp2.mp3").toMaster();
 var pzFsharp3 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp3.mp3").toMaster();
 var pzFsharp4 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp4.mp3").toMaster();
@@ -177,7 +179,8 @@ var pizzLoop = new Tone.Loop(function(time) {
     }
   }
 }, "8t");
-tm.cue[8] = new TMCue('tilt', 1579, 0); // TODO: think about openWindow
+// no limit on open window could mean late arrivals are not synchronized to triplet pulse
+tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
   pizzLoop.start();
 };
@@ -189,8 +192,135 @@ tm.cue[8].stopCue = function() {
   pizzLoop.stop();
 };
 
-// CUE 9: just stopping cue 8 for now
-tm.cue[9] = new TMCue('tacet', -1);
+// CUE 9: Continues cello pizz with added synth
+var triangle = new Tone.Player("jack-assets/audio/triangle.mp3").toMaster();
+var triSynthRound1 = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 0.06,
+    decay: 0.04,
+    sustain: 0.3,
+    release: 0.05
+  }
+}).toMaster()
+var triSynthRound2 = new Tone.Synth({
+  oscillator: {
+    type: 'triangle5'
+  },
+  envelope: {
+    attack: 0.06,
+    decay: 0.04,
+    sustain: 0.3,
+    release: 0.05
+  }
+}).toMaster()
+var pizzLoop2 = new Tone.Loop(function(time) {
+  if (tm.accel.y < 0.5) {
+    if (tm.accel.x < 0.2) {
+      pzG2.start();
+    } else if (tm.accel.x < 0.4) {
+      pzD4.start();
+    } else if (tm.accel.x < 0.6) {
+      pzG4.start();
+    } else if (tm.accel.x < 0.8) {
+      pzB4.start();
+    } else {
+      triSynthRound1.triggerAttackRelease('G5', '16t');
+      triSynthRound2.triggerAttackRelease('B5', '16t', '+16t');
+    }
+  } else {
+    if (tm.accel.x < 0.2) {
+      pzFsharp2.start();
+    } else if (tm.accel.x < 0.4) {
+      pzFsharp3.start();
+    } else if (tm.accel.x < 0.6) {
+      pzFsharp4.start();
+    } else if (tm.accel.x < 0.8) {
+      pzFsharp5.start();
+    } else {
+      triSynthRound1.triggerAttackRelease('F#5', '16t');
+      triSynthRound2.triggerAttackRelease('F#6', '16t', '+16t');
+    }
+  }
+}, "8t");
+
+// no limit on open window could mean late arrivals are not synchronized to triplet pulse
+tm.cue[9] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[9].goCue = function() {
+  triangle.start();
+  pizzLoop2.start('+4n');
+};
+tm.cue[9].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[9].stopCue = function() {
+  pizzLoop2.stop();
+};
+
+// CUE 10: hidden cue with non-interactive reversed cymbal
+tm.cue[10] = new TMCue('hidden');
+tm.cue[10].goCue = function() {
+  revCym.start();
+}
+
+// CUE 11: Arpeggiated synths in 4-bar chord progression
+var sawSynthRev1 = new Tone.Synth({
+  oscillator: {
+    type: 'sawtooth64'
+  },
+  envelope: {
+    attack: 0.06,
+    decay: 0.01,
+    sustain: 0.1,
+    release: 0.001
+  }
+}).toMaster()
+var sawSynthRev2 = new Tone.Synth({
+  oscillator: {
+    type: 'sawtooth8'
+  },
+  envelope: {
+    attack: 0.06,
+    decay: 0.01,
+    sustain: 0.1,
+    release: 0.001
+  }
+}).toMaster()
+var chordArray = [
+  ['E3', 'B3', 'E4', 'G4', 'B4', 'G5', 'E6'],
+  ['E3', 'C4', 'E4', 'G4', 'C5', 'G5', 'E6'],
+  ['D3', 'B3', 'D4', 'G4', 'D5', 'G5', 'D6'],
+  ['D3', 'A3', 'D4', 'A4', 'D5', 'A5', 'D6']
+];
+
+var synthChordLoop = new Tone.Loop(function(time) {
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  // 12632 ms = 4 measures. 3158 ms = 1 measure.
+  // counts 4-bar loop (thisLoop is guaranteed to be 0 - 3)
+  var chord = Math.floor((elapsedTime % 12632) / 3158);
+  var pitch = Math.floor(tm.accel.x * 4);
+  if (tm.accel.y < 0.5) {
+    triSynthRound1.triggerAttackRelease(chordArray[chord][pitch], '16n');
+    triSynthRound2.triggerAttackRelease(chordArray[chord][pitch+2], '16n', '+16n');
+  } else {
+    sawSynthRev1.triggerAttackRelease(chordArray[chord][pitch], '32n');
+    sawSynthRev2.triggerAttackRelease(chordArray[chord][pitch+2], '32n', '+16n');
+  }
+}, '8n');
+tm.cue[11] = new TMCue('tilt', 1579, NO_LIMIT); // TODO: think about openWindow
+tm.cue[11].goCue = function() {
+  synthChordLoop.start();
+};
+tm.cue[11].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[11].stopCue = function() {
+  synthChordLoop.stop();
+};
 
 // TODO: update number of final cue
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
