@@ -127,7 +127,7 @@ tm.cue[6].triggerShakeSound = function() {
   // testing how to change sounds throughout section
   // TODO: refactor this to tonemotion library as tm.getSectionCounter()
   // and remove log of sectionCounter
-   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
   var durationOfSection = 50000; // just short of end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
@@ -147,7 +147,7 @@ tm.cue[7].goCue = function() {
 }
 
 // CUE 8: pulsing cello pizzicati
-// TODO: shorten these audio files to prevent retrigger 
+// TODO: shorten these audio files to prevent retrigger
 var pzFsharp2 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp2.mp3").toMaster();
 var pzFsharp3 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp3.mp3").toMaster();
 var pzFsharp4 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp4.mp3").toMaster();
@@ -156,6 +156,8 @@ var pzG2 = new Tone.Player("jack-assets/audio/vc-pz-G2.mp3").toMaster();
 var pzD4 = new Tone.Player("jack-assets/audio/vc-pz-D4.mp3").toMaster();
 var pzG4 = new Tone.Player("jack-assets/audio/vc-pz-G4.mp3").toMaster();
 var pzB4 = new Tone.Player("jack-assets/audio/vc-pz-B4.mp3").toMaster();
+// clave is triggered at end of cue
+var clave = new Tone.Player("jack-assets/audio/clave.mp3").toMaster();
 var pizzLoop = new Tone.Loop(function(time) {
   if (tm.accel.y < 0.5) {
     if (tm.accel.x < 0.25) {
@@ -190,6 +192,9 @@ tm.cue[8].updateTiltSounds = function() {
 };
 tm.cue[8].stopCue = function() {
   pizzLoop.stop();
+  // clave sound punctuates section
+  // won't be synchronized across devices, but will result in splatter
+  clave.start();
 };
 
 // CUE 9: Continues cello pizz with added synth
@@ -296,8 +301,25 @@ var chordArray = [
   ['D3', 'A3', 'D4', 'A4', 'D5', 'A5', 'D6']
 ];
 
+var durationOfCue12 = 25000; // just short of end of section
 var synthChordLoop = new Tone.Loop(function(time) {
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+
+  // Pitches bend up half step and volume fades out only during cue 12
+  if (tm.currentCue === tm.cue[12]) {
+    // clamp counter at 1.0 (in case section takes longer than expected)
+    var sectionCounter = (elapsedTime / durationOfCue12 <= 1) ? elapsedTime / durationOfCue12 : 1;
+
+    triSynthRound1.detune.value = 100 * sectionCounter;
+    triSynthRound2.detune.value = 100 * sectionCounter;
+    sawSynthRev1.detune.value = 100 * sectionCounter;
+    sawSynthRev2.detune.value = 100 * sectionCounter;
+    triSynthRound1.volume.value = 0 - 24 * sectionCounter;
+    triSynthRound2.volume.value = 0 - 24 * sectionCounter;
+    sawSynthRev1.volume.value = 0 - 24 * sectionCounter;
+    sawSynthRev2.volume.value = 0 - 24 * sectionCounter;
+  }
+
   // 12632 ms = 4 measures. 3158 ms = 1 measure.
   // counts 4-bar loop (thisLoop is guaranteed to be 0 - 3)
   var chord = Math.floor((elapsedTime % 12632) / 3158);
@@ -310,9 +332,17 @@ var synthChordLoop = new Tone.Loop(function(time) {
     sawSynthRev2.triggerAttackRelease(chordArray[chord][pitch+2], '32n', '+16n');
   }
 }, '8n');
-tm.cue[11] = new TMCue('tilt', 1579, NO_LIMIT); // TODO: think about openWindow
+tm.cue[11] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[11].goCue = function() {
   synthChordLoop.start();
+  triSynthRound1.detune.value = 0;
+  triSynthRound2.detune.value = 0;
+  sawSynthRev1.detune.value = 0;
+  sawSynthRev2.detune.value = 0;
+  triSynthRound1.volume.value = 0;
+  triSynthRound2.volume.value = 0;
+  sawSynthRev1.volume.value = 0;
+  sawSynthRev2.volume.value = 0;
 };
 tm.cue[11].updateTiltSounds = function() {
   // all tilt interactivity handled in goCue() function
@@ -320,7 +350,28 @@ tm.cue[11].updateTiltSounds = function() {
 };
 tm.cue[11].stopCue = function() {
   synthChordLoop.stop();
+  clave.start(); // punctuates end of section
 };
+
+// CUE 12: continuation of arpeggios, now with pitch bend and dimin.
+tm.cue[12] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[12].goCue = function() {
+  triangle.start();
+  synthChordLoop.start();
+};
+tm.cue[12].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[12].stopCue = function() {
+  synthChordLoop.stop();
+};
+
+// CUE 13: tacet
+tm.cue[13] = new TMCue('tacet', -1);
+tm.cue[13].goCue = function() {
+  // no sound here
+}
 
 // TODO: update number of final cue
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.

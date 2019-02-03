@@ -820,6 +820,5 @@ TMCue.prototype.updateTiltSounds = function() {
 
 // Override this method in score to make "shake" interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
-  // This will get real annoying unless this method is overridden
-  statusLabel.innerHTML = 'triggerShakeSound() called at ' + Date.now();
+  // Override if section uses shake
 }
