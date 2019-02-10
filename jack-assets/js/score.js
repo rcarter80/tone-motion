@@ -373,6 +373,50 @@ tm.cue[13].goCue = function() {
   // no sound here
 }
 
+// CUE 14: high active synths converging on Bb / D
+var revChime = new Tone.Player("jack-assets/audio/revChime.mp3").toMaster();
+var durationOfCue14 = 19000; // about 2 bars from end of section
+var loopCue14 = new Tone.Loop(function(time) {
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+
+  // clamp counter at 1.0 (in case section takes longer than expected)
+  var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue12 : 1;
+
+  // synths start with random detuning and converge on Bb/D
+  detuneVal = Math.random();
+  triSynthRound1.detune.value = (detuneVal*400) * (1-sectionCounter);
+  triSynthRound2.detune.value = -(detuneVal*400) * (1-sectionCounter);
+  sawSynthRev1.detune.value = (detuneVal*400) * (1-sectionCounter);
+  sawSynthRev2.detune.value = -(detuneVal*400) * (1-sectionCounter);
+
+  if (tm.accel.y < 0.5 && tm.accel.x < 0.5) { // up and left quadrant
+    triSynthRound1.triggerAttackRelease('Bb5', '16t');
+    triSynthRound2.triggerAttackRelease('D6', '16t', '+32n');
+  } else if (tm.accel.y < 0.5) { // up and right quadrant
+    triSynthRound1.triggerAttackRelease('Bb6', '16t');
+    triSynthRound2.triggerAttackRelease('D7', '16t', '+32n');
+  } else if (tm.accel.x < 0.5) { // upside down and tipped left
+    sawSynthRev1.triggerAttackRelease('Bb5', '32t');
+    sawSynthRev2.triggerAttackRelease('D6', '32t', '+32n');
+  } else { // upside down and tipped right
+    sawSynthRev1.triggerAttackRelease('Bb6', '32t');
+    sawSynthRev2.triggerAttackRelease('D7', '32t', '+32n');
+  }
+}, '16n');
+tm.cue[14] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[14].goCue = function() {
+  clave.start();
+  loopCue14.start();
+};
+tm.cue[14].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[14].stopCue = function() {
+  revChime.start();
+  loopCue14.stop();
+};
+
 // TODO: update number of final cue
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
 tm.cue[999] = new TMCue('finished', -1);
