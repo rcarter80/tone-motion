@@ -131,7 +131,6 @@ tm.cue[6].triggerShakeSound = function() {
   var durationOfSection = 50000; // just short of end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
-  tm.publicLog(sectionCounter);
 
   var randomVibe = Math.floor(Math.random() * vibesArray.length);
   vibesArray[randomVibe].playbackRate = 1 - (vibesBendArray[randomVibe] * sectionCounter);
@@ -416,6 +415,51 @@ tm.cue[14].stopCue = function() {
   revChime.start();
   loopCue14.stop();
 };
+
+// CUE 15: Warping shake chimes
+var vibeA3 = new Tone.Player("jack-assets/audio/vibe-A3.mp3").toMaster();
+var vibeA4 = new Tone.Player("jack-assets/audio/vibe-A4.mp3").toMaster();
+var vibeCsharp6 = new Tone.Player("jack-assets/audio/vibe-Csharp6.mp3").toMaster();
+var vibeCsharp7 = new Tone.Player("jack-assets/audio/vibe-Csharp7.mp3").toMaster();
+// TODO: could fine tune playbackRate to get just intonation
+var vibesArrayCue15 = [vibeA3, vibeA4, vibeCsharp6, vibeCsharp7];
+// array for pitch bending intervals of vibes
+// must be same length as vibesArray. refactor with error checking
+// up 1 half step to Bb OR down to justly tuned 7th partial
+var vibesBendArrayCue15 = [-0.05946, -0.05946, 0.2642, 0.2642];
+
+tm.cue[15] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
+tm.cue[15].goCue = function() {
+  // triplet flourish of vibes on downbeat (could clean up)
+  // TODO: add cello clb jete at random playback
+  // make async particle cluster
+  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
+  thisVibe.start();
+  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
+  thisVibe.start('+8t');
+  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
+  thisVibe.start('+4t');
+};
+tm.cue[15].triggerShakeSound = function() {
+  // testing how to change sounds throughout section
+  // TODO: refactor this to tonemotion library as tm.getSectionCounter()
+  // and remove log of sectionCounter
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var durationOfSection = 38000; // about 4 bars before end of section
+  // clamp counter at 1.0 (in case section takes longer than expected)
+  var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
+
+  var randomVibe = Math.floor(Math.random() * vibesArrayCue15.length);
+  vibesArrayCue15[randomVibe].playbackRate = 1 - (vibesBendArrayCue15[randomVibe] * sectionCounter);
+  vibesArrayCue15[randomVibe].start();
+};
+
+// CUE 16: hidden cue with non-interactive reversed cymbal
+// duration of revCym is 4467 ms.
+tm.cue[16] = new TMCue('hidden');
+tm.cue[16].goCue = function() {
+  revCym.start();
+}
 
 // TODO: update number of final cue
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
