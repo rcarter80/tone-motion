@@ -459,11 +459,93 @@ tm.cue[15].triggerShakeSound = function() {
 tm.cue[16] = new TMCue('hidden');
 tm.cue[16].goCue = function() {
   revCym.start();
+};
+
+// CUE 17: jete sounds on cello in response to shake
+var vcJete1 = new Tone.Player("jack-assets/audio/vc-jete-1.mp3").toMaster();
+var vcJete2 = new Tone.Player("jack-assets/audio/vc-jete-2.mp3").toMaster();
+var vcJeteTrem1 = new Tone.Player("jack-assets/audio/vc-jete-trem-1.mp3").toMaster();
+var vcJeteTrem2 = new Tone.Player("jack-assets/audio/vc-jete-trem-2.mp3").toMaster();
+var vcClb1 = new Tone.Player("jack-assets/audio/vc-clb-1.mp3").toMaster();
+var vcClb2 = new Tone.Player("jack-assets/audio/vc-clb-2.mp3").toMaster();
+var vcClbGliss1 = new Tone.Player("jack-assets/audio/vc-clb-gliss-1.mp3").toMaster();
+var vcClbGliss2 = new Tone.Player("jack-assets/audio/vc-clb-gliss-2.mp3").toMaster();
+var vcJeteArray = [vcClb1, vcJete2, vcJeteTrem1, vcClb2, vcClbGliss1, vcJeteTrem2, vcClbGliss2, vcJete1];
+var vcJeteArrayIndex = 0;
+var durationOfCue17 = 44000; // about 2 bars from end of section
+
+// TODO: refactor as part of tonemotion library
+// returns a value from 0.0 to 1.0 that indicates progress through section (section starts at 0.0 and arrives at 1.0 at end of duration)
+function getCounter(duration) {
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  // clamp counter at 1.0 (in case section takes longer than expected)
+  return (elapsedTime / duration <= 1) ? elapsedTime / duration : 1;
+}
+tm.cue[17] = new TMCue('shake',  1579, NO_LIMIT);
+tm.cue[17].goCue = function() {
+  vcJete1.start();
+};
+tm.cue[17].triggerShakeSound = function() {
+  thisVcSound = vcJeteArray[vcJeteArrayIndex % vcJeteArray.length];
+  // gradually shift up a whole step by end of section
+  thisVcSound.playbackRate = 1 + getCounter(durationOfCue17) * 0.1225;
+  thisVcSound.start();
+  // avoid overlapping file playback by cycling through them
+  vcJeteArrayIndex++;
+};
+tm.cue[17].stopCue = function() {
+  // probably nothing to do here
+};
+
+// CUE 18: hidden cue with non-interactive reversed cymbal
+// duration of revCym is 4467 ms.
+tm.cue[18] = new TMCue('hidden');
+tm.cue[18].goCue = function() {
+  revCym.start();
 }
 
-// TODO: update number of final cue
+// CUE 19: granulated sparkles
+var c1_granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
+var c1_granulator = new Tone.GrainPlayer({
+  "url": "demo-assets/audio/c1_grFileB.mp3",
+  "overlap": 0.01,
+  "grainSize": c1_granulatorGrainSize * 2,
+  "loop": true,
+  "detune": 0
+}).toMaster();
+var c1_granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
+var c1_granulatorDur = 22;
+
+tm.cue[19] = new TMCue('tilt', 1570, NO_LIMIT);
+tm.cue[19].goCue = function() {
+  Tone.Transport.scheduleRepeat(function(time) {
+    // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
+    // Known issue - if try fails, the grain player still scrubs but detune is reset to 0
+    try { c1_granulator.seek(c1_granulatorOffset); } catch(e) { console.log(e); }
+  }, c1_granulatorGrainSize);
+}
+tm.cue[19].updateTiltSounds = function() {
+  if (tm.accel.y < 0.33) {
+    c1_granulator.volume.value = -60 + (60 * (tm.accel.y * 3));
+  }
+  else {
+    c1_granulator.volume.value = 0;
+  }
+  // .seek() invoked by .scheduleRepeat()
+  c1_granulatorOffset = tm.accel.x * c1_granulatorDur;
+}
+tm.cue[19].stopCue = function() {
+  Tone.Transport.cancel(); // cancel granulator repeat
+}
+
+// CUE 20: tacet
+tm.cue[20] = new TMCue('tacet', -1);
+tm.cue[20].goCue = function() {
+  // no sound here
+}
+
 // Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
-tm.cue[999] = new TMCue('finished', -1);
-tm.cue[999].goCue = function() {
+tm.cue[21] = new TMCue('finished', -1);
+tm.cue[21].goCue = function() {
   tm.publicLog('The piece is done.');
 }
