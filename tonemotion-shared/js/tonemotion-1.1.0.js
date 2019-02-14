@@ -126,6 +126,12 @@ function ToneMotion() {
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function() {
+  // debug mode shows console, stops sync with server, logs messages
+  if (this.debug) {
+    this.showConsoleOnLaunch = true;
+    // set to false to speed up load time while testing
+    this.shouldSyncToServer = false;
+  }
   // Can automatically show console in left panel when page loads
   if (this.showConsoleOnLaunch) {
     consoleCheckbox.checked = true;

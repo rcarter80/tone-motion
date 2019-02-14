@@ -1,9 +1,5 @@
 const tm = new ToneMotion();
 tm.debug = true;
-tm.showConsoleOnLaunch = true;
-// set to false to speed up load time while testing
-tm.shouldSyncToServer = false;
-
 window.onload = function() {
   tm.init();
 };
