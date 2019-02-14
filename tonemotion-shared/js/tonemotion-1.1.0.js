@@ -395,7 +395,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motionDataCheckbox.addEventListener('change', () => {
     if (motionDataCheckbox.checked) {
       motion_container.className = '';
-      motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+      motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
     } else {
       motion_container.className = 'hidden';
     }
@@ -584,7 +584,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // Left panel has checkbox to allow monitoring of accel values
   if (motionDataCheckbox.checked) {
-    motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+    motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
