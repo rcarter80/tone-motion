@@ -32,8 +32,8 @@ var testTone = new Tone.Synth({
 testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
 var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
 var testToneFilterScale = new Tone.Scale(440, 10000);
-tm.xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-tm.yTilt.chain(testToneFilterScale, testToneFilter.frequency);
+xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
+yTilt.chain(testToneFilterScale, testToneFilter.frequency);
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
   testTone.triggerAttack(440);
@@ -367,7 +367,7 @@ var loopCue14 = new Tone.Loop(function(time) {
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
 
   // clamp counter at 1.0 (in case section takes longer than expected)
-  var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue12 : 1;
+  var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue14 : 1;
 
   // synths start with random detuning and converge on Bb/D
   detuneVal = Math.random();
@@ -502,7 +502,7 @@ var c1_granulator = new Tone.GrainPlayer({
 var c1_granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
 var c1_granulatorDur = 22;
 
-tm.cue[19] = new TMCue('tilt', 1570, NO_LIMIT);
+tm.cue[19] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[19].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
