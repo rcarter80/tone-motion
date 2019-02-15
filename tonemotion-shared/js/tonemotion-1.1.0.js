@@ -781,6 +781,39 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
   this.cue[cue].isPlaying = true;
 };
 
+// Takes breakpoint array of time/value pairs and returns interpolated values reflecting elapsed time in current segment
+ToneMotion.prototype.getSectionBreakpoints = function(breakpointArray) {
+  // Each time needs a corresponding value (need even # of args)
+  if (breakpointArray.length % 2 !== 0) {
+    this.publicLog('Missing value for getSectionBreakpoints(), which requires an array of time/value pairs (e.g., [1000, 0.5, 2000, 1.0]).')
+    return;
+  }
+  // Go through array of time/value pairs
+  var elapsedTime = Date.now() - this.clientServerOffset - this.currentCueStartedAt;
+  for (var i = 0; i < breakpointArray.length; i = i + 2) {
+    // Each time needs to be greater than previous
+    if (breakpointArray[i] >= breakpointArray[i+2]) {
+      this.publicLog('getSectionBreakpoints() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
+      return;
+    }
+    // Find which segment current time is in
+    if (elapsedTime <= breakpointArray[i]) {
+      // time of previous breakpoint (if there was one)
+      var prevTime = breakpointArray[i-2] || 0;
+      // duration of this segment
+      var segTime = breakpointArray[i] - prevTime;
+      // progress in this segment
+      var segProg = (elapsedTime - prevTime) / segTime;
+      // previous value (or zero if none)
+      var prevVal = breakpointArray[i-1] || 0;
+      // interpolated value for progress along this segment
+      return prevVal + segProg * (breakpointArray[i+1] - prevVal);
+    }
+  }
+  // If time has elapsed, return last value
+  return breakpointArray[breakpointArray.length-1];
+};
+
 /*********************************************************************
 ************************ CUE LIST MANAGEMENT *************************
 *********************************************************************/
