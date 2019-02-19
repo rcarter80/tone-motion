@@ -393,6 +393,15 @@ var loopCue14 = new Tone.Loop(function(time) {
 }, '16n');
 tm.cue[14] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[14].goCue = function() {
+  // reset synths that were previously faded out
+  triSynthRound1.detune.value = 0;
+  triSynthRound2.detune.value = 0;
+  sawSynthRev1.detune.value = 0;
+  sawSynthRev2.detune.value = 0;
+  triSynthRound1.volume.value = 0;
+  triSynthRound2.volume.value = 0;
+  sawSynthRev1.volume.value = 0;
+  sawSynthRev2.volume.value = 0;
   clave.start();
   loopCue14.start();
 };
