@@ -54,13 +54,13 @@ tm.cue[2].goCue = function() {
 
 // *******************************************************************
 // CUE 3: shake tutorial
-var triangle = new Tone.Player("jack-assets/audio/triangle.mp3").toMaster();
+var cowbell = new Tone.Player("jack-assets/audio/cowbell.mp3").toMaster();
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
   // nothing to do until shake gestures
 };
 tm.cue[3].triggerShakeSound = function() {
-  triangle.start();
+  cowbell.start();
 };
 tm.cue[3].stopCue = function() {
   // nothing to clean up
@@ -233,6 +233,7 @@ var pizzLoop2 = new Tone.Loop(function(time) {
 }, "8t");
 
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
+var triangle = new Tone.Player("jack-assets/audio/triangle.mp3").toMaster();
 tm.cue[9] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[9].goCue = function() {
   triangle.start();
@@ -286,7 +287,7 @@ var chordArray = [
 
 // breakpoint arrays for changing values in cue 12
 var detuneArrCue12 = [22000, 100]; // up half step by end of section
-var volumeArrCue12 = [22000, -24, 26000, -99]; // gradual fade
+var volumeArrCue12 = [22000, -6, 26000, -99]; // gradual fade
 var synthChordLoop = new Tone.Loop(function(time) {
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
 
