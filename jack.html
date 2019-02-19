@@ -30,7 +30,7 @@
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <!-- TODO: update and optimize this workaround -->
+  <!-- DOLATER: update and optimize this workaround -->
   <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
@@ -56,7 +56,7 @@
     <p>Once the page has loaded, you will see a start button, which you may tap at any time. From this point, the application will prevent the screen from turning off. Manually locking the screen may interrupt the sound, but if this happens you can simply reload the page.</p>
     <p>The label in the center of the screen indicates the mode of interactivity for the current section of the piece. "Tilt" allows you to control certain aspects of the sound by tilting your phone to the left and right or up and down. "Shake" allows you to trigger individual sounds by gently shaking your device; a quick flick of the wrist will do. "Tacet" is a musical indication that your part is silent for this section.</p>
   </div>
-  <!-- TODO: could add section-by-section instructions in future -->
+  <!-- DOLATER: could add section-by-section instructions in future -->
   <!-- <div>
     <h2>Instructions for this section</h2>
     <p id="sectionInstructions">(instructions go here)</p>
@@ -97,17 +97,17 @@
 <!-- Score for this piece -->
 <script src="jack-assets/js/score.js"></script>
 
-<!-- TODO: find best place for NoSleep.js if it works -->
+<!-- DOLATER: find best place for NoSleep.js if it works -->
 <script src="tonemotion-shared/js/NoSleep.js"></script>
 
 <script>
- // TODO: clean this up. finding <audio> shim workaround inspired by:
+ // DOLATER: clean this up. finding <audio> shim workaround inspired by:
  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
  // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
  let audioElem = document.getElementById("setAudioSession");
  let playButton = document.getElementById("startStopButton");
  // NoSleep from https://github.com/richtr/NoSleep.js
- // TODO: could removeEventListener after click (see code above)
+ // DOLATER: could removeEventListener after click (see code above)
  // should disable noSleep with stop button in future
  var noSleep = new NoSleep();
 
