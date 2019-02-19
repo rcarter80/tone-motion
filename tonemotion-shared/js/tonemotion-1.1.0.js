@@ -697,7 +697,6 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
       try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
       return;
     }
-    this.currentCue = this.cue[cue];
   } else {
     this.publicError('Cue number ' + cue + ' does not exist.');
     return;
@@ -779,7 +778,8 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
       this.publicError('Error setting application status for new cue');
   }
 
-  this.cue[cue].isPlaying = true;
+  this.currentCue = this.cue[cue];
+  this.currentCue.isPlaying = true;
 };
 
 // Takes breakpoint array of time/value pairs and returns interpolated values reflecting elapsed time in current segment
