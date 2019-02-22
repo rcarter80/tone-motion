@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = false;
+tm.debug = true;
 window.onload = function() {
   tm.init();
 };
@@ -501,34 +501,37 @@ tm.cue[18].goCue = function() {
 // *******************************************************************
 // CUE 19: granulated sparkles
 // TODO: create granulator file and add fadeout through section
-var c1_granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
-var c1_granulator = new Tone.GrainPlayer({
-  "url": "demo-assets/audio/c1_grFileB.mp3",
-  "overlap": 0.01,
-  "grainSize": c1_granulatorGrainSize * 2,
+var granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
+var granulator = new Tone.GrainPlayer({
+  // "url": "demo-assets/audio/grFileB.mp3",
+  "url": "jack-assets/audio/testGr.mp3",
+  "overlap": 0.0125,
+  "grainSize": granulatorGrainSize * 2,
   "loop": true,
   "detune": 0
 }).toMaster();
-var c1_granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
-var c1_granulatorDur = 22;
+var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
+// var granulatorDur = 22;
+var granulatorDur = 35;
 
 tm.cue[19] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[19].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
     // Known issue - if try fails, the grain player still scrubs but detune is reset to 0
-    try { c1_granulator.seek(c1_granulatorOffset); } catch(e) { console.log(e); }
-  }, c1_granulatorGrainSize);
+    try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
+  }, granulatorGrainSize);
 }
 tm.cue[19].updateTiltSounds = function() {
   if (tm.accel.y < 0.33) {
-    c1_granulator.volume.value = -60 + (60 * (tm.accel.y * 3));
+    granulator.volume.value = -60 + (60 * (tm.accel.y * 3));
   }
   else {
-    c1_granulator.volume.value = 0;
+    granulator.volume.value = 0;
   }
   // .seek() invoked by .scheduleRepeat()
-  c1_granulatorOffset = tm.accel.x * c1_granulatorDur;
+  granulatorOffset = tm.accel.x * granulatorDur;
+  granulator.detune = 1200 * tm.accel.y;
 }
 tm.cue[19].stopCue = function() {
   Tone.Transport.cancel(); // cancel granulator repeat
