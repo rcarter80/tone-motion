@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true;
+tm.debug = false;
 window.onload = function() {
   tm.init();
 };
