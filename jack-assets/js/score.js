@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true;
+tm.debug = false;
 window.onload = function() {
   tm.init();
 };
@@ -499,9 +499,9 @@ tm.cue[18].goCue = function() {
 }
 
 // *******************************************************************
-// CUE 19: granulated sparkles
-// TODO: add fade out
-var granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
+// CUE 19: granulated sparkles (section is c. 1'40")
+// determines how often .seek() is called. actual grain size is longer
+var granulatorGrainSize = 0.1;
 var granulator = new Tone.GrainPlayer({
   "url": "jack-assets/audio/grFile.mp3",
   "overlap": 0.0125,
@@ -517,6 +517,7 @@ tm.cue[19].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
+    granulator.volume.value = tm.getSectionBreakpoints([60000, -3, 80000, -12, 95000, -24, 100000, -99]);
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
   }, granulatorGrainSize);
 }
@@ -525,7 +526,7 @@ tm.cue[19].updateTiltSounds = function() {
   // index into sound file controlled by x-axis
   granulatorOffset = tm.accel.x * granulatorDur;
   // playback rate of grain set by y-axis
-  granulator.detune = 1200 * tm.accel.y;
+  granulator.detune = 2400 * tm.accel.y;
 }
 tm.cue[19].stopCue = function() {
   Tone.Transport.cancel(); // cancel granulator repeat
