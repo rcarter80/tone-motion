@@ -500,37 +500,31 @@ tm.cue[18].goCue = function() {
 
 // *******************************************************************
 // CUE 19: granulated sparkles
-// TODO: create granulator file and add fadeout through section
+// TODO: add fade out
 var granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
 var granulator = new Tone.GrainPlayer({
-  // "url": "demo-assets/audio/grFileB.mp3",
-  "url": "jack-assets/audio/testGr.mp3",
+  "url": "jack-assets/audio/grFile.mp3",
   "overlap": 0.0125,
   "grainSize": granulatorGrainSize * 2,
   "loop": true,
   "detune": 0
 }).toMaster();
 var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
-// var granulatorDur = 22;
 var granulatorDur = 35;
 
 tm.cue[19] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[19].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
-    // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
-    // Known issue - if try fails, the grain player still scrubs but detune is reset to 0
+    // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
+    // If try fails, grain player still scrubs but detune is reset to 0
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
   }, granulatorGrainSize);
 }
 tm.cue[19].updateTiltSounds = function() {
-  if (tm.accel.y < 0.33) {
-    granulator.volume.value = -60 + (60 * (tm.accel.y * 3));
-  }
-  else {
-    granulator.volume.value = 0;
-  }
   // .seek() invoked by .scheduleRepeat()
+  // index into sound file controlled by x-axis
   granulatorOffset = tm.accel.x * granulatorDur;
+  // playback rate of grain set by y-axis
   granulator.detune = 1200 * tm.accel.y;
 }
 tm.cue[19].stopCue = function() {
