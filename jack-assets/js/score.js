@@ -128,7 +128,6 @@ tm.cue[7].goCue = function() {
 
 // *******************************************************************
 // CUE 8: pulsing cello pizzicati
-// TODO: shorten these audio files to prevent retrigger
 var pzFsharp2 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp2.mp3").toMaster();
 var pzFsharp3 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp3.mp3").toMaster();
 var pzFsharp4 = new Tone.Player("jack-assets/audio/vc-pz-Fsharp4.mp3").toMaster();
@@ -429,6 +428,9 @@ var vibesBendArrayCue15 = [-0.05946, -0.05946, 0.2642, 0.2642];
 
 tm.cue[15] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
 tm.cue[15].goCue = function() {
+  // kick sound has cello jete tail and random playback speed
+  // result is cluster of pitches
+  kick.playbackRate = 1 + Math.random();
   kick.start();
   // flourish of vibes on downbeat
   var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
