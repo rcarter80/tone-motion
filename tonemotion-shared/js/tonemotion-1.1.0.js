@@ -348,7 +348,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
       Tone.context.resume().then(() => {
-        console.log('Audio context started');
+        this.publicLog('Audio context started');
       });
     }
 
