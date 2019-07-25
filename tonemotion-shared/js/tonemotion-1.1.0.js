@@ -555,7 +555,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.xSig.value = this.accel.x;
     this.ySig.value = this.accel.y;
   } else {
-    // BUT this is for mobile anyway, so use this to smooth signal 
+    // BUT this is for mobile anyway, so use this to smooth signal
     this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
     this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
   }
