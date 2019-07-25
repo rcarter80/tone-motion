@@ -1,4 +1,5 @@
 // COMMENTS FOR ANDREW
+// TODO: delete these comments for Andrew
 /*
 Hi Andrew! Thanks for agreeing to consult on this project!
 The basic application structure is:
@@ -143,13 +144,6 @@ ToneMotion.prototype.init = function() {
   // Allow hiding and clearing of console and motion data monitor
   this.bindConsoleCheckboxFunctions();
   this.bindMotionCheckboxFunctions();
-
-  // On iOS, the context will be started on the first valid user action on the #startStopButton element
-  // see https://github.com/tambien/StartAudioContext
-  // Chrome complains about adding "non-passive event listener to a scroll-blocked 'touchmove' event" but this only creates jerkiness for pages that are supposed to scroll, and this isn't
-  StartAudioContext(Tone.context, '#startStopButton').then( () => {
-    this.publicLog('Audio context started');
-  });
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
@@ -351,6 +345,14 @@ ToneMotion.prototype.setStartStopButton = function(text, className) {
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
+    // Audio context can't start without user action
+    // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
+    if (Tone.context.state !== 'running') {
+      Tone.context.resume().then(() => {
+        console.log('Audio context started');
+      });
+    }
+
     switch (this.status) {
       case 'readyToPlay':
       case 'stopped':
