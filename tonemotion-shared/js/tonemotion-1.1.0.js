@@ -550,9 +550,16 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
-  this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+  if (this.shouldTestOnDesktop) {
+    // desktop Chrome has issues with linearRampTo next value, so value is set directly and could cause zipper noise on desktop
+    this.xSig.value = this.accel.x;
+    this.ySig.value = this.accel.y;
+  } else {
+    // BUT this is for mobile anyway, so use this to smooth signal 
+    this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+    this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
+  }
 
-  this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
