@@ -352,6 +352,10 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       });
     }
 
+    // test
+    // test
+    
+
     switch (this.status) {
       case 'readyToPlay':
       case 'stopped':
