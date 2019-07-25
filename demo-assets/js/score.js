@@ -2,7 +2,7 @@ const tm = new ToneMotion();
 tm.debug = true;
 tm.showConsoleOnLaunch = true;
 // set to false to speed up load time while testing
-tm.shouldSyncToServer = true;
+tm.shouldSyncToServer = false;
 
 window.onload = function() {
   tm.init();
@@ -10,6 +10,7 @@ window.onload = function() {
 
 // Instruments need global scope within this file
 var synth = new Tone.Synth().toMaster();
+var chimeSynth = new Tone.MetalSynth().toMaster();
 
 // Granulator
 var c1_granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
@@ -40,13 +41,10 @@ tm.cue[0].goCue = function() {
   tm.publicLog('tm.cue[0].goCue() called. Instrument setup could go here');
 };
 
-// Test cues
-tm.cue[1] = new TMCue('tilt', 2000, NO_LIMIT);
+// Tutorial cues: cue 1 is tilt tutorial
+tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
   tm.publicLog('tm.cue[1].goCue() called.');
-
-  // TODO: find a better place to start Transport
-  Tone.Transport.start();
 
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
@@ -65,9 +63,8 @@ tm.cue[1].updateTiltSounds = function() {
   c1_granulatorOffset = tm.accel.x * c1_granulatorDur;
 }
 tm.cue[1].stopCue = function() {
+  Tone.Transport.cancel(); // cancel granulator repeat
   tm.publicLog('tm.cue[1].stopCue() called.');
-  // TODO: find a better place to stop Transport
-  Tone.Transport.stop();
 }
 
 tm.cue[2] = new TMCue('tacet', -1);
@@ -82,16 +79,39 @@ tm.cue[3].goCue = function() {
   chimePlayer.get(thisChime).start();
 
   tm.publicLog('tm.cue[3].goCue() called');
-}
+};
 tm.cue[3].triggerShakeSound = function() {
   // trigger random chime in response to shake gesture
   var thisChime = chimeArray[Math.floor(Math.random()*chimeArray.length)];
   chimePlayer.get(thisChime).start();
 
   tm.publicLog('Shake gesture triggered at ' + Date.now());
-}
+};
 
-tm.cue[4] = new TMCue('finished', -1);
+// Cue number 4 sets status to 'waitingForPieceToStart'
+tm.cue[4] = new TMCue('waiting', -1);
 tm.cue[4].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
+};
+
+// Actual beginning of piece, but first section is tacet
+tm.cue[5] = new TMCue('tacet', -1);
+tm.cue[5].goCue = function() {
+  tm.publicLog('The piece has started.');
+};
+
+// Warping shake chimes
+tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
+tm.cue[6].goCue = function() {
+  chimeSynth.triggerAttackRelease("G#6", 1);
+};
+tm.cue[6].triggerShakeSound = function() {
+  tm.publicLog('shake');
+  chimeSynth.triggerAttackRelease("G#6", 1);
+};
+
+// TODO: update number of final cue
+tm.cue[999] = new TMCue('finished', -1);
+tm.cue[999].goCue = function() {
   tm.publicLog('The piece is done.');
 }

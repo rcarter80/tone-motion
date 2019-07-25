@@ -1,4 +1,5 @@
 // COMMENTS FOR ANDREW
+// TODO: delete these comments for Andrew
 /*
 Hi Andrew! Thanks for agreeing to consult on this project!
 The basic application structure is:
@@ -84,6 +85,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
  * @param {TMCue} currentCue - Reference to the current cue
+ * @param {number} currentCueStartedAt - Time when cue began
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -116,6 +118,7 @@ function ToneMotion() {
   this.cueTimeFromServer = 0;
   this.cue = [];
   this.currentCue = {};
+  this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
 }
@@ -123,6 +126,12 @@ function ToneMotion() {
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function() {
+  // debug mode shows console, stops sync with server, logs messages
+  if (this.debug) {
+    this.showConsoleOnLaunch = true;
+    // set to false to speed up load time while testing
+    this.shouldSyncToServer = false;
+  }
   // Can automatically show console in left panel when page loads
   if (this.showConsoleOnLaunch) {
     consoleCheckbox.checked = true;
@@ -134,13 +143,6 @@ ToneMotion.prototype.init = function() {
   // Allow hiding and clearing of console and motion data monitor
   this.bindConsoleCheckboxFunctions();
   this.bindMotionCheckboxFunctions();
-
-  // On iOS, the context will be started on the first valid user action on the #startStopButton element
-  // see https://github.com/tambien/StartAudioContext
-  // Chrome complains about adding "non-passive event listener to a scroll-blocked 'touchmove' event" but this only creates jerkiness for pages that are supposed to scroll, and this isn't
-  StartAudioContext(Tone.context, '#startStopButton').then( () => {
-    this.publicLog('Audio context started');
-  });
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
@@ -246,20 +248,11 @@ ToneMotion.prototype.setStatus = function(status) {
     }
 };
 
-// Clears all sound, loops, motion handling, and network requests
-ToneMotion.prototype.shutEverythingDown = function() {
-  clearTimeout(this.cueFetchTimeout);
-  clearInterval(this.motionUpdateLoopID);
-  this.publicLog('Shutting down');
-  this.clearActiveCues();
-
-  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
-  this.cueTimeFromServer = 0;
-};
-
-// Restarts all loops, motion handling, and network requests
+// Starts Transport, loops, motion handling, and network requests
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
-  this.publicLog('Starting motion updates and cue fetching');
+  this.publicLog('Starting Transport, motion updates, and cue fetching');
+
+  Tone.Transport.start();
 
   startStopButton.className = 'disabled'; // while waiting for cue
   statusLabel.innerHTML = ''; // label will update with cue
@@ -267,6 +260,18 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.beginMotionUpdates();
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+};
+
+// Clears all sound, loops, motion handling, and network requests
+ToneMotion.prototype.shutEverythingDown = function() {
+  clearTimeout(this.cueFetchTimeout);
+  clearInterval(this.motionUpdateLoopID);
+  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
+  this.clearActiveCues();
+  Tone.Transport.stop();
+
+  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
+  this.cueTimeFromServer = 0;
 };
 
 /*
@@ -339,6 +344,14 @@ ToneMotion.prototype.setStartStopButton = function(text, className) {
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
   startStopButton.addEventListener("click", () => {
+    // Audio context can't start without user action
+    // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
+    if (Tone.context.state !== 'running') {
+      Tone.context.resume().then(() => {
+        console.log('Audio context started');
+      });
+    }
+
     switch (this.status) {
       case 'readyToPlay':
       case 'stopped':
@@ -383,7 +396,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motionDataCheckbox.addEventListener('change', () => {
     if (motionDataCheckbox.checked) {
       motion_container.className = '';
-      motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+      motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
     } else {
       motion_container.className = 'hidden';
     }
@@ -536,16 +549,23 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
-  this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+  if (this.shouldTestOnDesktop) {
+    // desktop Chrome has issues with linearRampTo next value, so value is set directly and could cause zipper noise on desktop
+    this.xSig.value = this.accel.x;
+    this.ySig.value = this.accel.y;
+  } else {
+    // BUT this is for mobile anyway, so use this to smooth signal
+    this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+    this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
+  }
 
-  this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
-  if (this.currentCue.mode === 'tilt' || this.currentCue.mode === 'tiltAndShake') {
+  if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
   }
 
   // TRIGGER SHAKE EVENT (only if cue uses shake)
-  if (this.currentCue.mode === 'shake' || this.currentCue.mode === 'tiltAndShake') {
+  if (this.status === 'playing_shake' || this.status === 'playing_tiltAndShake') {
     // Trigger shake event if there hasn't been once recently
     if (this.shakeFlag && !(this.recentShakeFlag)) {
       this.recentShakeFlag = true;
@@ -553,7 +573,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.shakeGapCounter = Math.floor(this.shakeGap / this.motionUpdateLoopInterval);
 
       // Shake gesture triggered here
-      // TODO: prevent premature shake if cue is delayed
       this.currentCue.triggerShakeSound();
 
       if (this.debug) {
@@ -573,7 +592,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // Left panel has checkbox to allow monitoring of accel values
   if (motionDataCheckbox.checked) {
-    motionDataLabel.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
+    motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
@@ -587,7 +606,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 *********************************************************************/
 
 // Synchronizes client time to server time
-const urlForClockSync = 'https://jack-cue-manager-test.herokuapp.com/test-server/clock-sync';
+const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/test-server/clock-sync';
 ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
@@ -646,7 +665,7 @@ ToneMotion.prototype.syncClocks = function() {
 
 // Polls servers for new cues
 // Packet size reduced by subtracting bias on server and adding on client. At time of coding (2018-07-18) Date.now() returns 1531970463500
-const urlForCues = 'https://jack-cue-manager-test.herokuapp.com/test-server/current-cue'
+const urlForCues = 'https://tonemotion-cue-manager.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
 ToneMotion.prototype.getCuesFromServer = function() {
@@ -662,9 +681,10 @@ ToneMotion.prototype.getCuesFromServer = function() {
       this.cueTimeFromServer = jsonRes.t + timestampBias;
       // Prevent cue triggering if an error has occurred
       if (this.status !== 'error') {
-        this.goCue(this.cueOnClient, this.cueTimeFromServer);
+        this.triggerCue(this.cueOnClient, this.cueTimeFromServer);
         if (this.debug) {
-          this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + Date.now() + ' after being set on server at ' + this.cueTimeFromServer);
+          var timestamp = Date.now();
+          this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + timestamp + ' after being set on server at ' + this.cueTimeFromServer + '. Total latency: ' + (timestamp - this.cueTimeFromServer) + ' milliseconds.');
         }
       }
     } // else no new cue and control falls through, on to next loop
@@ -675,10 +695,16 @@ ToneMotion.prototype.getCuesFromServer = function() {
 };
 
 // Called when server has new cue
-ToneMotion.prototype.goCue = function(cue, serverTime) {
-  // check that cue exists
+ToneMotion.prototype.triggerCue = function(cue, serverTime) {
+  // Check that cue exists
   if (this.cue[cue]) {
-    this.currentCue = this.cue[cue];
+    // A 'hidden' cue is triggered immediately, does NOT set app status
+    // and does NOT clear currently playing cue
+    // Use for additional sounds that don't interrupt current interaction
+    if (this.cue[cue].mode === 'hidden') {
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      return;
+    }
   } else {
     this.publicError('Cue number ' + cue + ' does not exist.');
     return;
@@ -699,6 +725,8 @@ ToneMotion.prototype.goCue = function(cue, serverTime) {
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - this.clientServerOffset;
   var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
+  //  use this timestamp to facilitate gradual process during a section
+  this.currentCueStartedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
@@ -758,7 +786,41 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
       this.publicError('Error setting application status for new cue');
   }
 
-  this.cue[cue].isPlaying = true;
+  this.currentCue = this.cue[cue];
+  this.currentCue.isPlaying = true;
+};
+
+// Takes breakpoint array of time/value pairs and returns interpolated values reflecting elapsed time in current segment
+ToneMotion.prototype.getSectionBreakpoints = function(breakpointArray) {
+  // Each time needs a corresponding value (need even # of args)
+  if (breakpointArray.length % 2 !== 0) {
+    this.publicLog('Missing value for getSectionBreakpoints(), which requires an array of time/value pairs (e.g., [1000, 0.5, 2000, 1.0]).')
+    return;
+  }
+  // Go through array of time/value pairs
+  var elapsedTime = Date.now() - this.clientServerOffset - this.currentCueStartedAt;
+  for (var i = 0; i < breakpointArray.length; i = i + 2) {
+    // Each time needs to be greater than previous
+    if (breakpointArray[i] >= breakpointArray[i+2]) {
+      this.publicLog('getSectionBreakpoints() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
+      return;
+    }
+    // Find which segment current time is in
+    if (elapsedTime <= breakpointArray[i]) {
+      // time of previous breakpoint (if there was one)
+      var prevTime = breakpointArray[i-2] || 0;
+      // duration of this segment
+      var segTime = breakpointArray[i] - prevTime;
+      // progress in this segment
+      var segProg = (elapsedTime - prevTime) / segTime;
+      // previous value (or zero if none)
+      var prevVal = breakpointArray[i-1] || 0;
+      // interpolated value for progress along this segment
+      return prevVal + segProg * (breakpointArray[i+1] - prevVal);
+    }
+  }
+  // If time has elapsed, return last value
+  return breakpointArray[breakpointArray.length-1];
 };
 
 /*********************************************************************
@@ -769,6 +831,7 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
  * Create a new musical section
  * @param {string} mode - Mode of interactivity. Can be: 'waiting',
  * 'tacet', 'tilt', 'shake', 'tiltAndShake', 'listen', 'finished'
+ * or 'hidden' (immediate cue without changing application status)
  * @param {number} waitTime - Delay before cue is triggered.
  * Use -1 for minimum latency response (no need for openWindow param)
  * NB: sounds from previous cue cleared as soon as client gets cue, so
@@ -805,6 +868,5 @@ TMCue.prototype.updateTiltSounds = function() {
 
 // Override this method in score to make "shake" interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
-  // This will get real annoying unless this method is overridden
-  statusLabel.innerHTML = 'triggerShakeSound() called at ' + Date.now();
+  // Override if section uses shake
 }

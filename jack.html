@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>TITLE</title>
+  <title>Direct Attention</title>
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Title of the Piece...</h1>
+  <h1>Direct Attention</h1>
   <button id="helpDisclosureButton" type="button">?</button>
 </header>
 
@@ -30,15 +30,15 @@
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <!-- TODO: update and optimize this workaround -->
+  <!-- DOLATER: update and optimize this workaround -->
   <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
   <fieldset id="sliderFieldset" class="hidden">
     <legend>Motion simulation</legend>
-    <label for="accel_x">X-axis of accelerometer</label>
+    <label for="x_slider">X-axis of accelerometer</label>
     <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
-    <label for="accel_y">Y-axis of accelerometer</label>
+    <label for="y_slider">Y-axis of accelerometer</label>
     <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
     <button id="simulateShakeButton" type="button">shake device</button>
   </fieldset>
@@ -48,25 +48,29 @@
 <section id="helpPanel" class="slide-out"> <!-- left panel with instructions and help -->
   <div>
     <h2>About this piece</h2>
-    <p>(link to suboptimal and my site and iMonkeypants)</p>
+    <p><i>Direct Attention</i> is a piece for string quartet and motion-controlled interactive sounds played from the mobile devices of the audience. This extends my previous work with music for mobile devices in <a href="https://ryancarter.org/suboptimal" target="_blank"><i>On the expressive potential of suboptimal speakers</i></a> (a web-based piece for any number of people) and <a href="http://itunes.apple.com/us/app/imonkeypants/id547532522?mt=8" target="_blank">iMonkeypants</a> (an iOS app album).</p>
   </div>
   <div>
     <h2>Set up your device</h2>
-    <p>(instructions go here)</p>
-    <p>(define tilt, shake, tacet)</p>
+    <p>To set up your device for the performance, simply set the ring/silent switch to silent and turn up the volume. This will prevent notfications from phone calls or text messages. The music from this site will still play.</p>
+    <p>Once the page has loaded, you will see a start button, which you may tap at any time. From this point, the application will prevent the screen from turning off. Manually locking the screen may interrupt the sound, but if this happens you can simply reload the page.</p>
+    <p>The label in the center of the screen indicates the mode of interactivity for the current section of the piece. "Tilt" allows you to control certain aspects of the sound by tilting your phone to the left and right or up and down. "Shake" allows you to trigger individual sounds by gently shaking your device; a quick flick of the wrist will do. "Tacet" is a musical indication that your part is silent for this section.</p>
   </div>
-  <div>
+  <!-- DOLATER: could add section-by-section instructions in future -->
+  <!-- <div>
     <h2>Instructions for this section</h2>
     <p id="sectionInstructions">(instructions go here)</p>
-  </div>
+  </div> -->
   <div>
-    <h2>Compatibility and Accessibility</h2>
-    <p>(statment on compatibility and accessibility) Recommended browsers safari iOS and chrome android. Explain windows phone lack of support</p>
+    <h2>Compatibility</h2>
+    <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
+    <!-- Add accessibility statement -->
+    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome.</p>
   </div>
   <div>
     <h2>Credits</h2>
-    <p>(links to Tone.js)</p>
-    <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic</p>
+    <p>This project extends the <a href="https://github.com/Tonejs/Tone.js" target="_blank">Tone.js</a> framework for using Web Audio in supported browsers.</p>
+    <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic.</p>
   </div>
   <div>
     <h2>Motion monitor</h2>
@@ -82,28 +86,29 @@
     <label for="consoleCheckbox">Show console messages (may affect performance)</label>
     <div id="console_container" class="hidden">
     </div>
+  </div>
   </section>
 
 <!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
 <!-- They make trivial changes to Tone.js that will break older code -->
 <script src="tonemotion-shared/js/Tone.js"></script>
-<script src="tonemotion-shared/js/StartAudioContext.js"></script>
 <script src="tonemotion-shared/js/tonemotion-1.1.0.js"></script>
 
 <!-- Score for this piece -->
-<script src="demo-assets/js/score.js"></script>
+<script src="jack-assets/js/score.js"></script>
 
-<!-- TODO: find best place for NoSleep.js if it works -->
+<!-- DOLATER: find best place for NoSleep.js if it works -->
 <script src="tonemotion-shared/js/NoSleep.js"></script>
 
 <script>
-// TODO: clean this up. finding <audio> shim workaround inspired by:
+ // DOLATER: clean this up. finding <audio> shim workaround inspired by:
  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
+ // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
  let audioElem = document.getElementById("setAudioSession");
  let playButton = document.getElementById("startStopButton");
-
  // NoSleep from https://github.com/richtr/NoSleep.js
- // TODO: could removeEventListener after click (see code above)
+ // DOLATER: could removeEventListener after click (see code above)
+ // should disable noSleep with stop button in future
  var noSleep = new NoSleep();
 
  playButton.addEventListener("click", handlePlayButton, false);
