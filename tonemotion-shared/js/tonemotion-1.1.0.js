@@ -607,7 +607,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 *********************************************************************/
 
 // Synchronizes client time to server time
-const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/test-server/clock-sync';
+const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/clock-sync';
 ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
