@@ -1,7 +1,8 @@
 const tm = new ToneMotion();
 tm.debug = false;
 window.onload = function() {
-  tm.init();
+  // must initialize with URL for cue server, which is unique to piece
+  tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
 };
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound

@@ -90,6 +90,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
+ * @param {string} urlForCues - URL for cues from this particular ensemble
  */
 
 function ToneMotion() {
@@ -122,11 +123,12 @@ function ToneMotion() {
   this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
+  this.urlForCues = '';
 }
 
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
 // Triggers syncClocks() once buffers have succesfully loaded
-ToneMotion.prototype.init = function() {
+ToneMotion.prototype.init = function(urlOfServer) {
   // debug mode shows console, stops sync with server, logs messages
   if (this.debug) {
     this.showConsoleOnLaunch = true;
@@ -144,6 +146,9 @@ ToneMotion.prototype.init = function() {
   // Allow hiding and clearing of console and motion data monitor
   this.bindConsoleCheckboxFunctions();
   this.bindMotionCheckboxFunctions();
+
+  // Set URL for cue fetching, which varies from one piece to another
+  this.urlForCues = urlOfServer;
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
@@ -666,11 +671,10 @@ ToneMotion.prototype.syncClocks = function() {
 
 // Polls servers for new cues
 // Packet size reduced by subtracting bias on server and adding on client. At time of coding (2018-07-18) Date.now() returns 1531970463500
-const urlForCues = 'https://tonemotion-cue-manager.herokuapp.com/test-server/current-cue'
 const timestampBias = 1531970463500;
 // cueOnClient is set when cue from server doesn't match.
 ToneMotion.prototype.getCuesFromServer = function() {
-  fetch(urlForCues)
+  fetch(this.urlForCues)
   .then(response => response.json())
   .then(jsonRes => {
     // check if there's a new cue
