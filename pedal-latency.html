@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>Direct Attention</title>
+  <meta name="description" content="Web-based algorithmic generation of interactive music">
+  <meta name="author" content="Ryan Carter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles.css">
+  <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
+</head>
+<body>
+
+<header>
+  <h1>Latency test</h1>
+</header>
+
+<main>
+
+</main>
+
+
+<script>
+ // DOLATER: clean this up. finding <audio> shim workaround inspired by:
+ // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
+ // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
+ let audioElem = document.getElementById("setAudioSession");
+ let playButton = document.getElementById("startStopButton");
+ // NoSleep from https://github.com/richtr/NoSleep.js
+ // DOLATER: could removeEventListener after click (see code above)
+ // should disable noSleep with stop button in future
+ var noSleep = new NoSleep();
+
+ playButton.addEventListener("click", handlePlayButton, false);
+ // simply playing back 1-sec. silent file when tapping a button allows
+ // audio to sound with ring/silent switch on silent.
+ // keeps sound on after 1-sec. silent file elapses.
+ function handlePlayButton() {
+   audioElem.play();
+   noSleep.enable();
+ }
+ </script>
+
+</body>
+</html>
