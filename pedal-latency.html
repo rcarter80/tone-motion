@@ -3,44 +3,109 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Direct Attention</title>
+  <title>Pedal latency test</title>
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
+  <style type="text/css">
+  p {
+    color: #ccc;
+  }
+  main {
+    padding: 30px;
+  }
+  button,
+  button:hover,
+  button:active,
+  button:focus {
+    padding: 5px;
+  }
+  button:hover {
+    border-color: #ccc;
+    cursor: pointer;
+  }
+  button:active {
+    background-color: #ccc;
+  }
+</style>
 </head>
 <body>
 
 <header>
-  <h1>Latency test</h1>
+  <h1>Pedal latency test</h1>
 </header>
 
 <main>
-
+  <p>This page can be used to test whether there is significant latency between the time that a pedal (e.g., an AirTurn pedal connected over Bluetooth) is triggered and the time this trigger is received by the device to which it is connected. To test, simply click the button below at precisely the same time you press the pedal; the test will respond to either the 'Enter' or 'Space' key code from a pedal. You can perform this test multiple times and an average will be calculated. To guarantee accurate results, please wait at least two seconds between tests. The average can be cleared at any point.</p>
+  <p>Last key code received: <span id="lastKeyCode"></span></p>
+  <button id="startTest" type="button">Click button and press pedal simultaneously</button>
+  <p>Result of last latency test (in milliseconds): <span id="lastLatencyTest"></span></p>
+  <p>Average latency: <span id="averageLatency"></span></p>
+  <button id="clearAverage" type="button">Click button to clear average</button>
 </main>
 
 
 <script>
- // DOLATER: clean this up. finding <audio> shim workaround inspired by:
- // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
- // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
- let audioElem = document.getElementById("setAudioSession");
- let playButton = document.getElementById("startStopButton");
- // NoSleep from https://github.com/richtr/NoSleep.js
- // DOLATER: could removeEventListener after click (see code above)
- // should disable noSleep with stop button in future
- var noSleep = new NoSleep();
+var lastButtonClick = 0;
+var lastPedalPress = 0;
+var lastLatencyTest = 0;
+var readyToTest = false; // not ready until button clicked
+var testTimeArray = [];
+var totalOfLatencyTimes = 0;
+var i = 0;
+var averageLatency = 0;
+const lastLatencyTestLabel = document.querySelector('#lastLatencyTest');
+const averageLatencyLabel = document.querySelector('#averageLatency');
+const lastKeyCode = document.querySelector('#lastKeyCode');
 
- playButton.addEventListener("click", handlePlayButton, false);
- // simply playing back 1-sec. silent file when tapping a button allows
- // audio to sound with ring/silent switch on silent.
- // keeps sound on after 1-sec. silent file elapses.
- function handlePlayButton() {
-   audioElem.play();
-   noSleep.enable();
- }
- </script>
+// Pressing the test button opens latency test for pedal
+document.querySelector('#startTest').addEventListener("click", () => {
+  lastButtonClick = Date.now();
+  readyToTest = true;
+  console.log(`Test button clicked at ${lastButtonClick}`);
+})
+
+// Function will be called when pedal is triggered and button is clicked
+function testLatency() {
+  lastPedalPress = Date.now();
+  console.log(`Pedal cue received at ${lastPedalPress}`);
+  // User instructed to wait at least 2 sec. between tests
+  // Otherwise, no way to tell if button was clicked for THIS test
+  if (readyToTest && (lastPedalPress - lastButtonClick < 2000)) {
+    lastLatencyTest = lastPedalPress - lastButtonClick;
+    testTimeArray.push(lastLatencyTest);
+    lastLatencyTestLabel.innerHTML = lastLatencyTest;
+    // Reset total of latency test times to recalcuate average below
+    totalOfLatencyTimes = 0;
+    for (i = 0; i < testTimeArray.length; i++) {
+      totalOfLatencyTimes += testTimeArray[i];
+    }
+    averageLatency = totalOfLatencyTimes / testTimeArray.length;
+    averageLatencyLabel.innerHTML = averageLatency;
+  } else {
+    // Either pedal trigger received before button clicked OR
+    // order of events was reversed. User needs to wait 2 sec. and try again
+    lastLatencyTestLabel.innerHTML = 'Error testing. Please make sure to wait at least 2 seconds between tests. If the pedal trigger is received before the button is clicked, this will also trigger an error.';
+  }
+  readyToTest = false; // need button click to reset test
+}
+
+// Pedal triggers either Enter of Space key code
+window.addEventListener('keydown', function(event) {
+  lastKeyCode.innerHTML = event.code;
+  if (event.code === 'Enter' || event.code === 'Space') {
+    testLatency();
+  }
+}, true);
+
+document.querySelector('#clearAverage').addEventListener("click", () => {
+  testTimeArray = [];
+  averageLatencyLabel.innerHTML = 'average cleared';
+})
+
+</script>
 
 </body>
 </html>
