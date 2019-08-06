@@ -28,6 +28,11 @@ const console_container = document.querySelector('#console_container');
 var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
 var yTilt = new Tone.Signal(0.5);
 
+/*
+** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
+*/
+var noSleep = new NoSleep();
+
 /**
  * Object to encapsulate properties and methods for ToneMotion
  * @param {string} status - Application status (set automatically)
@@ -235,6 +240,14 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
+  // prevents screen from automatically locking, which chokes audio/motion
+  noSleep.enable();
+  // simply playing back 1-sec. silent file when tapping a button allows
+  // audio to sound with ring/silent switch on silent.
+  // keeps sound on after 1-sec. silent file elapses.
+  //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
+  silent_buffer.play();
+
   Tone.Transport.start();
 
   start_stop_button.className = 'disabled'; // while waiting for cue
@@ -255,6 +268,9 @@ ToneMotion.prototype.shutEverythingDown = function() {
 
   // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
   this.cueTimeFromServer = 0;
+
+  // No need to prevent screen lock any more
+  noSleep.disable();
 };
 
 /*

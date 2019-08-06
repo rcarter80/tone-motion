@@ -30,7 +30,7 @@
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+  <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
   <fieldset id="sliderFieldset" class="hidden">
@@ -98,27 +98,6 @@
 
 <!-- Score for this piece -->
 <script src="hub-assets/js/score.js"></script>
-
-<script>
- // DOLATER: clean this up. finding <audio> shim workaround inspired by:
- // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
- // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
- let audioElem = document.getElementById("setAudioSession");
- let playButton = document.getElementById("start_stop_button");
- // NoSleep from https://github.com/richtr/NoSleep.js
- // DOLATER: could removeEventListener after click (see code above)
- // should disable noSleep with stop button in future
- var noSleep = new NoSleep();
-
- playButton.addEventListener("click", handlePlayButton, false);
- // simply playing back 1-sec. silent file when tapping a button allows
- // audio to sound with ring/silent switch on silent.
- // keeps sound on after 1-sec. silent file elapses.
- function handlePlayButton() {
-   audioElem.play();
-   noSleep.enable();
- }
- </script>
 
 </body>
 </html>
