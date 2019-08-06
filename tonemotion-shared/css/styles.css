@@ -2,6 +2,8 @@
 ** GENERAL STYLING AND RESETTING
 **/
 
+/* NOTE: I know this style sheet is kind of a mess, but it works. Could optimize by going through TODOs below */
+
 :root {
  --theme-color-light: #032dc1;
  --theme-color-dark: #384577;
