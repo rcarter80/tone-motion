@@ -7,27 +7,26 @@
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles.css">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.2.0.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
 </head>
 <body>
 
 <header>
   <h1>PIECE FOR HUB NEW MUSIC</h1>
-  <!-- TODO: refactor code for consistent ID naming convention? -->
-  <button id="helpDisclosureButton" type="button">?</button>
+  <button id="help_button" type="button">?</button>
 </header>
 
 <main> <!-- center panel showing app status, messages, controls -->
   <div id="status_container">
-    <p id="statusLabel">loading</p>
+    <p id="status_label">loading</p>
   </div>
   <!-- button is not displayed until page loads, then shows "start" -->
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
-  <button id="startStopButton" type="button" class="hidden"></button>
+  <button id="start_stop_button" type="button" class="hidden"></button>
   <div id="message_container" class="hidden">
-    <p id="messageLabel"> </p>
+    <p id="message_label"> </p>
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
@@ -45,7 +44,7 @@
 
 </main>
 
-<section id="helpPanel" class="slide-out"> <!-- left panel with instructions and help -->
+<section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
   <div>
     <h2>About this piece</h2>
     <p><i>TITLE</i> is a piece [describe piece]. This extends my previous work with music for mobile devices in <a href="https://ryancarter.org/suboptimal" target="_blank"><i>On the expressive potential of suboptimal speakers</i></a> (a web-based piece for any number of people) and <a href="http://itunes.apple.com/us/app/imonkeypants/id547532522?mt=8" target="_blank">iMonkeypants</a> (an iOS app album).</p>
@@ -60,10 +59,10 @@
   <!-- DOLATER: could add section-by-section instructions in future -->
   <!-- <div>
     <h2>Instructions for this section</h2>
-    <p id="sectionInstructions">(instructions go here)</p>
+    <p id="section_instructions">(instructions go here)</p>
   </div> -->
   <div>
-    <h2>Compatibility and Accessibility</h2>
+    <h2>Compatibility and accessibility</h2>
     <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
     <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome.</p>
     <p>I hope that the site I have designed is maximally accessible to all users. If you have thoughts on improving the accessibility of this site, please feel free to contact me at ryan (at) ryancarter (dot) org.</p>
@@ -75,16 +74,16 @@
   </div>
   <div>
     <h2>Motion monitor</h2>
-    <input type="checkbox" id="motionDataCheckbox">
-    <label for="motionDataCheckbox">Show motion data (may affect performance)</label>
+    <input type="checkbox" id="motion_data_checkbox">
+    <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
     <div id="motion_container" class="hidden">
-      <p id="motionDataLabel"></p>
+      <p id="motion_data_label"></p>
     </div>
   </div>
   <div id="publicConsole">
     <h2>Console</h2>
-    <input type="checkbox" id="consoleCheckbox">
-    <label for="consoleCheckbox">Show console messages (may affect performance)</label>
+    <input type="checkbox" id="console_checkbox">
+    <label for="console_checkbox">Show console messages (may affect performance)</label>
     <div id="console_container" class="hidden">
     </div>
   </div>
@@ -105,7 +104,7 @@
  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
  // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
  let audioElem = document.getElementById("setAudioSession");
- let playButton = document.getElementById("startStopButton");
+ let playButton = document.getElementById("start_stop_button");
  // NoSleep from https://github.com/richtr/NoSleep.js
  // DOLATER: could removeEventListener after click (see code above)
  // should disable noSleep with stop button in future

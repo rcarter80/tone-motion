@@ -1,8 +1,14 @@
 const tm = new ToneMotion();
-tm.debug = false;
+tm.debug = true; // if true, skips clock sync and shows console
+tm.localTest = true; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
-  tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+  // fetch cues from localhost if tm.localTest is true
+  if (tm.localTest) {
+    tm.init('http://localhost:3000/hub-server/current-cue');
+  } else {
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/hub-server/current-cue');
+  }
 };
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound

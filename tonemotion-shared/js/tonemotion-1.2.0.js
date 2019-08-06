@@ -1,17 +1,3 @@
-// COMMENTS FOR ANDREW
-// TODO: delete these comments for Andrew
-/*
-Hi Andrew! Thanks for agreeing to consult on this project!
-The basic application structure is:
-One of the musicians (or anyone running electronics from any device) logs into the server and has control over what the current musical section is (the "cue"). They can set the cue directly or use a pedal to increment a counter; I'll be adding a feature to also decrement the counter because the device that the JACK Quartet will be using has two pedals.
-
-Anyone in the audience -- or anywhere in the world, actually -- can go to the site (e.g., ryancarter.org/jack) and "play" along by controlling certain aspects of sounds that are composed to be interactive with the musicians. A cue may also silence all the audience devices (i.e., if it's a "tacet" cue).
-
-I prioritize tight synchrony over low latency because in a musical context, we know what's coming up and we want to be able to synchronize events. Musicians may, for example, be playing at 120 beats per minute and we want a big event to be synchronized at measure 48. All I need to do is write in the score that the musicians should tap the pedal on the downbeat of measure 47 and code this cue to be triggered 2 seconds (i.e., 4 beats at 120 bpm) later. This approach tolerates high latency -- I think this will work fine over cellular. I'm just using rapid polling at 500 millisecond intervals, so ideal delay times between setting a cue on the server and triggering the event on the clients is in the 1-2 second range (about the musical equivalent of one measure or a couple beats).
-
-I'm still adding some stuff, but it's basically there. The main known issue is that if an iOS device screen locks, it chokes the motion sensors (not on Android from what I've seen) and this means I need to prevent screen lock. I've encountered this before with my iOS app. In a native iOS app, you can just disable the idle timer, but you can't do that in a browser. I'm thinking the best workaround may be to embed a video (that is not visible and is a very small file) and have that play in response to user tapping the play button. Let me know if you have other thoughts. Thanks!
-*/
-
 /*********************************************************************
 ************************ APPLICATION SETUP ***************************
 *********************************************************************/
@@ -22,28 +8,17 @@ I'm still adding some stuff, but it's basically there. The main known issue is t
 ** DOM HOOKS
 */
 
-const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
-
+const help_button = document.querySelector('#help_button');
 const status_container = document.querySelector('#status_container');
-
-const statusLabel = document.querySelector('#statusLabel');
-
-const startStopButton = document.querySelector('#startStopButton');
-
+const status_label = document.querySelector('#status_label');
+const start_stop_button = document.querySelector('#start_stop_button');
 const message_container = document.querySelector('#message_container');
-
-const messageLabel = document.querySelector('#messageLabel');
-
-const helpPanel = document.querySelector('#helpPanel');
-
-const sectionInstructions = document.querySelector('#sectionInstructions');
-
-const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
-
-const motionDataLabel = document.querySelector('#motionDataLabel');
-
-const consoleCheckbox = document.querySelector('#consoleCheckbox');
-
+const message_label = document.querySelector('#message_label');
+const help_panel = document.querySelector('#help_panel');
+const section_instructions = document.querySelector('#section_instructions');
+const motion_data_checkbox = document.querySelector('#motion_data_checkbox');
+const motion_data_label = document.querySelector('#motion_data_label');
+const console_checkbox = document.querySelector('#console_checkbox');
 const console_container = document.querySelector('#console_container');
 
 /*
@@ -57,6 +32,7 @@ var yTilt = new Tone.Signal(0.5);
  * Object to encapsulate properties and methods for ToneMotion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
+ * @param {boolean} localTest - Set to 'true' in score.js to test locally
  * @param {boolean} showConsoleOnLaunch - Shows console log by default
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
@@ -96,6 +72,7 @@ var yTilt = new Tone.Signal(0.5);
 function ToneMotion() {
   this.status = '';
   this.debug = false;
+  this.localTest = false;
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
@@ -137,7 +114,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   }
   // Can automatically show console in left panel when page loads
   if (this.showConsoleOnLaunch) {
-    consoleCheckbox.checked = true;
+    console_checkbox.checked = true;
     console_container.className = '';
   }
 
@@ -260,8 +237,8 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
   Tone.Transport.start();
 
-  startStopButton.className = 'disabled'; // while waiting for cue
-  statusLabel.innerHTML = ''; // label will update with cue
+  start_stop_button.className = 'disabled'; // while waiting for cue
+  status_label.innerHTML = ''; // label will update with cue
 
   this.beginMotionUpdates();
 
@@ -287,13 +264,13 @@ ToneMotion.prototype.shutEverythingDown = function() {
 // Prints to message label on center panel
 ToneMotion.prototype.publicMessage = function(message) {
   message_container.className = 'default';
-  messageLabel.innerHTML = message;
+  message_label.innerHTML = message;
 };
 
 // Prints to message label (styled as warning), prints console warning
 ToneMotion.prototype.publicWarning = function(message) {
   message_container.className = 'warning';
-  messageLabel.innerHTML = message;
+  message_label.innerHTML = message;
   console.warn(message);
 };
 
@@ -301,19 +278,19 @@ ToneMotion.prototype.publicWarning = function(message) {
 ToneMotion.prototype.publicError = function(message) {
   this.setStatus('error');
   message_container.className = 'error';
-  messageLabel.innerHTML = message;
+  message_label.innerHTML = message;
   console.error(message);
 };
 
 // Clears message label
 ToneMotion.prototype.clearMessageLabel = function() {
   message_container.className = 'hidden';
-  messageLabel.innerHTML = '';
+  message_label.innerHTML = '';
 }
 
-// Prints to console and to help panel if consoleCheckbox is checked
+// Prints to console and to help panel if console_checkbox is checked
 ToneMotion.prototype.publicLog = function(message) {
-  if (consoleCheckbox.checked) {
+  if (console_checkbox.checked) {
     var logMessage = document.createElement('p');
     logMessage.className = 'logMessage';
     logMessage.innerHTML = message;
@@ -338,18 +315,18 @@ ToneMotion.prototype.clearConsole = function() {
 // Sets text and class name for main status label in center panel
 ToneMotion.prototype.setStatusLabel = function(text, className) {
   status_container.className = className;
-  statusLabel.innerHTML = text;
+  status_label.innerHTML = text;
 };
 
 // Sets text and class name for main button in center panel
 ToneMotion.prototype.setStartStopButton = function(text, className) {
-  startStopButton.className = className;
-  startStopButton.innerHTML = text;
+  start_stop_button.className = className;
+  start_stop_button.innerHTML = text;
 }
 
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
-  startStopButton.addEventListener("click", () => {
+  start_stop_button.addEventListener("click", () => {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
@@ -385,8 +362,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 
 // Toggles display for console in side panel. Hiding clears log.
 ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
-  consoleCheckbox.addEventListener('change', () => {
-    if (consoleCheckbox.checked) {
+  console_checkbox.addEventListener('change', () => {
+    if (console_checkbox.checked) {
       // Console is now displayed. Print message to confirm.
       console_container.className = '';
       this.publicLog('(Console messages will go here)');
@@ -399,10 +376,10 @@ ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
 
 // Toggles display for motion data monitor in side panel.
 ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
-  motionDataCheckbox.addEventListener('change', () => {
-    if (motionDataCheckbox.checked) {
+  motion_data_checkbox.addEventListener('change', () => {
+    if (motion_data_checkbox.checked) {
       motion_container.className = '';
-      motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
     } else {
       motion_container.className = 'hidden';
     }
@@ -410,13 +387,13 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
 };
 
 // Slides side panel in and out
-helpDisclosureButton.onclick = function() {
-  if (helpPanel.className === 'slide-out') {
-    helpPanel.className = 'slide-in';
-    helpDisclosureButton.className = 'slide-in';
+help_button.onclick = function() {
+  if (help_panel.className === 'slide-out') {
+    help_panel.className = 'slide-in';
+    help_button.className = 'slide-in';
   } else {
-    helpPanel.className = 'slide-out';
-    helpDisclosureButton.className = 'slide-out';
+    help_panel.className = 'slide-out';
+    help_button.className = 'slide-out';
   }
 }
 
@@ -597,12 +574,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // Left panel has checkbox to allow monitoring of accel values
-  if (motionDataCheckbox.checked) {
-    motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+  if (motion_data_checkbox.checked) {
+    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
-      motionDataLabel.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
     }
   }
 };
@@ -868,7 +845,7 @@ TMCue.prototype.stopCue = function() {
 // Override this method in score to make "tilt" interactive sounds
 TMCue.prototype.updateTiltSounds = function() {
   // This will get real annoying unless this method is overridden
-  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
+  status_label.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
 }
 
 // Override this method in score to make "shake" interactive sounds
