@@ -129,8 +129,8 @@ input[type=checkbox] {
   display: inline;
 }
 
-#helpDisclosureButton,
-#helpDisclosureButton.slide-out {
+#help_button,
+#help_button.slide-out {
   position: fixed;
   z-index: 2;
   top: 0;
@@ -144,7 +144,7 @@ input[type=checkbox] {
   transition: transform 0.25s;
   box-shadow: 0 0 16px rgba(255,255,255,.28);
 }
-#helpDisclosureButton.slide-in {
+#help_button.slide-in {
   transform: rotate(90deg);
   box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
 }
@@ -199,11 +199,11 @@ main {
   background-color: var(--theme-color-error-light);
 }
 
-#statusLabel {
+#status_label {
   padding: 20px;
 }
 
-#startStopButton,
+#start_stop_button,
 #simulateShakeButton {
   display: block;
   margin-top: 25px;
@@ -215,11 +215,11 @@ main {
   padding: 10px;
   letter-spacing: 0.05rem;
 }
-#startStopButton.hidden {
+#start_stop_button.hidden {
   display: none;
 }
 
-#startStopButton.start {
+#start_stop_button.start {
   animation: glowing 1s linear 0s infinite alternate;
 }
 @keyframes glowing {
@@ -230,11 +230,11 @@ main {
 /* TODO: do I need anything for 'stop' state? */
 
 /* use after button has been tapped but cue is being fetched */
-#startStopButton.disabled {
+#start_stop_button.disabled {
   opacity: 0.5;
 }
 
-#startStopButton.reload {
+#start_stop_button.reload {
   color: var(--theme-color-error-dark);
   border-color: var(--theme-color-error-dark);
 }
@@ -269,7 +269,7 @@ fieldset {
   opacity: 0;
 }
 
-#helpPanel {
+#help_panel {
   position: absolute;
   z-index: 1;
   top: 0;
@@ -282,41 +282,41 @@ fieldset {
   border-right: 1px solid var(--theme-color-light);
   box-shadow: 0 0 16px rgba(255,255,255,.28);
 }
-#helpPanel.slide-in {
+#help_panel.slide-in {
   visibility: visible;
   transform: translateX(0);
   transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0s;
 }
 
 @media (max-width: 767px) {
-  #helpPanel {
+  #help_panel {
     width: 90%;
   }
-  #helpPanel.slide-out {
+  #help_panel.slide-out {
     visibility: hidden;
     transform: translateX(-110%);
     transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
   }
 }
 @media (min-width: 768px) {
-  #helpPanel {
+  #help_panel {
     width: 400px;
   }
-  #helpPanel.slide-out {
+  #help_panel.slide-out {
     visibility: hidden;
     transform: translateX(-416px); /* TODO: decide size of box-shadow */
     transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
   }
 }
 
-#helpPanel h2 {
+#help_panel h2 {
   border-left: 5px solid var(--theme-color-dark);
   border-top: 1px solid var(--theme-color-dark);
   padding-left: 10px;
   font-size: 1.5rem;
 }
 
-#helpPanel div {
+#help_panel div {
   margin-bottom: 40px;
 }
 
