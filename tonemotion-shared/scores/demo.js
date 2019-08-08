@@ -12,6 +12,7 @@ window.onload = function() {
 
 // Shortcuts to audio file paths
 const chimes_sounds = 'tonemotion-shared/audio/chimes/';
+const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 
 // Instruments need global scope within this file
 var synth = new Tone.Synth().toMaster();
@@ -20,7 +21,7 @@ var chimeSynth = new Tone.MetalSynth().toMaster();
 // Granulator
 var c1_granulatorGrainSize = 0.1; // WAS 0.125 determines how often .scrub() is called. actual grain size is longer
 var c1_granulator = new Tone.GrainPlayer({
-  "url": "demo-assets/audio/c1_grFileB.mp3",
+  "url": granulated_sounds + "c1_grFileB.mp3",
   "overlap": 0.01,
   "grainSize": c1_granulatorGrainSize * 2,
   "loop": true,
@@ -31,13 +32,12 @@ var c1_granulatorDur = 22;
 
 // Chime player
 var chimePlayer = new Tone.Players({
-  // TODO: continue replacing paths with chortcuts
   "ch1654": chimes_sounds + "chime-1654Hz-Ab6.mp3",
-  "ch1661": "demo-assets/audio/chime-1661Hz-Ab6.mp3",
-  "ch1748": "demo-assets/audio/chime-1748Hz-A6.mp3",
-  "ch1929": "demo-assets/audio/chime-1929Hz-B6.mp3",
-  "ch2417": "demo-assets/audio/chime-2417Hz-D7.mp3",
-  "ch2568": "demo-assets/audio/chime-2568Hz-E7.mp3",
+  "ch1661": chimes_sounds + "chime-1661Hz-Ab6.mp3",
+  "ch1748": chimes_sounds + "chime-1748Hz-A6.mp3",
+  "ch1929": chimes_sounds + "chime-1929Hz-B6.mp3",
+  "ch2417": chimes_sounds + "chime-2417Hz-D7.mp3",
+  "ch2568": chimes_sounds + "chime-2568Hz-E7.mp3",
 }).toMaster();
 var chimeArray = ["ch1654", "ch1661", "ch1748", "ch1929", "ch2417", "ch2568"];
 
