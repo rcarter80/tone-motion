@@ -5,8 +5,13 @@ tm.showConsoleOnLaunch = true;
 tm.shouldSyncToServer = false;
 
 window.onload = function() {
-  tm.init();
+  // must initialize with URL for cue server, which is unique to piece
+  // I'm just using JACK's cue server for this demo. If I wanted to make this a real demo, I'd probalby need to create a dedicated cue server
+  tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
 };
+
+// Shortcuts to audio file paths
+const chimes_sounds = 'tonemotion-shared/audio/chimes/';
 
 // Instruments need global scope within this file
 var synth = new Tone.Synth().toMaster();
@@ -26,7 +31,8 @@ var c1_granulatorDur = 22;
 
 // Chime player
 var chimePlayer = new Tone.Players({
-  "ch1654": "demo-assets/audio/chime-1654Hz-Ab6.mp3",
+  // TODO: continue replacing paths with chortcuts
+  "ch1654": chimes_sounds + "chime-1654Hz-Ab6.mp3",
   "ch1661": "demo-assets/audio/chime-1661Hz-Ab6.mp3",
   "ch1748": "demo-assets/audio/chime-1748Hz-A6.mp3",
   "ch1929": "demo-assets/audio/chime-1929Hz-B6.mp3",

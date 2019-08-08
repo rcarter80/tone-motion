@@ -55,7 +55,8 @@ tm.cue[2].goCue = function() {
 
 // *******************************************************************
 // CUE 3: shake tutorial
-var cowbell = new Tone.Player("tonemotion-shared/audio/cowbell.mp3").toMaster();
+const filePathTest = 'tonemotion-shared/audio/';
+var cowbell = new Tone.Player(filePathTest + 'cowbell.mp3').toMaster();
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
   // nothing to do until shake gestures
