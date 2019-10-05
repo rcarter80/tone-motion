@@ -592,7 +592,8 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
   // Automatically make sliders visible for desktop testing if needed
   if (this.accel.rawX === undefined) {
-    this.testWithoutMotion();
+    // TODO: reenable this after phone test works
+    // this.testWithoutMotion();
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
