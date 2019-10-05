@@ -255,14 +255,64 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
   // Begin motion handling, which detects devicemotion, requests permission
-  this.beginMotionHandling();
-
-  Tone.Transport.start();
+  if (this.debug) {
+    this.publicLog('Beginning motion detection')
+  }
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  // Could also have user select checkbox to invert axes, but that requires more setup of device
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    if (this.debug) {
+      this.publicLog('This device appears to be an Android');
+    }
+  }
+  else {
+    this.deviceIsAndroid = false;
+    if (this.debug) {
+      this.publicLog('This device does not appear to be an Android');
+    }
+  }
+  // testing iOS 13 motion permission
+  // Guard against reference erros by checking that DeviceMotionEvent is defined
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+  typeof DeviceMotionEvent.requestPermission === 'function') {
+    if (this.debug) {
+      this.publicLog('Requesting permission for motion data');
+    }
+    // Device requests motion permission (e.g., iOS 13+)
+    DeviceMotionEvent.requestPermission()
+    .then(permissionState => {
+      if (permissionState === 'granted') {
+        // Just sets accelerometer data to object properties and determines
+        // if gyro data should set shake flag
+        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        Tone.Transport.start();
+        // can't start motion updates until handleMotionEvent() is registered
+        this.beginMotionUpdates();
+      } else {
+        // user has not give permission for motion. Pretend device is laptop
+        this.testWithoutMotion();
+      }
+    })
+    .catch(console.error);
+  } else {
+    // handle non iOS 13+ devices, which could still report motion
+    if (this.debug) {
+      this.publicLog('Not an iOS 13+ device');
+    }
+    if ('DeviceMotionEvent' in window) {
+      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    }
+    else {
+      this.testWithoutMotion();
+    }
+  }
 
   startStopButton.className = 'disabled'; // while waiting for cue
   statusLabel.innerHTML = ''; // label will update with cue
-
-  this.beginMotionUpdates();
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
@@ -448,63 +498,63 @@ ToneMotion.prototype.testWithoutMotion = function() {
 *********************************************************************/
 
 // Tests if device is Android, registers 'devicemotion' event listener
-ToneMotion.prototype.beginMotionHandling = function() {
-  if (this.debug) {
-    this.publicLog('Beginning motion detection')
-  }
-
-  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
-  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
-  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
-  // Could also have user select checkbox to invert axes, but that requires more setup of device
-  const userAgent = window.navigator.userAgent;
-  if (userAgent.match(/Android/i)) {
-    this.deviceIsAndroid = true;
-    if (this.debug) {
-      this.publicLog('This device appears to be an Android');
-    }
-  }
-  else {
-    this.deviceIsAndroid = false;
-    if (this.debug) {
-      this.publicLog('This device does not appear to be an Android');
-    }
-  }
-
-  // Just sets accelerometer data to object properties and determines
-  // if gyro data should set shake flag
-
-  // testing iOS 13 motion permission
-  // Guard against reference erros by checking that DeviceMotionEvent is defined
-  if (typeof DeviceMotionEvent !== 'undefined' &&
-  typeof DeviceMotionEvent.requestPermission === 'function') {
-    if (this.debug) {
-      this.publicLog('Requesting permission for motion data');
-    }
-    // Device requests motion permission (e.g., iOS 13+)
-    DeviceMotionEvent.requestPermission()
-    .then(permissionState => {
-      if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-      } else {
-        // user has not give permission for motion. Pretend device is laptop
-        this.testWithoutMotion();
-      }
-    })
-    .catch(console.error);
-  } else {
-    // handle non iOS 13+ devices, which could still report motion
-    if (this.debug) {
-      this.publicLog('Not an iOS 13+ device');
-    }
-    if ('DeviceMotionEvent' in window) {
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-    }
-    else {
-      this.testWithoutMotion();
-    }
-  }
-};
+// ToneMotion.prototype.beginMotionHandling = function() {
+//   if (this.debug) {
+//     this.publicLog('Beginning motion detection')
+//   }
+//
+//   // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+//   // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+//   // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+//   // Could also have user select checkbox to invert axes, but that requires more setup of device
+//   const userAgent = window.navigator.userAgent;
+//   if (userAgent.match(/Android/i)) {
+//     this.deviceIsAndroid = true;
+//     if (this.debug) {
+//       this.publicLog('This device appears to be an Android');
+//     }
+//   }
+//   else {
+//     this.deviceIsAndroid = false;
+//     if (this.debug) {
+//       this.publicLog('This device does not appear to be an Android');
+//     }
+//   }
+//
+//   // Just sets accelerometer data to object properties and determines
+//   // if gyro data should set shake flag
+//
+//   // testing iOS 13 motion permission
+//   // Guard against reference erros by checking that DeviceMotionEvent is defined
+//   if (typeof DeviceMotionEvent !== 'undefined' &&
+//   typeof DeviceMotionEvent.requestPermission === 'function') {
+//     if (this.debug) {
+//       this.publicLog('Requesting permission for motion data');
+//     }
+//     // Device requests motion permission (e.g., iOS 13+)
+//     DeviceMotionEvent.requestPermission()
+//     .then(permissionState => {
+//       if (permissionState === 'granted') {
+//         window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+//       } else {
+//         // user has not give permission for motion. Pretend device is laptop
+//         this.testWithoutMotion();
+//       }
+//     })
+//     .catch(console.error);
+//   } else {
+//     // handle non iOS 13+ devices, which could still report motion
+//     if (this.debug) {
+//       this.publicLog('Not an iOS 13+ device');
+//     }
+//     if ('DeviceMotionEvent' in window) {
+//       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+//     }
+//     else {
+//       this.testWithoutMotion();
+//     }
+//   }
+// };
 
 // Sets ToneMotion object accel properties and sets shake flag
 // Bound to 'devicemotion' event listener, so this is called very often
