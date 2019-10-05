@@ -594,6 +594,9 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   if (this.accel.rawX === undefined) {
     // TODO: reenable this after phone test works
     // this.testWithoutMotion();
+    if (this.debug) {
+      this.publicLog('accelerometer value undefined');
+    }
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
