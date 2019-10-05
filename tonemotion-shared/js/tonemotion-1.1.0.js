@@ -528,7 +528,6 @@ ToneMotion.prototype.beginMotionUpdates = function() {
         if (window.confirm("Your device is not reporting motion. You may either be on a desktop computer, or this may be a result of your mobile browser settings. If you're on an iPhone, go to Settings > Safari > Motion & Orientation Access and make sure this setting is on. Reload the page to try again, or continue to launch the desktop version.")) {
           this.testWithoutMotion();
         } else {
-          preventMotionUpdateLoop = true;
           this.setStatus('stopped');
           this.shutEverythingDown();
         }

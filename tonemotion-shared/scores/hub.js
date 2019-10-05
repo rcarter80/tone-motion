@@ -63,7 +63,10 @@ tm.cue[1].stopCue = function() {
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', -1);
 tm.cue[2].goCue = function() {
-  tm.publicLog('tm.cue[2].goCue() called');
+  // nothing to play
+}
+tm.cue[2].stopCue = function() {
+  // nothing to clean up
 }
 
 // *******************************************************************
@@ -152,28 +155,35 @@ var pzG4 = new Tone.Player(cello_sounds + "vc-pz-G4.mp3").toMaster();
 var pzB4 = new Tone.Player(cello_sounds + "vc-pz-B4.mp3").toMaster();
 // clave is triggered at end of cue
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
+var testCounter = 0;
+var testMuteArray = [1, 1, 1, 0];
+
 var pizzLoop = new Tone.Loop(function(time) {
-  if (tm.accel.y < 0.5) {
-    if (tm.accel.x < 0.25) {
-      pzG2.start();
-    } else if (tm.accel.x < 0.5) {
-      pzD4.start();
-    } else if (tm.accel.x < 0.75) {
-      pzG4.start();
+  console.log(testCounter % testMuteArray.length);
+  if (testMuteArray[testCounter % testMuteArray.length]) {
+    if (tm.accel.y < 0.5) {
+      if (tm.accel.x < 0.25) {
+        pzG2.start();
+      } else if (tm.accel.x < 0.5) {
+        pzD4.start();
+      } else if (tm.accel.x < 0.75) {
+        pzG4.start();
+      } else {
+        pzB4.start();
+      }
     } else {
-      pzB4.start();
-    }
-  } else {
-    if (tm.accel.x < 0.25) {
-      pzFsharp2.start();
-    } else if (tm.accel.x < 0.5) {
-      pzFsharp3.start();
-    } else if (tm.accel.x < 0.75) {
-      pzFsharp4.start();
-    } else {
-      pzFsharp5.start();
+      if (tm.accel.x < 0.25) {
+        pzFsharp2.start();
+      } else if (tm.accel.x < 0.5) {
+        pzFsharp3.start();
+      } else if (tm.accel.x < 0.75) {
+        pzFsharp4.start();
+      } else {
+        pzFsharp5.start();
+      }
     }
   }
+  testCounter++;
 }, "8t");
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
 tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
