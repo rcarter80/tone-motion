@@ -286,19 +286,13 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        // Just sets accelerometer data to object properties and determines
-        // if gyro data should set shake flag
         window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-        // This value is used to test if device is actually reporting motion or lying. If devicemotion permission is requested, this device *definitely* reports motion, but initial setting of value may be delayed just long enough for test to fail. Initialize value to prevent
-        this.accel.rawX = 0;
-        Tone.Transport.start();
-        // can't start motion updates until handleMotionEvent() is registered
-        this.beginMotionUpdates();
       } else {
-        // user has not give permission for motion. Pretend device is laptop
+        // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
-        Tone.Transport.start();
       }
+      Tone.Transport.start();
+      this.beginMotionUpdates();
     })
     .catch(console.error);
   } else {
@@ -308,13 +302,11 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     }
     if ('DeviceMotionEvent' in window) {
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-      Tone.Transport.start();
-    }
-    else {
+    } else {
       this.testWithoutMotion();
-      Tone.Transport.start();
-      this.beginMotionUpdates();
     }
+    Tone.Transport.start();
+    this.beginMotionUpdates();
   }
 
   startStopButton.className = 'disabled'; // while waiting for cue
@@ -537,9 +529,26 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   }
 
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
+  // Another possibility is an iOS 12.2 - 12.4 device with motion access off
+  // Need to provide instructions for turning it on
   // Automatically make sliders visible for desktop testing if needed
   if (this.accel.rawX === undefined) {
-    this.testWithoutMotion();
+    var motionTestTimeoutID = setTimeout(() => {
+      if (this.debug) {
+        this.publicLog('Device claims to report motion. Checking if this is true.');
+      }
+      if (this.accel.rawX === undefined) {
+        // still no motion reported. Probably either 1) device is desktop or 2) device is iOS 12.2-12.4 and has motion access permission off
+        // TODO: write instructions for iOS 12.2-12.4 users
+        if (window.confirm("Your device is not reporting motion. You may either be on a desktop computer, or this may be a result of your mobile browser settings. If you're on an iPhone, go to Settings > Safari > Motion & Orientation Access and make sure this setting is on. Reload the page to try again, or continue to launch the desktop version.")) {
+          this.testWithoutMotion();
+        } else {
+          preventMotionUpdateLoop = true;
+          this.setStatus('stopped');
+          this.shutEverythingDown();
+        }
+      }
+    }, 500);
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
