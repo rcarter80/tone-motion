@@ -171,9 +171,6 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('error', () => {
     this.publicError('Error loading the audio files');
   });
-
-  // Begin motion handling
-  this.beginMotionHandling();
 };
 
 // Manages application status and interface updates
@@ -256,6 +253,9 @@ ToneMotion.prototype.setStatus = function(status) {
 // Starts Transport, loops, motion handling, and network requests
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
+
+  // Begin motion handling, which detects devicemotion, requests permission
+  this.beginMotionHandling();
 
   Tone.Transport.start();
 
