@@ -65,7 +65,7 @@ function setInstructions(instructions) {
 *******************************************************************/
 // waits until all buffers are loaded
 Tone.Buffer.on('load', function(){
-  // all buffers are loaded. 
+  // all buffers are loaded.
   if (ToneMotion.print) { console.log("All buffers are loaded"); }
   $("#LoadingAnimation").remove();
   $("#TransportButton").prop('disabled', false);
@@ -248,7 +248,7 @@ function setActionButtonStatesForCue(cue) {
   $("#ActionButton1").prop("disabled", !(TMScore.cueEnablesButtons[cue][0]));
   $("#ActionButton2").prop("disabled", !(TMScore.cueEnablesButtons[cue][1]));
   $("#ActionButton3").prop("disabled", !(TMScore.cueEnablesButtons[cue][2]));
-  if (ToneMotion.print) { 
+  if (ToneMotion.print) {
     console.log("Current cue: " + cue + " with action buttons enabled: " + TMScore.cueEnablesButtons[cue])
   };
 }
@@ -567,7 +567,7 @@ function addXYPadIfNoMotion() {
     Interface.Dragger({
       toneX: ToneMotion.xSig, // the Tone.js object connected to the x-axis
       toneY: ToneMotion.ySig, // the Tone.js object connected to the y-axis
-      name: " ", // this goes on the intersection of the axes but I don't want text there 
+      name: " ", // this goes on the intersection of the axes but I don't want text there
       x: {
         param: "value", // i.e., testSigX.value
         min: 0.0,
@@ -656,7 +656,7 @@ var Interface = {
 
 /**
  *
- *  
+ *
  *  DRAGGER
  *
  */
@@ -667,7 +667,7 @@ Interface.Dragger = function(params){
     if ($("#DragContainer").length === 0){
       $("<div>", {
         "id" : "DragContainer"
-      }).appendTo(params.parent || "#Content"); 
+      }).appendTo(params.parent || "#Content");
     }
 
     this.container = $("#DragContainer");
@@ -777,7 +777,7 @@ Interface.Dragger.prototype._onend = function(e){
 
 /**
  *
- *  
+ *
  *  SLIDER
  *
  */
@@ -871,7 +871,7 @@ Interface.Slider = function(params){
 
       var paramValue = typeof params.value !== "undefined" ? params.value : this.tone.get(this.parameter);
 
-      this.value(paramValue);   
+      this.value(paramValue);
     }
 
   } else {
@@ -900,7 +900,7 @@ Interface.Slider.prototype.value = function(val){
 
   if (this.options){
     this._setParam(this.options[val]);
-  } 
+  }
 };
 
 Interface.Slider.prototype._ondrag = function(e, pointer){
