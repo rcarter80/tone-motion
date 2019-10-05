@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = false;
+tm.debug = true;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');

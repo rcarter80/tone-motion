@@ -125,7 +125,7 @@ function ToneMotion() {
   this.urlForCues = '';
 }
 
-// Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
+// Registers event handlers to interface elements, confirms that buffers are loaded, but can't begin devicemotion handling until permission granted
 // Triggers syncClocks() once buffers have succesfully loaded
 ToneMotion.prototype.init = function(urlOfServer) {
   // debug mode shows console, stops sync with server, logs messages
@@ -473,7 +473,34 @@ ToneMotion.prototype.beginMotionHandling = function() {
 
   // Just sets accelerometer data to object properties and determines
   // if gyro data should set shake flag
-  window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+
+  // testing iOS 13 motion permission
+  // Guard against reference erros by checking that DeviceMotionEvent is defined
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+  typeof DeviceMotionEvent.requestPermission === 'function') {
+    // Device requests motion permission (e.g., iOS 13+)
+    DeviceMotionEvent.requestPermission()
+    .then(permissionState => {
+      if (permissionState === 'granted') {
+        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      } else {
+        // user has not give permission for motion. Pretend device is laptop
+        this.testWithoutMotion();
+      }
+    })
+    .catch(console.error);
+  } else {
+    // handle non iOS 13+ devices, which could still report motion
+    if (this.debug) {
+      this.publicLog('Not an iOS 13+ device');
+    }
+    if ('DeviceMotionEvent' in window) {
+      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    }
+    else {
+      this.testWithoutMotion();
+    }
+  }
 };
 
 // Sets ToneMotion object accel properties and sets shake flag
