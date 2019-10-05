@@ -478,6 +478,9 @@ ToneMotion.prototype.beginMotionHandling = function() {
   // Guard against reference erros by checking that DeviceMotionEvent is defined
   if (typeof DeviceMotionEvent !== 'undefined' &&
   typeof DeviceMotionEvent.requestPermission === 'function') {
+    if (this.debug) {
+      this.publicLog('Requesting permission for motion data');
+    }
     // Device requests motion permission (e.g., iOS 13+)
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
