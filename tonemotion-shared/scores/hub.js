@@ -225,6 +225,7 @@ var pizzLoop = new Tone.Loop(function(time) {
   testCounter++;
 }, "32n");
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
+// TODO: set wait time and open window 
 tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
   Tone.Transport.bpm.value = 69;
