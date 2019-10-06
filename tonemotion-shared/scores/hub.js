@@ -17,6 +17,7 @@ const chimes_sounds = 'tonemotion-shared/audio/chimes/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
+const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 76;
@@ -145,47 +146,64 @@ tm.cue[7].goCue = function() {
 
 // *******************************************************************
 // CUE 8: pulsing cello pizzicati
-var pzFsharp2 = new Tone.Player(cello_sounds + "vc-pz-Fsharp2.mp3").toMaster();
-var pzFsharp3 = new Tone.Player(cello_sounds + "vc-pz-Fsharp3.mp3").toMaster();
-var pzFsharp4 = new Tone.Player(cello_sounds + "vc-pz-Fsharp4.mp3").toMaster();
-var pzFsharp5 = new Tone.Player(cello_sounds + "vc-pz-Fsharp5.mp3").toMaster();
-var pzG2 = new Tone.Player(cello_sounds + "vc-pz-G2.mp3").toMaster();
-var pzD4 = new Tone.Player(cello_sounds + "vc-pz-D4.mp3").toMaster();
-var pzG4 = new Tone.Player(cello_sounds + "vc-pz-G4.mp3").toMaster();
-var pzB4 = new Tone.Player(cello_sounds + "vc-pz-B4.mp3").toMaster();
+var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
+var glLongC5 = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
+var glLongG5 = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
+var glLongB5 = new Tone.Player(glass_sounds + "glassLongB5.mp3").toMaster();
+var glLongFsharp6 = new Tone.Player(glass_sounds + "glassLongFsharp6.mp3").toMaster();
+var glLongE5 = new Tone.Player(glass_sounds + "glassLongE5.mp3").toMaster();
+var glLongC6 = new Tone.Player(glass_sounds + "glassLongC6.mp3").toMaster();
+var glLongG6 = new Tone.Player(glass_sounds + "glassLongG6.mp3").toMaster();
+var glLongB6 = new Tone.Player(glass_sounds + "glassLongB6.mp3").toMaster();
+var glLongFsharp7 = new Tone.Player(glass_sounds + "glassLongFsharp7.mp3").toMaster();
+var glShortE4 = new Tone.Player(glass_sounds + "glassShortE4.mp3").toMaster();
+var glShortC5 = new Tone.Player(glass_sounds + "glassShortC5.mp3").toMaster();
+var glShortG5 = new Tone.Player(glass_sounds + "glassShortG5.mp3").toMaster();
+var glShortB5 = new Tone.Player(glass_sounds + "glassShortB5.mp3").toMaster();
+var glShortFsharp6 = new Tone.Player(glass_sounds + "glassShortFsharp6.mp3").toMaster();
+var glShortE5 = new Tone.Player(glass_sounds + "glassShortE5.mp3").toMaster();
+var glShortC6 = new Tone.Player(glass_sounds + "glassShortC6.mp3").toMaster();
+var glShortG6 = new Tone.Player(glass_sounds + "glassShortG6.mp3").toMaster();
+var glShortB6 = new Tone.Player(glass_sounds + "glassShortB6.mp3").toMaster();
+var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toMaster();
+
 // clave is triggered at end of cue
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
 var testCounter = 0;
-var testMuteArray = [2,0,1,1, 0,1,1,1];
+var testMuteArray1 = [2,0,1,1, 0,1,1,1];
+var testMuteArray2 = [2,0,1,0, 0,1,0,1];
+var testPartArray = [testMuteArray1, testMuteArray2];
+var thisTestArray = testPartArray[Math.floor(Math.random() * testPartArray.length)];
 var testThisNote = 0;
 
 var pizzLoop = new Tone.Loop(function(time) {
-  testThisNote = testMuteArray[testCounter % testMuteArray.length]
+  testThisNote = thisTestArray[testCounter % thisTestArray.length];
   console.log(testThisNote);
   if (testThisNote) {
-    if (testThisNote == 2) {
-      clave.start();
-    } else {
-      if (tm.accel.y < 0.5) {
-        if (tm.accel.x < 0.25) {
-          pzG2.start();
-        } else if (tm.accel.x < 0.5) {
-          pzD4.start();
-        } else if (tm.accel.x < 0.75) {
-          pzG4.start();
-        } else {
-          pzB4.start();
-        }
+    if (tm.accel.y < 0.5) {
+      if (tm.accel.x < 0.2) {
+        // testThisNote is 2 if flagged for long sound and not if short 
+        (testThisNote-1) ? glLongE4.start() : glShortE4.start();
+      } else if (tm.accel.x < 0.4) {
+        glLongC5.start();
+      } else if (tm.accel.x < 0.6) {
+        glLongG5.start();
+      } else if (tm.accel.x < 0.8) {
+        glLongB5.start();
       } else {
-        if (tm.accel.x < 0.25) {
-          pzFsharp2.start();
-        } else if (tm.accel.x < 0.5) {
-          pzFsharp3.start();
-        } else if (tm.accel.x < 0.75) {
-          pzFsharp4.start();
-        } else {
-          pzFsharp5.start();
-        }
+        glLongFsharp6.start();
+      }
+    } else {
+      if (tm.accel.x < 0.2) {
+        glLongE5.start();
+      } else if (tm.accel.x < 0.4) {
+        glLongC6.start();
+      } else if (tm.accel.x < 0.6) {
+        glLongG6.start();
+      } else if (tm.accel.x < 0.8) {
+        glLongB6.start();
+      } else {
+        glLongFsharp7.start();
       }
     }
   }
@@ -396,7 +414,7 @@ var durationOfCue14 = 19000; // about 2 bars from end of section
 var loopCue14 = new Tone.Loop(function(time) {
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
 
-  // clamp counter at 1.0 (in case section takes longer than expected)
+  // clamp counter at 1.0 (in cease section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue14 : 1;
 
   // synths start with random detuning and converge on Bb/D
