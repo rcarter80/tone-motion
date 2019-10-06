@@ -198,15 +198,15 @@ var pizzLoop = new Tone.Loop(function(time) {
       }
     } else {
       if (tm.accel.x < 0.2) {
-        glLongE5.start();
+        (testThisNote-1) ? glLongE5.start() : glShortE5.start();
       } else if (tm.accel.x < 0.4) {
-        glLongC6.start();
+        (testThisNote-1) ? glLongC6.start() : glShortC6.start();
       } else if (tm.accel.x < 0.6) {
-        glLongG6.start();
+        (testThisNote-1) ? glLongG6.start() : glShortG6.start();
       } else if (tm.accel.x < 0.8) {
-        glLongB6.start();
+        (testThisNote-1) ? glLongB6.start() : glShortB6.start();
       } else {
-        glLongFsharp7.start();
+        (testThisNote-1) ? glLongFsharp7.start() : glShortFsharp7.start();
       }
     }
   }
