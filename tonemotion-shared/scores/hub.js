@@ -171,8 +171,10 @@ var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toM
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
 var testCounter = 0;
 var testMuteArray1 = [2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1];
-var testMuteArray2 = [2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1];
-var testPartArray = [testMuteArray1, testMuteArray2];
+var testMuteArray2 = [1,1,1,1,1,1,1,1, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0];
+var testMuteArray3 = [1,1,1,1,1,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1];
+var testMuteArray4 = [1,1,1,1,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1];
+var testPartArray = [testMuteArray1, testMuteArray2, testMuteArray3, testMuteArray4];
 var thisTestArray = testPartArray[Math.floor(Math.random() * testPartArray.length)];
 
 var testThisNote = 0;
