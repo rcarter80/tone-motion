@@ -170,10 +170,11 @@ var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toM
 // clave is triggered at end of cue
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
 var testCounter = 0;
-var testMuteArray1 = [2,0,1,1, 0,1,1,1];
-var testMuteArray2 = [2,0,1,0, 0,1,0,1];
+var testMuteArray1 = [2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1];
+var testMuteArray2 = [2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1];
 var testPartArray = [testMuteArray1, testMuteArray2];
 var thisTestArray = testPartArray[Math.floor(Math.random() * testPartArray.length)];
+
 var testThisNote = 0;
 
 var pizzLoop = new Tone.Loop(function(time) {
@@ -182,16 +183,16 @@ var pizzLoop = new Tone.Loop(function(time) {
   if (testThisNote) {
     if (tm.accel.y < 0.5) {
       if (tm.accel.x < 0.2) {
-        // testThisNote is 2 if flagged for long sound and not if short 
+        // testThisNote is 2 if flagged for long sound and not if short
         (testThisNote-1) ? glLongE4.start() : glShortE4.start();
       } else if (tm.accel.x < 0.4) {
-        glLongC5.start();
+        (testThisNote-1) ? glLongC5.start() : glShortC5.start();
       } else if (tm.accel.x < 0.6) {
-        glLongG5.start();
+        (testThisNote-1) ? glLongG5.start() : glShortG5.start();
       } else if (tm.accel.x < 0.8) {
-        glLongB5.start();
+        (testThisNote-1) ? glLongB5.start() : glShortB5.start();
       } else {
-        glLongFsharp6.start();
+        (testThisNote-1) ? glLongFsharp6.start() : glShortFsharp6.start();
       }
     } else {
       if (tm.accel.x < 0.2) {
@@ -208,7 +209,7 @@ var pizzLoop = new Tone.Loop(function(time) {
     }
   }
   testCounter++;
-}, "16n");
+}, "32n");
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
 tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
