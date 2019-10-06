@@ -20,7 +20,7 @@ const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
-Tone.Transport.bpm.value = 76;
+Tone.Transport.bpm.value = 69;
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -146,6 +146,7 @@ tm.cue[7].goCue = function() {
 
 // *******************************************************************
 // CUE 8: pulsing cello pizzicati
+// TODO: clean up code and move to real cue number 
 var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
 var glLongC5 = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
 var glLongG5 = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
@@ -186,26 +187,37 @@ var pizzLoop = new Tone.Loop(function(time) {
     if (tm.accel.y < 0.5) {
       if (tm.accel.x < 0.2) {
         // testThisNote is 2 if flagged for long sound and not if short
+        // gradually shift down over 6 bars (after no change for 4 bars)
+        glLongE4.playbackRate = glShortE4.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.707]);
         (testThisNote-1) ? glLongE4.start() : glShortE4.start();
       } else if (tm.accel.x < 0.4) {
+        glLongC5.playbackRate = glShortC5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
         (testThisNote-1) ? glLongC5.start() : glShortC5.start();
       } else if (tm.accel.x < 0.6) {
+        glLongG5.playbackRate = glShortG5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.667]);
         (testThisNote-1) ? glLongG5.start() : glShortG5.start();
       } else if (tm.accel.x < 0.8) {
+        glLongB5.playbackRate = glShortB5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.841]);
         (testThisNote-1) ? glLongB5.start() : glShortB5.start();
       } else {
+        glLongFsharp6.playbackRate = glShortFsharp6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
         (testThisNote-1) ? glLongFsharp6.start() : glShortFsharp6.start();
       }
     } else {
       if (tm.accel.x < 0.2) {
+        glLongE5.playbackRate = glShortE5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.707]);
         (testThisNote-1) ? glLongE5.start() : glShortE5.start();
       } else if (tm.accel.x < 0.4) {
+        glLongC6.playbackRate = glShortC6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
         (testThisNote-1) ? glLongC6.start() : glShortC6.start();
       } else if (tm.accel.x < 0.6) {
+        glLongG6.playbackRate = glShortG6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.667]);
         (testThisNote-1) ? glLongG6.start() : glShortG6.start();
       } else if (tm.accel.x < 0.8) {
+        glLongB6.playbackRate = glShortB6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.841]);
         (testThisNote-1) ? glLongB6.start() : glShortB6.start();
       } else {
+        glLongFsharp7.playbackRate = glShortFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
         (testThisNote-1) ? glLongFsharp7.start() : glShortFsharp7.start();
       }
     }
@@ -215,6 +227,7 @@ var pizzLoop = new Tone.Loop(function(time) {
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
 tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
+  Tone.Transport.bpm.value = 69;
   pizzLoop.start();
 };
 tm.cue[8].updateTiltSounds = function() {
