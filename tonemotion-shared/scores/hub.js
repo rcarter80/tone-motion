@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -146,7 +146,7 @@ tm.cue[7].goCue = function() {
 
 // *******************************************************************
 // CUE 8: pulsing cello pizzicati
-// TODO: clean up code and move to real cue number 
+// TODO: clean up code and move to real cue number
 var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
 var glLongC5 = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
 var glLongG5 = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
