@@ -97,6 +97,9 @@ tm.cue[5] = new TMCue('tacet', -1);
 tm.cue[5].goCue = function() {
   if (tm.debug) { tm.publicLog('The piece has started.'); }
 };
+tm.cue[5].stopCue = function() {
+  // nothing to clean up
+};
 
 // *******************************************************************
 // CUE 6: Warping tilt twinkles
@@ -122,6 +125,8 @@ var glShortC6 = new Tone.Player(glass_sounds + "glassShortC6.mp3").toMaster();
 var glShortG6 = new Tone.Player(glass_sounds + "glassShortG6.mp3").toMaster();
 var glShortB6 = new Tone.Player(glass_sounds + "glassShortB6.mp3").toMaster();
 var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toMaster();
+// TODO: make better extra long D7. could be different timbre from other glass
+var glExtraLongD7 = new Tone.Player(glass_sounds + "glassExtraLongD7.mp3").toMaster();
 
 // TODO: delete unused sounds (might use clave, might not. deleted if not)
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
@@ -189,16 +194,13 @@ tm.cue[6].stopCue = function() {
   // glExtraLongBb3.start();
 };
 
-
 // *******************************************************************
 // CUE 7: 1-bar fill with random hocket and unison last long note
 var counterCue7 = 0;
 var pitchArrayCue7 = [glShortE4,glShortG5,glShortC5,glShortFsharp6,glShortB5,glShortG5, glShortFsharp7,glShortE5,glShortG6,glShortC6,glShortB6,glShortE5, glShortFsharp7,glShortE4,glShortG5,glShortC5,glShortFsharp6,glShortE4, glShortC5,glShortG5,glShortB5,glShortG6,glShortB6];
 var fillLoopCue7 = new Tone.Loop(function(time) {
   if (counterCue7 === 23) {
-    // TODO: replace last note with new long high D sound file
-    // glExtraLongD7.start();
-    glShortFsharp7.start();
+    glExtraLongD7.start();
   } else {
     // weighted probability of note happening
     if (Math.random() < 0.1666) {
@@ -226,6 +228,8 @@ tm.cue[7].goCue = function() {
   fillLoopCue7.start();
 }
 tm.cue[7].stopCue = function() {
+
+  // shouldn't need to stop because fill stops itself, but just in case
   fillLoopCue7.stop();
 }
 
@@ -235,74 +239,46 @@ tm.cue[8] = new TMCue('tacet', -1);
 tm.cue[8].goCue = function() {
   // no sound here
 }
+tm.cue[8].stopCue = function() {
+  // nothing to clean up
+};
 
 // *******************************************************************
-// CUE 9: Continues cello pizz with added synth
-var triSynthRound1 = new Tone.Synth({
-  oscillator: {
-    type: 'triangle17'
-  },
-  envelope: {
-    attack: 0.06,
-    decay: 0.04,
-    sustain: 0.3,
-    release: 0.05
-  }
-}).toMaster()
-var triSynthRound2 = new Tone.Synth({
-  oscillator: {
-    type: 'triangle5'
-  },
-  envelope: {
-    attack: 0.06,
-    decay: 0.04,
-    sustain: 0.3,
-    release: 0.05
-  }
-}).toMaster()
-var pizzLoop2 = new Tone.Loop(function(time) {
-  if (tm.accel.y < 0.5) {
-    if (tm.accel.x < 0.2) {
-      pzG2.start();
-    } else if (tm.accel.x < 0.4) {
-      pzD4.start();
-    } else if (tm.accel.x < 0.6) {
-      pzG4.start();
-    } else if (tm.accel.x < 0.8) {
-      pzB4.start();
-    } else {
-      triSynthRound1.triggerAttackRelease('G5', '16t');
-      triSynthRound2.triggerAttackRelease('B5', '16t', '+16t');
-    }
-  } else {
-    if (tm.accel.x < 0.2) {
-      pzFsharp2.start();
-    } else if (tm.accel.x < 0.4) {
-      pzFsharp3.start();
-    } else if (tm.accel.x < 0.6) {
-      pzFsharp4.start();
-    } else if (tm.accel.x < 0.8) {
-      pzFsharp5.start();
-    } else {
-      triSynthRound1.triggerAttackRelease('F#5', '16t');
-      triSynthRound2.triggerAttackRelease('F#6', '16t', '+16t');
-    }
-  }
-}, "8t");
+// CUE 9: Shaking bells through predefined pitch array (with looped tail)
+// TODO: replace glassReal files with better recordings. could use 2 glasses
+var glE3 = new Tone.Player(glass_sounds + "glassRealE3.mp3").toMaster();
+var glF3 = new Tone.Player(glass_sounds + "glassRealF3.mp3").toMaster();
+var glA3 = new Tone.Player(glass_sounds + "glassRealA3.mp3").toMaster();
+var glBb3 = new Tone.Player(glass_sounds + "glassRealBb3.mp3").toMaster();
+var glD4 = new Tone.Player(glass_sounds + "glassRealD4.mp3").toMaster();
+var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
+var glF4 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toMaster();
+var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
+var glBb4 = new Tone.Player(glass_sounds + "glassRealBb4.mp3").toMaster();
+var glD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
 
-// no limit on open window could mean late arrivals are not synchronized to triplet pulse
-var triangle = new Tone.Player(perc_sounds + "triangle.mp3").toMaster();
-tm.cue[9] = new TMCue('tilt', 1579, NO_LIMIT);
+var counterCue9 = 0;
+// initial array of pitches triggered
+var pitchArrayCue9 = [glBb3,glBb4,glD4,glD5,glBb3,glD4,glBb4,glD5, glA3,glA4,glD4,glD5,glA3,glD4,glA4,glD5, glBb3,glBb4,glD4,glD5,glBb3,glD4,glBb4,glD5, glA3,glA4,glD4,glD5,glA3,glD4,glA4,glD5, glF3,glF4,glD4,glD5,glF3,glD4,glF4,glD5, glE3,glE4,glD4,glD5,glE3,glD4,glE4,glD5, glF3,glF4,glD4,glD5,glF3,glD4,glF4,glD5, glE3,glE4,glD4,glD5,glE3,glD4,glE4,glD5];
+// loop of 3 Ds that repeat after first array is exhausted
+var pitchLoopCue9 = [glD4,glD5,glExtraLongD7];
+
+tm.cue[9] = new TMCue('shake', 1739, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  triangle.start();
-  pizzLoop2.start('+4n');
+  // reset counter
+  counterCue9 = 0;
 };
-tm.cue[9].updateTiltSounds = function() {
-  // all tilt interactivity handled in goCue() function
-  // nothing to do here but override method
+tm.cue[9].triggerShakeSound = function() {
+  if (counterCue9 < pitchArrayCue9.length) {
+    pitchArrayCue9[counterCue9].start();
+  } else {
+    // repeats same three pitches until end of section
+    pitchLoopCue9[counterCue9 % pitchLoopCue9.length].start();
+  }
+  counterCue9++;
 };
 tm.cue[9].stopCue = function() {
-  pizzLoop2.stop();
+  // nothing to clean up
 };
 
 // *******************************************************************
@@ -628,63 +604,3 @@ tm.cue[26] = new TMCue('waiting', -1);
 tm.cue[26].goCue = function() {
   tm.publicLog('Test cue 26 was triggered.');
 };
-
-
-// *******************************************************************
-// OLDER CODE FOR REFERENCE
-// var testCounter = 0;
-// var testMuteArray1 = [2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1];
-// var testMuteArray2 = [1,1,1,1,1,1,1,1, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0];
-// var testMuteArray3 = [1,1,1,1,1,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1, 1,0,0,0,1,1,1,1, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 2,1,1,1,1,1,1,1];
-// var testMuteArray4 = [1,1,1,1,1,1,1,1, 1,1,1,1,1,0,0,0, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,1,1,1,1, 1,1,1,1,1,0,0,0, 1,0,0,0,2,1,1,1];
-// var testPartArray = [testMuteArray1, testMuteArray2, testMuteArray3, testMuteArray4];
-// var thisTestArray = testPartArray[Math.floor(Math.random() * testPartArray.length)];
-//
-// var testThisNote = 0;
-//
-// var pizzLoop = new Tone.Loop(function(time) {
-//   testThisNote = thisTestArray[testCounter % thisTestArray.length];
-//   console.log(testThisNote);
-//   if (testThisNote) {
-//     if (tm.accel.y < 0.5) {
-//       if (tm.accel.x < 0.2) {
-//         // testThisNote is 2 if flagged for long sound and not if short
-//         // gradually shift down over 6 bars (after no change for 4 bars)
-//         glLongE4.playbackRate = glShortE4.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
-//         (testThisNote-1) ? glLongE4.start() : glShortE4.start();
-//       } else if (tm.accel.x < 0.4) {
-//         glLongC5.playbackRate = glShortC5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-//         (testThisNote-1) ? glLongC5.start() : glShortC5.start();
-//       } else if (tm.accel.x < 0.6) {
-//         glLongG5.playbackRate = glShortG5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
-//         (testThisNote-1) ? glLongG5.start() : glShortG5.start();
-//       } else if (tm.accel.x < 0.8) {
-//         glLongB5.playbackRate = glShortB5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
-//         (testThisNote-1) ? glLongB5.start() : glShortB5.start();
-//       } else {
-//         glLongFsharp6.playbackRate = glShortFsharp6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-//         (testThisNote-1) ? glLongFsharp6.start() : glShortFsharp6.start();
-//       }
-//     } else {
-//       if (tm.accel.x < 0.2) {
-//         glLongE5.playbackRate = glShortE5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
-//         (testThisNote-1) ? glLongE5.start() : glShortE5.start();
-//       } else if (tm.accel.x < 0.4) {
-//         glLongC6.playbackRate = glShortC6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-//         (testThisNote-1) ? glLongC6.start() : glShortC6.start();
-//       } else if (tm.accel.x < 0.6) {
-//         glLongG6.playbackRate = glShortG6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
-//         (testThisNote-1) ? glLongG6.start() : glShortG6.start();
-//       } else if (tm.accel.x < 0.8) {
-//         glLongB6.playbackRate = glShortB6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
-//         (testThisNote-1) ? glLongB6.start() : glShortB6.start();
-//       } else {
-//         glLongFsharp7.playbackRate = glShortFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-//         (testThisNote-1) ? glLongFsharp7.start() : glShortFsharp7.start();
-//       }
-//     }
-//   }
-//   testCounter++;
-// }, "32n");
-// no limit on open window could mean late arrivals are not synchronized to triplet pulse
-// TODO: set wait time and open window
