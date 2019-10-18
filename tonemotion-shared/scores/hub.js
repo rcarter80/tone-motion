@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = false; // if true, skips clock sync and shows console
+tm.debug = true; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -99,41 +99,91 @@ tm.cue[5].goCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: Warping shake chimes
-var vibeE4 = new Tone.Player(vibes_sounds + "vibe-E4.mp3").toMaster();
-var vibeD5 = new Tone.Player(vibes_sounds + "vibe-D5.mp3").toMaster();
-var vibeB5 = new Tone.Player(vibes_sounds + "vibe-B5.mp3").toMaster();
-var vibeGsharp6 = new Tone.Player(vibes_sounds + "vibe-Gsharp6.mp3").toMaster();
-// DOLATER: could fine tune playbackRate to get just intonation
-var vibesArray = [vibeE4, vibeD5, vibeB5, vibeGsharp6];
-// array for pitch bending intervals of vibes
-// must be same length as vibesArray. refactor with error checking
-// down 2 half steps, 3 half steps, 4 half steps, 3 half steps
-var vibesBendArray = [0.109, 0.159, 0.206, 0.159];
+// CUE 6: Warping tilt twinkles
+var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
+var glLongC5 = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
+var glLongG5 = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
+var glLongB5 = new Tone.Player(glass_sounds + "glassLongB5.mp3").toMaster();
+var glLongFsharp6 = new Tone.Player(glass_sounds + "glassLongFsharp6.mp3").toMaster();
+var glLongE5 = new Tone.Player(glass_sounds + "glassLongE5.mp3").toMaster();
+var glLongC6 = new Tone.Player(glass_sounds + "glassLongC6.mp3").toMaster();
+var glLongG6 = new Tone.Player(glass_sounds + "glassLongG6.mp3").toMaster();
+var glLongB6 = new Tone.Player(glass_sounds + "glassLongB6.mp3").toMaster();
+var glLongFsharp7 = new Tone.Player(glass_sounds + "glassLongFsharp7.mp3").toMaster();
+var glShortE4 = new Tone.Player(glass_sounds + "glassShortE4.mp3").toMaster();
+var glShortC5 = new Tone.Player(glass_sounds + "glassShortC5.mp3").toMaster();
+var glShortG5 = new Tone.Player(glass_sounds + "glassShortG5.mp3").toMaster();
+var glShortB5 = new Tone.Player(glass_sounds + "glassShortB5.mp3").toMaster();
+var glShortFsharp6 = new Tone.Player(glass_sounds + "glassShortFsharp6.mp3").toMaster();
+var glShortE5 = new Tone.Player(glass_sounds + "glassShortE5.mp3").toMaster();
+var glShortC6 = new Tone.Player(glass_sounds + "glassShortC6.mp3").toMaster();
+var glShortG6 = new Tone.Player(glass_sounds + "glassShortG6.mp3").toMaster();
+var glShortB6 = new Tone.Player(glass_sounds + "glassShortB6.mp3").toMaster();
+var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toMaster();
 
-tm.cue[6] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
+// clave is triggered at end of cue
+var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
+var counterCue6 = 0;
+
+var pizzLoop = new Tone.Loop(function(time) {
+  if (tm.accel.y < 0.33) {
+    if (tm.accel.x < 0.2) {
+      // short sounds when phone is tilted up
+      // gradually shift down over 6 bars (after no change for 4 bars)
+      glShortE4.playbackRate = glShortE5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.707]);
+      (counterCue6 % 2) ? glShortE4.start() : glShortE5.start();
+    } else if (tm.accel.x < 0.4) {
+      glShortC5.playbackRate = glShortC6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
+      (counterCue6 % 2) ? glShortC5.start() : glShortC6.start();
+    } else if (tm.accel.x < 0.6) {
+      glShortG5.playbackRate = glShortG6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.667]);
+      (counterCue6 % 2) ? glShortG5.start() : glShortG6.start();
+    } else if (tm.accel.x < 0.8) {
+      glShortB5.playbackRate = glShortB6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.841]);
+      (counterCue6 % 2) ? glShortB5.start() : glShortB6.start();
+    } else {
+      glShortFsharp6.playbackRate = glShortFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
+      (counterCue6 % 2) ? glShortFsharp6.start() : glShortFsharp7.start();
+    }
+  } else {
+    if (tm.accel.x < 0.2) {
+      glLongE4.playbackRate = glLongE5.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.707]);
+      (counterCue6 % 2) ? glLongE4.start() : glLongE5.start();
+    } else if (tm.accel.x < 0.4) {
+      glLongC5.playbackRate = glLongC6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
+      (counterCue6 % 2) ? glLongC5.start() : glLongC6.start();
+    } else if (tm.accel.x < 0.6) {
+      glLongG5.playbackRate = glLongG6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.667]);
+      (counterCue6 % 2) ? glLongG5.start() : glLongG6.start();
+    } else if (tm.accel.x < 0.8) {
+      glLongB5.playbackRate = glLongB6.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.841]);
+      (counterCue6 % 2) ? glLongB5.start() : glLongB6.start();
+    } else {
+      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13919,1, 20870,0.794]);
+      (counterCue6 % 2) ? glLongFsharp6.start() : glLongFsharp7.start();
+    }
+  }
+  counterCue6++;
+}, "32n");
+
+// TODO: set wait time and open window
+tm.cue[6] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  // triplet flourish of vibes on downbeat (could clean up)
-  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
-  thisVibe.start();
-  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
-  thisVibe.start('+8t');
-  var thisVibe = vibesArray[Math.floor(Math.random()*vibesArray.length)];
-  thisVibe.start('+4t');
+  // reset tempo in case most recent cue had different tempo
+  Tone.Transport.bpm.value = 69;
+  pizzLoop.start();
 };
-tm.cue[6].triggerShakeSound = function() {
-  // testing how to change sounds throughout section
-  // DOLATER: refactor this to tonemotion library as tm.getSectionCounter()
-  // and remove log of sectionCounter
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
-  var durationOfSection = 50000; // just short of end of section
-  // clamp counter at 1.0 (in case section takes longer than expected)
-  var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
+tm.cue[6].updateTiltSounds = function() {
+  // all tilt interactivity handled in goCue() function
+  // nothing to do here but override method
+};
+tm.cue[6].stopCue = function() {
+  pizzLoop.stop();
+  // clave sound punctuates section
+  // won't be synchronized across devices, but will result in splatter
+  clave.start();
+};
 
-  var randomVibe = Math.floor(Math.random() * vibesArray.length);
-  vibesArray[randomVibe].playbackRate = 1 - (vibesBendArray[randomVibe] * sectionCounter);
-  vibesArray[randomVibe].start();
-};
 
 // *******************************************************************
 // CUE 7: hidden cue with non-interactive reversed cymbal
@@ -225,7 +275,7 @@ var pizzLoop = new Tone.Loop(function(time) {
   testCounter++;
 }, "32n");
 // no limit on open window could mean late arrivals are not synchronized to triplet pulse
-// TODO: set wait time and open window 
+// TODO: set wait time and open window
 tm.cue[8] = new TMCue('tilt', 1579, NO_LIMIT);
 tm.cue[8].goCue = function() {
   Tone.Transport.bpm.value = 69;
