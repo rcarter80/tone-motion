@@ -175,6 +175,8 @@ tm.cue[6] = new TMCue('tilt', 1739, NO_LIMIT);
 tm.cue[6].goCue = function() {
   // reset tempo in case most recent cue had different tempo
   Tone.Transport.bpm.value = 69;
+  // reset counter in case section has been repeated
+  counterCue6 = 0;
   loopCue6.start();
 };
 tm.cue[6].updateTiltSounds = function() {
@@ -183,6 +185,8 @@ tm.cue[6].updateTiltSounds = function() {
 };
 tm.cue[6].stopCue = function() {
   loopCue6.stop();
+  // TODO: create longer low Bb sound file to trigger at cutoff
+  // glExtraLongBb3.start();
 };
 
 
@@ -193,9 +197,13 @@ var pitchArrayCue7 = [glShortE4,glShortG5,glShortC5,glShortFsharp6,glShortB5,glS
 var fillLoopCue7 = new Tone.Loop(function(time) {
   if (counterCue7 === 23) {
     // TODO: replace last note with new long high D sound file
+    // glExtraLongD7.start();
     glShortFsharp7.start();
   } else {
-    pitchArrayCue7[counterCue7].start();
+    // weighted probability of note happening
+    if (Math.random() < 0.1666) {
+      pitchArrayCue7[counterCue7].start();
+    }
   }
   counterCue7++;
 }, "16t");
@@ -205,6 +213,10 @@ fillLoopCue7.iterations = 24;
 // must arrive on time for perfect synchrony, but sparse texture allows holes
 tm.cue[7] = new TMCue('listen', 1739, 0);
 tm.cue[7].goCue = function() {
+  // reset tempo in case most recent cue had different tempo
+  Tone.Transport.bpm.value = 69;
+  // reset counter in case section has been repeated
+  counterCue7 = 0;
   // use short sound from previous section, but pitch has already bent down
   glShortE4.playbackRate = glShortE5.playbackRate = 0.707;
   glShortC5.playbackRate = glShortC6.playbackRate = 0.794;
