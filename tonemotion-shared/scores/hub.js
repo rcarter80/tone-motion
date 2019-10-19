@@ -228,7 +228,6 @@ tm.cue[7].goCue = function() {
   fillLoopCue7.start();
 }
 tm.cue[7].stopCue = function() {
-
   // shouldn't need to stop because fill stops itself, but just in case
   fillLoopCue7.stop();
 }
@@ -282,7 +281,7 @@ tm.cue[9].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 10: WRITE DESCRIPTION
+// CUE 10: Synths cycling through pitch cells (pitch: x-axis, articulation: y)
 var counterCue10 = 0;
 
 // TODO: refine synth sound, create two more synths, rename with reusable names
@@ -320,12 +319,12 @@ var testSynth3 = new Tone.MonoSynth({
   }
 }).toMaster()
 
-var pitchArrayCue10 = [['B4','D5','B5','D6','B6','D7'], ['B4','C#5','D5','B5','C#6','D6','B6','C#7','D7'], ['B4','C#5','D5','E5','B5','C#6','D6','E6','B6','C#7','D7','E7'], ['A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7'], ['B4','D5','B5','D6','B6','D7'], ['B4','F#5','B5','F#6','B6','F#7'], ['A4','C#5','D5','F#5','A5','C#6','D6','F#6','A6','C#7','D7','F#7'], ['A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7']];
+var pitchArrayCue10 = [['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','C#5','D5','B5','C#6','D6','B6','C#7','D7'], ['B2','B3','B4','C#5','D5','E5','B5','C#6','D6','E6','B6','C#7','D7','E7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7'], ['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','F#5','B5','F#6','B6','F#7'], ['A2','A3','A4','C#5','D5','F#5','A5','C#6','D6','F#6','A6','C#7','D7','F#7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7']];
 var thisPitchCell, thisPitch;
 
 var synthLoopCue10 = new Tone.Loop(function(time) {
-  // stays on each pitch cell for 1 bar (16 sixteeth notes)
-  thisPitchCell = pitchArrayCue10[Math.floor(counterCue10 / 16) % pitchArrayCue10.length];
+  // stays on each pitch cell for 1 bar (24 sixteeth notes)
+  thisPitchCell = pitchArrayCue10[Math.floor(counterCue10 / 24) % pitchArrayCue10.length];
 
   if (tm.accel.y > 0.5) {
     // continuous synth with interactive pitch on x-axis
@@ -347,19 +346,21 @@ var synthLoopCue10 = new Tone.Loop(function(time) {
     // alternate adjacent pitches of cell to prevent excessive repetition
     // use two synths to allow overlapping sound
     testSynth1.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800); testSynth2.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800);
+
     counterCue10 % 2 ? testSynth1.triggerAttackRelease(thisPitchCell[thisPitch], '16n') : testSynth2.triggerAttackRelease(thisPitchCell[thisPitch + 1], '16n');
   }
   counterCue10++;
 }, '16n');
 
-// TODO: determine number of iterations and fill?
-
-// TODO: calculate actual time and decide on open window
-tm.cue[10] = new TMCue('tilt', -1);
+// open window of just one extra beat to keep things pretty closely aligned
+tm.cue[10] = new TMCue('tilt', 2143, 714);
 tm.cue[10].goCue = function() {
   // new tempo for this sections
   Tone.Transport.bpm.value = 84;
   counterCue10 = 0;
+  // unmute other synths because those are only triggered in response to action
+  testSynth1.volume.value = 0;
+  testSynth2.volume.value = 0;
   // trigger continuous synth that holds through section, but mute by default
   testSynth3.volume.value = -99;
   testSynth3.triggerAttack('B4');
@@ -370,107 +371,73 @@ tm.cue[10].updateTiltSounds = function() {
   // nothing to do here but override method
 };
 tm.cue[10].stopCue = function() {
-  testSynth3.triggerRelease();
-  synthLoopCue10.stop();
+  // fade out sounds and then stop
+  testSynth1.volume.rampTo(-99, '1m');
+  testSynth2.volume.rampTo(-99, '1m');
+  testSynth3.volume.rampTo(-99, '1m');
+  testSynth3.triggerRelease('+1m');
+  synthLoopCue10.stop('+1m');
 }
 
 // *******************************************************************
-// CUE 11: Arpeggiated synths in 4-bar chord progression
-var sawSynthRev1 = new Tone.Synth({
+// CUE 11: non-interactive synth fill (just last 2 beats of section)
+// must arrive on time for perfect synchrony, but sparse texture allows holes
+tm.cue[11] = new TMCue('listen', 2857, 0);
+
+var testSynth4 = new Tone.MonoSynth({
   oscillator: {
-    type: 'sawtooth64'
+    type: 'square13'
   },
   envelope: {
-    attack: 0.06,
+    attack: 0.03,
     decay: 0.01,
-    sustain: 0.1,
-    release: 0.001
+    sustain: 0.8,
+    release: 0.03
   }
 }).toMaster()
-var sawSynthRev2 = new Tone.Synth({
-  oscillator: {
-    type: 'sawtooth8'
-  },
-  envelope: {
-    attack: 0.06,
-    decay: 0.01,
-    sustain: 0.1,
-    release: 0.001
-  }
-}).toMaster()
-var chordArray = [
-  ['E3', 'B3', 'E4', 'G4', 'B4', 'G5', 'E6'],
-  ['E3', 'C4', 'E4', 'G4', 'C5', 'G5', 'E6'],
-  ['D3', 'B3', 'D4', 'G4', 'D5', 'G5', 'D6'],
-  ['D3', 'A3', 'D4', 'A4', 'D5', 'A5', 'D6']
-];
 
-// breakpoint arrays for changing values in cue 12
-var detuneArrCue12 = [22000, 100]; // up half step by end of section
-var volumeArrCue12 = [22000, -6, 26000, -99]; // gradual fade
-var synthChordLoop = new Tone.Loop(function(time) {
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+var counterCue11 = 0;
+var pitchArrayCue11 = ['A3','A4','A5','C#5','C#6','C#7','A6','A5','A4','C#6','C#5','C#4'];
+// randomly assign client to 1 of 6 parts (sextuplet subdivision of beat)
+var partSwitchCue11 = Math.floor(Math.random() * 6);
 
-  // Pitches bend up half step and volume fades out only during cue 12
-  if (tm.currentCue === tm.cue[12]) {
-    var detune = tm.getSectionBreakpoints(detuneArrCue12);
-    var fadeout = tm.getSectionBreakpoints(volumeArrCue12);
-    triSynthRound1.detune.value = detune;
-    triSynthRound2.detune.value = detune;
-    sawSynthRev1.detune.value = detune;
-    sawSynthRev2.detune.value = detune;
-    triSynthRound1.volume.value = fadeout;
-    triSynthRound2.volume.value = fadeout;
-    sawSynthRev1.volume.value = fadeout;
-    sawSynthRev2.volume.value = fadeout;
-  }
-
-  // 12632 ms = 4 measures. 3158 ms = 1 measure.
-  // counts 4-bar loop (thisLoop is guaranteed to be 0 - 3)
-  var chord = Math.floor((elapsedTime % 12632) / 3158);
-  var pitch = Math.floor(tm.accel.x * 4);
-  if (tm.accel.y < 0.5) {
-    triSynthRound1.triggerAttackRelease(chordArray[chord][pitch], '16n');
-    triSynthRound2.triggerAttackRelease(chordArray[chord][pitch+2], '16n', '+16n');
+var fillLoopCue11 = new Tone.Loop(function(time) {
+  if (counterCue11 > 10) {
+    // TODO: create long sound file on D4 and replace below
+    // OR reuse higher extra long D sound file
+    glLongB5.start();
   } else {
-    sawSynthRev1.triggerAttackRelease(chordArray[chord][pitch], '32n');
-    sawSynthRev2.triggerAttackRelease(chordArray[chord][pitch+2], '32n', '+16n');
+    if (counterCue11 % 6 === partSwitchCue11) {
+      testSynth4.triggerAttackRelease(pitchArrayCue11[counterCue11], '16t');
+    }
   }
-}, '8n');
-tm.cue[11] = new TMCue('tilt', 1579, NO_LIMIT);
+  counterCue11++;
+}, '16t');
+fillLoopCue11.iterations = 12;
+
 tm.cue[11].goCue = function() {
-  synthChordLoop.start();
-  triSynthRound1.detune.value = 0;
-  triSynthRound2.detune.value = 0;
-  sawSynthRev1.detune.value = 0;
-  sawSynthRev2.detune.value = 0;
-  triSynthRound1.volume.value = 0;
-  triSynthRound2.volume.value = 0;
-  sawSynthRev1.volume.value = 0;
-  sawSynthRev2.volume.value = 0;
-};
-tm.cue[11].updateTiltSounds = function() {
-  // all tilt interactivity handled in goCue() function
-  // nothing to do here but override method
-};
+  // reset tempo and counter
+  Tone.Transport.bpm.value = 84;
+  counterCue11 = 0;
+  fillLoopCue11.start();
+}
 tm.cue[11].stopCue = function() {
-  synthChordLoop.stop();
-  clave.start(); // punctuates end of section
-};
+  // shouldn't need to stop because fill stops itself, but just in case
+  // delay loop stop to prevent premature cut off
+  fillLoopCue11.stop('+2n');
+}
 
 // *******************************************************************
-// CUE 12: continuation of arpeggios, now with pitch bend and dimin.
-tm.cue[12] = new TMCue('tilt', 1579, NO_LIMIT);
+// CUE 12: WRITE DESCRIPTION
+tm.cue[12] = new TMCue('shake', 1429, NO_LIMIT);
 tm.cue[12].goCue = function() {
-  triangle.start();
-  synthChordLoop.start();
+
 };
-tm.cue[12].updateTiltSounds = function() {
-  // all tilt interactivity handled in goCue() function
-  // nothing to do here but override method
+tm.cue[12].triggerShakeSound = function() {
+
 };
 tm.cue[12].stopCue = function() {
-  synthChordLoop.stop();
+
 };
 
 // *******************************************************************
