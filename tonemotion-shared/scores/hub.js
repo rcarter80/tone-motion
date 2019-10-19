@@ -282,10 +282,45 @@ tm.cue[9].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 10: hidden cue with non-interactive reversed cymbal
-tm.cue[10] = new TMCue('hidden');
+// CUE 10: WRITE DESCRIPTION
+var counterCue10 = 0;
+
+var testSynth = new Tone.MonoSynth({
+  oscillator: {
+    type: 'sawtooth16'
+  },
+  envelope: {
+    attack: 0.03,
+    decay: 0.01,
+    sustain: 1.0,
+    release: 0.01
+  }
+}).toMaster()
+
+var pitchArrayCue10 = [['B4','D5','B5','D6','B6','D7'], ['B','C#','D']];
+
+var synthLoopCue10 = new Tone.Loop(function(time) {
+  // testSynth.triggerAttackRelease(pitchArrayCue10[Math.floor(counterCue10/16) % 2][counterCue10 % 4],'16n');
+  // testSynth.triggerAttackRelease(pitchArrayCue10[0][counterCue10%2] + (3+(counterCue10*2)%3), '16n');
+  var thisPitch = counterCue10 % 2 ? pitchArrayCue10[0][0] : pitchArrayCue10[0][Math.floor(tm.accel.x*6)];
+  testSynth.triggerAttackRelease(thisPitch, '32n');
+  counterCue10++;
+}, '16n');
+
+// TODO: calculate actual time and decide on open window
+tm.cue[10] = new TMCue('tilt', -1);
 tm.cue[10].goCue = function() {
-  revCym.start();
+  // new tempo for this sections
+  Tone.Transport.bpm.value = 84;
+  counterCue10 = 0;
+  synthLoopCue10.start();
+}
+tm.cue[10].updateTiltSounds = function() {
+  // all tilt interactivity handled in loop
+  // nothing to do here but override method
+};
+tm.cue[10].stopCue = function() {
+  synthLoopCue10.stop();
 }
 
 // *******************************************************************
