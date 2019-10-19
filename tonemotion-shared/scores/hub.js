@@ -285,27 +285,74 @@ tm.cue[9].stopCue = function() {
 // CUE 10: WRITE DESCRIPTION
 var counterCue10 = 0;
 
-var testSynth = new Tone.MonoSynth({
+// TODO: refine synth sound, create two more synths, rename with reusable names
+var testSynth1 = new Tone.MonoSynth({
   oscillator: {
     type: 'sawtooth16'
   },
   envelope: {
     attack: 0.03,
     decay: 0.01,
-    sustain: 1.0,
-    release: 0.01
+    sustain: 0.8,
+    release: 0.03
+  }
+}).toMaster()
+var testSynth2 = new Tone.MonoSynth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 0.03,
+    decay: 0.01,
+    sustain: 0.8,
+    release: 0.03
+  }
+}).toMaster()
+var testSynth3 = new Tone.MonoSynth({
+  oscillator: {
+    type: 'square13'
+  },
+  envelope: {
+    attack: 0.03,
+    decay: 0.01,
+    sustain: 0.8,
+    release: 0.03
   }
 }).toMaster()
 
-var pitchArrayCue10 = [['B4','D5','B5','D6','B6','D7'], ['B','C#','D']];
+var pitchArrayCue10 = [['B4','D5','B5','D6','B6','D7'], ['B4','C#5','D5','B5','C#6','D6','B6','C#7','D7'], ['B4','C#5','D5','E5','B5','C#6','D6','E6','B6','C#7','D7','E7'], ['A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7'], ['B4','D5','B5','D6','B6','D7'], ['B4','F#5','B5','F#6','B6','F#7'], ['A4','C#5','D5','F#5','A5','C#6','D6','F#6','A6','C#7','D7','F#7'], ['A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7']];
+var thisPitchCell, thisPitch;
 
 var synthLoopCue10 = new Tone.Loop(function(time) {
-  // testSynth.triggerAttackRelease(pitchArrayCue10[Math.floor(counterCue10/16) % 2][counterCue10 % 4],'16n');
-  // testSynth.triggerAttackRelease(pitchArrayCue10[0][counterCue10%2] + (3+(counterCue10*2)%3), '16n');
-  var thisPitch = counterCue10 % 2 ? pitchArrayCue10[0][0] : pitchArrayCue10[0][Math.floor(tm.accel.x*6)];
-  testSynth.triggerAttackRelease(thisPitch, '32n');
+  // stays on each pitch cell for 1 bar (16 sixteeth notes)
+  thisPitchCell = pitchArrayCue10[Math.floor(counterCue10 / 16) % pitchArrayCue10.length];
+
+  if (tm.accel.y > 0.5) {
+    // continuous synth with interactive pitch on x-axis
+    if (testSynth3.volume.value == -99) {
+      testSynth3.volume.rampTo(0, 0.05);
+    }
+    // clamp tm.accel.x to 0.99 to prevent reading past bounds of pitch array
+    thisPitch = thisPitchCell[Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length))];
+    if (testSynth3.frequency.value != thisPitch) {
+      testSynth3.setNote(thisPitch);
+    }
+  } else {
+    // mute continuous synth if not already muted
+    if (testSynth3.volume.value > -99) {
+      testSynth3.volume.rampTo(-99, 0.05);
+    }
+    // prevent using last note in array because that will be triggered next
+    thisPitch = Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length - 1));
+    // alternate adjacent pitches of cell to prevent excessive repetition
+    // use two synths to allow overlapping sound
+    testSynth1.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800); testSynth2.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800);
+    counterCue10 % 2 ? testSynth1.triggerAttackRelease(thisPitchCell[thisPitch], '16n') : testSynth2.triggerAttackRelease(thisPitchCell[thisPitch + 1], '16n');
+  }
   counterCue10++;
 }, '16n');
+
+// TODO: determine number of iterations and fill?
 
 // TODO: calculate actual time and decide on open window
 tm.cue[10] = new TMCue('tilt', -1);
@@ -313,6 +360,9 @@ tm.cue[10].goCue = function() {
   // new tempo for this sections
   Tone.Transport.bpm.value = 84;
   counterCue10 = 0;
+  // trigger continuous synth that holds through section, but mute by default
+  testSynth3.volume.value = -99;
+  testSynth3.triggerAttack('B4');
   synthLoopCue10.start();
 }
 tm.cue[10].updateTiltSounds = function() {
@@ -320,6 +370,7 @@ tm.cue[10].updateTiltSounds = function() {
   // nothing to do here but override method
 };
 tm.cue[10].stopCue = function() {
+  testSynth3.triggerRelease();
   synthLoopCue10.stop();
 }
 
