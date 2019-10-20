@@ -403,8 +403,7 @@ var partSwitchCue11 = Math.floor(Math.random() * 6);
 
 var fillLoopCue11 = new Tone.Loop(function(time) {
   if (counterCue11 > 10) {
-    // TODO: create long sound file on D4 and replace below
-    // OR reuse higher extra long D sound file
+    // TODO: create long sound file on G3 and replace below
     glLongB5.start();
   } else {
     if (counterCue11 % 6 === partSwitchCue11) {
@@ -484,105 +483,67 @@ tm.cue[13].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 14: high active synths converging on Bb / D
-var revChime = new Tone.Player(chimes_sounds + "revChime.mp3").toMaster();
-var durationOfCue14 = 19000; // about 2 bars from end of section
-var loopCue14 = new Tone.Loop(function(time) {
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+// CUE 14: granulated sparkles
+// determines how often .seek() is called. actual grain size is longer
+var granulatorGrainSize = 0.1;
+var granulator = new Tone.GrainPlayer({
+  "url": granulated_sounds + "grFile.mp3",
+  "overlap": 0.0125,
+  "grainSize": granulatorGrainSize * 2,
+  "loop": true,
+  "detune": 0
+}).toMaster();
+var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
+var granulatorDur = 35;
 
-  // clamp counter at 1.0 (in cease section takes longer than expected)
-  var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue14 : 1;
-
-  // synths start with random detuning and converge on Bb/D
-  detuneVal = Math.random();
-  triSynthRound1.detune.value = (detuneVal*400) * (1-sectionCounter);
-  triSynthRound2.detune.value = -(detuneVal*400) * (1-sectionCounter);
-  sawSynthRev1.detune.value = (detuneVal*400) * (1-sectionCounter);
-  sawSynthRev2.detune.value = -(detuneVal*400) * (1-sectionCounter);
-
-  if (tm.accel.y < 0.5 && tm.accel.x < 0.5) { // up and left quadrant
-    triSynthRound1.triggerAttackRelease('Bb5', '16t');
-    triSynthRound2.triggerAttackRelease('D6', '16t', '+32n');
-  } else if (tm.accel.y < 0.5) { // up and right quadrant
-    triSynthRound1.triggerAttackRelease('Bb6', '16t');
-    triSynthRound2.triggerAttackRelease('D7', '16t', '+32n');
-  } else if (tm.accel.x < 0.5) { // upside down and tipped left
-    sawSynthRev1.triggerAttackRelease('Bb5', '32t');
-    sawSynthRev2.triggerAttackRelease('D6', '32t', '+32n');
-  } else { // upside down and tipped right
-    sawSynthRev1.triggerAttackRelease('Bb6', '32t');
-    sawSynthRev2.triggerAttackRelease('D7', '32t', '+32n');
-  }
-}, '16n');
-tm.cue[14] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
-  // reset synths that were previously faded out
-  triSynthRound1.detune.value = 0;
-  triSynthRound2.detune.value = 0;
-  sawSynthRev1.detune.value = 0;
-  sawSynthRev2.detune.value = 0;
-  triSynthRound1.volume.value = 0;
-  triSynthRound2.volume.value = 0;
-  sawSynthRev1.volume.value = 0;
-  sawSynthRev2.volume.value = 0;
-  clave.start();
-  loopCue14.start();
-};
+  Tone.Transport.scheduleRepeat(function(time) {
+    // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
+    // If try fails, grain player still scrubs but detune is reset to 0
+    granulator.volume.value = tm.getSectionBreakpoints([0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+    try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
+  }, granulatorGrainSize);
+}
 tm.cue[14].updateTiltSounds = function() {
-  // all tilt interactivity handled in goCue() function
-  // nothing to do here but override method
-};
+  // .seek() invoked by .scheduleRepeat()
+  // index into sound file controlled by x-axis
+  granulatorOffset = tm.accel.x * granulatorDur;
+  // playback rate of grain set by y-axis
+  granulator.detune = 2400 * tm.accel.y;
+}
 tm.cue[14].stopCue = function() {
-  revChime.start();
-  loopCue14.stop();
-};
+  Tone.Transport.cancel(); // cancel granulator repeat
+}
 
 // *******************************************************************
-// CUE 15: Warping shake chimes
-var kick = new Tone.Player(perc_sounds + "kick.mp3").toMaster();
-var vibeA3 = new Tone.Player(vibes_sounds + "vibe-A3.mp3").toMaster();
-var vibeA4 = new Tone.Player(vibes_sounds + "vibe-A4.mp3").toMaster();
-var vibeCsharp6 = new Tone.Player(vibes_sounds + "vibe-Csharp6.mp3").toMaster();
-var vibeCsharp7 = new Tone.Player(vibes_sounds + "vibe-Csharp7.mp3").toMaster();
-var vibesArrayCue15 = [vibeA3, vibeA4, vibeCsharp6, vibeCsharp7];
-// array for pitch bending intervals of vibes
-// must be same length as vibesArray. refactor with error checking
-// up 1 half step to Bb OR down to justly tuned 7th partial
-var vibesBendArrayCue15 = [-0.05946, -0.05946, 0.2642, 0.2642];
+// CUE 15: shaken bell crossfading from G4 to D6
 
-tm.cue[15] = new TMCue('shake', 1579, NO_LIMIT); // 4 beats @ 152bpm
+tm.cue[15] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[15].goCue = function() {
-  // kick sound has cello jete tail and random playback speed
-  // result is cluster of pitches
-  kick.playbackRate = 1 + Math.random();
-  kick.start();
-  // flourish of vibes on downbeat
-  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
-  thisVibe.start('+16n');
-  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
-  thisVibe.start('+8n');
-  var thisVibe = vibesArrayCue15[Math.floor(Math.random()*vibesArrayCue15.length)];
-  thisVibe.start('+4n');
+  // nothing to do here
 };
 tm.cue[15].triggerShakeSound = function() {
-  // testing how to change sounds throughout section
-  // DOLATER: refactor this to new getSectionBreakpoints() function
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
-  var durationOfSection = 38000; // about 4 bars before end of section
-  // clamp counter at 1.0 (in case section takes longer than expected)
-  var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
+  // TODO: replace with new sound files on G4 and D6
+  // TODO: fix crossfade
+  glLongG5.volume.value = tm.getSectionBreakpoints([0,0, 5000,0, 25000,-99]);
+  glD5.volume.value = tm.getSectionBreakpoints([0,-99, 5000,-99, 25000,0]);
 
-  var randomVibe = Math.floor(Math.random() * vibesArrayCue15.length);
-  vibesArrayCue15[randomVibe].playbackRate = 1 - (vibesBendArrayCue15[randomVibe] * sectionCounter);
-  vibesArrayCue15[randomVibe].start();
+  glLongG5.start();
+  glD5.start();
+};
+tm.cue[15].stopCue = function() {
+  // nothing to do here
 };
 
 // *******************************************************************
-// CUE 16: hidden cue with non-interactive reversed cymbal
-// duration of revCym is 4467 ms.
-tm.cue[16] = new TMCue('hidden');
+// CUE 16: tacet
+tm.cue[16] = new TMCue('tacet', -1);
 tm.cue[16].goCue = function() {
-  revCym.start();
+  // no sound here
+}
+tm.cue[16].stopCue = function() {
+  // nothing to do here
 };
 
 // *******************************************************************
