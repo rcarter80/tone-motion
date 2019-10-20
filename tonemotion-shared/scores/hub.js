@@ -428,24 +428,60 @@ tm.cue[11].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 12: WRITE DESCRIPTION
-tm.cue[12] = new TMCue('shake', 1429, NO_LIMIT);
-tm.cue[12].goCue = function() {
+// CUE 12: Shake gesture triggers cello jete glissing up from D4 to B4
 
+var vcJete1 = new Tone.Player(cello_sounds + "vc-jete-1.mp3").toMaster();
+var vcJete2 = new Tone.Player(cello_sounds + "vc-jete-2.mp3").toMaster();
+var vcClbGliss1 = new Tone.Player(cello_sounds + "vc-clb-gliss-1.mp3").toMaster();
+var vcClbGliss2 = new Tone.Player(cello_sounds + "vc-clb-gliss-2.mp3").toMaster();
+var vcJeteArray = [vcJete1, vcClbGliss1, vcJete2, vcClbGliss2];
+var counterCue12 = 0;
+var thisVcSound;
+
+tm.cue[12] = new TMCue('shake', -1);
+tm.cue[12].goCue = function() {
+  counterCue12 = 0;
+  // sound is recorded at Bb but needs to be a D
+  vcJete1.playbackRate = 1.26;
+  vcJete1.start();
 };
 tm.cue[12].triggerShakeSound = function() {
+  // avoid overlapping file playback by cycling through them
+  thisVcSound = vcJeteArray[counterCue12 % vcJeteArray.length];
+  // Sound in recording is Bb. Need to start on D4 and go to B4
+  // stays on D4 for 1 bar, then goes up to B4 over next 6 bars (and stays)
+  thisVcSound.playbackRate = tm.getSectionBreakpoints([0,1.26, 4286,1.26, 30000,2.119]);
 
+  thisVcSound.start();
+  counterCue12++;
 };
 tm.cue[12].stopCue = function() {
-
+  // nothing to do here
 };
 
 // *******************************************************************
-// CUE 13: tacet
-tm.cue[13] = new TMCue('tacet', -1);
+// CUE 13: Shake gesture triggers glass sound glissing up from B4 to G#5
+
+var counterCue13 = 0;
+var thisGlassSound;
+
+tm.cue[13] = new TMCue('shake', -1);
 tm.cue[13].goCue = function() {
-  // no sound here
-}
+  // reset counter
+  counterCue13 = 0;
+};
+tm.cue[13].triggerShakeSound = function() {
+  // TODO: record or create bouncy glass sounds and replace sounds below
+  thisGlassSound = counterCue13 % 2 ? glLongB5 : glLongB6;
+
+  // stays on B4 for 1 bar, then goes up to G#5 over next 6 bars (and stays)
+  thisGlassSound.playbackRate = tm.getSectionBreakpoints([0,1, 4286,1, 30000,1.682]);
+  thisGlassSound.start();
+  counterCue13++;
+};
+tm.cue[13].stopCue = function() {
+  // nothing to do here
+};
 
 // *******************************************************************
 // CUE 14: high active synths converging on Bb / D

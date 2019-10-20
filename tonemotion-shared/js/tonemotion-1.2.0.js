@@ -747,6 +747,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   if (this.cue[cue].waitTime == -1) {
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
+    this.currentCueStartedAt = this.cueTimeFromServer;
     return;
   }
 
