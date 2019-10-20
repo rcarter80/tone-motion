@@ -12,12 +12,14 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
+// TODO: deleted unused paths
 const cello_sounds = 'tonemotion-shared/audio/cello/';
 const chimes_sounds = 'tonemotion-shared/audio/chimes/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
+const piano_sounds = 'tonemotion-shared/audio/piano/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 69;
@@ -541,103 +543,145 @@ tm.cue[15].stopCue = function() {
 tm.cue[16] = new TMCue('tacet', -1);
 tm.cue[16].goCue = function() {
   // no sound here
-}
+};
 tm.cue[16].stopCue = function() {
   // nothing to do here
 };
 
 // *******************************************************************
-// CUE 17: jete sounds on cello in response to shake
-var vcJete1 = new Tone.Player(cello_sounds + "vc-jete-1.mp3").toMaster();
-var vcJete2 = new Tone.Player(cello_sounds + "vc-jete-2.mp3").toMaster();
-var vcJeteTrem1 = new Tone.Player(cello_sounds + "vc-jete-trem-1.mp3").toMaster();
-var vcJeteTrem2 = new Tone.Player(cello_sounds + "vc-jete-trem-2.mp3").toMaster();
-var vcClb1 = new Tone.Player(cello_sounds + "vc-clb-1.mp3").toMaster();
-var vcClb2 = new Tone.Player(cello_sounds + "vc-clb-2.mp3").toMaster();
-var vcClbGliss1 = new Tone.Player(cello_sounds + "vc-clb-gliss-1.mp3").toMaster();
-var vcClbGliss2 = new Tone.Player(cello_sounds + "vc-clb-gliss-2.mp3").toMaster();
-var vcJeteArray = [vcClb1, vcJete2, vcJeteTrem1, vcClb2, vcClbGliss1, vcJeteTrem2, vcClbGliss2, vcJete1];
-var vcJeteArrayIndex = 0;
+// CUE 17: piano loop with pitch/time bend on x-axis
+var pianoLoop = new Tone.Player(piano_sounds + "pianoLoop.mp3").toMaster();
 
-tm.cue[17] = new TMCue('shake',  1579, NO_LIMIT);
+tm.cue[17] = new TMCue('tilt', 2500, 0);
 tm.cue[17].goCue = function() {
-  vcJete1.start();
+  pianoLoop.volume.value = 0;
+  pianoLoop.start();
 };
-tm.cue[17].triggerShakeSound = function() {
-  thisVcSound = vcJeteArray[vcJeteArrayIndex % vcJeteArray.length];
-  // gradually shift up a whole step by end of section
-  thisVcSound.playbackRate = tm.getSectionBreakpoints([0, 1, 44000, 1.1225]);
-  thisVcSound.start();
-  // avoid overlapping file playback by cycling through them
-  vcJeteArrayIndex++;
-};
+tm.cue[17].updateTiltSounds = function() {
+  // put pitch bend here
+  if (tm.accel.y > 0.6) {
+    // if phone tips upside down past threshold, speed up (up to 1.2 times)
+    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+  } else if (tm.accel.y < 0.4) {
+    // if phone tips rightside down past threshold, slow down
+    // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
+    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+  } else {
+    pianoLoop.playbackRate = 1;
+  }
+}
 tm.cue[17].stopCue = function() {
-  // probably nothing to do here
+  // gradual fade out before stopping this iteration (in case listener plays very slowly)
+  pianoLoop.volume.rampTo(-99, 8);
 };
 
 // *******************************************************************
-// CUE 18: hidden cue with non-interactive reversed cymbal
-// duration of revCym is 4467 ms.
-tm.cue[18] = new TMCue('hidden');
+// CUE 18: second iteration of piano loop. started over again to resync
+
+// TODO: adjust fade out (make longer or don't fade to -99?)
+
+tm.cue[18] = new TMCue('tilt', 2500, 0);
 tm.cue[18].goCue = function() {
-  revCym.start();
+  // loop has been fading out, but stop in case it's still going
+  pianoLoop.stop();
+  // reset volume before starting loop again
+  pianoLoop.volume.value = 0;
+  pianoLoop.start();
+};
+tm.cue[18].updateTiltSounds = function() {
+  // put pitch bend here
+  if (tm.accel.y > 0.6) {
+    // if phone tips upside down past threshold, speed up (up to 1.2 times)
+    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+  } else if (tm.accel.y < 0.4) {
+    // if phone tips rightside down past threshold, slow down
+    // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
+    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+  } else {
+    pianoLoop.playbackRate = 1;
+  }
 }
+tm.cue[18].stopCue = function() {
+  pianoLoop.volume.rampTo(-99, 8);
+};
 
 // *******************************************************************
-// CUE 19: granulated sparkles (section is c. 1'40")
-// determines how often .seek() is called. actual grain size is longer
-var granulatorGrainSize = 0.1;
-var granulator = new Tone.GrainPlayer({
-  "url": granulated_sounds + "grFile.mp3",
-  "overlap": 0.0125,
-  "grainSize": granulatorGrainSize * 2,
-  "loop": true,
-  "detune": 0
-}).toMaster();
-var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
-var granulatorDur = 35;
+// CUE 19: third iteration of piano loop. started over again to resync
 
-tm.cue[19] = new TMCue('tilt', 1579, NO_LIMIT);
+tm.cue[19] = new TMCue('tilt', 2500, 0);
 tm.cue[19].goCue = function() {
-  Tone.Transport.scheduleRepeat(function(time) {
-    // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
-    // If try fails, grain player still scrubs but detune is reset to 0
-    granulator.volume.value = tm.getSectionBreakpoints([60000, -3, 80000, -12, 95000, -24, 100000, -99]);
-    try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
-  }, granulatorGrainSize);
-}
+  // loop has been fading out, but stop in case it's still going
+  pianoLoop.stop();
+  // reset volume before starting loop again
+  pianoLoop.volume.value = 0;
+  pianoLoop.start();
+};
 tm.cue[19].updateTiltSounds = function() {
-  // .seek() invoked by .scheduleRepeat()
-  // index into sound file controlled by x-axis
-  granulatorOffset = tm.accel.x * granulatorDur;
-  // playback rate of grain set by y-axis
-  granulator.detune = 2400 * tm.accel.y;
+  // put pitch bend here
+  if (tm.accel.y > 0.6) {
+    // if phone tips upside down past threshold, speed up (up to 1.2 times)
+    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+  } else if (tm.accel.y < 0.4) {
+    // if phone tips rightside down past threshold, slow down
+    // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
+    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+  } else {
+    pianoLoop.playbackRate = 1;
+  }
 }
 tm.cue[19].stopCue = function() {
-  Tone.Transport.cancel(); // cancel granulator repeat
-}
+  // gradual fade out before stopping this iteration (in case listener plays very slowly)
+  // TODO: make last fade out longer?
+  pianoLoop.volume.rampTo(-99, 8);
+};
 
 // *******************************************************************
-// CUE 20: tacet
-tm.cue[20] = new TMCue('tacet', -1);
+// CUE 20: shaken piano octave Es
+var counterCue20 = 0;
+var pianoE5 = new Tone.Player(piano_sounds + "pianoE5.mp3").toMaster();
+var pianoE6 = new Tone.Player(piano_sounds + "pianoE6.mp3").toMaster();
+var pianoE7 = new Tone.Player(piano_sounds + "pianoE7.mp3").toMaster();
+
+var pianoArrayCue20 = [pianoE5, pianoE6, pianoE7];
+var thisPianoNote;
+
+tm.cue[20] = new TMCue('shake', 2500, 0);
 tm.cue[20].goCue = function() {
-  // no sound here
+  // reset counter
+  counterCue20 = 0;
+};
+tm.cue[20].triggerShakeSound = function() {
+  // TODO: record or make better piano sounds
+  thisPianoNote = pianoArrayCue20[counterCue20 % pianoArrayCue20.length];
+
+  thisPianoNote.start();
+
+  counterCue20++;
+};
+tm.cue[20].stopCue = function() {
+  // nothing to do here
+};
+
+// *******************************************************************
+// CUE 21: tacet coda
+tm.cue[21] = new TMCue('tacet', -1);
+tm.cue[21].goCue = function() {
+  // nothing to play
+}
+tm.cue[21].stopCue = function() {
+  // nothing to clean up
 }
 
 // *******************************************************************
-// CUE 21: finished
-// Could pad the ending with one 'tacet' cue and THEN 'finished' cue to prevent accidental triggering of end, which shuts app down.
-tm.cue[21] = new TMCue('finished', -1);
-tm.cue[21].goCue = function() {
+// CUE 22: finished
+tm.cue[22] = new TMCue('finished', -1);
+tm.cue[22].goCue = function() {
   tm.publicLog('The piece is done.');
 }
 
 // *******************************************************************
-// CUES 22-26: use for quartet to test pedal and cue counter
-tm.cue[22] = new TMCue('waiting', -1);
-tm.cue[22].goCue = function() {
-  tm.publicLog('Test cue 22 was triggered.');
-};
+// CUES 23-26: use for quartet to test pedal and cue counter
+
 tm.cue[23] = new TMCue('waiting', -1);
 tm.cue[23].goCue = function() {
   tm.publicLog('Test cue 23 was triggered.');
