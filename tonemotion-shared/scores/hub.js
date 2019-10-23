@@ -109,8 +109,6 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: Warping tilt twinkles
-// TODO: create better sound files with more appropriate durations
-// REVISION IDEA: could add detune for richer sound
 var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
 // load same audio file into second buffer to allow retrigger without artifact
 var glLongE4b = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
@@ -142,7 +140,7 @@ var glShortC6 = new Tone.Player(glass_sounds + "glassShortC6.mp3").toMaster();
 var glShortG6 = new Tone.Player(glass_sounds + "glassShortG6.mp3").toMaster();
 var glShortB6 = new Tone.Player(glass_sounds + "glassShortB6.mp3").toMaster();
 var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toMaster();
-// TODO: make better extra long D7. could be different timbre from other glass
+var glExtraLongBb3 = new Tone.Player(glass_sounds + "glassExtraLongBb3.mp3").toMaster();
 var glExtraLongD7 = new Tone.Player(glass_sounds + "glassExtraLongD7.mp3").toMaster();
 
 // use array of duplicated sound files to avoid artifacts of retriggering
@@ -153,6 +151,9 @@ var glLongArrayB = [glLongB5, glLongB6, glLongB5, glLongB6b];
 var glLongArrayFsharp = [glLongFsharp6, glLongFsharp6b, glLongFsharp7, glLongFsharp7b];
 
 var counterCue6 = 0;
+// add slight random detune to longer sounds, which come into tune at end
+var detuneCue6 = 1 + Math.random() * 0.02; // less than quarter-tone detune
+console.log(detuneCue6);
 
 var loopCue6 = new Tone.Loop(function(time) {
   if (tm.accel.y < 0.33) {
@@ -176,19 +177,19 @@ var loopCue6 = new Tone.Loop(function(time) {
     }
   } else {
     if (tm.accel.x < 0.2) {
-      glLongE4.playbackRate = glLongE5.playbackRate = glLongE4b.playbackRate = glLongE5b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
+      glLongE4.playbackRate = glLongE5.playbackRate = glLongE4b.playbackRate = glLongE5b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.707]);
       glLongArrayE[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.4) {
-      glLongC5.playbackRate = glLongC6.playbackRate = glLongC5b.playbackRate = glLongC6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glLongC5.playbackRate = glLongC6.playbackRate = glLongC5b.playbackRate = glLongC6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
       glLongArrayC[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.6) {
-      glLongG5.playbackRate = glLongG6.playbackRate = glLongG5b.playbackRate = glLongG6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
+      glLongG5.playbackRate = glLongG6.playbackRate = glLongG5b.playbackRate = glLongG6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.667]);
       glLongArrayG[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.8) {
-      glLongB5.playbackRate = glLongB6.playbackRate = glLongB5b.playbackRate = glLongB6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
+      glLongB5.playbackRate = glLongB6.playbackRate = glLongB5b.playbackRate = glLongB6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.841]);
       glLongArrayB[counterCue6 % 4].start();
     } else {
-      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = glLongFsharp6b.playbackRate = glLongFsharp7b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = glLongFsharp6b.playbackRate = glLongFsharp7b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
       glLongArrayFsharp[counterCue6 % 4].start();
     }
   }
@@ -210,8 +211,8 @@ tm.cue[6].updateTiltSounds = function() {
 };
 tm.cue[6].stopCue = function() {
   loopCue6.stop();
-  // TODO: create longer low Bb sound file to trigger at cutoff
-  // glExtraLongBb3.start();
+  // sound with much longer tail triggered when looped stops
+  glExtraLongBb3.start();
 };
 
 // *******************************************************************
