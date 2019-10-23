@@ -203,7 +203,7 @@ tm.cue[6].goCue = function() {
   // reset counter in case section has been repeated
   counterCue6 = 0;
   // test pulling back Master volume to  avoid distortion
-  Tone.Master.volume.value = -12;
+  Tone.Master.volume.value = -30;
   loopCue6.start();
 };
 tm.cue[6].updateTiltSounds = function() {
