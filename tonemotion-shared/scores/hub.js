@@ -140,6 +140,7 @@ var glShortC6 = new Tone.Player(glass_sounds + "glassShortC6.mp3").toMaster();
 var glShortG6 = new Tone.Player(glass_sounds + "glassShortG6.mp3").toMaster();
 var glShortB6 = new Tone.Player(glass_sounds + "glassShortB6.mp3").toMaster();
 var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toMaster();
+var glExtraLongG3 = new Tone.Player(glass_sounds + "glassExtraLongG3.mp3").toMaster();
 var glExtraLongBb3 = new Tone.Player(glass_sounds + "glassExtraLongBb3.mp3").toMaster();
 var glExtraLongD7 = new Tone.Player(glass_sounds + "glassExtraLongD7.mp3").toMaster();
 
@@ -424,8 +425,7 @@ var partSwitchCue11 = Math.floor(Math.random() * 6);
 
 var fillLoopCue11 = new Tone.Loop(function(time) {
   if (counterCue11 > 10) {
-    // TODO: create long sound file on G3 and replace below
-    glLongB5.start();
+    glExtraLongG3.start();
   } else {
     if (counterCue11 % 6 === partSwitchCue11) {
       testSynth4.triggerAttackRelease(pitchArrayCue11[counterCue11], '16t');
@@ -480,7 +480,9 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13: Shake gesture triggers glass sound glissing up from B4 to G#5
+// CUE 13: Shake gesture triggers bouncy glass sound glissing up from B4 to G#5
+var glBounceB5 = new Tone.Player(glass_sounds + "glassBounceB5.mp3").toMaster();
+var glBounceB6 = new Tone.Player(glass_sounds + "glassBounceB6.mp3").toMaster();
 
 var counterCue13 = 0;
 var thisGlassSound;
@@ -491,8 +493,7 @@ tm.cue[13].goCue = function() {
   counterCue13 = 0;
 };
 tm.cue[13].triggerShakeSound = function() {
-  // TODO: record or create bouncy glass sounds and replace sounds below
-  thisGlassSound = counterCue13 % 2 ? glLongB5 : glLongB6;
+  thisGlassSound = counterCue13 % 2 ? glBounceB5 : glBounceB6;
 
   // stays on B4 for 1 bar, then goes up to G#5 over next 6 bars (and stays)
   thisGlassSound.playbackRate = tm.getSectionBreakpoints([0,1, 4286,1, 30000,1.682]);
@@ -545,8 +546,7 @@ tm.cue[15].goCue = function() {
   // nothing to do here
 };
 tm.cue[15].triggerShakeSound = function() {
-  // TODO: replace with new sound files on G4 and D6
-  // TODO: fix crossfade
+  // TODO: replace with new sound files on G4 and D6 and fix crossfade
   glLongG5.volume.value = tm.getSectionBreakpoints([0,0, 5000,0, 25000,-99]);
   glD5.volume.value = tm.getSectionBreakpoints([0,-99, 5000,-99, 25000,0]);
 
