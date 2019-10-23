@@ -21,6 +21,10 @@ const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 
+// TODO: delete unused sounds (might use clave, might not. deleted if not)
+var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
+var revCym = new Tone.Player(perc_sounds + "revCym.mp3").toMaster();
+
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 69;
 
@@ -108,15 +112,26 @@ tm.cue[5].stopCue = function() {
 // TODO: create better sound files with more appropriate durations
 // REVISION IDEA: could add detune for richer sound
 var glLongE4 = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
+// load same audio file into second buffer to allow retrigger without artifact
+var glLongE4b = new Tone.Player(glass_sounds + "glassLongE4.mp3").toMaster();
 var glLongC5 = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
+var glLongC5b = new Tone.Player(glass_sounds + "glassLongC5.mp3").toMaster();
 var glLongG5 = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
+var glLongG5b = new Tone.Player(glass_sounds + "glassLongG5.mp3").toMaster();
 var glLongB5 = new Tone.Player(glass_sounds + "glassLongB5.mp3").toMaster();
+var glLongB5b = new Tone.Player(glass_sounds + "glassLongB5.mp3").toMaster();
 var glLongFsharp6 = new Tone.Player(glass_sounds + "glassLongFsharp6.mp3").toMaster();
+var glLongFsharp6b = new Tone.Player(glass_sounds + "glassLongFsharp6.mp3").toMaster();
 var glLongE5 = new Tone.Player(glass_sounds + "glassLongE5.mp3").toMaster();
+var glLongE5b = new Tone.Player(glass_sounds + "glassLongE5.mp3").toMaster();
 var glLongC6 = new Tone.Player(glass_sounds + "glassLongC6.mp3").toMaster();
+var glLongC6b = new Tone.Player(glass_sounds + "glassLongC6.mp3").toMaster();
 var glLongG6 = new Tone.Player(glass_sounds + "glassLongG6.mp3").toMaster();
+var glLongG6b = new Tone.Player(glass_sounds + "glassLongG6.mp3").toMaster();
 var glLongB6 = new Tone.Player(glass_sounds + "glassLongB6.mp3").toMaster();
+var glLongB6b = new Tone.Player(glass_sounds + "glassLongB6.mp3").toMaster();
 var glLongFsharp7 = new Tone.Player(glass_sounds + "glassLongFsharp7.mp3").toMaster();
+var glLongFsharp7b = new Tone.Player(glass_sounds + "glassLongFsharp7.mp3").toMaster();
 var glShortE4 = new Tone.Player(glass_sounds + "glassShortE4.mp3").toMaster();
 var glShortC5 = new Tone.Player(glass_sounds + "glassShortC5.mp3").toMaster();
 var glShortG5 = new Tone.Player(glass_sounds + "glassShortG5.mp3").toMaster();
@@ -130,9 +145,12 @@ var glShortFsharp7 = new Tone.Player(glass_sounds + "glassShortFsharp7.mp3").toM
 // TODO: make better extra long D7. could be different timbre from other glass
 var glExtraLongD7 = new Tone.Player(glass_sounds + "glassExtraLongD7.mp3").toMaster();
 
-// TODO: delete unused sounds (might use clave, might not. deleted if not)
-var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
-var revCym = new Tone.Player(perc_sounds + "revCym.mp3").toMaster();
+// use array of duplicated sound files to avoid artifacts of retriggering
+var glLongArrayE = [glLongE4, glLongE5, glLongE4b, glLongE5b];
+var glLongArrayC = [glLongC5, glLongC6, glLongC5, glLongC6b];
+var glLongArrayG = [glLongG5, glLongG6, glLongG5, glLongG6b];
+var glLongArrayB = [glLongB5, glLongB6, glLongB5, glLongB6b];
+var glLongArrayFsharp = [glLongFsharp6, glLongFsharp6b, glLongFsharp7, glLongFsharp7b];
 
 var counterCue6 = 0;
 
@@ -158,20 +176,20 @@ var loopCue6 = new Tone.Loop(function(time) {
     }
   } else {
     if (tm.accel.x < 0.2) {
-      glLongE4.playbackRate = glLongE5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
-      (counterCue6 % 2) ? glLongE4.start() : glLongE5.start();
+      glLongE4.playbackRate = glLongE5.playbackRate = glLongE4b.playbackRate = glLongE5b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
+      glLongArrayE[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.4) {
-      glLongC5.playbackRate = glLongC6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-      (counterCue6 % 2) ? glLongC5.start() : glLongC6.start();
+      glLongC5.playbackRate = glLongC6.playbackRate = glLongC5b.playbackRate = glLongC6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glLongArrayC[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.6) {
-      glLongG5.playbackRate = glLongG6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
-      (counterCue6 % 2) ? glLongG5.start() : glLongG6.start();
+      glLongG5.playbackRate = glLongG6.playbackRate = glLongG5b.playbackRate = glLongG6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
+      glLongArrayG[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.8) {
-      glLongB5.playbackRate = glLongB6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
-      (counterCue6 % 2) ? glLongB5.start() : glLongB6.start();
+      glLongB5.playbackRate = glLongB6.playbackRate = glLongB5b.playbackRate = glLongB6b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
+      glLongArrayB[counterCue6 % 4].start();
     } else {
-      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
-      (counterCue6 % 2) ? glLongFsharp6.start() : glLongFsharp7.start();
+      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = glLongFsharp6b.playbackRate = glLongFsharp7b.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glLongArrayFsharp[counterCue6 % 4].start();
     }
   }
   counterCue6++;
