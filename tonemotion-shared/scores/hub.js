@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = false; // if true, skips clock sync and shows console
+tm.debug = true; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -154,7 +154,6 @@ var glLongArrayFsharp = [glLongFsharp6, glLongFsharp6b, glLongFsharp7, glLongFsh
 var counterCue6 = 0;
 // add slight random detune to longer sounds, which come into tune at end
 var detuneCue6 = 1 + Math.random() * 0.02; // less than quarter-tone detune
-console.log(detuneCue6);
 
 var loopCue6 = new Tone.Loop(function(time) {
   if (tm.accel.y < 0.33) {
@@ -521,9 +520,9 @@ var granulatorDur = 35;
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
+    granulator.volume.value = tm.getSectionBreakpoints([0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
-    granulator.volume.value = tm.getSectionBreakpoints([0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
   }, granulatorGrainSize);
 }
