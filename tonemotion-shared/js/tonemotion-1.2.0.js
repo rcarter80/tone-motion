@@ -747,9 +747,6 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     this.setStatusForNewCue(cue);
     //  use this timestamp to facilitate gradual process during a section
     this.cue[cue].startedAt = this.cueTimeFromServer;
-
-    console.log('cue number: ' + cue + ' started at: ' + this.cue[cue].startedAt);
-
     return;
   }
 
@@ -835,9 +832,6 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
     return 0;
   } else {
     var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
-
-    // TODO: clean up console logs used only for debugging while developing
-    console.log(this.cue[cue].startedAt);
   }
 
   // Go through array of time/value pairs
