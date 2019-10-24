@@ -242,8 +242,8 @@ tm.cue[7] = new TMCue('listen', 1739, 0);
 tm.cue[7].goCue = function() {
   // reset tempo in case most recent cue had different tempo
   Tone.Transport.bpm.value = 69;
-  // reset master volume in case most recent cue had different level
-  Tone.Master.volume.rampTo(0, 0.1);
+  // fade back to full volume after previous faded out 
+  Tone.Master.volume.rampTo(0, 3.5);
   // reset counter in case section has been repeated
   counterCue7 = 0;
   // use short sound from previous section, but pitch has already bent down
