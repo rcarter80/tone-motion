@@ -12,18 +12,11 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-// TODO: deleted unused paths
 const cello_sounds = 'tonemotion-shared/audio/cello/';
-const chimes_sounds = 'tonemotion-shared/audio/chimes/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
-const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
-
-// TODO: delete unused sounds (might use clave, might not. deleted if not)
-var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
-var revCym = new Tone.Player(perc_sounds + "revCym.mp3").toMaster();
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 69;
@@ -96,6 +89,9 @@ tm.cue[4] = new TMCue('waiting', -1);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
+tm.cue[4].stopCue = function() {
+  // nothing to clean up
+};
 
 // *******************************************************************
 // CUE 5: Actual beginning of piece, but first section is tacet
@@ -156,63 +152,71 @@ var counterCue6 = 0;
 var detuneCue6 = 1 + Math.random() * 0.02; // less than quarter-tone detune
 
 var loopCue6 = new Tone.Loop(function(time) {
+  // begin fade out after 8 bars (of 32nd notes in 4/4, so 256 notes)
+  if (counterCue6 === 256) {
+    Tone.Master.volume.rampTo(-18, 7); // 2-bar fade out
+  }
   if (tm.accel.y < 0.33) {
     if (tm.accel.x < 0.2) {
       // short sounds when phone is tilted up
       // gradually shift down over 6 bars (after no change for 4 bars)
-      glShortE4.playbackRate = glShortE5.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.707]);
+      glShortE4.playbackRate = glShortE5.playbackRate = tm.getSectionBreakpoints(6, [0,1, 13913,1, 34783,0.707]);
       (counterCue6 % 2) ? glShortE4.start() : glShortE5.start();
     } else if (tm.accel.x < 0.4) {
-      glShortC5.playbackRate = glShortC6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glShortC5.playbackRate = glShortC6.playbackRate = tm.getSectionBreakpoints(6, [0,1, 13913,1, 34783,0.794]);
       (counterCue6 % 2) ? glShortC5.start() : glShortC6.start();
     } else if (tm.accel.x < 0.6) {
-      glShortG5.playbackRate = glShortG6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.667]);
+      glShortG5.playbackRate = glShortG6.playbackRate = tm.getSectionBreakpoints(6, [0,1, 13913,1, 34783,0.667]);
       (counterCue6 % 2) ? glShortG5.start() : glShortG6.start();
     } else if (tm.accel.x < 0.8) {
-      glShortB5.playbackRate = glShortB6.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.841]);
+      glShortB5.playbackRate = glShortB6.playbackRate = tm.getSectionBreakpoints(6, [0,1, 13913,1, 34783,0.841]);
       (counterCue6 % 2) ? glShortB5.start() : glShortB6.start();
     } else {
-      glShortFsharp6.playbackRate = glShortFsharp7.playbackRate = tm.getSectionBreakpoints([0,1, 13913,1, 34783,0.794]);
+      glShortFsharp6.playbackRate = glShortFsharp7.playbackRate = tm.getSectionBreakpoints(6, [0,1, 13913,1, 34783,0.794]);
       (counterCue6 % 2) ? glShortFsharp6.start() : glShortFsharp7.start();
     }
   } else {
     if (tm.accel.x < 0.2) {
-      glLongE4.playbackRate = glLongE5.playbackRate = glLongE4b.playbackRate = glLongE5b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.707]);
+      glLongE4.playbackRate = glLongE5.playbackRate = glLongE4b.playbackRate = glLongE5b.playbackRate = tm.getSectionBreakpoints(6, [0,detuneCue6, 13913,detuneCue6, 34783,0.707]);
       glLongArrayE[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.4) {
-      glLongC5.playbackRate = glLongC6.playbackRate = glLongC5b.playbackRate = glLongC6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
+      glLongC5.playbackRate = glLongC6.playbackRate = glLongC5b.playbackRate = glLongC6b.playbackRate = tm.getSectionBreakpoints(6, [0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
       glLongArrayC[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.6) {
-      glLongG5.playbackRate = glLongG6.playbackRate = glLongG5b.playbackRate = glLongG6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.667]);
+      glLongG5.playbackRate = glLongG6.playbackRate = glLongG5b.playbackRate = glLongG6b.playbackRate = tm.getSectionBreakpoints(6, [0,detuneCue6, 13913,detuneCue6, 34783,0.667]);
       glLongArrayG[counterCue6 % 4].start();
     } else if (tm.accel.x < 0.8) {
-      glLongB5.playbackRate = glLongB6.playbackRate = glLongB5b.playbackRate = glLongB6b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.841]);
+      glLongB5.playbackRate = glLongB6.playbackRate = glLongB5b.playbackRate = glLongB6b.playbackRate = tm.getSectionBreakpoints(6, [0,detuneCue6, 13913,detuneCue6, 34783,0.841]);
       glLongArrayB[counterCue6 % 4].start();
     } else {
-      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = glLongFsharp6b.playbackRate = glLongFsharp7b.playbackRate = tm.getSectionBreakpoints([0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
+      glLongFsharp6.playbackRate = glLongFsharp7.playbackRate = glLongFsharp6b.playbackRate = glLongFsharp7b.playbackRate = tm.getSectionBreakpoints(6, [0,detuneCue6, 13913,detuneCue6, 34783,0.794]);
       glLongArrayFsharp[counterCue6 % 4].start();
     }
   }
   counterCue6++;
 }, "32n");
+// stop after 11 bars of 32nds in 4/4 (m. 12 of section is fill: cue 7))
+loopCue6.iterations = 352;
 
 // 1739 ms. = 2 beats @ 69bpm
 tm.cue[6] = new TMCue('tilt', 1739, NO_LIMIT);
 tm.cue[6].goCue = function() {
   // reset tempo in case most recent cue had different tempo
   Tone.Transport.bpm.value = 69;
+  // reset master volume in case most recent cue had different level
+  Tone.Master.volume.rampTo(0, 0.1);
   // reset counter in case section has been repeated
   counterCue6 = 0;
   loopCue6.start();
 };
 tm.cue[6].updateTiltSounds = function() {
-  // all tilt interactivity handled in goCue() function
-  // nothing to do here but override method
+  // all interactivity handled in loop. nothing to do here but override method
 };
 tm.cue[6].stopCue = function() {
-  loopCue6.stop();
-  // sound with much longer tail triggered when looped stops
+  // sound with much longer tail triggered when loop stops
   glExtraLongBb3.start();
+  // loop should stop itself, but just in case stop it 2 beats after this cue
+  loopCue6.stop("+1.74");
 };
 
 // *******************************************************************
@@ -238,6 +242,8 @@ tm.cue[7] = new TMCue('listen', 1739, 0);
 tm.cue[7].goCue = function() {
   // reset tempo in case most recent cue had different tempo
   Tone.Transport.bpm.value = 69;
+  // reset master volume in case most recent cue had different level
+  Tone.Master.volume.rampTo(0, 0.1);
   // reset counter in case section has been repeated
   counterCue7 = 0;
   // use short sound from previous section, but pitch has already bent down
@@ -247,11 +253,12 @@ tm.cue[7].goCue = function() {
   glShortB5.playbackRate = glShortB6.playbackRate = 0.841;
   glShortFsharp6.playbackRate = glShortFsharp7.playbackRate = 0.794;
   fillLoopCue7.start();
-}
+};
 tm.cue[7].stopCue = function() {
   // shouldn't need to stop because fill stops itself, but just in case
+  // TODO: delay loop stop
   fillLoopCue7.stop();
-}
+};
 
 // *******************************************************************
 // CUE 8: tacet
@@ -469,7 +476,7 @@ tm.cue[12].triggerShakeSound = function() {
   thisVcSound = vcJeteArray[counterCue12 % vcJeteArray.length];
   // Sound in recording is Bb. Need to start on D4 and go to B4
   // stays on D4 for 1 bar, then goes up to B4 over next 6 bars (and stays)
-  thisVcSound.playbackRate = tm.getSectionBreakpoints([0,1.26, 4286,1.26, 30000,2.119]);
+  thisVcSound.playbackRate = tm.getSectionBreakpoints(12, [0,1.26, 4286,1.26, 30000,2.119]);
 
   thisVcSound.start();
   counterCue12++;
@@ -495,7 +502,7 @@ tm.cue[13].triggerShakeSound = function() {
   thisGlassSound = counterCue13 % 2 ? glBounceB5 : glBounceB6;
 
   // stays on B4 for 1 bar, then goes up to G#5 over next 6 bars (and stays)
-  thisGlassSound.playbackRate = tm.getSectionBreakpoints([0,1, 4286,1, 30000,1.682]);
+  thisGlassSound.playbackRate = tm.getSectionBreakpoints(13, [0,1, 4286,1, 30000,1.682]);
   thisGlassSound.start();
   counterCue13++;
 };
@@ -520,7 +527,7 @@ var granulatorDur = 35;
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
-    granulator.volume.value = tm.getSectionBreakpoints([0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+    granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
@@ -546,8 +553,8 @@ tm.cue[15].goCue = function() {
 };
 tm.cue[15].triggerShakeSound = function() {
   // TODO: replace with new sound files on G4 and D6 and fix crossfade
-  glLongG5.volume.value = tm.getSectionBreakpoints([0,0, 5000,0, 25000,-99]);
-  glD5.volume.value = tm.getSectionBreakpoints([0,-99, 5000,-99, 25000,0]);
+  glLongG5.volume.value = tm.getSectionBreakpoints(15, [0,0, 5000,0, 25000,-99]);
+  glD5.volume.value = tm.getSectionBreakpoints(15, [0,-99, 5000,-99, 25000,0]);
 
   glLongG5.start();
   glD5.start();

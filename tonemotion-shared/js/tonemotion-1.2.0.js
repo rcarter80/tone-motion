@@ -67,7 +67,6 @@ var noSleep = new NoSleep();
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
  * @param {TMCue} currentCue - Reference to the current cue
- * @param {number} currentCueStartedAt - Time when cue began
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -102,7 +101,6 @@ function ToneMotion() {
   this.cueTimeFromServer = 0;
   this.cue = [];
   this.currentCue = {};
-  this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
   this.urlForCues = '';
@@ -747,15 +745,18 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   if (this.cue[cue].waitTime == -1) {
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
-    this.currentCueStartedAt = this.cueTimeFromServer;
+    //  use this timestamp to facilitate gradual process during a section
+    this.cue[cue].startedAt = this.cueTimeFromServer;
+
+    console.log('cue number: ' + cue + ' started at: ' + this.cue[cue].startedAt);
+
     return;
   }
 
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - this.clientServerOffset;
   var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
-  //  use this timestamp to facilitate gradual process during a section
-  this.currentCueStartedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
+  this.cue[cue].startedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
@@ -819,20 +820,32 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
   this.currentCue.isPlaying = true;
 };
 
-// Takes breakpoint array of time/value pairs and returns interpolated values reflecting elapsed time in current segment
-ToneMotion.prototype.getSectionBreakpoints = function(breakpointArray) {
-  // Each time needs a corresponding value (need even # of args)
-  if (breakpointArray.length % 2 !== 0) {
-    this.publicLog('Missing value for getSectionBreakpoints(), which requires an array of time/value pairs (e.g., [1000, 0.5, 2000, 1.0]).')
-    return;
+// Takes cue number and breakpoint array of time/value pairs. Returns interpolated values reflecting elapsed time in current segment of requested cue. Requires cue number since gradual process may overlap with next cue called. Can't use current cue number because that may be next cue.
+ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
+  // check that function is passed cue number AND array of breakpoints
+  // Each time needs a corresponding value (need even # of elements in array)
+  if (arguments.length < 2 || breakpointArray.length % 2 !== 0) {
+    this.publicLog('Missing value for getSectionBreakpoints(), which requires a cue number and an array of time/value pairs. Example: getSectionBreakpoints(3, [1000, 0.5, 2000, 1.0]).')
+    return 0;
   }
+
+  // check that requested cue has actually begun
+  if (this.cue[cue].startedAt === 0) {
+    this.publicLog('Section breakpoint value requested for cue that has not started yet.');
+    return 0;
+  } else {
+    var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+
+    // TODO: clean up console logs used only for debugging while developing
+    console.log(this.cue[cue].startedAt);
+  }
+
   // Go through array of time/value pairs
-  var elapsedTime = Date.now() - this.clientServerOffset - this.currentCueStartedAt;
   for (var i = 0; i < breakpointArray.length; i = i + 2) {
     // Each time needs to be greater than previous
     if (breakpointArray[i] >= breakpointArray[i+2]) {
       this.publicLog('getSectionBreakpoints() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
-      return;
+      return 0;
     }
     // Find which segment current time is in
     if (elapsedTime <= breakpointArray[i]) {
@@ -877,6 +890,7 @@ function TMCue(mode, waitTime, openWindow) {
   this.waitTime = waitTime;
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
+  this.startedAt = 0; // not set by constructor. used by getSectionBreakpoints()
 }
 
 // Override this method in score to code the music for this section
