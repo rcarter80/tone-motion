@@ -541,42 +541,45 @@ tm.cue[13].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 14: granulated sparkles
-// determines how often .seek() is called. actual grain size is longer
-var granulatorGrainSize = 0.1;
-var granulator = new Tone.GrainPlayer({
-  "url": granulated_sounds + "grFile.mp3",
-  "overlap": 0.0125,
-  "grainSize": granulatorGrainSize * 2,
-  "loop": true,
-  "detune": 0
-}).toMaster();
-granulator.volume.value = 0;
+// CUE 14: quasi-granulated sparkles
+var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
+pingPongLoop.loop = true;
 
-var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
-var granulatorDur = 35;
+var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
+popRocksLoop.loop = true;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
-  tm.publicLog('granulator volume: ' + granulator.volume.value);
-
-  Tone.Transport.scheduleRepeat(function(time) {
-    granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
-    // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
-    // If try fails, grain player still scrubs but detune is reset to 0
-    try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
-  }, granulatorGrainSize);
-}
+  // sound file selected on x-axis threshold. start with ping pong off
+  pingPongLoop.mute = true;
+  pingPongLoop.start();
+  // arbitrary decision to start with pop rocks on, but user controls on x-axis
+  popRocksLoop.mute = false;
+  popRocksLoop.start();
+};
 tm.cue[14].updateTiltSounds = function() {
-  // .seek() invoked by .scheduleRepeat()
-  // index into sound file controlled by x-axis
-  granulatorOffset = tm.accel.x * granulatorDur;
-  // playback rate of grain set by y-axis
-  granulator.detune = 2400 * tm.accel.y;
-}
+  // playback rate can range from quarter speed to four times speed
+  pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.5) {
+    // ping pong audible when device tilted to right
+    if (pingPongLoop.mute) {
+      // muting and unmuting not ideal because of possibility of clicking by needed to gradually scale volume without adding 2nd control signal
+      popRocksLoop.mute = true;
+      pingPongLoop.mute = false;
+    }
+  } else {
+    if (popRocksLoop.mute) {
+      pingPongLoop.mute = true;
+      popRocksLoop.mute = false;
+    }
+  }
+  
+};
 tm.cue[14].stopCue = function() {
-  Tone.Transport.cancel(); // cancel granulator repeat
-}
+  pingPongLoop.stop();
+  popRocksLoop.stop();
+};
 
 // *******************************************************************
 // CUE 15: shaken piano notes starting on G4 and switching to D6
