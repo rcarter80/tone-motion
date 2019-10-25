@@ -551,11 +551,15 @@ var granulator = new Tone.GrainPlayer({
   "loop": true,
   "detune": 0
 }).toMaster();
+granulator.volume.value = 0;
+
 var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
 var granulatorDur = 35;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
+  tm.publicLog('granulator volume: ' + granulator.volume.value);
+
   Tone.Transport.scheduleRepeat(function(time) {
     granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
