@@ -551,13 +551,16 @@ var granulator = new Tone.GrainPlayer({
   "loop": true,
   "detune": 0
 }).toMaster();
-granulator.volume.value = 0;
 
 var granulatorOffset = 8.5; // subsequent scrub positions set interactively in updateSoundsInCue4() below
 var granulatorDur = 35;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
+  tm.publicLog('granulator volume: ' + granulator.volume.value);
+
+  granulator.volume.value = 0;
+
   tm.publicLog('granulator volume: ' + granulator.volume.value);
 
   Tone.Transport.scheduleRepeat(function(time) {
