@@ -228,7 +228,7 @@ var fillLoopCue7 = new Tone.Loop(function(time) {
     glExtraLongD7.start();
   } else {
     // weighted probability of note happening
-    if (Math.random() < 0.1666) {
+    if (Math.random() < 0.333) {
       pitchArrayCue7[counterCue7].start();
     }
   }
@@ -242,7 +242,7 @@ tm.cue[7] = new TMCue('listen', 1739, 0);
 tm.cue[7].goCue = function() {
   // reset tempo in case most recent cue had different tempo
   Tone.Transport.bpm.value = 69;
-  // fade back to full volume after previous faded out 
+  // fade back to full volume after previous faded out
   Tone.Master.volume.rampTo(0, 3.5);
   // reset counter in case section has been repeated
   counterCue7 = 0;
@@ -256,8 +256,7 @@ tm.cue[7].goCue = function() {
 };
 tm.cue[7].stopCue = function() {
   // shouldn't need to stop because fill stops itself, but just in case
-  // TODO: delay loop stop
-  fillLoopCue7.stop();
+  fillLoopCue7.stop('+1'); // one second delay to avoid premature cutoff
 };
 
 // *******************************************************************
@@ -313,6 +312,49 @@ tm.cue[9].stopCue = function() {
 var counterCue10 = 0;
 
 // TODO: refine synth sound, create two more synths, rename with reusable names
+var brightLeadSynth = new Tone.DuoSynth({
+  vibratoAmount: 0.15,
+  vibratoRate: 8,
+  harmonicity: 1.5,
+  portamento: 0.02,
+  voice0: {
+    volume: 0,
+    oscillator: {
+      type: 'square13'
+    },
+    filterEnvelope: {
+      attack: 0.01,
+      decay: 0,
+      sustain: 1,
+      release: 0.5
+    },
+    envelope: {
+      attack: 0.03,
+      decay: 0,
+      sustain: 1,
+      release: 0.05
+    }
+  },
+  voice1: {
+    volume: -15,
+    oscillator: {
+      type: 'triangle5'
+    },
+    filterEnvelope: {
+      attack: 0.01,
+      decay: 0,
+      sustain: 1,
+      release: 0.5
+    },
+    envelope: {
+      attack: 0.03,
+      decay: 0,
+      sustain: 1,
+      release: 0.05
+    }
+  }
+}).toMaster();
+
 var testSynth1 = new Tone.MonoSynth({
   oscillator: {
     type: 'sawtooth16'
@@ -323,7 +365,8 @@ var testSynth1 = new Tone.MonoSynth({
     sustain: 0.8,
     release: 0.03
   }
-}).toMaster()
+}).toMaster();
+
 var testSynth2 = new Tone.MonoSynth({
   oscillator: {
     type: 'triangle17'
@@ -334,18 +377,7 @@ var testSynth2 = new Tone.MonoSynth({
     sustain: 0.8,
     release: 0.03
   }
-}).toMaster()
-var testSynth3 = new Tone.MonoSynth({
-  oscillator: {
-    type: 'square13'
-  },
-  envelope: {
-    attack: 0.03,
-    decay: 0.01,
-    sustain: 0.8,
-    release: 0.03
-  }
-}).toMaster()
+}).toMaster();
 
 var pitchArrayCue10 = [['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','C#5','D5','B5','C#6','D6','B6','C#7','D7'], ['B2','B3','B4','C#5','D5','E5','B5','C#6','D6','E6','B6','C#7','D7','E7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7'], ['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','F#5','B5','F#6','B6','F#7'], ['A2','A3','A4','C#5','D5','F#5','A5','C#6','D6','F#6','A6','C#7','D7','F#7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7']];
 var thisPitchCell, thisPitch;
@@ -356,18 +388,18 @@ var synthLoopCue10 = new Tone.Loop(function(time) {
 
   if (tm.accel.y > 0.5) {
     // continuous synth with interactive pitch on x-axis
-    if (testSynth3.volume.value == -99) {
-      testSynth3.volume.rampTo(0, 0.05);
+    if (brightLeadSynth.volume.value == -99) {
+      brightLeadSynth.volume.rampTo(-6, 0.05);
     }
     // clamp tm.accel.x to 0.99 to prevent reading past bounds of pitch array
     thisPitch = thisPitchCell[Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length))];
-    if (testSynth3.frequency.value != thisPitch) {
-      testSynth3.setNote(thisPitch);
+    if (brightLeadSynth.frequency.value != thisPitch) {
+      brightLeadSynth.setNote(thisPitch);
     }
   } else {
     // mute continuous synth if not already muted
-    if (testSynth3.volume.value > -99) {
-      testSynth3.volume.rampTo(-99, 0.05);
+    if (brightLeadSynth.volume.value > -99) {
+      brightLeadSynth.volume.rampTo(-99, 0.05);
     }
     // prevent using last note in array because that will be triggered next
     thisPitch = Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length - 1));
@@ -379,6 +411,8 @@ var synthLoopCue10 = new Tone.Loop(function(time) {
   }
   counterCue10++;
 }, '16n');
+// stop loop after 15 measures and 4 beats (leaving 2 beats for fill in cue 11)
+synthLoopCue10.iterations = 376;
 
 // open window of just one extra beat to keep things pretty closely aligned
 tm.cue[10] = new TMCue('tilt', 2143, 714);
@@ -390,8 +424,8 @@ tm.cue[10].goCue = function() {
   testSynth1.volume.value = 0;
   testSynth2.volume.value = 0;
   // trigger continuous synth that holds through section, but mute by default
-  testSynth3.volume.value = -99;
-  testSynth3.triggerAttack('B4');
+  brightLeadSynth.volume.value = -99;
+  brightLeadSynth.triggerAttack('B4');
   synthLoopCue10.start();
 }
 tm.cue[10].updateTiltSounds = function() {
@@ -400,10 +434,8 @@ tm.cue[10].updateTiltSounds = function() {
 };
 tm.cue[10].stopCue = function() {
   // fade out sounds and then stop
-  testSynth1.volume.rampTo(-99, '1m');
-  testSynth2.volume.rampTo(-99, '1m');
-  testSynth3.volume.rampTo(-99, '1m');
-  testSynth3.triggerRelease('+1m');
+  brightLeadSynth.volume.rampTo(-99, '1m');
+  brightLeadSynth.triggerRelease('+1m');
   synthLoopCue10.stop('+1m');
 }
 
