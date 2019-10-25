@@ -355,27 +355,27 @@ var brightLeadSynth = new Tone.DuoSynth({
   }
 }).toMaster();
 
-var testSynth1 = new Tone.MonoSynth({
+var synthSaw16 = new Tone.Synth({
   oscillator: {
     type: 'sawtooth16'
   },
   envelope: {
-    attack: 0.03,
-    decay: 0.01,
+    attack: 0.05,
+    decay: 0.02,
     sustain: 0.8,
-    release: 0.03
+    release: 0.1
   }
 }).toMaster();
 
-var testSynth2 = new Tone.MonoSynth({
+var synthTriangle17 = new Tone.Synth({
   oscillator: {
     type: 'triangle17'
   },
   envelope: {
-    attack: 0.03,
+    attack: 0.01,
     decay: 0.01,
-    sustain: 0.8,
-    release: 0.03
+    sustain: 0.5,
+    release: 0.15
   }
 }).toMaster();
 
@@ -405,9 +405,7 @@ var synthLoopCue10 = new Tone.Loop(function(time) {
     thisPitch = Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length - 1));
     // alternate adjacent pitches of cell to prevent excessive repetition
     // use two synths to allow overlapping sound
-    testSynth1.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800); testSynth2.filterEnvelope.baseFrequency = (200 + tm.accel.y * 1800);
-
-    counterCue10 % 2 ? testSynth1.triggerAttackRelease(thisPitchCell[thisPitch], '16n') : testSynth2.triggerAttackRelease(thisPitchCell[thisPitch + 1], '16n');
+    counterCue10 % 2 ? synthSaw16.triggerAttackRelease(thisPitchCell[thisPitch], '16n') : synthTriangle17.triggerAttackRelease(thisPitchCell[thisPitch + 1], '16n');
   }
   counterCue10++;
 }, '16n');
@@ -421,8 +419,8 @@ tm.cue[10].goCue = function() {
   Tone.Transport.bpm.value = 84;
   counterCue10 = 0;
   // unmute other synths because those are only triggered in response to action
-  testSynth1.volume.value = 0;
-  testSynth2.volume.value = 0;
+  synthSaw16.volume.value = 0;
+  synthTriangle17.volume.value = 0;
   // trigger continuous synth that holds through section, but mute by default
   brightLeadSynth.volume.value = -99;
   brightLeadSynth.triggerAttack('B4');
@@ -444,12 +442,12 @@ tm.cue[10].stopCue = function() {
 // must arrive on time for perfect synchrony, but sparse texture allows holes
 tm.cue[11] = new TMCue('listen', 2857, 0);
 
-var testSynth4 = new Tone.MonoSynth({
+var synthSquare13 = new Tone.Synth({
   oscillator: {
     type: 'square13'
   },
   envelope: {
-    attack: 0.03,
+    attack: 0.02,
     decay: 0.01,
     sustain: 0.8,
     release: 0.03
@@ -466,7 +464,7 @@ var fillLoopCue11 = new Tone.Loop(function(time) {
     glExtraLongG3.start();
   } else {
     if (counterCue11 % 6 === partSwitchCue11) {
-      testSynth4.triggerAttackRelease(pitchArrayCue11[counterCue11], '16t');
+      synthSquare13.triggerAttackRelease(pitchArrayCue11[counterCue11], '16t');
     }
   }
   counterCue11++;
@@ -577,19 +575,21 @@ tm.cue[14].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 15: shaken bell crossfading from G4 to D6
+// CUE 15: shaken piano notes starting on G4 and switching to D6
+var counterCue15 = 0;
 
 tm.cue[15] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[15].goCue = function() {
-  // nothing to do here
+  counterCue15 = 0;
 };
 tm.cue[15].triggerShakeSound = function() {
-  // TODO: replace with new sound files on G4 and D6 and fix crossfade
-  glLongG5.volume.value = tm.getSectionBreakpoints(15, [0,0, 5000,0, 25000,-99]);
-  glD5.volume.value = tm.getSectionBreakpoints(15, [0,-99, 5000,-99, 25000,0]);
-
-  glLongG5.start();
-  glD5.start();
+  // TODO: replace with new piano sound files on G4 and D6
+  if (counterCue15 > 9) {
+    glD5.start();
+  } else {
+    glLongG5.start();
+  }
+  counterCue15++;
 };
 tm.cue[15].stopCue = function() {
   // nothing to do here
@@ -607,89 +607,86 @@ tm.cue[16].stopCue = function() {
 
 // *******************************************************************
 // CUE 17: piano loop with pitch/time bend on x-axis
-var pianoLoop = new Tone.Player(piano_sounds + "pianoLoop.mp3").toMaster();
+var pianoLoopA = new Tone.Player(piano_sounds + "pianoLoop.mp3").toMaster();
 
 tm.cue[17] = new TMCue('tilt', 2500, 0);
 tm.cue[17].goCue = function() {
-  pianoLoop.volume.value = 0;
-  pianoLoop.start();
+  pianoLoopA.volume.value = 0;
+  pianoLoopA.start();
 };
 tm.cue[17].updateTiltSounds = function() {
   // put pitch bend here
   if (tm.accel.y > 0.6) {
     // if phone tips upside down past threshold, speed up (up to 1.2 times)
-    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+    pianoLoopA.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
   } else if (tm.accel.y < 0.4) {
     // if phone tips rightside down past threshold, slow down
     // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
-    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+    pianoLoopA.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
   } else {
-    pianoLoop.playbackRate = 1;
+    pianoLoopA.playbackRate = 1;
   }
 }
 tm.cue[17].stopCue = function() {
   // gradual fade out before stopping this iteration (in case listener plays very slowly)
-  pianoLoop.volume.rampTo(-99, 8);
+  pianoLoopA.volume.rampTo(-99, 8);
 };
 
 // *******************************************************************
 // CUE 18: second iteration of piano loop. started over again to resync
-
-// TODO: adjust fade out (make longer or don't fade to -99?)
+var pianoLoopB = new Tone.Player(piano_sounds + "pianoLoop.mp3").toMaster();
 
 tm.cue[18] = new TMCue('tilt', 2500, 0);
 tm.cue[18].goCue = function() {
-  // loop has been fading out, but stop in case it's still going
-  pianoLoop.stop();
-  // reset volume before starting loop again
-  pianoLoop.volume.value = 0;
-  pianoLoop.start();
+  // trigger same sound stored in different buffer to prevent artifacts
+  pianoLoopB.volume.value = 0;
+  pianoLoopB.start();
 };
 tm.cue[18].updateTiltSounds = function() {
   // put pitch bend here
   if (tm.accel.y > 0.6) {
-    // if phone tips upside down past threshold, speed up (up to 1.2 times)
-    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+    // if phone tips upside down past threshold, speed up
+    pianoLoopB.playbackRate = 1 + (tm.accel.y - 0.6) * 0.4;
   } else if (tm.accel.y < 0.4) {
     // if phone tips rightside down past threshold, slow down
     // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
-    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+    pianoLoopB.playbackRate = 1 - (0.4 - tm.accel.y) * 0.2;
   } else {
-    pianoLoop.playbackRate = 1;
+    pianoLoopB.playbackRate = 1;
   }
 }
 tm.cue[18].stopCue = function() {
-  pianoLoop.volume.rampTo(-99, 8);
+  pianoLoopB.volume.rampTo(-99, 8);
 };
 
 // *******************************************************************
 // CUE 19: third iteration of piano loop. started over again to resync
+var pianoLoopC = new Tone.Player(piano_sounds + "pianoLoop.mp3").toMaster();
 
 tm.cue[19] = new TMCue('tilt', 2500, 0);
 tm.cue[19].goCue = function() {
   // loop has been fading out, but stop in case it's still going
-  pianoLoop.stop();
+  pianoLoopC.stop();
   // reset volume before starting loop again
-  pianoLoop.volume.value = 0;
-  pianoLoop.start();
+  pianoLoopC.volume.value = 0;
+  pianoLoopC.start();
 };
 tm.cue[19].updateTiltSounds = function() {
   // put pitch bend here
   if (tm.accel.y > 0.6) {
     // if phone tips upside down past threshold, speed up (up to 1.2 times)
-    pianoLoop.playbackRate = 1 + (tm.accel.y - 0.6) * 0.5;
+    pianoLoopC.playbackRate = 1 + (tm.accel.y - 0.6) * 0.2;
   } else if (tm.accel.y < 0.4) {
     // if phone tips rightside down past threshold, slow down
     // need to invert axis and scale for this range of tm.accel.y from 0.0-0.4
-    pianoLoop.playbackRate = 1 - (0.4 - tm.accel.y) * 0.25;
+    pianoLoopC.playbackRate = 1 - (0.4 - tm.accel.y) * 0.1;
   } else {
-    pianoLoop.playbackRate = 1;
+    pianoLoopC.playbackRate = 1;
   }
 }
 tm.cue[19].stopCue = function() {
   // gradual fade out before stopping this iteration (in case listener plays very slowly)
-  // TODO: make last fade out longer?
-  pianoLoop.volume.rampTo(-99, 8);
+  pianoLoopC.volume.rampTo(-99, 10);
 };
 
 // *******************************************************************
