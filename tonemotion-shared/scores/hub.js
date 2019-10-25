@@ -561,10 +561,10 @@ tm.cue[14].goCue = function() {
 
   granulator.volume.value = 0;
 
-  tm.publicLog('granulator volume: ' + granulator.volume.value);
+  // tm.publicLog('granulator volume: ' + granulator.volume.value);
 
   Tone.Transport.scheduleRepeat(function(time) {
-    granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+    // granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
