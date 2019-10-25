@@ -549,13 +549,9 @@ var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMas
 popRocksLoop.loop = true;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
+// TODO: could add third sound 
 tm.cue[14].goCue = function() {
-  // sound file selected on x-axis threshold. start with ping pong off
-  pingPongLoop.mute = true;
-  pingPongLoop.start();
-  // arbitrary decision to start with pop rocks on, but user controls on x-axis
-  popRocksLoop.mute = false;
-  popRocksLoop.start();
+  // sound files triggered below. nothing to do here
 };
 tm.cue[14].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -563,22 +559,23 @@ tm.cue[14].updateTiltSounds = function() {
   popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   if (tm.accel.x > 0.5) {
     // ping pong audible when device tilted to right
-    if (pingPongLoop.mute) {
-      // muting and unmuting not ideal because of possibility of clicking by needed to gradually scale volume without adding 2nd control signal
-      popRocksLoop.mute = true;
-      pingPongLoop.mute = false;
+    if (pingPongLoop.state === 'stopped') {
+      pingPongLoop.start();
+      popRocksLoop.stop();
     }
   } else {
-    if (popRocksLoop.mute) {
-      pingPongLoop.mute = true;
-      popRocksLoop.mute = false;
+    if (popRocksLoop.state === 'stopped') {
+      popRocksLoop.start();
+      pingPongLoop.stop();
     }
   }
-  
+  pingPongLoop.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+  popRocksLoop.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
 };
 tm.cue[14].stopCue = function() {
-  pingPongLoop.stop();
-  popRocksLoop.stop();
+  // should be faded out by now, but cancel in 2 seconds just in case
+  pingPongLoop.stop('+2');
+  popRocksLoop.stop('+2');
 };
 
 // *******************************************************************
