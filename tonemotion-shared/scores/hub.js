@@ -543,7 +543,7 @@ tm.cue[13].stopCue = function() {
 // *******************************************************************
 // CUE 14: granulated sparkles
 // determines how often .seek() is called. actual grain size is longer
-var granulatorGrainSize = 0.1;
+var granulatorGrainSize = 0.15;
 var granulator = new Tone.GrainPlayer({
   "url": granulated_sounds + "grFile.mp3",
   "overlap": 0.0125,
@@ -557,14 +557,15 @@ var granulatorDur = 35;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
 tm.cue[14].goCue = function() {
-  tm.publicLog('granulator volume: ' + granulator.volume.value);
+  // clear any errant scheduled events before scheduling repeat below
+  Tone.Transport.cancel();
 
   granulator.volume.value = 0;
+  try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
 
-  // tm.publicLog('granulator volume: ' + granulator.volume.value);
-
+  // BUG: sometimes this isn't called until after a delay of several seconds (?)
   Tone.Transport.scheduleRepeat(function(time) {
-    // granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+    granulator.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
