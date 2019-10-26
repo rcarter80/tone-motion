@@ -271,17 +271,17 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9: Shaking bells through predefined pitch array (with looped tail)
-// TODO: replace glassReal files with better recordings. could use 2 glasses
-var glE3 = new Tone.Player(glass_sounds + "glassRealE3.mp3").toMaster();
-var glF3 = new Tone.Player(glass_sounds + "glassRealF3.mp3").toMaster();
-var glA3 = new Tone.Player(glass_sounds + "glassRealA3.mp3").toMaster();
-var glBb3 = new Tone.Player(glass_sounds + "glassRealBb3.mp3").toMaster();
-var glD4 = new Tone.Player(glass_sounds + "glassRealD4.mp3").toMaster();
-var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
-var glF4 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toMaster();
-var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
-var glBb4 = new Tone.Player(glass_sounds + "glassRealBb4.mp3").toMaster();
-var glD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+// note: all glasses are one octave higher, but didn't change variable names
+var glE3 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
+var glF3 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toMaster();
+var glA3 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
+var glBb3 = new Tone.Player(glass_sounds + "glassRealBb4.mp3").toMaster();
+var glD4 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+var glE4 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
+var glF4 = new Tone.Player(glass_sounds + "glassRealF5.mp3").toMaster();
+var glA4 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
+var glBb4 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toMaster();
+var glD5 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
 
 var counterCue9 = 0;
 // initial array of pitches triggered
@@ -311,7 +311,6 @@ tm.cue[9].stopCue = function() {
 // CUE 10: Synths cycling through pitch cells (pitch: x-axis, articulation: y)
 var counterCue10 = 0;
 
-// TODO: refine synth sound, create two more synths, rename with reusable names
 var brightLeadSynth = new Tone.DuoSynth({
   vibratoAmount: 0.15,
   vibratoRate: 8,
@@ -549,7 +548,7 @@ var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMas
 popRocksLoop.loop = true;
 
 tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
-// TODO: could add third sound 
+// REVISION: could add third sound
 tm.cue[14].goCue = function() {
   // sound files triggered below. nothing to do here
 };
@@ -579,7 +578,12 @@ tm.cue[14].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 15: shaken piano notes starting on G4 and switching to D6
+// CUE 15: shaken piano notes starting on G4/G5 and switching to D5/D6
+var pianoG4 = new Tone.Player(piano_sounds + "pianoG4.mp3").toMaster();
+var pianoG5 = new Tone.Player(piano_sounds + "pianoG5.mp3").toMaster();
+var pianoD5 = new Tone.Player(piano_sounds + "pianoD5.mp3").toMaster();
+var pianoD6 = new Tone.Player(piano_sounds + "pianoD6.mp3").toMaster();
+
 var counterCue15 = 0;
 
 tm.cue[15] = new TMCue('shake', 1875, NO_LIMIT);
@@ -587,11 +591,10 @@ tm.cue[15].goCue = function() {
   counterCue15 = 0;
 };
 tm.cue[15].triggerShakeSound = function() {
-  // TODO: replace with new piano sound files on G4 and D6
-  if (counterCue15 > 9) {
-    glD5.start();
+  if (counterCue15 > 7) {
+    (counterCue15 % 2) ? pianoD6.start() : pianoD5.start();
   } else {
-    glLongG5.start();
+    (counterCue15 % 2) ? pianoG5.start() : pianoG4.start();
   }
   counterCue15++;
 };
@@ -699,9 +702,7 @@ var counterCue20 = 0;
 var pianoE5 = new Tone.Player(piano_sounds + "pianoE5.mp3").toMaster();
 var pianoE6 = new Tone.Player(piano_sounds + "pianoE6.mp3").toMaster();
 var pianoE7 = new Tone.Player(piano_sounds + "pianoE7.mp3").toMaster();
-
 var pianoArrayCue20 = [pianoE5, pianoE6, pianoE7];
-var thisPianoNote;
 
 tm.cue[20] = new TMCue('shake', 2500, 0);
 tm.cue[20].goCue = function() {
@@ -709,11 +710,7 @@ tm.cue[20].goCue = function() {
   counterCue20 = 0;
 };
 tm.cue[20].triggerShakeSound = function() {
-  // TODO: record or make better piano sounds
-  thisPianoNote = pianoArrayCue20[counterCue20 % pianoArrayCue20.length];
-
-  thisPianoNote.start();
-
+  pianoArrayCue20[counterCue20 % pianoArrayCue20.length].start();
   counterCue20++;
 };
 tm.cue[20].stopCue = function() {
