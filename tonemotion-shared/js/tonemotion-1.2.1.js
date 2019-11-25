@@ -498,20 +498,18 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   if (this.deviceIsAndroid) {
     this.accel.rawX = -(event.accelerationIncludingGravity.x);
     this.accel.rawY = -(event.accelerationIncludingGravity.y);
-    if (event.acceleration.y < -this.shakeThreshold) {
-      this.shakeFlag = true; // enough motion to trigger shake
-    }
   }
   else {
     this.accel.rawX = event.accelerationIncludingGravity.x;
     this.accel.rawY = event.accelerationIncludingGravity.y;
-    if (event.acceleration.y > this.shakeThreshold) {
-      this.shakeFlag = true; // enough motion to trigger shake
-    }
   }
 
   // TODO: this is only for testing on Google phone. Decide whether to keep this (and integrate better into code) or remove
   this.gyro.rawY = event.acceleration.y;
+  // NOTE: I moved this code from platform dependent code above (for Google phone testing). Still need to retest on other devices. May still work.
+  if (Math.abs(event.acceleration.y) > this.shakeThreshold) {
+    this.shakeFlag = true; // enough motion to trigger shake
+  }
 
   // For debugging, add property to read DeviceMotionEvent interval
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
