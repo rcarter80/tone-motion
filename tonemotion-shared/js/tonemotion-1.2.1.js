@@ -87,6 +87,12 @@ function ToneMotion() {
     x: undefined,
     y: undefined,
   }
+  this.gyro = {
+    rawX: undefined,
+    rawY: undefined,
+    x: undefined,
+    y: undefined,
+  }
   this.xSig = xTilt;
   this.ySig = yTilt;
   this.shakeThreshold = 2;
@@ -437,7 +443,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motion_data_checkbox.addEventListener('change', () => {
     if (motion_data_checkbox.checked) {
       motion_container.className = '';
-      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + (this.gyro.y || 'no value reported');
     } else {
       motion_container.className = 'hidden';
     }
@@ -502,6 +508,9 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
       this.shakeFlag = true; // enough motion to trigger shake
     }
   }
+
+  // TODO: this is only for testing on Google phone. Decide whether to keep this (and integrate better into code) or remove
+  this.gyro.rawY = event.acceleration.y;
 
   // For debugging, add property to read DeviceMotionEvent interval
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
@@ -620,7 +629,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // Left panel has checkbox to allow monitoring of accel values
   if (motion_data_checkbox.checked) {
     // BUG: not a big deal, but when accelerometer value actually reaches 0 it shows 'no value reported' instead of 0.0000
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + (this.gyro.y || 'no value reported');
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
