@@ -627,7 +627,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // Left panel has checkbox to allow monitoring of accel values
   if (motion_data_checkbox.checked) {
     // BUG: not a big deal, but when accelerometer value actually reaches 0 it shows 'no value reported' instead of 0.0000
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawYy;
+    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawY;
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
