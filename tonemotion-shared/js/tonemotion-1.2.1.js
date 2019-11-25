@@ -442,7 +442,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motion_data_checkbox.addEventListener('change', () => {
     if (motion_data_checkbox.checked) {
       motion_container.className = '';
-      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawY + 'gyroscope y peak value: ' + this.gyro.peakY;
+      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + '<br>' + this.gyro.rawY + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
     } else {
       motion_container.className = 'hidden';
     }
@@ -628,11 +628,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // Left panel has checkbox to allow monitoring of accel values
   if (motion_data_checkbox.checked) {
     // BUG: not a big deal, but when accelerometer value actually reaches 0 it shows 'no value reported' instead of 0.0000
-    if (this.gyro.rawY > this.gyro.peakY) {
-      // new peak value
+    if (Math.abs(this.gyro.rawY) > Math.abs(this.gyro.peakY)) {
+      // new peak (absolute) value - could be negative or positive?
       this.gyro.peakY = this.gyro.rawY;
     }
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawY + 'gyroscope y peak value: ' + this.gyro.peakY;
+    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + '<br>' + this.gyro.rawY + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
