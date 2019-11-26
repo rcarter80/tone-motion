@@ -442,7 +442,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motion_data_checkbox.addEventListener('change', () => {
     if (motion_data_checkbox.checked) {
       motion_container.className = '';
-      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawY.toFixed(3) + '<br>' + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
+      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + (this.gyro.rawY || 'no value reported') + '<br>' + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
     } else {
       motion_container.className = 'hidden';
       // clear gyroscope peak value
@@ -632,7 +632,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       // new peak (absolute) value - could be negative or positive?
       this.gyro.peakY = this.gyro.rawY;
     }
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + this.gyro.rawY.toFixed(3) + '<br>' + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
+    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported') + '<br>' + 'gyroscope y: ' + (this.gyro.rawY || 'no value reported') + '<br>' + 'gyroscope y peak value: ' + this.gyro.peakY.toFixed(3);
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
