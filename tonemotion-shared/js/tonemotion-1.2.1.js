@@ -481,6 +481,8 @@ ToneMotion.prototype.testWithoutMotion = function() {
     this.currentCue.triggerShakeSound();
   });
 
+  // TODO: could adjust height of side panel at this point. (Steps to replicate issue: open Chrome on laptop, start piece, open side panel, scroll all the way down - side panel is shorter than main panel now)
+
   if (this.debug) {
     this.publicLog('This device does not appear to report motion. Sliders can be used to simulate motion.');
   }
