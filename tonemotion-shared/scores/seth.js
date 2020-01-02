@@ -107,7 +107,7 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: Shaking bells through predefined pitch array (with looped tail)
+// CUE 6: [A1] Shaking bells through predefined pitch array (with looped tail)
 var glFsharp3 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
 // load same audio file into second buffer to allow retrigger without artifact
 var glFsharp3b = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
@@ -152,7 +152,7 @@ tm.cue[6].goCue = function() {
   // reset counter
   counterCue6 = 0;
 };
-// TODO: decide whether to fade out shake sounds in second half of section
+// TODO: decide whether to fade out shake sounds in second half of section. maybe fade to softer but NOT silence (in part because silent sounds make it seem cue isn't working if it was triggered too long ago)
 tm.cue[6].triggerShakeSound = function() {
   if (counterCue6 < pitchArrayCue6.length) {
     thisGlockenspiel = pitchArrayCue6[counterCue6];
@@ -166,62 +166,60 @@ tm.cue[6].triggerShakeSound = function() {
   counterCue6++;
 };
 tm.cue[6].stopCue = function() {
-  // nothing to clean up
+  // nothing to clean up UNLESS I use a reversed chime at end of cue
 };
 
 // *******************************************************************
-// CUE 7: 1-bar fill with random hocket and unison last long note
-// var counterCue7 = 0;
-// var pitchArrayCue7 = [glShortE4,glShortG5,glShortC5,glShortFsharp6,glShortB5,glShortG5, glShortFsharp7,glShortE5,glShortG6,glShortC6,glShortB6,glShortE5, glShortFsharp7,glShortE4,glShortG5,glShortC5,glShortFsharp6,glShortE4, glShortC5,glShortG5,glShortB5,glShortG6,glShortB6];
-// var fillLoopCue7 = new Tone.Loop(function(time) {
-//   if (counterCue7 === 23) {
-//     glExtraLongD7.start();
-//   } else {
-//     // weighted probability of note happening
-//     if (Math.random() < 0.333) {
-//       pitchArrayCue7[counterCue7].start();
-//     }
-//   }
-//   counterCue7++;
-// }, "16t");
-// // 4 beats of sextuplets but last note of bar is different sound file
-// fillLoopCue7.iterations = 24;
-//
-// // must arrive on time for perfect synchrony, but sparse texture allows holes
-// tm.cue[7] = new TMCue('listen', 1739, 0);
-// tm.cue[7].goCue = function() {
-//   // reset tempo in case most recent cue had different tempo
-//   Tone.Transport.bpm.value = 69;
-//   // fade back to full volume after previous faded out
-//   Tone.Master.volume.rampTo(0, 3.5);
-//   // reset counter in case section has been repeated
-//   counterCue7 = 0;
-//   // use short sound from previous section, but pitch has already bent down
-//   glShortE4.playbackRate = glShortE5.playbackRate = 0.707;
-//   glShortC5.playbackRate = glShortC6.playbackRate = 0.794;
-//   glShortG5.playbackRate = glShortG6.playbackRate = 0.667;
-//   glShortB5.playbackRate = glShortB6.playbackRate = 0.841;
-//   glShortFsharp6.playbackRate = glShortFsharp7.playbackRate = 0.794;
-//   fillLoopCue7.start();
-// };
-// tm.cue[7].stopCue = function() {
-//   // shouldn't need to stop because fill stops itself, but just in case
-//   fillLoopCue7.stop('+1'); // one second delay to avoid premature cutoff
-// };
+// CUE 7: [B1 first 5 mm.] short TACET section, just listening to cello
 
-// *******************************************************************
-// CUE 8: tacet
-tm.cue[8] = new TMCue('tacet', -1);
-tm.cue[8].goCue = function() {
+tm.cue[7] = new TMCue('tacet', -1);
+tm.cue[7].goCue = function() {
   // no sound here
-}
-tm.cue[8].stopCue = function() {
+};
+tm.cue[7].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 9:
-tm.cue[9] = new TMCue('shake', 1739, NO_LIMIT);
+// CUE 8: [B1] quasi-granulated sparkles
+var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
+pingPongLoop.loop = true;
+
+var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
+popRocksLoop.loop = true;
+
+tm.cue[8] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
+// REVISION: could add third sound
+tm.cue[8].goCue = function() {
+  // sound files triggered below. nothing to do here
+};
+tm.cue[8].updateTiltSounds = function() {
+  // playback rate can range from quarter speed to four times speed
+  pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.5) {
+    // ping pong audible when device tilted to right
+    if (pingPongLoop.state === 'stopped') {
+      pingPongLoop.start();
+      popRocksLoop.stop();
+    }
+  } else {
+    if (popRocksLoop.state === 'stopped') {
+      popRocksLoop.start();
+      pingPongLoop.stop();
+    }
+  }
+  pingPongLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+  popRocksLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+};
+tm.cue[8].stopCue = function() {
+  pingPongLoop.stop();
+  popRocksLoop.stop();
+};
+
+// *******************************************************************
+// CUE 9: [A2] Shaking glasses through predefined pitch array (with looped tail)
+tm.cue[9] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[9].goCue = function() {
 };
 tm.cue[9].triggerShakeSound = function() {
