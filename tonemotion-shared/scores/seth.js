@@ -191,7 +191,11 @@ popRocksLoop.loop = true;
 tm.cue[8] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
 // REVISION: could add third sound
 tm.cue[8].goCue = function() {
-  // sound files triggered below. nothing to do here
+  // mute both loops by default - unmute below
+  pingPongLoop.volume.value = -99;
+  popRocksLoop.volume.value = -99;
+  pingPongLoop.start();
+  popRocksLoop.start();
 };
 tm.cue[8].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -199,23 +203,16 @@ tm.cue[8].updateTiltSounds = function() {
   popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   if (tm.accel.x > 0.5) {
     // ping pong audible when device tilted to right
-    if (pingPongLoop.state === 'stopped') {
-      pingPongLoop.start();
-      popRocksLoop.stop();
-    }
+    pingPongLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    popRocksLoop.volume.value = -99;
   } else {
-    if (popRocksLoop.state === 'stopped') {
-      popRocksLoop.start();
-      pingPongLoop.stop();
-    }
+    popRocksLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    pingPongLoop.volume.value = -99;
   }
-  pingPongLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
-  popRocksLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
 };
 tm.cue[8].stopCue = function() {
-  // BUG: figure out why loop doesn't stop with cue 9
-  pingPongLoop.stop("+1");
-  popRocksLoop.stop("+1");
+  pingPongLoop.stop();
+  popRocksLoop.stop();
 };
 
 // *******************************************************************
