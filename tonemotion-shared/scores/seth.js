@@ -110,6 +110,7 @@ tm.cue[5].stopCue = function() {
 // CUE 6: [A1] Shaking bells through predefined pitch array (with looped tail)
 var glFsharp3 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
 // load same audio file into second buffer to allow retrigger without artifact
+// NOTE: octaves are actually one octave higher
 var glFsharp3b = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
 var glG3 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
 var glG3b = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
@@ -121,6 +122,8 @@ var glCsharp4 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
 var glCsharp4b = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
 var glD4 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
 var glD4b = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
+var glE4 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+var glE4b = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
 var glFsharp4 = new Tone.Player(glock_sounds + "glockFsharp4.mp3").toMaster();
 var glFsharp4b = new Tone.Player(glock_sounds + "glockFsharp4.mp3").toMaster();
 var glG4 = new Tone.Player(glock_sounds + "glockG4.mp3").toMaster();
@@ -233,6 +236,8 @@ var glassCsharp6 = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMast
 var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
 var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
 var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toMaster();
+var glassG6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toMaster();
+var glassA6 = new Tone.Player(glass_sounds + "glassRealA6.mp3").toMaster();
 var chA6a = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
 var chA6b = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
 var chA6c = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
@@ -242,8 +247,7 @@ var chA7c = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 
 var counterCue9 = 0;
 // initial array of pitches triggered
-// TODO: replace one D with a contrasting D3 sound
-var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD3, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
+var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD5, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
 // loop of As triggered after loop is over
 var pitchLoopCue9 = [chA6a, chA7a, chA6b, chA7b, chA6c, chA7c];
 var soundfileCue9;
@@ -281,46 +285,68 @@ tm.cue[10].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 11: [B2] 3 percussive loops with variable playback speed
+// CUE 11: [B2] 2 percussive loops with variable playback speed
 
-// NOTE TO SELF: 3 strips on x-axis: left strip is single ping pong, middle strip is single pop rock pop, right strip is cello pizz loop (of different samples?)
+var pingpongClickLoop = new Tone.Player(granulated_sounds + "pingpongClickLoop.mp3").toMaster();
+pingpongClickLoop.loop = true;
+
+var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toMaster();
+ziplockClickLoop.loop = true;
 
 tm.cue[11] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
-// REVISION: could add third sound
-tm.cue[11].goCue = function() {
-};
-tm.cue[11].updateTiltSounds = function() {
 
+tm.cue[11].goCue = function() {
+  // mute both loops by default - unmute below
+  pingpongClickLoop.volume.value = -99;
+  ziplockClickLoop.volume.value = -99;
+  pingpongClickLoop.start();
+  ziplockClickLoop.start();
+};
+
+tm.cue[11].updateTiltSounds = function() {
+  // playback rate can range from quarter speed to four times speed
+  pingpongClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  ziplockClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.5) {
+    // ping pong audible when device tilted to right
+    pingpongClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    ziplockClickLoop.volume.value = -99;
+  } else {
+    ziplockClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    pingpongClickLoop.volume.value = -99;
+  }
 };
 tm.cue[11].stopCue = function() {
-
+  pingpongClickLoop.stop();
+  ziplockClickLoop.stop();
 };
 // *******************************************************************
-// CUE 12: Shake gesture triggers cello jete glissing up from D4 to B4
+// CUE 12: [A3] glock / glass sounds through canon
 
-var vcJete1 = new Tone.Player(cello_sounds + "vc-jete-1.mp3").toMaster();
-var vcJete2 = new Tone.Player(cello_sounds + "vc-jete-2.mp3").toMaster();
-var vcClbGliss1 = new Tone.Player(cello_sounds + "vc-clb-gliss-1.mp3").toMaster();
-var vcClbGliss2 = new Tone.Player(cello_sounds + "vc-clb-gliss-2.mp3").toMaster();
-var vcJeteArray = [vcJete1, vcClbGliss1, vcJete2, vcClbGliss2];
 var counterCue12 = 0;
-var thisVcSound;
+var soundfileCue12, indexCue12;
+var noteDur = 60 / 64 * 1000; // milliseconds per quarter note
+
+// upper voice of canon
+var hiPitchArrayCue12 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, glassA6, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5, glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, chA7a, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5];
+// lower voice of canon
+var loPitchArrayCue12 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
 
 tm.cue[12] = new TMCue('shake', -1);
 tm.cue[12].goCue = function() {
   counterCue12 = 0;
-  // sound is recorded at Bb but needs to be a D
-  vcJete1.playbackRate = 1.26;
-  vcJete1.start();
 };
 tm.cue[12].triggerShakeSound = function() {
-  // avoid overlapping file playback by cycling through them
-  thisVcSound = vcJeteArray[counterCue12 % vcJeteArray.length];
-  // Sound in recording is Bb. Need to start on D4 and go to B4
-  // stays on D4 for 1 bar, then goes up to B4 over next 6 bars (and stays)
-  thisVcSound.playbackRate = tm.getSectionBreakpoints(12, [0,1.26, 4286,1.26, 30000,2.119]);
+  // select note based on time since cue started (to keep all parts synched)
+  indexCue12 = Math.floor(tm.getElapsedTimeInCue(12)/noteDur);
+  // if any extra time, keep playing last note
+  if (indexCue12 > (hiPitchArrayCue12.length - 1)) {
+    indexCue12 = hiPitchArrayCue12.length - 1;
+  }
+  // alternately select between lower and higher canon
+  soundfileCue12 = (counterCue12 % 2) ? hiPitchArrayCue12[indexCue12] : loPitchArrayCue12[indexCue12];
 
-  thisVcSound.start();
+  soundfileCue12.start();
   counterCue12++;
 };
 tm.cue[12].stopCue = function() {
@@ -328,28 +354,7 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13: Shake gesture triggers bouncy glass sound glissing up from B4 to G#5
-var glBounceB5 = new Tone.Player(glass_sounds + "glassBounceB5.mp3").toMaster();
-var glBounceB6 = new Tone.Player(glass_sounds + "glassBounceB6.mp3").toMaster();
-
-var counterCue13 = 0;
-
-tm.cue[13] = new TMCue('shake', -1);
-tm.cue[13].goCue = function() {
-  // reset counter
-  counterCue13 = 0;
-};
-tm.cue[13].triggerShakeSound = function() {
-  thisGlassSound = counterCue13 % 2 ? glBounceB5 : glBounceB6;
-
-  // stays on B4 for 1 bar, then goes up to G#5 over next 6 bars (and stays)
-  thisGlassSound.playbackRate = tm.getSectionBreakpoints(13, [0,1, 4286,1, 30000,1.682]);
-  thisGlassSound.start();
-  counterCue13++;
-};
-tm.cue[13].stopCue = function() {
-  // nothing to do here
-};
+// CUE 13: [C1]
 
 // *******************************************************************
 // CUE 14: quasi-granulated sparkles
