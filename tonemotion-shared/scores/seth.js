@@ -213,20 +213,62 @@ tm.cue[8].updateTiltSounds = function() {
   popRocksLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
 };
 tm.cue[8].stopCue = function() {
-  pingPongLoop.stop();
-  popRocksLoop.stop();
+  // BUG: figure out why loop doesn't stop with cue 9
+  pingPongLoop.stop("+1");
+  popRocksLoop.stop("+1");
 };
 
 // *******************************************************************
 // CUE 9: [A2] Shaking glasses through predefined pitch array (with looped tail)
+
+var glassFsharp4 = new Tone.Player(glass_sounds + "glassRealFsharp4.mp3").toMaster();
+var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
+var glassA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
+var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
+var glassCsharp5 = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toMaster();
+var glassD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
+var glassFsharp5 = new Tone.Player(glass_sounds + "glassRealFsharp5.mp3").toMaster();
+var glassG5 = new Tone.Player(glass_sounds + "glassRealG5.mp3").toMaster();
+var glassA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
+var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
+var glassCsharp6 = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMaster();
+var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
+var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
+var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toMaster();
+var chA6a = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
+var chA6b = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
+var chA6c = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
+var chA7a = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
+var chA7b = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
+var chA7c = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
+
+var counterCue9 = 0;
+// initial array of pitches triggered
+var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD5, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
+// loop of As triggered after loop is over
+var pitchLoopCue9 = [chA6a, chA7a, chA6b, chA7b, chA6c, chA7c];
+var soundfileCue9;
+
 tm.cue[9] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[9].goCue = function() {
+  // reset counter
+  counterCue9 = 0;
 };
 tm.cue[9].triggerShakeSound = function() {
-
+  if (counterCue9 < pitchArrayCue9.length) {
+    soundfileCue9 = pitchArrayCue9[counterCue9];
+  } else {
+    // repeats same two pitches until end of section
+    soundfileCue9 = pitchLoopCue9[counterCue9 % pitchLoopCue9.length];
+  }
+  // pitches bend up quarter tone in section half of section
+  soundfileCue9.playbackRate = tm.getSectionBreakpoints(9, [0,1, 30000,1, 60000,0.971532]);
+  soundfileCue9.start();
+  counterCue9++;
 };
 tm.cue[9].stopCue = function() {
-  // nothing to clean up
+  // nothing to clean up UNLESS I use reversed chime at end of section
 };
 
 // *******************************************************************
@@ -442,7 +484,6 @@ var glBounceB5 = new Tone.Player(glass_sounds + "glassBounceB5.mp3").toMaster();
 var glBounceB6 = new Tone.Player(glass_sounds + "glassBounceB6.mp3").toMaster();
 
 var counterCue13 = 0;
-var thisGlassSound;
 
 tm.cue[13] = new TMCue('shake', -1);
 tm.cue[13].goCue = function() {
