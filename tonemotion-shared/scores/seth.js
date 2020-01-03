@@ -242,7 +242,8 @@ var chA7c = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 
 var counterCue9 = 0;
 // initial array of pitches triggered
-var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD5, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
+// TODO: replace one D with a contrasting D3 sound
+var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD3, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
 // loop of As triggered after loop is over
 var pitchLoopCue9 = [chA6a, chA7a, chA6b, chA7b, chA6c, chA7c];
 var soundfileCue9;
@@ -269,180 +270,31 @@ tm.cue[9].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 10: Synths cycling through pitch cells (pitch: x-axis, articulation: y)
-var counterCue10 = 0;
+// CUE 10: [B2 first 5 mm.] short TACET section, just listening to cello
 
-var brightLeadSynth = new Tone.DuoSynth({
-  vibratoAmount: 0.15,
-  vibratoRate: 8,
-  harmonicity: 1.5,
-  portamento: 0.02,
-  voice0: {
-    volume: 0,
-    oscillator: {
-      type: 'square13'
-    },
-    filterEnvelope: {
-      attack: 0.01,
-      decay: 0,
-      sustain: 1,
-      release: 0.5
-    },
-    envelope: {
-      attack: 0.03,
-      decay: 0,
-      sustain: 1,
-      release: 0.05
-    }
-  },
-  voice1: {
-    volume: -15,
-    oscillator: {
-      type: 'triangle5'
-    },
-    filterEnvelope: {
-      attack: 0.01,
-      decay: 0,
-      sustain: 1,
-      release: 0.5
-    },
-    envelope: {
-      attack: 0.03,
-      decay: 0,
-      sustain: 1,
-      release: 0.05
-    }
-  }
-}).toMaster();
-
-var synthSaw16 = new Tone.Synth({
-  oscillator: {
-    type: 'sawtooth16'
-  },
-  envelope: {
-    attack: 0.05,
-    decay: 0.02,
-    sustain: 0.8,
-    release: 0.1
-  }
-}).toMaster();
-
-var synthTriangle17 = new Tone.Synth({
-  oscillator: {
-    type: 'triangle17'
-  },
-  envelope: {
-    attack: 0.01,
-    decay: 0.01,
-    sustain: 0.5,
-    release: 0.15
-  }
-}).toMaster();
-
-var pitchArrayCue10 = [['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','C#5','D5','B5','C#6','D6','B6','C#7','D7'], ['B2','B3','B4','C#5','D5','E5','B5','C#6','D6','E6','B6','C#7','D7','E7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7'], ['B2','B3','B4','D5','B5','D6','B6','D7'], ['B2','B3','B4','F#5','B5','F#6','B6','F#7'], ['A2','A3','A4','C#5','D5','F#5','A5','C#6','D6','F#6','A6','C#7','D7','F#7'], ['A2','A3','A4','C#5','D5','E5','A5','C#6','D6','E6','A6','C#7','D7','E7']];
-var thisPitchCell, thisPitch;
-
-var synthLoopCue10 = new Tone.Loop(function(time) {
-  // stays on each pitch cell for 1 bar (24 sixteeth notes)
-  thisPitchCell = pitchArrayCue10[Math.floor(counterCue10 / 24) % pitchArrayCue10.length];
-
-  if (tm.accel.y > 0.5) {
-    // continuous synth with interactive pitch on x-axis
-    if (brightLeadSynth.volume.value == -99) {
-      brightLeadSynth.volume.rampTo(-6, 0.05);
-    }
-    // clamp tm.accel.x to 0.99 to prevent reading past bounds of pitch array
-    thisPitch = thisPitchCell[Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length))];
-    if (brightLeadSynth.frequency.value != thisPitch) {
-      brightLeadSynth.setNote(thisPitch);
-    }
-  } else {
-    // mute continuous synth if not already muted
-    if (brightLeadSynth.volume.value > -99) {
-      brightLeadSynth.volume.rampTo(-99, 0.05);
-    }
-    // prevent using last note in array because that will be triggered next
-    thisPitch = Math.floor((tm.accel.x * 0.99) * (thisPitchCell.length - 1));
-    // alternate adjacent pitches of cell to prevent excessive repetition
-    // use two synths to allow overlapping sound
-    counterCue10 % 2 ? synthSaw16.triggerAttackRelease(thisPitchCell[thisPitch], '16n') : synthTriangle17.triggerAttackRelease(thisPitchCell[thisPitch + 1], '16n');
-  }
-  counterCue10++;
-}, '16n');
-// stop loop after 15 measures and 4 beats (leaving 2 beats for fill in cue 11)
-synthLoopCue10.iterations = 376;
-
-// open window of just one extra beat to keep things pretty closely aligned
-tm.cue[10] = new TMCue('tilt', 2143, 714);
+tm.cue[10] = new TMCue('tacet', -1);
 tm.cue[10].goCue = function() {
-  // new tempo for this sections
-  Tone.Transport.bpm.value = 84;
-  counterCue10 = 0;
-  // unmute other synths because those are only triggered in response to action
-  synthSaw16.volume.value = 0;
-  synthTriangle17.volume.value = 0;
-  // trigger continuous synth that holds through section, but mute by default
-  brightLeadSynth.volume.value = -99;
-  brightLeadSynth.triggerAttack('B4');
-  synthLoopCue10.start();
-}
-tm.cue[10].updateTiltSounds = function() {
-  // all tilt interactivity handled in loop
-  // nothing to do here but override method
+  // no sound here
 };
 tm.cue[10].stopCue = function() {
-  // fade out sounds and then stop
-  brightLeadSynth.volume.rampTo(-99, '1m');
-  brightLeadSynth.triggerRelease('+1m');
-  synthLoopCue10.stop('+1m');
-}
+  // nothing to clean up
+};
 
 // *******************************************************************
-// CUE 11: non-interactive synth fill (just last 2 beats of section)
-// must arrive on time for perfect synchrony, but sparse texture allows holes
-tm.cue[11] = new TMCue('listen', 2857, 0);
+// CUE 11: [B2] 3 percussive loops with variable playback speed
 
-var synthSquare13 = new Tone.Synth({
-  oscillator: {
-    type: 'square13'
-  },
-  envelope: {
-    attack: 0.02,
-    decay: 0.01,
-    sustain: 0.8,
-    release: 0.03
-  }
-}).toMaster()
+// NOTE TO SELF: 3 strips on x-axis: left strip is single ping pong, middle strip is single pop rock pop, right strip is cello pizz loop (of different samples?)
 
-var counterCue11 = 0;
-var pitchArrayCue11 = ['A3','A4','A5','C#5','C#6','C#7','A6','A5','A4','C#6','C#5','C#4'];
-// randomly assign client to 1 of 6 parts (sextuplet subdivision of beat)
-var partSwitchCue11 = Math.floor(Math.random() * 6);
-
-var fillLoopCue11 = new Tone.Loop(function(time) {
-  if (counterCue11 > 10) {
-    glExtraLongG3.start();
-  } else {
-    if (counterCue11 % 6 === partSwitchCue11) {
-      synthSquare13.triggerAttackRelease(pitchArrayCue11[counterCue11], '16t');
-    }
-  }
-  counterCue11++;
-}, '16t');
-fillLoopCue11.iterations = 12;
-
+tm.cue[11] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
+// REVISION: could add third sound
 tm.cue[11].goCue = function() {
-  // reset tempo and counter
-  Tone.Transport.bpm.value = 84;
-  counterCue11 = 0;
-  fillLoopCue11.start();
-}
-tm.cue[11].stopCue = function() {
-  // shouldn't need to stop because fill stops itself, but just in case
-  // delay loop stop to prevent premature cut off
-  fillLoopCue11.stop('+2n');
-}
+};
+tm.cue[11].updateTiltSounds = function() {
 
+};
+tm.cue[11].stopCue = function() {
+
+};
 // *******************************************************************
 // CUE 12: Shake gesture triggers cello jete glissing up from D4 to B4
 

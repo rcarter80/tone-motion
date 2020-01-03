@@ -859,6 +859,31 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
   return breakpointArray[breakpointArray.length-1];
 };
 
+// Takes cue number and time elapsed since that cue began (or 0 if it hasn't)
+ToneMotion.prototype.getElapsedTimeInCue = function(cue) {
+  var elapsedTime;
+
+  // check that function is passed cue number
+  if (arguments.length < 1) {
+    this.publicLog('Missing value for cue number.');
+    return 0;
+  }
+
+  // check that requested cue has actually begun
+  if (this.cue[cue].startedAt === 0) {
+    this.publicLog('Elapsed time requested for cue that has not started yet.');
+    return 0;
+  } else {
+    elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+    if (elapsedTime < 0) {
+      // this cue is still in the waitTime phase
+      return 0;
+    } else {
+      return elapsedTime;
+    }
+  }
+};
+
 /*********************************************************************
 ************************ CUE LIST MANAGEMENT *************************
 *********************************************************************/
