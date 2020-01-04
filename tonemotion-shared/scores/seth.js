@@ -21,8 +21,7 @@ const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 
-// Instruments need global scope within this file, but can appear just above the first cue in which they sound
-Tone.Transport.bpm.value = 69;
+Tone.Transport.bpm.value = 64;
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -345,7 +344,7 @@ var hiPitchArrayCue12 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, 
 // lower voice of canon
 var loPitchArrayCue12 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
 
-tm.cue[12] = new TMCue('shake', -1);
+tm.cue[12] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[12].goCue = function() {
   counterCue12 = 0;
 };
@@ -369,42 +368,66 @@ tm.cue[12].stopCue = function() {
 // *******************************************************************
 // CUE 13: [C1]
 
-// *******************************************************************
-// CUE 14: quasi-granulated sparkles
-var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
-pingPongLoop.loop = true;
+tm.cue[13] = new TMCue('tilt', 1875, NO_LIMIT);
 
-var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
-popRocksLoop.loop = true;
+tm.cue[13].goCue = function() {
 
-tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT); // 3 beats @ 96bpm
-// REVISION: could add third sound
-tm.cue[14].goCue = function() {
-  // sound files triggered below. nothing to do here
 };
-tm.cue[14].updateTiltSounds = function() {
-  // playback rate can range from quarter speed to four times speed
-  pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
-  popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
-  if (tm.accel.x > 0.5) {
-    // ping pong audible when device tilted to right
-    if (pingPongLoop.state === 'stopped') {
-      pingPongLoop.start();
-      popRocksLoop.stop();
-    }
+
+tm.cue[13].updateTiltSounds = function() {
+
+};
+
+tm.cue[13].stopCue = function() {
+
+};
+
+// *******************************************************************
+// CUE 14: [A4] glock / glass sounds through canon with rising vc pizz
+
+var vcG2 = new Tone.Player(cello_sounds + "vc-long-pz-G2.mp3").toMaster();
+var vcG2b = new Tone.Player(cello_sounds + "vc-long-pz-G2.mp3").toMaster();
+var vcG3 = new Tone.Player(cello_sounds + "vc-long-pz-G3.mp3").toMaster();
+vcG3.volume.value = -3;
+var vcG4 = new Tone.Player(cello_sounds + "vc-long-pz-G4.mp3").toMaster();
+vcG4.volume.value = -6;
+var vcB4 = new Tone.Player(cello_sounds + "vc-long-pz-B4.mp3").toMaster();
+vcB4.volume.value = -12;
+
+var counterCue14 = 0;
+var vcProb = 0;
+var vcCounter = 0;
+
+// upper voice of canon
+var hiPitchArrayCue12 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, glassA6, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5, glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, chA7a, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5];
+// lower voice of canon
+var loPitchArrayCue12 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
+
+tm.cue[14] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[14].goCue = function() {
+  counterCue14 = 0;
+  vcCounter = 0;
+};
+tm.cue[14].triggerShakeSound = function() {
+  // randomly replace canon voices with cello pizz sweep (increasing prob.)
+  vcProb = tm.getSectionBreakpoints(14, [0,0, 60000,0.5]);
+  if (Math.random() < vcProb) {
+    // pitch glisses up one octave
+    vcG2.playbackRate = vcG2b.playbackRate = vcG3.playbackRate = vcG4.playbackRate = vcB4.playbackRate = tm.getSectionBreakpoints(14, [0,1, 15000,1, 52500,2]);
+    // double-buffer longest pizz to avoid click on re-trigger
+    (vcCounter % 2) ? vcG2.start() : vcG2b.start();
+    vcG3.start('+32n');
+    vcG4.start('+16n');
+    vcB4.start('+16n.');
+    vcCounter++;
   } else {
-    if (popRocksLoop.state === 'stopped') {
-      popRocksLoop.start();
-      pingPongLoop.stop();
-    }
+    // trigger canon voices
   }
-  pingPongLoop.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
-  popRocksLoop.volume.value = tm.getSectionBreakpoints(14, [0,0, 10000,0, 15000,-3, 25000,-12, 30000,-99]);
+
+  counterCue14++;
 };
 tm.cue[14].stopCue = function() {
-  // should be faded out by now, but cancel in 2 seconds just in case
-  pingPongLoop.stop('+2');
-  popRocksLoop.stop('+2');
+  // nothing to do here
 };
 
 // *******************************************************************
