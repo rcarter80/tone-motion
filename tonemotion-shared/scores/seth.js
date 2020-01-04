@@ -285,7 +285,7 @@ tm.cue[10].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 11: [B2] 2 percussive loops with variable playback speed
+// CUE 11: [B2] 3 percussive loops with variable playback speed
 
 var pingpongClickLoop = new Tone.Player(granulated_sounds + "pingpongClickLoop.mp3").toMaster();
 pingpongClickLoop.loop = true;
@@ -293,32 +293,45 @@ pingpongClickLoop.loop = true;
 var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toMaster();
 ziplockClickLoop.loop = true;
 
+var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
+claveLoop.loop = true;
+
 tm.cue[11] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
 
 tm.cue[11].goCue = function() {
   // mute both loops by default - unmute below
   pingpongClickLoop.volume.value = -99;
   ziplockClickLoop.volume.value = -99;
+  claveLoop.volume.value = -99;
   pingpongClickLoop.start();
   ziplockClickLoop.start();
+  claveLoop.start();
 };
 
 tm.cue[11].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
   pingpongClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   ziplockClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
-  if (tm.accel.x > 0.5) {
+  claveLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.6) {
     // ping pong audible when device tilted to right
     pingpongClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     ziplockClickLoop.volume.value = -99;
-  } else {
+    claveLoop.volume.value = -99;
+  } else if (tm.accel.x > 0.2) {
     ziplockClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     pingpongClickLoop.volume.value = -99;
+    claveLoop.volume.value = -99;
+  } else {
+    claveLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    pingpongClickLoop.volume.value = -99;
+    ziplockClickLoop.volume.value = -99;
   }
 };
 tm.cue[11].stopCue = function() {
   pingpongClickLoop.stop();
   ziplockClickLoop.stop();
+  claveLoop.stop();
 };
 // *******************************************************************
 // CUE 12: [A3] glock / glass sounds through canon
