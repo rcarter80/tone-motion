@@ -20,6 +20,7 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
+const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 Tone.Transport.bpm.value = 64;
 
@@ -394,36 +395,33 @@ vcG4.volume.value = -6;
 var vcB4 = new Tone.Player(cello_sounds + "vc-long-pz-B4.mp3").toMaster();
 vcB4.volume.value = -12;
 
-var harpFsharp3 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
-var harpG3 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
-var harpA3 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
-var harpB3 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
-var harpCsharp4 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
-var harpD4 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
-var harpE4 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
-
-var harpFsharp4 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
-var harpG4 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
-var harpA4 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
-var harpB4 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
-var harpCsharp5 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
-var harpD5 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
-var harpE5 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
-
-var harpFsharp5 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
-var harpG5 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
-var harpA5 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
-var harpB5 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
-var harpCsharp6 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
-var harpD6 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
-var harpE6 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
-
-var harpFsharp6 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
-var harpG6 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
-var harpA6 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
-var harpCsharp7 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
-var harpD7 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
-var harpE7 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+var harpFsharp3 = new Tone.Player(harp_sounds + "harpFsharp3.mp3").toMaster();
+var harpG3 = new Tone.Player(harp_sounds + "harpG3.mp3").toMaster();
+var harpA3 = new Tone.Player(harp_sounds + "harpA3.mp3").toMaster();
+var harpB3 = new Tone.Player(harp_sounds + "harpB3.mp3").toMaster();
+var harpCsharp4 = new Tone.Player(harp_sounds + "harpCsharp4.mp3").toMaster();
+var harpD4 = new Tone.Player(harp_sounds + "harpD4.mp3").toMaster();
+var harpE4 = new Tone.Player(harp_sounds + "harpE4.mp3").toMaster();
+var harpFsharp4 = new Tone.Player(harp_sounds + "harpFsharp4.mp3").toMaster();
+var harpG4 = new Tone.Player(harp_sounds + "harpG4.mp3").toMaster();
+var harpA4 = new Tone.Player(harp_sounds + "harpA4.mp3").toMaster();
+var harpB4 = new Tone.Player(harp_sounds + "harpB4.mp3").toMaster();
+var harpCsharp5 = new Tone.Player(harp_sounds + "harpCsharp5.mp3").toMaster();
+var harpD5 = new Tone.Player(harp_sounds + "harpD5.mp3").toMaster();
+var harpE5 = new Tone.Player(harp_sounds + "harpE5.mp3").toMaster();
+var harpFsharp5 = new Tone.Player(harp_sounds + "harpFsharp5.mp3").toMaster();
+var harpG5 = new Tone.Player(harp_sounds + "harpG5.mp3").toMaster();
+var harpA5 = new Tone.Player(harp_sounds + "harpA5.mp3").toMaster();
+var harpB5 = new Tone.Player(harp_sounds + "harpB5.mp3").toMaster();
+var harpCsharp6 = new Tone.Player(harp_sounds + "harpCsharp6.mp3").toMaster();
+var harpD6 = new Tone.Player(harp_sounds + "harpD6.mp3").toMaster();
+var harpE6 = new Tone.Player(harp_sounds + "harpE6.mp3").toMaster();
+var harpFsharp6 = new Tone.Player(harp_sounds + "harpFsharp6.mp3").toMaster();
+var harpG6 = new Tone.Player(harp_sounds + "harpG6.mp3").toMaster();
+var harpA6 = new Tone.Player(harp_sounds + "harpA6.mp3").toMaster();
+var harpCsharp7 = new Tone.Player(harp_sounds + "harpCsharp7.mp3").toMaster();
+var harpD7 = new Tone.Player(harp_sounds + "harpD7.mp3").toMaster();
+var harpE7 = new Tone.Player(harp_sounds + "harpE7.mp3").toMaster();
 
 var counterCue14 = 0;
 var vcCounter = 0;
@@ -445,7 +443,6 @@ tm.cue[14].goCue = function() {
 tm.cue[14].triggerShakeSound = function() {
   // randomly replace canon voices with cello pizz sweep (increasing prob.)
   vcProb = tm.getSectionBreakpoints(14, [0,0, 60000,0.5]);
-  vcProb = 0;
   if (Math.random() < vcProb) {
     // pitch glisses up one octave
     vcG2.playbackRate = vcG2b.playbackRate = vcG3.playbackRate = vcG4.playbackRate = vcB4.playbackRate = tm.getSectionBreakpoints(14, [0,1, 15000,1, 52500,2]);
