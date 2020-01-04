@@ -96,7 +96,7 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5: Actual beginning of piece, but first section is tacet
+// CUE 5: [intro] Actual beginning of piece, but first section is tacet
 tm.cue[5] = new TMCue('tacet', -1);
 tm.cue[5].goCue = function() {
   if (tm.debug) { tm.publicLog('The piece has started.'); }
@@ -394,14 +394,46 @@ vcG4.volume.value = -6;
 var vcB4 = new Tone.Player(cello_sounds + "vc-long-pz-B4.mp3").toMaster();
 vcB4.volume.value = -12;
 
+var harpFsharp3 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
+var harpG3 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
+var harpA3 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
+var harpB3 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
+var harpCsharp4 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
+var harpD4 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
+var harpE4 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+
+var harpFsharp4 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
+var harpG4 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
+var harpA4 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
+var harpB4 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
+var harpCsharp5 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
+var harpD5 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
+var harpE5 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+
+var harpFsharp5 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
+var harpG5 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
+var harpA5 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
+var harpB5 = new Tone.Player(glock_sounds + "glockB3.mp3").toMaster();
+var harpCsharp6 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
+var harpD6 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
+var harpE6 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+
+var harpFsharp6 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
+var harpG6 = new Tone.Player(glock_sounds + "glockG3.mp3").toMaster();
+var harpA6 = new Tone.Player(glock_sounds + "glockA3.mp3").toMaster();
+var harpCsharp7 = new Tone.Player(glock_sounds + "glockCsharp4.mp3").toMaster();
+var harpD7 = new Tone.Player(glock_sounds + "glockD4.mp3").toMaster();
+var harpE7 = new Tone.Player(glock_sounds + "glockE4.mp3").toMaster();
+
 var counterCue14 = 0;
-var vcProb = 0;
 var vcCounter = 0;
+var vcProb, indexCue14, soundfileCue14;
 
 // upper voice of canon
-var hiPitchArrayCue12 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, glassA6, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5, glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, chA7a, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5];
+// REVISION: could change some As to chimes?
+var hiPitchArrayCue14 = [harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5, harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5];
 // lower voice of canon
-var loPitchArrayCue12 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
+var loPitchArrayCue14 = [harpG3, harpG4, harpB3, harpB4, harpFsharp3, harpFsharp4, harpCsharp4, harpCsharp5, harpD4, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpA3, harpA4, harpG3, harpG4, harpD4, harpD5, harpD6, harpD5, harpE4, harpE5, harpFsharp4, harpFsharp5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpE4, harpE5, harpE6, harpE5, harpA5, harpA6, harpFsharp4, harpFsharp5, harpG4, harpG5, harpE4, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpE4, harpE5, harpE6, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpB3, harpB4];
 
 tm.cue[14] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[14].goCue = function() {
@@ -411,6 +443,7 @@ tm.cue[14].goCue = function() {
 tm.cue[14].triggerShakeSound = function() {
   // randomly replace canon voices with cello pizz sweep (increasing prob.)
   vcProb = tm.getSectionBreakpoints(14, [0,0, 60000,0.5]);
+  vcProb = 0;
   if (Math.random() < vcProb) {
     // pitch glisses up one octave
     vcG2.playbackRate = vcG2b.playbackRate = vcG3.playbackRate = vcG4.playbackRate = vcB4.playbackRate = tm.getSectionBreakpoints(14, [0,1, 15000,1, 52500,2]);
@@ -421,10 +454,18 @@ tm.cue[14].triggerShakeSound = function() {
     vcB4.start('+16n.');
     vcCounter++;
   } else {
-    // trigger canon voices
-  }
+    // select note based on time since cue started (to keep all parts synched)
+    indexCue14 = Math.floor(tm.getElapsedTimeInCue(14)/noteDur);
+    // if any extra time, keep playing last note
+    if (indexCue14 > (hiPitchArrayCue14.length - 1)) {
+      indexCue14 = hiPitchArrayCue14.length - 1;
+    }
+    // alternately select between lower and higher canon
+    soundfileCue14 = (counterCue14 % 2) ? hiPitchArrayCue14[indexCue14] : loPitchArrayCue14[indexCue14];
 
-  counterCue14++;
+    soundfileCue14.start();
+    counterCue14++;
+  }
 };
 tm.cue[14].stopCue = function() {
   // nothing to do here
