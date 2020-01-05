@@ -264,7 +264,7 @@ tm.cue[9].triggerShakeSound = function() {
     // repeats same two pitches until end of section
     soundfileCue9 = pitchLoopCue9[counterCue9 % pitchLoopCue9.length];
   }
-  // pitches bend up quarter tone in section half of section
+  // pitches bend down quarter tone in section half of section
   soundfileCue9.playbackRate = tm.getSectionBreakpoints(9, [0,1, 30000,1, 60000,0.971532]);
   soundfileCue9.start();
   counterCue9++;
@@ -597,18 +597,39 @@ tm.cue[16].stopCue = function() {
 // *******************************************************************
 // CUE 17: [coda]
 
+// TODO: make chime sound files
+// DOUBLE BUFFER: Eb6, Eb7, D6, D7
+// TODO: add fade out
+
+var pitchArrayCue17 = [chEb6, chEb7, chEb6b, chEb7b, chEb6, chEb7, chEb6b, chEb7b, chEb6, chF6, chF7, chG6, chD6, chBb6, chBb7, chA6, chG6, chF6, chF7, chG6, chD6, chF6, chF7, chBb6, chBb7, chC7, chC8, chD7, chBb6, chC7, chC8, chBb6, chA6, chC7, chG6, chEb6, chF6];
+
+// loop of Ds triggered after loop is over (pitch shifted down M2 by end)
+var pitchLoopCue17 = [chD6, chD7, chD6b, cdD7b];
+
+var counterCue17 = 0;
+var soundfileCue17;
+
 tm.cue[17] = new TMCue('shake', 1875, NO_LIMIT);
-
 tm.cue[17].goCue = function() {
-
+  // reset counter
+  counterCue17 = 0;
 };
-
 tm.cue[17].triggerShakeSound = function() {
-
+  if (counterCue17 < pitchArrayCue17.length) {
+    soundfileCue17 = pitchArrayCue17[counterCue17];
+  } else {
+    // repeats same two pitches until end of section
+    soundfileCue17 = pitchLoopCue17[counterCue17 % pitchLoopCue17.length];
+  }
+  // pitches down major second
+  soundfileCue17.playbackRate = tm.getSectionBreakpoints(17, [0,1, 15000,1, 60000,0.8908987]);
+  // soundfileCue17.volume.value = tm.getSectionBreakpoints blah
+  soundfileCue17.start();
+  counterCue17++;
 };
 
 tm.cue[17].stopCue = function() {
-
+  // nothing to do here
 };
 
 // *******************************************************************
