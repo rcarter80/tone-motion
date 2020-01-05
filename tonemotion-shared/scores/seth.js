@@ -612,16 +612,25 @@ tm.cue[17].stopCue = function() {
 };
 
 // *******************************************************************
-// CUES 18-21: use to test pedal and cue counter
-
-tm.cue[18] = new TMCue('waiting', -1);
+// CUE 18: tacet fermata
+tm.cue[18] = new TMCue('tacet', -1);
 tm.cue[18].goCue = function() {
-  tm.publicLog('Test cue 18 was triggered.');
-};
-tm.cue[19] = new TMCue('waiting', -1);
+  // nothing to play
+}
+tm.cue[18].stopCue = function() {
+  // nothing to clean up
+}
+
+// *******************************************************************
+// CUE 19: finished
+tm.cue[19] = new TMCue('finished', -1);
 tm.cue[19].goCue = function() {
-  tm.publicLog('Test cue 19 was triggered.');
-};
+  tm.publicLog('The piece is done.');
+}
+
+// *******************************************************************
+// CUES 20-23: use to test pedal and cue counter
+
 tm.cue[20] = new TMCue('waiting', -1);
 tm.cue[20].goCue = function() {
   tm.publicLog('Test cue 20 was triggered.');
@@ -629,4 +638,12 @@ tm.cue[20].goCue = function() {
 tm.cue[21] = new TMCue('waiting', -1);
 tm.cue[21].goCue = function() {
   tm.publicLog('Test cue 21 was triggered.');
+};
+tm.cue[22] = new TMCue('waiting', -1);
+tm.cue[22].goCue = function() {
+  tm.publicLog('Test cue 22 was triggered.');
+};
+tm.cue[23] = new TMCue('waiting', -1);
+tm.cue[23].goCue = function() {
+  tm.publicLog('Test cue 23 was triggered.');
 };
