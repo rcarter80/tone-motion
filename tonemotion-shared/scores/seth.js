@@ -367,20 +367,115 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13: [C1]
+// CUE 13: [C1] triplet synths and clicky sounds (with pitch on tilt)
+
+var synthTriangle17 = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 0.01,
+    decay: 0.01,
+    sustain: 0.5,
+    release: 0.15
+  }
+}).toMaster();
+
+var synthTriangle17b = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 0.01,
+    decay: 0.01,
+    sustain: 0.5,
+    release: 0.15
+  }
+}).toMaster();
+
+var synthTriangle17c = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 0.01,
+    decay: 0.01,
+    sustain: 0.5,
+    release: 0.15
+  }
+}).toMaster();
+
+var loPitchArrayCue13 = ['B2', 'B2', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'F#3', 'F#3', 'F#3', 'F#3', 'F3', 'F3', 'D#3', 'D#3', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'C#3', 'C#3', 'C#3', 'C#3', 'F#3', 'F#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'A#3', 'A#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'F#3', 'F#3', 'F3', 'F3', 'G#3', 'G#3', 'D#3', 'D#3', 'B2', 'B2', 'C#3', 'C#3', 'A#2', 'A#2', 'A#2', 'A#2', 'C#3', 'C#3'];
+var hiPitchArrayCue13 = ['B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4', 'B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4'];
+
+var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
+var pingPong = new Tone.Player(perc_sounds + "pingPong.mp3").toMaster();
+var ziplockClick = new Tone.Player(perc_sounds + "ziplockClick.mp3").toMaster();
+var percArrayCue13 = [clave, ziplockClick, pingPong, ziplockClick, pingPong, clave, pingPong, ziplockClick, pingPong];
+
+var percCounterCue13 = 0;
+var pitchIndexCue13, pitchCue13, pitchBendCue13, pitchShiftCue13;
+
+// REVISION could add gradual filter sweep on synths (through section) AND coudl tweak synth sounds
+
+var loopCue13 = new Tone.Loop(function(time) {
+  // select note based on time since cue started (to keep all parts synched)
+  pitchIndexCue13 = Math.floor(tm.getElapsedTimeInCue(13)/noteDur);
+  // if any extra time, keep playing last note
+  if (pitchIndexCue13 > (loPitchArrayCue13.length - 1)) {
+    pitchIndexCue13 = loPitchArrayCue13.length - 1;
+  }
+  // tilted to left plays synth on low canon voice
+  if (tm.accel.x < 0.4) {
+    pitchCue13 = loPitchArrayCue13[pitchIndexCue13];
+    // in second half, bends down whole step
+    pitchBendCue13 = tm.getSectionBreakpoints(13, [0,0, 30000,0, 60000,200]);
+    // octave displacement controlled on y-axis
+    pitchShiftCue13 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue13;
+    synthTriangle17.detune.value = pitchShiftCue13;
+    synthTriangle17.triggerAttackRelease(pitchCue13, '16n');
+    synthTriangle17b.detune.value = 1200 + pitchShiftCue13;
+    synthTriangle17b.triggerAttackRelease(pitchCue13, '8t', '+16t');
+    synthTriangle17c.detune.value = 2400 + pitchShiftCue13;
+    synthTriangle17c.triggerAttackRelease(pitchCue13, '8t', '+8t');
+  // tilted to right plays synth on high canon voice
+  } else if (tm.accel.x > 0.6) {
+    pitchCue13 = hiPitchArrayCue13[pitchIndexCue13];
+    // in second half, bends down whole step
+    pitchBendCue13 = tm.getSectionBreakpoints(13, [0,0, 30000,0, 60000,200]);
+    // octave displacement controlled on y-axis
+    pitchShiftCue13 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue13;
+    synthTriangle17.detune.value = pitchShiftCue13;
+    synthTriangle17.triggerAttackRelease(pitchCue13, '16n');
+    synthTriangle17b.detune.value = 1200 + pitchShiftCue13;
+    synthTriangle17b.triggerAttackRelease(pitchCue13, '8t', '+16t');
+    synthTriangle17c.detune.value = 2400 + pitchShiftCue13;
+    synthTriangle17c.triggerAttackRelease(pitchCue13, '8t', '+8t');
+  // held in center plays percussive sounds in triplets
+  } else {
+    clave.playbackRate = 0.5 + tm.accel.y * 4.5;
+    ziplockClick.playbackRate = 0.2 + tm.accel.y * 4.8;
+    pingPong.playbackRate = 0.2 + tm.accel.y * 4.8;
+    percArrayCue13[percCounterCue13 % percArrayCue13.length].start();
+    percArrayCue13[(percCounterCue13 + 1) % percArrayCue13.length].start('+16t');
+    percArrayCue13[(percCounterCue13 + 2) % percArrayCue13.length].start('+8t');
+    percCounterCue13 += 3;
+  }
+}, '8n'); // tempo is 128bpm, but just use halved rhythms to avoid tempo change
 
 tm.cue[13] = new TMCue('tilt', 1875, NO_LIMIT);
 
 tm.cue[13].goCue = function() {
-
+  percCounterCue13 = 0;
+  loopCue13.start();
 };
 
 tm.cue[13].updateTiltSounds = function() {
-
+  // all interactivity handled in loop above
 };
 
 tm.cue[13].stopCue = function() {
-
+  loopCue13.stop();
 };
 
 // *******************************************************************
@@ -433,7 +528,7 @@ var hiPitchArrayCue14 = [harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpC
 // lower voice of canon
 var loPitchArrayCue14 = [harpG3, harpG4, harpB3, harpB4, harpFsharp3, harpFsharp4, harpCsharp4, harpCsharp5, harpD4, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpA3, harpA4, harpG3, harpG4, harpD4, harpD5, harpD6, harpD5, harpE4, harpE5, harpFsharp4, harpFsharp5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpE4, harpE5, harpE6, harpE5, harpA5, harpA6, harpFsharp4, harpFsharp5, harpG4, harpG5, harpE4, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpE4, harpE5, harpE6, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpB3, harpB4];
 
-tm.cue[14] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[14] = new TMCue('shake', 1875, NO_LIMIT); // 4 beats @ 128bpm
 
 tm.cue[14].goCue = function() {
   counterCue14 = 0;
