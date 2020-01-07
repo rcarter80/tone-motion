@@ -580,18 +580,118 @@ tm.cue[15].stopCue = function() {
 // *******************************************************************
 // CUE 16: [C2] swirly synth sounds
 
+var synthVolume = {
+  'soprano': -30,
+  'alto': -24,
+  'tenor': -24,
+  'bass': -24
+}
+var synthEnvCue16 = {
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 0.9,
+  release: 10
+}
+
+var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3').toMaster();
+sugarChimeLoop.loop = true;
+
+var AMSynthCue16 = new Tone.AMSynth({
+  envelope: synthEnvCue16
+}).toMaster();
+
+// soprano synth
+var sopranoFilterCue16 = new Tone.Filter(1567.98, "lowpass").toMaster();
+var sopranoSynthCue16 = new Tone.Synth({
+  oscillator: { type: "sawtooth" },
+  envelope: synthEnvCue16
+}).connect(sopranoFilterCue16);
+sopranoSynthCue16.volume.value = synthVolume.soprano;
+var sopranoFilterCue16Scale = new Tone.Scale(20, 6000);
+xTilt.chain(sopranoFilterCue16Scale, sopranoFilterCue16.frequency);
+
+// alto synth
+var altoFilterCue16 = new Tone.Filter(622.25, "lowpass").toMaster();
+var altoSynthCue16 = new Tone.Synth({
+  oscillator: { type: "sawtooth" },
+  envelope: synthEnvCue16
+}).connect(altoFilterCue16);
+altoSynthCue16.volume.value = synthVolume.alto;
+var altoFilterCue16Scale = new Tone.Scale(20, 5000);
+xTilt.chain(altoFilterCue16Scale, altoFilterCue16.frequency);
+
+// tenor synth
+var tenorFilterCue16 = new Tone.Filter(220, "lowpass").toMaster();
+var tenorSynthCue16 = new Tone.Synth({
+  oscillator: { type: "sawtooth" },
+  envelope: synthEnvCue16
+}).connect(tenorFilterCue16);
+tenorSynthCue16.volume.value = synthVolume.tenor;
+var tenorFilterCue16Scale = new Tone.Scale(3000, 20);
+xTilt.chain(tenorFilterCue16Scale, tenorFilterCue16.frequency);
+
+// bass synth
+var bassFilterCue16 = new Tone.Filter(87.31, "lowpass").toMaster();
+var bassSynthCue16 = new Tone.Synth({
+  oscillator: { type: "sawtooth" },
+  envelope: synthEnvCue16
+}).connect(bassFilterCue16);
+bassSynthCue16.volume.value = synthVolume.bass;
+var bassFilterCue16Scale = new Tone.Scale(2000, 20);
+xTilt.chain(bassFilterCue16Scale, bassFilterCue16.frequency);
+
+
 tm.cue[16] = new TMCue('tilt', 1875, NO_LIMIT);
 
 tm.cue[16].goCue = function() {
+  // trigger synth pitches and (after 15") begin pitch slides to next chord
+  bassSynthCue16.triggerAttack(87.31);
+  bassSynthCue16.frequency.setValueCurveAtTime([87.31, 77.78], '+15', 45);
+  tenorSynthCue16.triggerAttack(220);
+  tenorSynthCue16.frequency.setValueCurveAtTime([220, 233.08], '+15', 45);
+  altoSynthCue16.triggerAttack(622.25);
+  altoSynthCue16.frequency.setValueCurveAtTime([622.25, 392], '+15', 45);
+  sopranoSynthCue16.triggerAttack(1567.98);
+  sopranoSynthCue16.frequency.setValueCurveAtTime([1567.98, 1108.73], '+15', 45);
+  AMSynthCue16.triggerAttack(349.23);
+  AMSynthCue16.frequency.setValueCurveAtTime([783.99, 349.23], '+15', 45);
 
+  sugarChimeLoop.volume.value = -99;
+  sugarChimeLoop.start();
 };
 
 tm.cue[16].updateTiltSounds = function() {
+  // wobbliness of AM synth controlled on y-axis
+  AMSynthCue16.harmonicity.value = 1.0 + tm.accel.y * 0.01;
+  // crunchy chimes and brown sugar in plastic container
+  sugarChimeLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
 
+  // left strip has sparkly sounds
+  if (tm.accel.x < 0.33) {
+    sugarChimeLoop.volume.value = 0;
+    bassSynthCue16.volume.value = -99;
+    tenorSynthCue16.volume.value = -99;
+    altoSynthCue16.volume.value = -99;
+    sopranoSynthCue16.volume.value = -99;
+    AMSynthCue16.volume.value = -99;
+  // everything else has sweeping AMSynth and filtered synths
+  } else {
+    sugarChimeLoop.volume.value = -99;
+    bassSynthCue16.volume.value = synthVolume.bass;
+    tenorSynthCue16.volume.value = synthVolume.tenor;
+    altoSynthCue16.volume.value = synthVolume.alto;
+    sopranoSynthCue16.volume.value = synthVolume.soprano;
+    AMSynthCue16.volume.value = 0;
+  }
 }
 
 tm.cue[16].stopCue = function() {
-
+  bassSynthCue16.triggerRelease();
+  tenorSynthCue16.triggerRelease();
+  altoSynthCue16.triggerRelease();
+  sopranoSynthCue16.triggerRelease();
+  AMSynthCue16.triggerRelease();
+  sugarChimeLoop.stop();
 };
 
 // *******************************************************************
