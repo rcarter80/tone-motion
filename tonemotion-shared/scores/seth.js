@@ -12,12 +12,10 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-// TODO: delete unused paths
 const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
-const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
@@ -155,7 +153,7 @@ tm.cue[6].goCue = function() {
   // reset counter
   counterCue6 = 0;
 };
-// TODO: decide whether to fade out shake sounds in second half of section. maybe fade to softer but NOT silence (in part because silent sounds make it seem cue isn't working if it was triggered too long ago)
+// REVISION: decide whether to fade out shake sounds in second half of section. maybe fade to softer but NOT silence (in part because silent sounds make it seem cue isn't working if it was triggered too long ago)
 tm.cue[6].triggerShakeSound = function() {
   if (counterCue6 < pitchArrayCue6.length) {
     thisGlockenspiel = pitchArrayCue6[counterCue6];
@@ -374,36 +372,39 @@ var synthTriangle17 = new Tone.Synth({
     type: 'triangle17'
   },
   envelope: {
-    attack: 0.01,
+    attack: 0.05,
     decay: 0.01,
     sustain: 0.5,
-    release: 0.15
+    release: 0.2
   }
 }).toMaster();
+synthTriangle17.volume.value = -12;
 
 var synthTriangle17b = new Tone.Synth({
   oscillator: {
     type: 'triangle17'
   },
   envelope: {
-    attack: 0.01,
+    attack: 0.05,
     decay: 0.01,
     sustain: 0.5,
     release: 0.15
   }
 }).toMaster();
+synthTriangle17b.volume.value = -12;
 
 var synthTriangle17c = new Tone.Synth({
   oscillator: {
     type: 'triangle17'
   },
   envelope: {
-    attack: 0.01,
+    attack: 0.05,
     decay: 0.01,
     sustain: 0.5,
-    release: 0.15
+    release: 0.1
   }
 }).toMaster();
+synthTriangle17c.volume.value = -12;
 
 var loPitchArrayCue13 = ['B2', 'B2', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'F#3', 'F#3', 'F#3', 'F#3', 'F3', 'F3', 'D#3', 'D#3', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'C#3', 'C#3', 'C#3', 'C#3', 'F#3', 'F#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'A#3', 'A#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'F#3', 'F#3', 'F3', 'F3', 'G#3', 'G#3', 'D#3', 'D#3', 'B2', 'B2', 'C#3', 'C#3', 'A#2', 'A#2', 'A#2', 'A#2', 'C#3', 'C#3'];
 var hiPitchArrayCue13 = ['B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4', 'B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4'];
@@ -578,7 +579,7 @@ tm.cue[15].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 16: [C2] swirly synth sounds
+// CUE 16: [C2] swirly synth sounds and sparkles
 
 var synthVolume = {
   'soprano': -30,
@@ -697,14 +698,27 @@ tm.cue[16].stopCue = function() {
 // *******************************************************************
 // CUE 17: [coda]
 
-// TODO: make chime sound files
-// DOUBLE BUFFER: Eb6, Eb7, D6, D7
-// TODO: add fade out
+var chEb6 = new Tone.Player(chime_sounds + "2sec-chime-Eb6.mp3").toMaster();
+var chEb6b = new Tone.Player(chime_sounds + "2sec-chime-Eb6.mp3").toMaster();
+var chEb7 = new Tone.Player(chime_sounds + "2sec-chime-Eb7.mp3").toMaster();
+var chEb7b = new Tone.Player(chime_sounds + "2sec-chime-Eb7.mp3").toMaster();
+var chF6 = new Tone.Player(chime_sounds + "2sec-chime-F6.mp3").toMaster();
+var chF7 = new Tone.Player(chime_sounds + "2sec-chime-F7.mp3").toMaster();
+var chG6 = new Tone.Player(chime_sounds + "2sec-chime-G6.mp3").toMaster();
+var chD6 = new Tone.Player(chime_sounds + "2sec-chime-D6.mp3").toMaster();
+var chD7 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
+var chD6b = new Tone.Player(chime_sounds + "2sec-chime-D6.mp3").toMaster();
+var chD7b = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
+var chBb6 = new Tone.Player(chime_sounds + "2sec-chime-Bb6.mp3").toMaster();
+var chBb7 = new Tone.Player(chime_sounds + "2sec-chime-Bb7.mp3").toMaster();
+var chA6 = new Tone.Player(chime_sounds + "2sec-chime-A6.mp3").toMaster();
+var chC7 = new Tone.Player(chime_sounds + "2sec-chime-C7.mp3").toMaster();
+var chC8 = new Tone.Player(chime_sounds + "2sec-chime-C8.mp3").toMaster();
 
 var pitchArrayCue17 = [chEb6, chEb7, chEb6b, chEb7b, chEb6, chEb7, chEb6b, chEb7b, chEb6, chF6, chF7, chG6, chD6, chBb6, chBb7, chA6, chG6, chF6, chF7, chG6, chD6, chF6, chF7, chBb6, chBb7, chC7, chC8, chD7, chBb6, chC7, chC8, chBb6, chA6, chC7, chG6, chEb6, chF6];
 
 // loop of Ds triggered after loop is over (pitch shifted down M2 by end)
-var pitchLoopCue17 = [chD6, chD7, chD6b, cdD7b];
+var pitchLoopCue17 = [chD6, chD7, chD6b, chD7b];
 
 var counterCue17 = 0;
 var soundfileCue17;
@@ -723,7 +737,7 @@ tm.cue[17].triggerShakeSound = function() {
   }
   // pitches down major second
   soundfileCue17.playbackRate = tm.getSectionBreakpoints(17, [0,1, 15000,1, 60000,0.8908987]);
-  // soundfileCue17.volume.value = tm.getSectionBreakpoints blah
+  soundfileCue17.volume.value = tm.getSectionBreakpoints(17, [0,0, 50000,0, 60000,-12]);
   soundfileCue17.start();
   counterCue17++;
 };
