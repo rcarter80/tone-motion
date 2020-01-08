@@ -105,7 +105,18 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: [A1] Shaking bells through predefined pitch array (with looped tail)
+// CUE 6: [intro] CUE FIXED MEDIA FILE 1
+tm.cue[6] = new TMCue('tacet', -1);
+tm.cue[6].goCue = function() {
+  // nothing happens for audience - just cues fixed media
+};
+tm.cue[6].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 7: [A1] Shaking bells through predefined pitch array (with looped tail)
+// CUE FIXED MEDIA FILE 2
 var glFsharp3 = new Tone.Player(glock_sounds + "glockFsharp3.mp3").toMaster();
 // load same audio file into second buffer to allow retrigger without artifact
 // NOTE: octaves are actually one octave higher
@@ -136,88 +147,87 @@ var glD5 = new Tone.Player(glock_sounds + "glockD5.mp3").toMaster();
 var glD5b = new Tone.Player(glock_sounds + "glockD5.mp3").toMaster();
 var glA5 = new Tone.Player(glock_sounds + "glockA5.mp3").toMaster();
 var glA5b = new Tone.Player(glock_sounds + "glockA5.mp3").toMaster();
-var chA6lo = new Tone.Player(chime_sounds + "chime-1748Hz-A6.mp3").toMaster();
+var chA7lo = new Tone.Player(chime_sounds + "chime-1748Hz-A6.mp3").toMaster();
 var chA6hi = new Tone.Player(chime_sounds + "chime-1772Hz-A6.mp3").toMaster();
 
 
-var counterCue6 = 0;
+var counterCue7 = 0;
 // initial array of pitches triggered
-var pitchArrayCue6 = [glG3, glG4, glB3, glB4, glG3b, glG4b, glB3b, glB4b, glFsharp3, glFsharp4, glFsharp3b, glFsharp4b, glCsharp4, glCsharp5, glCsharp4b, glCsharp5b, glD4, glD5, glD4b, glD5b, glCsharp4, glCsharp5, glCsharp4b, glCsharp5b, glB3, glB4, glB3b, glB4b];
+var pitchArrayCue7 = [glG3, glG4, glB3, glB4, glG3b, glG4b, glB3b, glB4b, glFsharp3, glFsharp4, glFsharp3b, glFsharp4b, glCsharp4, glCsharp5, glCsharp4b, glCsharp5b, glD4, glD5, glD4b, glD5b, glCsharp4, glCsharp5, glCsharp4b, glCsharp5b, glB3, glB4, glB3b, glB4b];
 // loop of As triggered after loop is over
-var pitchLoopCue6 = [glA3, glA4, chA6lo, glA4b, glA3b, glA4, chA6hi, glA4b];
+var pitchLoopCue7 = [glA3, glA4, chA6lo, glA4b, glA3b, glA4, chA6hi, glA4b];
 var thisGlockenspiel;
 
-// TODO: decide on timing of trigger and check math (2 beats is 1875 ms?)
-tm.cue[6] = new TMCue('shake', 1875, NO_LIMIT);
-tm.cue[6].goCue = function() {
+tm.cue[7] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[7].goCue = function() {
   // reset counter
-  counterCue6 = 0;
+  counterCue7 = 0;
 };
 // REVISION: decide whether to fade out shake sounds in second half of section. maybe fade to softer but NOT silence (in part because silent sounds make it seem cue isn't working if it was triggered too long ago)
-tm.cue[6].triggerShakeSound = function() {
-  if (counterCue6 < pitchArrayCue6.length) {
-    thisGlockenspiel = pitchArrayCue6[counterCue6];
+tm.cue[7].triggerShakeSound = function() {
+  if (counterCue7 < pitchArrayCue7.length) {
+    thisGlockenspiel = pitchArrayCue7[counterCue7];
   } else {
     // repeats same three pitches until end of section
-    thisGlockenspiel = pitchLoopCue6[counterCue6 % pitchLoopCue6.length];
+    thisGlockenspiel = pitchLoopCue7[counterCue7 % pitchLoopCue7.length];
   }
   // pitches bend up quarter tone in section half of section
-  thisGlockenspiel.playbackRate = tm.getSectionBreakpoints(6, [0,1, 30000,1, 60000,1.0293]);
+  thisGlockenspiel.playbackRate = tm.getSectionBreakpoints(7, [0,1, 30000,1, 60000,1.0293]);
   thisGlockenspiel.start();
-  counterCue6++;
+  counterCue7++;
 };
-tm.cue[6].stopCue = function() {
+tm.cue[7].stopCue = function() {
   // nothing to clean up UNLESS I use a reversed chime at end of cue
 };
 
 // *******************************************************************
-// CUE 7: [B1 first 5 mm.] short TACET section, just listening to cello
+// CUE 8: [B1 first 5 mm.] short TACET section, just listening to cello
 
-tm.cue[7] = new TMCue('tacet', -1);
-tm.cue[7].goCue = function() {
+tm.cue[8] = new TMCue('tacet', 1875, NO_LIMIT);
+tm.cue[8].goCue = function() {
   // no sound here
 };
-tm.cue[7].stopCue = function() {
+tm.cue[8].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 8: [B1] quasi-granulated sparkles
+// CUE 9: [B1] quasi-granulated sparkles
 var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
 pingPongLoop.loop = true;
 
 var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
 popRocksLoop.loop = true;
 
-tm.cue[8] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
+tm.cue[9] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
 // REVISION: could add third sound
-tm.cue[8].goCue = function() {
+tm.cue[9].goCue = function() {
   // mute both loops by default - unmute below
   pingPongLoop.volume.value = -99;
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
 };
-tm.cue[8].updateTiltSounds = function() {
+tm.cue[9].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
   pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   if (tm.accel.x > 0.5) {
     // ping pong audible when device tilted to right
-    pingPongLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    pingPongLoop.volume.value = tm.getSectionBreakpoints(9, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     popRocksLoop.volume.value = -99;
   } else {
-    popRocksLoop.volume.value = tm.getSectionBreakpoints(8, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    popRocksLoop.volume.value = tm.getSectionBreakpoints(9, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     pingPongLoop.volume.value = -99;
   }
 };
-tm.cue[8].stopCue = function() {
+tm.cue[9].stopCue = function() {
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
 
 // *******************************************************************
-// CUE 9: [A2] Shaking glasses through predefined pitch array (with looped tail)
+// CUE 10: [A2] Shaking glass through predefined pitch array (with looped tail)
 
 var glassFsharp4 = new Tone.Player(glass_sounds + "glassRealFsharp4.mp3").toMaster();
 var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
@@ -243,47 +253,47 @@ var chA7a = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 var chA7b = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 var chA7c = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 
-var counterCue9 = 0;
+var counterCue10 = 0;
 // initial array of pitches triggered
-var pitchArrayCue9 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD5, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
+var pitchArrayCue10 = [glassG4, glassG5, glassB4, glassB5, glassFsharp4, glassFsharp5, glassCsharp5, glassCsharp6, glassD5, glassD6, glassCsharp5, glassCsharp6, glassB4, glassB5, glassA4, glassA5, glassG4, glassG5, glassD5, glassD6, glassD5, glassD6, glassE5, glassE6, glassFsharp5, glassFsharp6, glassCsharp5, glassCsharp6, glassCsharp5, glassCsharp6, glassE5, glassE6, glassE5, glassE6];
 // loop of As triggered after loop is over
-var pitchLoopCue9 = [chA6a, chA7a, chA6b, chA7b, chA6c, chA7c];
-var soundfileCue9;
+var pitchLoopCue10 = [chA6a, chA7a, chA6b, chA7b, chA6c, chA7c];
+var soundfileCue10;
 
-tm.cue[9] = new TMCue('shake', 1875, NO_LIMIT);
-tm.cue[9].goCue = function() {
+tm.cue[10] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[10].goCue = function() {
   // reset counter
-  counterCue9 = 0;
+  counterCue10 = 0;
 };
-tm.cue[9].triggerShakeSound = function() {
-  if (counterCue9 < pitchArrayCue9.length) {
-    soundfileCue9 = pitchArrayCue9[counterCue9];
+tm.cue[10].triggerShakeSound = function() {
+  if (counterCue10 < pitchArrayCue10.length) {
+    soundfileCue10 = pitchArrayCue10[counterCue10];
   } else {
     // repeats same two pitches until end of section
-    soundfileCue9 = pitchLoopCue9[counterCue9 % pitchLoopCue9.length];
+    soundfileCue10 = pitchLoopCue10[counterCue10 % pitchLoopCue10.length];
   }
   // pitches bend down quarter tone in section half of section
-  soundfileCue9.playbackRate = tm.getSectionBreakpoints(9, [0,1, 30000,1, 60000,0.971532]);
-  soundfileCue9.start();
-  counterCue9++;
+  soundfileCue10.playbackRate = tm.getSectionBreakpoints(10, [0,1, 30000,1, 60000,0.971532]);
+  soundfileCue10.start();
+  counterCue10++;
 };
-tm.cue[9].stopCue = function() {
+tm.cue[10].stopCue = function() {
   // nothing to clean up UNLESS I use reversed chime at end of section
 };
 
 // *******************************************************************
-// CUE 10: [B2 first 5 mm.] short TACET section, just listening to cello
+// CUE 11: [B2 first 5 mm.] short TACET section, just listening to cello
 
-tm.cue[10] = new TMCue('tacet', 1875, NO_LIMIT);
-tm.cue[10].goCue = function() {
+tm.cue[11] = new TMCue('tacet', 1875, NO_LIMIT);
+tm.cue[11].goCue = function() {
   // no sound here
 };
-tm.cue[10].stopCue = function() {
+tm.cue[11].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 11: [B2] 3 percussive loops with variable playback speed
+// CUE 12: [B2] 3 percussive loops with variable playback speed
 
 var pingpongClickLoop = new Tone.Player(granulated_sounds + "pingpongClickLoop.mp3").toMaster();
 pingpongClickLoop.loop = true;
@@ -294,9 +304,9 @@ ziplockClickLoop.loop = true;
 var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
 claveLoop.loop = true;
 
-tm.cue[11] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
+tm.cue[12] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
 
-tm.cue[11].goCue = function() {
+tm.cue[12].goCue = function() {
   // mute both loops by default - unmute below
   pingpongClickLoop.volume.value = -99;
   ziplockClickLoop.volume.value = -99;
@@ -306,66 +316,66 @@ tm.cue[11].goCue = function() {
   claveLoop.start();
 };
 
-tm.cue[11].updateTiltSounds = function() {
+tm.cue[12].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
   pingpongClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   ziplockClickLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   claveLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   if (tm.accel.x > 0.6) {
     // ping pong audible when device tilted to right
-    pingpongClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    pingpongClickLoop.volume.value = tm.getSectionBreakpoints(12, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     ziplockClickLoop.volume.value = -99;
     claveLoop.volume.value = -99;
   } else if (tm.accel.x > 0.2) {
-    ziplockClickLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    ziplockClickLoop.volume.value = tm.getSectionBreakpoints(12, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     pingpongClickLoop.volume.value = -99;
     claveLoop.volume.value = -99;
   } else {
-    claveLoop.volume.value = tm.getSectionBreakpoints(11, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
+    claveLoop.volume.value = tm.getSectionBreakpoints(12, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
     pingpongClickLoop.volume.value = -99;
     ziplockClickLoop.volume.value = -99;
   }
 };
-tm.cue[11].stopCue = function() {
+tm.cue[12].stopCue = function() {
   pingpongClickLoop.stop();
   ziplockClickLoop.stop();
   claveLoop.stop();
 };
 // *******************************************************************
-// CUE 12: [A3] glock / glass sounds through canon
+// CUE 13: [A3] glock / glass sounds through canon
 
-var counterCue12 = 0;
-var soundfileCue12, indexCue12;
+var counterCue13 = 0;
+var soundfileCue13, indexCue13;
 var noteDur = 60 / 64 * 1000; // milliseconds per quarter note
 
 // upper voice of canon
-var hiPitchArrayCue12 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, glassA6, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5, glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, chA7a, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5];
+var hiPitchArrayCue13 = [glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, glassA6, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5, glassG5, glassB5, glassFsharp5, glassCsharp6, glassD6, glassCsharp6, glassB5, glassA5, glassG5, glassD6, glassD6, glassE6, glassFsharp6, glassCsharp6, glassCsharp6, glassE6, glassE6, chA7a, glassFsharp6, glassG6, glassE6, glassD6, glassD6, glassCsharp6, glassB5, glassE6, glassE6, glassD6, glassD6, glassCsharp6, glassCsharp6, glassB5];
 // lower voice of canon
-var loPitchArrayCue12 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
+var loPitchArrayCue13 = [glG3, glG3b, glB3, glB3b, glFsharp3, glFsharp3b, glCsharp4, glCsharp4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glA3, glA3b, glG3, glG3b, glD4, glD4b, glD4, glD4b, glE4, glE4b, glFsharp4, glFsharp4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glE4, glE4b, glE4, glE4b, chA6a, chA6b, glFsharp4, glFsharp4b, glG4, glG4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glB3, glB3b, glE4, glE4b, glE4, glE4b, glD4, glD4b, glD4, glD4b, glCsharp4, glCsharp4b, glCsharp4, glCsharp4b, glB3, glB3b];
 
-tm.cue[12] = new TMCue('shake', 1875, NO_LIMIT);
-tm.cue[12].goCue = function() {
-  counterCue12 = 0;
+tm.cue[13] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[13].goCue = function() {
+  counterCue13 = 0;
 };
-tm.cue[12].triggerShakeSound = function() {
+tm.cue[13].triggerShakeSound = function() {
   // select note based on time since cue started (to keep all parts synched)
-  indexCue12 = Math.floor(tm.getElapsedTimeInCue(12)/noteDur);
+  indexCue13 = Math.floor(tm.getElapsedTimeInCue(13)/noteDur);
   // if any extra time, keep playing last note
-  if (indexCue12 > (hiPitchArrayCue12.length - 1)) {
-    indexCue12 = hiPitchArrayCue12.length - 1;
+  if (indexCue13 > (hiPitchArrayCue13.length - 1)) {
+    indexCue13 = hiPitchArrayCue13.length - 1;
   }
   // alternately select between lower and higher canon
-  soundfileCue12 = (counterCue12 % 2) ? hiPitchArrayCue12[indexCue12] : loPitchArrayCue12[indexCue12];
+  soundfileCue13 = (counterCue13 % 2) ? hiPitchArrayCue13[indexCue13] : loPitchArrayCue13[indexCue13];
 
-  soundfileCue12.start();
-  counterCue12++;
+  soundfileCue13.start();
+  counterCue13++;
 };
-tm.cue[12].stopCue = function() {
+tm.cue[13].stopCue = function() {
   // nothing to do here
 };
 
 // *******************************************************************
-// CUE 13: [C1] triplet synths and clicky sounds (with pitch on tilt)
+// CUE 14: [C1] triplet synths and clicky sounds (with pitch on tilt)
 
 var synthTriangle17 = new Tone.Synth({
   oscillator: {
@@ -406,81 +416,82 @@ var synthTriangle17c = new Tone.Synth({
 }).toMaster();
 synthTriangle17c.volume.value = -12;
 
-var loPitchArrayCue13 = ['B2', 'B2', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'F#3', 'F#3', 'F#3', 'F#3', 'F3', 'F3', 'D#3', 'D#3', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'C#3', 'C#3', 'C#3', 'C#3', 'F#3', 'F#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'A#3', 'A#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'F#3', 'F#3', 'F3', 'F3', 'G#3', 'G#3', 'D#3', 'D#3', 'B2', 'B2', 'C#3', 'C#3', 'A#2', 'A#2', 'A#2', 'A#2', 'C#3', 'C#3'];
-var hiPitchArrayCue13 = ['B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4', 'B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4'];
+var loPitchArrayCue14 = ['B2', 'B2', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'F#3', 'F#3', 'F#3', 'F#3', 'F3', 'F3', 'D#3', 'D#3', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'C#3', 'C#3', 'C#3', 'C#3', 'F#3', 'F#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'A#3', 'A#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'F#3', 'F#3', 'F3', 'F3', 'G#3', 'G#3', 'D#3', 'D#3', 'B2', 'B2', 'C#3', 'C#3', 'A#2', 'A#2', 'A#2', 'A#2', 'C#3', 'C#3'];
+var hiPitchArrayCue14 = ['B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4', 'B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4'];
 
 var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
 var pingPong = new Tone.Player(perc_sounds + "pingPong.mp3").toMaster();
 var ziplockClick = new Tone.Player(perc_sounds + "ziplockClick.mp3").toMaster();
-var percArrayCue13 = [clave, ziplockClick, pingPong, ziplockClick, pingPong, clave, pingPong, ziplockClick, pingPong];
+var percArrayCue14 = [clave, ziplockClick, pingPong, ziplockClick, pingPong, clave, pingPong, ziplockClick, pingPong];
 
-var percCounterCue13 = 0;
-var pitchIndexCue13, pitchCue13, pitchBendCue13, pitchShiftCue13;
+var percCounterCue14 = 0;
+var pitchIndexCue14, pitchCue14, pitchBendCue14, pitchShiftCue14;
 
 // REVISION could add gradual filter sweep on synths (through section) AND coudl tweak synth sounds
 
-var loopCue13 = new Tone.Loop(function(time) {
+var loopCue14 = new Tone.Loop(function(time) {
   // select note based on time since cue started (to keep all parts synched)
-  pitchIndexCue13 = Math.floor(tm.getElapsedTimeInCue(13)/noteDur);
+  pitchIndexCue14 = Math.floor(tm.getElapsedTimeInCue(14)/noteDur);
   // if any extra time, keep playing last note
-  if (pitchIndexCue13 > (loPitchArrayCue13.length - 1)) {
-    pitchIndexCue13 = loPitchArrayCue13.length - 1;
+  if (pitchIndexCue14 > (loPitchArrayCue14.length - 1)) {
+    pitchIndexCue14 = loPitchArrayCue14.length - 1;
   }
   // tilted to left plays synth on low canon voice
   if (tm.accel.x < 0.4) {
-    pitchCue13 = loPitchArrayCue13[pitchIndexCue13];
+    pitchCue14 = loPitchArrayCue14[pitchIndexCue14];
     // in second half, bends down whole step
-    pitchBendCue13 = tm.getSectionBreakpoints(13, [0,0, 30000,0, 60000,200]);
+    pitchBendCue14 = tm.getSectionBreakpoints(14, [0,0, 30000,0, 60000,200]);
     // octave displacement controlled on y-axis
-    pitchShiftCue13 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue13;
-    synthTriangle17.detune.value = pitchShiftCue13;
-    synthTriangle17.triggerAttackRelease(pitchCue13, '16n');
-    synthTriangle17b.detune.value = 1200 + pitchShiftCue13;
-    synthTriangle17b.triggerAttackRelease(pitchCue13, '8t', '+16t');
-    synthTriangle17c.detune.value = 2400 + pitchShiftCue13;
-    synthTriangle17c.triggerAttackRelease(pitchCue13, '8t', '+8t');
+    pitchShiftCue14 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue14;
+    synthTriangle17.detune.value = pitchShiftCue14;
+    synthTriangle17.triggerAttackRelease(pitchCue14, '16n');
+    synthTriangle17b.detune.value = 1200 + pitchShiftCue14;
+    synthTriangle17b.triggerAttackRelease(pitchCue14, '8t', '+16t');
+    synthTriangle17c.detune.value = 2400 + pitchShiftCue14;
+    synthTriangle17c.triggerAttackRelease(pitchCue14, '8t', '+8t');
   // tilted to right plays synth on high canon voice
   } else if (tm.accel.x > 0.6) {
-    pitchCue13 = hiPitchArrayCue13[pitchIndexCue13];
+    pitchCue14 = hiPitchArrayCue14[pitchIndexCue14];
     // in second half, bends down whole step
-    pitchBendCue13 = tm.getSectionBreakpoints(13, [0,0, 30000,0, 60000,200]);
+    pitchBendCue14 = tm.getSectionBreakpoints(14, [0,0, 30000,0, 60000,200]);
     // octave displacement controlled on y-axis
-    pitchShiftCue13 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue13;
-    synthTriangle17.detune.value = pitchShiftCue13;
-    synthTriangle17.triggerAttackRelease(pitchCue13, '16n');
-    synthTriangle17b.detune.value = 1200 + pitchShiftCue13;
-    synthTriangle17b.triggerAttackRelease(pitchCue13, '8t', '+16t');
-    synthTriangle17c.detune.value = 2400 + pitchShiftCue13;
-    synthTriangle17c.triggerAttackRelease(pitchCue13, '8t', '+8t');
+    pitchShiftCue14 = Math.floor(tm.accel.y * 4) * 1200 - pitchBendCue14;
+    synthTriangle17.detune.value = pitchShiftCue14;
+    synthTriangle17.triggerAttackRelease(pitchCue14, '16n');
+    synthTriangle17b.detune.value = 1200 + pitchShiftCue14;
+    synthTriangle17b.triggerAttackRelease(pitchCue14, '8t', '+16t');
+    synthTriangle17c.detune.value = 2400 + pitchShiftCue14;
+    synthTriangle17c.triggerAttackRelease(pitchCue14, '8t', '+8t');
   // held in center plays percussive sounds in triplets
   } else {
     clave.playbackRate = 0.5 + tm.accel.y * 4.5;
     ziplockClick.playbackRate = 0.2 + tm.accel.y * 4.8;
     pingPong.playbackRate = 0.2 + tm.accel.y * 4.8;
-    percArrayCue13[percCounterCue13 % percArrayCue13.length].start();
-    percArrayCue13[(percCounterCue13 + 1) % percArrayCue13.length].start('+16t');
-    percArrayCue13[(percCounterCue13 + 2) % percArrayCue13.length].start('+8t');
-    percCounterCue13 += 3;
+    percArrayCue14[percCounterCue14 % percArrayCue14.length].start();
+    percArrayCue14[(percCounterCue14 + 1) % percArrayCue14.length].start('+16t');
+    percArrayCue14[(percCounterCue14 + 2) % percArrayCue14.length].start('+8t');
+    percCounterCue14 += 3;
   }
 }, '8n'); // tempo is 128bpm, but just use halved rhythms to avoid tempo change
 
-tm.cue[13] = new TMCue('tilt', 1875, NO_LIMIT);
+tm.cue[14] = new TMCue('tilt', 1875, NO_LIMIT);
 
-tm.cue[13].goCue = function() {
-  percCounterCue13 = 0;
-  loopCue13.start();
+tm.cue[14].goCue = function() {
+  percCounterCue14 = 0;
+  loopCue14.start();
 };
 
-tm.cue[13].updateTiltSounds = function() {
+tm.cue[14].updateTiltSounds = function() {
   // all interactivity handled in loop above
 };
 
-tm.cue[13].stopCue = function() {
-  loopCue13.stop();
+tm.cue[14].stopCue = function() {
+  loopCue14.stop();
 };
 
 // *******************************************************************
-// CUE 14: [A4] glock / glass sounds through canon with rising vc pizz
+// CUE 15: [A4] glock / glass sounds through canon with rising vc pizz
+// CUE FIXED MEDIA FILE 3
 
 var vcG2 = new Tone.Player(cello_sounds + "vc-long-pz-G2.mp3").toMaster();
 var vcG2b = new Tone.Player(cello_sounds + "vc-long-pz-G2.mp3").toMaster();
@@ -519,29 +530,29 @@ var harpCsharp7 = new Tone.Player(harp_sounds + "harpCsharp7.mp3").toMaster();
 var harpD7 = new Tone.Player(harp_sounds + "harpD7.mp3").toMaster();
 var harpE7 = new Tone.Player(harp_sounds + "harpE7.mp3").toMaster();
 
-var counterCue14 = 0;
+var counterCue15 = 0;
 var vcCounter = 0;
-var vcProb, indexCue14, soundfileCue14;
+var vcProb, indexCue15, soundfileCue15;
 
 // upper voice of canon
 // REVISION: could change some As to chimes?
-var hiPitchArrayCue14 = [harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5, harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5];
+var hiPitchArrayCue15 = [harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5, harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5];
 // lower voice of canon
-var loPitchArrayCue14 = [harpG3, harpG4, harpB3, harpB4, harpFsharp3, harpFsharp4, harpCsharp4, harpCsharp5, harpD4, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpA3, harpA4, harpG3, harpG4, harpD4, harpD5, harpD6, harpD5, harpE4, harpE5, harpFsharp4, harpFsharp5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpE4, harpE5, harpE6, harpE5, harpA5, harpA6, harpFsharp4, harpFsharp5, harpG4, harpG5, harpE4, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpE4, harpE5, harpE6, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpB3, harpB4];
+var loPitchArrayCue15 = [harpG3, harpG4, harpB3, harpB4, harpFsharp3, harpFsharp4, harpCsharp4, harpCsharp5, harpD4, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpA3, harpA4, harpG3, harpG4, harpD4, harpD5, harpD6, harpD5, harpE4, harpE5, harpFsharp4, harpFsharp5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpE4, harpE5, harpE6, harpE5, harpA5, harpA6, harpFsharp4, harpFsharp5, harpG4, harpG5, harpE4, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpE4, harpE5, harpE6, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpB3, harpB4];
 
-tm.cue[14] = new TMCue('shake', 1875, NO_LIMIT); // 4 beats @ 128bpm
+tm.cue[15] = new TMCue('shake', 1875, NO_LIMIT); // 4 beats @ 128bpm
 
-tm.cue[14].goCue = function() {
-  counterCue14 = 0;
+tm.cue[15].goCue = function() {
+  counterCue15 = 0;
   vcCounter = 0;
 };
 
-tm.cue[14].triggerShakeSound = function() {
+tm.cue[15].triggerShakeSound = function() {
   // randomly replace canon voices with cello pizz sweep (increasing prob.)
-  vcProb = tm.getSectionBreakpoints(14, [0,0, 60000,0.5]);
+  vcProb = tm.getSectionBreakpoints(15, [0,0, 60000,0.5]);
   if (Math.random() < vcProb) {
     // pitch glisses up one octave
-    vcG2.playbackRate = vcG2b.playbackRate = vcG3.playbackRate = vcG4.playbackRate = vcB4.playbackRate = tm.getSectionBreakpoints(14, [0,1, 15000,1, 52500,2]);
+    vcG2.playbackRate = vcG2b.playbackRate = vcG3.playbackRate = vcG4.playbackRate = vcB4.playbackRate = tm.getSectionBreakpoints(15, [0,1, 15000,1, 52500,2]);
     // double-buffer longest pizz to avoid click on re-trigger
     (vcCounter % 2) ? vcG2.start() : vcG2b.start();
     vcG3.start('+32n');
@@ -550,36 +561,36 @@ tm.cue[14].triggerShakeSound = function() {
     vcCounter++;
   } else {
     // select note based on time since cue started (to keep all parts synched)
-    indexCue14 = Math.floor(tm.getElapsedTimeInCue(14)/noteDur);
+    indexCue15 = Math.floor(tm.getElapsedTimeInCue(15)/noteDur);
     // if any extra time, keep playing last note
-    if (indexCue14 > (hiPitchArrayCue14.length - 1)) {
-      indexCue14 = hiPitchArrayCue14.length - 1;
+    if (indexCue15 > (hiPitchArrayCue15.length - 1)) {
+      indexCue15 = hiPitchArrayCue15.length - 1;
     }
     // alternately select between lower and higher canon
-    soundfileCue14 = (counterCue14 % 2) ? hiPitchArrayCue14[indexCue14] : loPitchArrayCue14[indexCue14];
+    soundfileCue15 = (counterCue15 % 2) ? hiPitchArrayCue15[indexCue15] : loPitchArrayCue15[indexCue15];
 
-    soundfileCue14.start();
-    counterCue14++;
+    soundfileCue15.start();
+    counterCue15++;
   }
 };
 
-tm.cue[14].stopCue = function() {
+tm.cue[15].stopCue = function() {
   // nothing to do here
 };
 
 // *******************************************************************
-// CUE 15: [C2 first 15"] short TACET section, just listening to cello
+// CUE 16: [C2 first 16"] short TACET section, just listening to cello
 
-tm.cue[15] = new TMCue('tacet', 1875, NO_LIMIT);
-tm.cue[15].goCue = function() {
+tm.cue[16] = new TMCue('tacet', 1875, NO_LIMIT);
+tm.cue[16].goCue = function() {
   // no sound here
 };
-tm.cue[15].stopCue = function() {
+tm.cue[16].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 16: [C2] swirly synth sounds and sparkles
+// CUE 17: [C2] swirly synth sounds and sparkles
 
 var synthVolume = {
   'soprano': -30,
@@ -587,8 +598,8 @@ var synthVolume = {
   'tenor': -24,
   'bass': -24
 }
-var synthEnvCue16 = {
-  attack: 0.1,
+var synthEnvCue17 = {
+  attack: 1,
   decay: 0.2,
   sustain: 0.9,
   release: 10
@@ -597,106 +608,106 @@ var synthEnvCue16 = {
 var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3').toMaster();
 sugarChimeLoop.loop = true;
 
-var AMSynthCue16 = new Tone.AMSynth({
-  envelope: synthEnvCue16
+var AMSynthCue17 = new Tone.AMSynth({
+  envelope: synthEnvCue17
 }).toMaster();
 
 // soprano synth
-var sopranoFilterCue16 = new Tone.Filter(1567.98, "lowpass").toMaster();
-var sopranoSynthCue16 = new Tone.Synth({
+var sopranoFilterCue17 = new Tone.Filter(1567.98, "lowpass").toMaster();
+var sopranoSynthCue17 = new Tone.Synth({
   oscillator: { type: "sawtooth" },
-  envelope: synthEnvCue16
-}).connect(sopranoFilterCue16);
-sopranoSynthCue16.volume.value = synthVolume.soprano;
-var sopranoFilterCue16Scale = new Tone.Scale(20, 6000);
-xTilt.chain(sopranoFilterCue16Scale, sopranoFilterCue16.frequency);
+  envelope: synthEnvCue17
+}).connect(sopranoFilterCue17);
+sopranoSynthCue17.volume.value = synthVolume.soprano;
+var sopranoFilterCue17Scale = new Tone.Scale(20, 6000);
+xTilt.chain(sopranoFilterCue17Scale, sopranoFilterCue17.frequency);
 
 // alto synth
-var altoFilterCue16 = new Tone.Filter(622.25, "lowpass").toMaster();
-var altoSynthCue16 = new Tone.Synth({
+var altoFilterCue17 = new Tone.Filter(622.25, "lowpass").toMaster();
+var altoSynthCue17 = new Tone.Synth({
   oscillator: { type: "sawtooth" },
-  envelope: synthEnvCue16
-}).connect(altoFilterCue16);
-altoSynthCue16.volume.value = synthVolume.alto;
-var altoFilterCue16Scale = new Tone.Scale(20, 5000);
-xTilt.chain(altoFilterCue16Scale, altoFilterCue16.frequency);
+  envelope: synthEnvCue17
+}).connect(altoFilterCue17);
+altoSynthCue17.volume.value = synthVolume.alto;
+var altoFilterCue17Scale = new Tone.Scale(20, 5000);
+xTilt.chain(altoFilterCue17Scale, altoFilterCue17.frequency);
 
 // tenor synth
-var tenorFilterCue16 = new Tone.Filter(220, "lowpass").toMaster();
-var tenorSynthCue16 = new Tone.Synth({
+var tenorFilterCue17 = new Tone.Filter(220, "lowpass").toMaster();
+var tenorSynthCue17 = new Tone.Synth({
   oscillator: { type: "sawtooth" },
-  envelope: synthEnvCue16
-}).connect(tenorFilterCue16);
-tenorSynthCue16.volume.value = synthVolume.tenor;
-var tenorFilterCue16Scale = new Tone.Scale(3000, 20);
-xTilt.chain(tenorFilterCue16Scale, tenorFilterCue16.frequency);
+  envelope: synthEnvCue17
+}).connect(tenorFilterCue17);
+tenorSynthCue17.volume.value = synthVolume.tenor;
+var tenorFilterCue17Scale = new Tone.Scale(3000, 20);
+xTilt.chain(tenorFilterCue17Scale, tenorFilterCue17.frequency);
 
 // bass synth
-var bassFilterCue16 = new Tone.Filter(87.31, "lowpass").toMaster();
-var bassSynthCue16 = new Tone.Synth({
+var bassFilterCue17 = new Tone.Filter(87.31, "lowpass").toMaster();
+var bassSynthCue17 = new Tone.Synth({
   oscillator: { type: "sawtooth" },
-  envelope: synthEnvCue16
-}).connect(bassFilterCue16);
-bassSynthCue16.volume.value = synthVolume.bass;
-var bassFilterCue16Scale = new Tone.Scale(2000, 20);
-xTilt.chain(bassFilterCue16Scale, bassFilterCue16.frequency);
+  envelope: synthEnvCue17
+}).connect(bassFilterCue17);
+bassSynthCue17.volume.value = synthVolume.bass;
+var bassFilterCue17Scale = new Tone.Scale(2000, 20);
+xTilt.chain(bassFilterCue17Scale, bassFilterCue17.frequency);
 
 
-tm.cue[16] = new TMCue('tilt', 1875, NO_LIMIT);
+tm.cue[17] = new TMCue('tilt', 1875, NO_LIMIT);
 
-tm.cue[16].goCue = function() {
+tm.cue[17].goCue = function() {
   // trigger synth pitches and (after 15") begin pitch slides to next chord
-  bassSynthCue16.triggerAttack(87.31);
-  bassSynthCue16.frequency.setValueCurveAtTime([87.31, 77.78], '+15', 45);
-  tenorSynthCue16.triggerAttack(220);
-  tenorSynthCue16.frequency.setValueCurveAtTime([220, 233.08], '+15', 45);
-  altoSynthCue16.triggerAttack(622.25);
-  altoSynthCue16.frequency.setValueCurveAtTime([622.25, 392], '+15', 45);
-  sopranoSynthCue16.triggerAttack(1567.98);
-  sopranoSynthCue16.frequency.setValueCurveAtTime([1567.98, 1108.73], '+15', 45);
-  AMSynthCue16.triggerAttack(349.23);
-  AMSynthCue16.frequency.setValueCurveAtTime([783.99, 349.23], '+15', 45);
+  bassSynthCue17.triggerAttack(87.31);
+  bassSynthCue17.frequency.setValueCurveAtTime([87.31, 77.78], '+15', 45);
+  tenorSynthCue17.triggerAttack(220);
+  tenorSynthCue17.frequency.setValueCurveAtTime([220, 233.08], '+15', 45);
+  altoSynthCue17.triggerAttack(622.25);
+  altoSynthCue17.frequency.setValueCurveAtTime([622.25, 392], '+15', 45);
+  sopranoSynthCue17.triggerAttack(1567.98);
+  sopranoSynthCue17.frequency.setValueCurveAtTime([1567.98, 1108.73], '+15', 45);
+  AMSynthCue17.triggerAttack(349.23);
+  AMSynthCue17.frequency.setValueCurveAtTime([783.99, 349.23], '+15', 45);
 
   sugarChimeLoop.volume.value = -99;
   sugarChimeLoop.start();
 };
 
-tm.cue[16].updateTiltSounds = function() {
+tm.cue[17].updateTiltSounds = function() {
   // wobbliness of AM synth controlled on y-axis
-  AMSynthCue16.harmonicity.value = 1.0 + tm.accel.y * 0.01;
+  AMSynthCue17.harmonicity.value = 1.0 + tm.accel.y * 0.01;
   // crunchy chimes and brown sugar in plastic container
   sugarChimeLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
 
   // left strip has sparkly sounds
   if (tm.accel.x < 0.33) {
     sugarChimeLoop.volume.value = 0;
-    bassSynthCue16.volume.value = -99;
-    tenorSynthCue16.volume.value = -99;
-    altoSynthCue16.volume.value = -99;
-    sopranoSynthCue16.volume.value = -99;
-    AMSynthCue16.volume.value = -99;
+    bassSynthCue17.volume.value = -99;
+    tenorSynthCue17.volume.value = -99;
+    altoSynthCue17.volume.value = -99;
+    sopranoSynthCue17.volume.value = -99;
+    AMSynthCue17.volume.value = -99;
   // everything else has sweeping AMSynth and filtered synths
   } else {
     sugarChimeLoop.volume.value = -99;
-    bassSynthCue16.volume.value = synthVolume.bass;
-    tenorSynthCue16.volume.value = synthVolume.tenor;
-    altoSynthCue16.volume.value = synthVolume.alto;
-    sopranoSynthCue16.volume.value = synthVolume.soprano;
-    AMSynthCue16.volume.value = 0;
+    bassSynthCue17.volume.value = synthVolume.bass;
+    tenorSynthCue17.volume.value = synthVolume.tenor;
+    altoSynthCue17.volume.value = synthVolume.alto;
+    sopranoSynthCue17.volume.value = synthVolume.soprano;
+    AMSynthCue17.volume.value = 0;
   }
 }
 
-tm.cue[16].stopCue = function() {
-  bassSynthCue16.triggerRelease();
-  tenorSynthCue16.triggerRelease();
-  altoSynthCue16.triggerRelease();
-  sopranoSynthCue16.triggerRelease();
-  AMSynthCue16.triggerRelease();
+tm.cue[17].stopCue = function() {
+  bassSynthCue17.triggerRelease();
+  tenorSynthCue17.triggerRelease();
+  altoSynthCue17.triggerRelease();
+  sopranoSynthCue17.triggerRelease();
+  AMSynthCue17.triggerRelease();
   sugarChimeLoop.stop();
 };
 
 // *******************************************************************
-// CUE 17: [coda]
+// CUE 18: [coda] CUE FIXED MEDIA 4
 
 var chEb6 = new Tone.Player(chime_sounds + "2sec-chime-Eb6.mp3").toMaster();
 var chEb6b = new Tone.Player(chime_sounds + "2sec-chime-Eb6.mp3").toMaster();
@@ -715,61 +726,57 @@ var chA6 = new Tone.Player(chime_sounds + "2sec-chime-A6.mp3").toMaster();
 var chC7 = new Tone.Player(chime_sounds + "2sec-chime-C7.mp3").toMaster();
 var chC8 = new Tone.Player(chime_sounds + "2sec-chime-C8.mp3").toMaster();
 
-var pitchArrayCue17 = [chEb6, chEb7, chEb6b, chEb7b, chEb6, chEb7, chEb6b, chEb7b, chEb6, chF6, chF7, chG6, chD6, chBb6, chBb7, chA6, chG6, chF6, chF7, chG6, chD6, chF6, chF7, chBb6, chBb7, chC7, chC8, chD7, chBb6, chC7, chC8, chBb6, chA6, chC7, chG6, chEb6, chF6];
+var pitchArrayCue18 = [chEb6, chEb7, chEb6b, chEb7b, chEb6, chEb7, chEb6b, chEb7b, chEb6, chF6, chF7, chG6, chD6, chBb6, chBb7, chA6, chG6, chF6, chF7, chG6, chD6, chF6, chF7, chBb6, chBb7, chC7, chC8, chD7, chBb6, chC7, chC8, chBb6, chA6, chC7, chG6, chEb6, chF6];
 
 // loop of Ds triggered after loop is over (pitch shifted down M2 by end)
-var pitchLoopCue17 = [chD6, chD7, chD6b, chD7b];
+var pitchLoopCue18 = [chD6, chD7, chD6b, chD7b];
 
-var counterCue17 = 0;
-var soundfileCue17;
+var counterCue18 = 0;
+var soundfileCue18;
 
-tm.cue[17] = new TMCue('shake', 1875, NO_LIMIT);
-tm.cue[17].goCue = function() {
+tm.cue[18] = new TMCue('shake', 1875, NO_LIMIT);
+tm.cue[18].goCue = function() {
   // reset counter
-  counterCue17 = 0;
+  counterCue18 = 0;
 };
-tm.cue[17].triggerShakeSound = function() {
-  if (counterCue17 < pitchArrayCue17.length) {
-    soundfileCue17 = pitchArrayCue17[counterCue17];
+tm.cue[18].triggerShakeSound = function() {
+  if (counterCue18 < pitchArrayCue18.length) {
+    soundfileCue18 = pitchArrayCue18[counterCue18];
   } else {
     // repeats same two pitches until end of section
-    soundfileCue17 = pitchLoopCue17[counterCue17 % pitchLoopCue17.length];
+    soundfileCue18 = pitchLoopCue18[counterCue18 % pitchLoopCue18.length];
   }
   // pitches down major second
-  soundfileCue17.playbackRate = tm.getSectionBreakpoints(17, [0,1, 15000,1, 60000,0.8908987]);
-  soundfileCue17.volume.value = tm.getSectionBreakpoints(17, [0,0, 50000,0, 60000,-12]);
-  soundfileCue17.start();
-  counterCue17++;
+  soundfileCue18.playbackRate = tm.getSectionBreakpoints(18, [0,1, 15000,1, 60000,0.8908987]);
+  soundfileCue18.volume.value = tm.getSectionBreakpoints(18, [0,0, 50000,0, 60000,-12]);
+  soundfileCue18.start();
+  counterCue18++;
 };
 
-tm.cue[17].stopCue = function() {
+tm.cue[18].stopCue = function() {
   // nothing to do here
 };
 
 // *******************************************************************
-// CUE 18: tacet fermata
-tm.cue[18] = new TMCue('tacet', -1);
-tm.cue[18].goCue = function() {
+// CUE 19: tacet fermata
+tm.cue[19] = new TMCue('tacet', -1);
+tm.cue[19].goCue = function() {
   // nothing to play
 }
-tm.cue[18].stopCue = function() {
+tm.cue[19].stopCue = function() {
   // nothing to clean up
 }
 
 // *******************************************************************
-// CUE 19: finished
-tm.cue[19] = new TMCue('finished', -1);
-tm.cue[19].goCue = function() {
+// CUE 20: finished
+tm.cue[20] = new TMCue('finished', -1);
+tm.cue[20].goCue = function() {
   tm.publicLog('The piece is done.');
 }
 
 // *******************************************************************
-// CUES 20-23: use to test pedal and cue counter
+// CUES 21-24: use to test pedal and cue counter
 
-tm.cue[20] = new TMCue('waiting', -1);
-tm.cue[20].goCue = function() {
-  tm.publicLog('Test cue 20 was triggered.');
-};
 tm.cue[21] = new TMCue('waiting', -1);
 tm.cue[21].goCue = function() {
   tm.publicLog('Test cue 21 was triggered.');
@@ -781,4 +788,8 @@ tm.cue[22].goCue = function() {
 tm.cue[23] = new TMCue('waiting', -1);
 tm.cue[23].goCue = function() {
   tm.publicLog('Test cue 23 was triggered.');
+};
+tm.cue[24] = new TMCue('waiting', -1);
+tm.cue[24].goCue = function() {
+  tm.publicLog('Test cue 24 was triggered.');
 };
