@@ -147,7 +147,7 @@ var glD5 = new Tone.Player(glock_sounds + "glockD5.mp3").toMaster();
 var glD5b = new Tone.Player(glock_sounds + "glockD5.mp3").toMaster();
 var glA5 = new Tone.Player(glock_sounds + "glockA5.mp3").toMaster();
 var glA5b = new Tone.Player(glock_sounds + "glockA5.mp3").toMaster();
-var chA7lo = new Tone.Player(chime_sounds + "chime-1748Hz-A6.mp3").toMaster();
+var chA6lo = new Tone.Player(chime_sounds + "chime-1748Hz-A6.mp3").toMaster();
 var chA6hi = new Tone.Player(chime_sounds + "chime-1772Hz-A6.mp3").toMaster();
 
 
