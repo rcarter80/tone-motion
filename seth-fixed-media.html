@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Default Mode Network</h1>
+  <h1>Default Mode Network fixed media playback</h1>
   <button id="help_button" type="button">?</button>
 </header>
 
@@ -26,13 +26,15 @@
   <!-- when piece is done, button goes away -->
   <button id="start_stop_button" type="button" class="hidden"></button>
 
+  <p style="color: white; text-align: center;">(The browser will not allow sound to play until you click the start button.)</p>
+
   <!-- buttons to manually trigger or stop fixed media playback always there -->
   <button id="stop_all_sound_button" type="button" class="fixed-media">STOP ALL SOUND</button>
   <button id="play_file_1_button" type="button" class="fixed-media">play file 1 (starts very soft)</button>
   <button id="play_file_2_button" type="button" class="fixed-media">play file 2 (use to set levels)</button>
   <button id="play_file_3_button" type="button" class="fixed-media">play file 3</button>
   <button id="play_file_4_button" type="button" class="fixed-media">play file 4</button>
-  
+
   <div id="message_container" class="hidden">
     <p id="message_label"> </p>
   </div>

@@ -25,11 +25,6 @@ const play_file_2_button = document.querySelector('#play_file_2_button');
 const play_file_3_button = document.querySelector('#play_file_3_button');
 const play_file_4_button = document.querySelector('#play_file_4_button');
 
-// function triggered by buttons
-stop_all_sound_button.addEventListener("click", () => {
-  console.log('test');
-});
-
 // Shortcuts to audio file paths
 const fixed_media_sounds = 'tonemotion-shared/audio/fixed_media/';
 
@@ -41,6 +36,35 @@ var fixed_media_2 = new Tone.Player(fixed_media_sounds + "fixed_media_2-2020-01-
 var fixed_media_3 = new Tone.Player(fixed_media_sounds + "fixed_media_3-2020-01-08.wav").toMaster();
 
 var fixed_media_4 = new Tone.Player(fixed_media_sounds + "fixed_media_4-2020-01-07.wav").toMaster();
+
+// function triggered by buttons
+stop_all_sound_button.addEventListener("click", () => {
+  tm.publicLog('All sound stopped.');
+  fixed_media_1.stop();
+  fixed_media_2.stop();
+  fixed_media_3.stop();
+  fixed_media_4.stop();
+});
+
+play_file_1_button.addEventListener("click", () => {
+  tm.publicLog('Fixed media file 1 manually triggered.');
+  fixed_media_1.start();
+});
+
+play_file_2_button.addEventListener("click", () => {
+  tm.publicLog('Fixed media file 2 manually triggered.');
+  fixed_media_2.start();
+});
+
+play_file_3_button.addEventListener("click", () => {
+  tm.publicLog('Fixed media file 3 manually triggered.');
+  fixed_media_3.start();
+});
+
+play_file_4_button.addEventListener("click", () => {
+  tm.publicLog('Fixed media file 4 manually triggered.');
+  fixed_media_4.start();
+});
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -115,6 +139,7 @@ tm.cue[5].stopCue = function() {
 // CUE 6: [intro] CUE FIXED MEDIA FILE 1
 tm.cue[6] = new TMCue('tacet', -1);
 tm.cue[6].goCue = function() {
+  fixed_media_1.start();
   tm.publicLog('****************');
   tm.publicLog('Cue 6 triggered. Fixed media file 1 triggered.');
 };
@@ -127,6 +152,7 @@ tm.cue[6].stopCue = function() {
 // CUE FIXED MEDIA FILE 2
 tm.cue[7] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[7].goCue = function() {
+  fixed_media_2.start();
   tm.publicLog('****************');
   tm.publicLog('Cue 7 triggered. Fixed media file 2 triggered.');
 };
@@ -231,6 +257,7 @@ tm.cue[14].stopCue = function() {
 // CUE FIXED MEDIA FILE 3
 tm.cue[15] = new TMCue('shake', 1875, NO_LIMIT); // 4 beats @ 128bpm
 tm.cue[15].goCue = function() {
+  fixed_media_3.start();
   tm.publicLog('****************');
   tm.publicLog('Cue 15 triggered. Fixed media file 3 triggered.');
 };
@@ -269,6 +296,7 @@ tm.cue[17].stopCue = function() {
 // CUE 18: [coda] CUE FIXED MEDIA 4
 tm.cue[18] = new TMCue('shake', 1875, NO_LIMIT);
 tm.cue[18].goCue = function() {
+  fixed_media_4.start();
   tm.publicLog('****************');
   tm.publicLog('Cue 18 triggered. Fixed media file 4 triggered.');
 };
