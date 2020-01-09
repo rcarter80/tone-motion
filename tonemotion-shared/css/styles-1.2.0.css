@@ -204,7 +204,8 @@ main {
 }
 
 #start_stop_button,
-#simulateShakeButton {
+#simulateShakeButton,
+.fixed-media {
   display: block;
   margin-top: 25px;
   margin-left: auto;
