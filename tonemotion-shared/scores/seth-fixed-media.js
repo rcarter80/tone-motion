@@ -9,6 +9,13 @@ window.onload = function() {
   } else {
     tm.init('https://tonemotion-cue-manager.herokuapp.com/seth-server/current-cue');
   }
+
+  // check support for WAV audio file type
+  if (silent_buffer.canPlayType('audio/wav')) {
+    tm.publicLog('This browser appears to support WAV audio files.');
+  } else {
+    tm.publicWarning('This browser does not appear to support WAV audio files.');
+  }
 };
 
 // Shortcuts to audio file paths
