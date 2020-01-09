@@ -205,7 +205,7 @@ main {
 
 #start_stop_button,
 #simulateShakeButton,
-.fixed-media {
+button.fixed-media {
   display: block;
   margin-top: 25px;
   margin-left: auto;
@@ -216,6 +216,10 @@ main {
   padding: 10px;
   letter-spacing: 0.05rem;
 }
+button.fixed-media:hover {
+  border-color: white;
+}
+
 #start_stop_button.hidden {
   display: none;
 }

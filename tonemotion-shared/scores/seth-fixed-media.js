@@ -18,6 +18,18 @@ window.onload = function() {
   }
 };
 
+// buttons for fixed media playback / stopping
+const stop_all_sound_button = document.querySelector('#stop_all_sound_button');
+const play_file_1_button = document.querySelector('#play_file_1_button');
+const play_file_2_button = document.querySelector('#play_file_2_button');
+const play_file_3_button = document.querySelector('#play_file_3_button');
+const play_file_4_button = document.querySelector('#play_file_4_button');
+
+// function triggered by buttons
+stop_all_sound_button.addEventListener("click", () => {
+  console.log('test');
+});
+
 // Shortcuts to audio file paths
 const fixed_media_sounds = 'tonemotion-shared/audio/fixed_media/';
 
