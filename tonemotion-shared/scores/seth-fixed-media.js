@@ -14,6 +14,15 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const fixed_media_sounds = 'tonemotion-shared/audio/fixed_media/';
 
+// Fixed media audio files loaded into buffers
+var fixed_media_1 = new Tone.Player(fixed_media_sounds + "fixed_media_1-2020-01-07.wav").toMaster();
+
+var fixed_media_2 = new Tone.Player(fixed_media_sounds + "fixed_media_2-2020-01-08.wav").toMaster();
+
+var fixed_media_3 = new Tone.Player(fixed_media_sounds + "fixed_media_3-2020-01-08.wav").toMaster();
+
+var fixed_media_4 = new Tone.Player(fixed_media_sounds + "fixed_media_4-2020-01-07.wav").toMaster();
+
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', -1);
