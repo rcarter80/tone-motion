@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -593,23 +593,24 @@ tm.cue[16].stopCue = function() {
 // CUE 17: [C2] swirly synth sounds and sparkles
 
 var synthVolume = {
-  'soprano': -30,
-  'alto': -24,
-  'tenor': -24,
+  'soprano': -32,
+  'alto': -28,
+  'tenor': -26,
   'bass': -24
 }
 var synthEnvCue17 = {
-  attack: 1,
+  attack: 12,
   decay: 0.2,
   sustain: 0.9,
-  release: 10
+  release: 12
 }
 
 var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3').toMaster();
 sugarChimeLoop.loop = true;
 
 var AMSynthCue17 = new Tone.AMSynth({
-  envelope: synthEnvCue17
+  envelope: synthEnvCue17,
+  modulationEnvelope: synthEnvCue17
 }).toMaster();
 
 // soprano synth
@@ -652,10 +653,14 @@ bassSynthCue17.volume.value = synthVolume.bass;
 var bassFilterCue17Scale = new Tone.Scale(2000, 20);
 xTilt.chain(bassFilterCue17Scale, bassFilterCue17.frequency);
 
+// flag to enable fade out of crunchies at end of cue
+var playingCue17 = false;
 
 tm.cue[17] = new TMCue('tilt', 1875, NO_LIMIT);
 
 tm.cue[17].goCue = function() {
+  playingCue17 = true;
+
   // trigger synth pitches and (after 15") begin pitch slides to next chord
   bassSynthCue17.triggerAttack(87.31);
   bassSynthCue17.frequency.setValueCurveAtTime([87.31, 77.78], '+15', 45);
@@ -665,7 +670,7 @@ tm.cue[17].goCue = function() {
   altoSynthCue17.frequency.setValueCurveAtTime([622.25, 392], '+15', 45);
   sopranoSynthCue17.triggerAttack(1567.98);
   sopranoSynthCue17.frequency.setValueCurveAtTime([1567.98, 1108.73], '+15', 45);
-  AMSynthCue17.triggerAttack(349.23);
+  AMSynthCue17.triggerAttack(783.99);
   AMSynthCue17.frequency.setValueCurveAtTime([783.99, 349.23], '+15', 45);
 
   sugarChimeLoop.volume.value = -99;
@@ -680,7 +685,9 @@ tm.cue[17].updateTiltSounds = function() {
 
   // left strip has sparkly sounds
   if (tm.accel.x < 0.33) {
-    sugarChimeLoop.volume.value = 0;
+    if (playingCue17) {
+      sugarChimeLoop.volume.value = 0;
+    }
     bassSynthCue17.volume.value = -99;
     tenorSynthCue17.volume.value = -99;
     altoSynthCue17.volume.value = -99;
@@ -688,7 +695,9 @@ tm.cue[17].updateTiltSounds = function() {
     AMSynthCue17.volume.value = -99;
   // everything else has sweeping AMSynth and filtered synths
   } else {
-    sugarChimeLoop.volume.value = -99;
+    if (playingCue17) {
+      sugarChimeLoop.volume.value = -99;
+    }
     bassSynthCue17.volume.value = synthVolume.bass;
     tenorSynthCue17.volume.value = synthVolume.tenor;
     altoSynthCue17.volume.value = synthVolume.alto;
@@ -698,12 +707,15 @@ tm.cue[17].updateTiltSounds = function() {
 }
 
 tm.cue[17].stopCue = function() {
+  playingCue17 = false;
+  // NOTE: triggering release during attack phase causes re-attack ?
   bassSynthCue17.triggerRelease();
   tenorSynthCue17.triggerRelease();
   altoSynthCue17.triggerRelease();
   sopranoSynthCue17.triggerRelease();
   AMSynthCue17.triggerRelease();
-  sugarChimeLoop.stop();
+  sugarChimeLoop.volume.rampTo(-99, 5);
+  sugarChimeLoop.stop('+5');
 };
 
 // *******************************************************************
@@ -748,7 +760,7 @@ tm.cue[18].triggerShakeSound = function() {
   }
   // pitches down major second
   soundfileCue18.playbackRate = tm.getSectionBreakpoints(18, [0,1, 15000,1, 60000,0.8908987]);
-  soundfileCue18.volume.value = tm.getSectionBreakpoints(18, [0,0, 50000,0, 60000,-12]);
+  soundfileCue18.volume.value = tm.getSectionBreakpoints(18, [0,0, 50000,0, 60000,-24]);
   soundfileCue18.start();
   counterCue18++;
 };
