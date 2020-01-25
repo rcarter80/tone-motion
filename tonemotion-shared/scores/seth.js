@@ -344,8 +344,6 @@ tm.cue[12].stopCue = function() {
 // *******************************************************************
 // CUE 13: [A3] glock / glass sounds through canon
 
-// BUG: on phone, no sound in last test. on desktop, played two sounds at once for each shake
-
 var counterCue13 = 0;
 var soundfileCue13, indexCue13;
 var noteDur = 60 / 64 * 1000; // milliseconds per quarter note
@@ -378,8 +376,6 @@ tm.cue[13].stopCue = function() {
 
 // *******************************************************************
 // CUE 14: [C1] triplet synths and clicky sounds (with pitch on tilt)
-
-// BUG: in last test, phone played no sound here
 
 var synthTriangle17 = new Tone.Synth({
   oscillator: {
@@ -565,7 +561,6 @@ tm.cue[15].triggerShakeSound = function() {
     vcCounter++;
   } else {
     // select note based on time since cue started (to keep all parts synched)
-    // BUG: in last test phone didn't play following. only played sounds above
     indexCue15 = Math.floor(tm.getElapsedTimeInCue(15)/noteDur);
     // if any extra time, keep playing last note
     if (indexCue15 > (hiPitchArrayCue15.length - 1)) {
