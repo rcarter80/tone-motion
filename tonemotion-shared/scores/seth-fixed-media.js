@@ -1,5 +1,6 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
+tm.showConsoleOnLaunch = true;
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -40,10 +41,12 @@ var fixed_media_4 = new Tone.Player(fixed_media_sounds + "fixed_media_4-2020-01-
 // function triggered by buttons
 stop_all_sound_button.addEventListener("click", () => {
   tm.publicLog('All sound stopped.');
-  fixed_media_1.stop();
-  fixed_media_2.stop();
-  fixed_media_3.stop();
-  fixed_media_4.stop();
+  // duck master volume to avoid clicks when stopping files
+  Tone.Master.volume.setValueCurveAtTime([0, -99, -99, -99, 0], '+0', 1);
+  fixed_media_1.stop('+0.5');
+  fixed_media_2.stop('+0.5');
+  fixed_media_3.stop('+0.5');
+  fixed_media_4.stop('+0.5');
 });
 
 play_file_1_button.addEventListener("click", () => {
