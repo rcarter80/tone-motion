@@ -593,16 +593,16 @@ tm.cue[16].stopCue = function() {
 // CUE 17: [C2] swirly synth sounds and sparkles
 
 var synthVolume = {
-  'soprano': -32,
-  'alto': -28,
-  'tenor': -26,
-  'bass': -24
+  'soprano': -34,
+  'alto': -32,
+  'tenor': -28,
+  'bass': -26
 }
 var synthEnvCue17 = {
   attack: 12,
   decay: 0.2,
   sustain: 0.9,
-  release: 12
+  release: 0.5
 }
 
 var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3').toMaster();
@@ -686,34 +686,39 @@ tm.cue[17].updateTiltSounds = function() {
   // left strip has sparkly sounds
   if (tm.accel.x < 0.33) {
     if (playingCue17) {
+      // don't use long release on envelop because of artifacts if triggered before attack is finished. instead use slow rampTo() if not playingCue17
       sugarChimeLoop.volume.value = 0;
+      bassSynthCue17.volume.value = -99;
+      tenorSynthCue17.volume.value = -99;
+      altoSynthCue17.volume.value = -99;
+      sopranoSynthCue17.volume.value = -99;
+      AMSynthCue17.volume.value = -99;
     }
-    bassSynthCue17.volume.value = -99;
-    tenorSynthCue17.volume.value = -99;
-    altoSynthCue17.volume.value = -99;
-    sopranoSynthCue17.volume.value = -99;
-    AMSynthCue17.volume.value = -99;
   // everything else has sweeping AMSynth and filtered synths
   } else {
     if (playingCue17) {
       sugarChimeLoop.volume.value = -99;
+      bassSynthCue17.volume.value = synthVolume.bass;
+      tenorSynthCue17.volume.value = synthVolume.tenor;
+      altoSynthCue17.volume.value = synthVolume.alto;
+      sopranoSynthCue17.volume.value = synthVolume.soprano;
+      AMSynthCue17.volume.value = 0;
     }
-    bassSynthCue17.volume.value = synthVolume.bass;
-    tenorSynthCue17.volume.value = synthVolume.tenor;
-    altoSynthCue17.volume.value = synthVolume.alto;
-    sopranoSynthCue17.volume.value = synthVolume.soprano;
-    AMSynthCue17.volume.value = 0;
   }
 }
 
 tm.cue[17].stopCue = function() {
   playingCue17 = false;
-  // NOTE: triggering release during attack phase causes re-attack ?
-  bassSynthCue17.triggerRelease();
-  tenorSynthCue17.triggerRelease();
-  altoSynthCue17.triggerRelease();
-  sopranoSynthCue17.triggerRelease();
-  AMSynthCue17.triggerRelease();
+  bassSynthCue17.volume.rampTo(-99, 8);
+  bassSynthCue17.triggerRelease('+8');
+  tenorSynthCue17.volume.rampTo(-99, 8);
+  tenorSynthCue17.triggerRelease('+8');
+  altoSynthCue17.volume.rampTo(-99, 8);
+  altoSynthCue17.triggerRelease('+8');
+  sopranoSynthCue17.volume.rampTo(-99, 8);
+  sopranoSynthCue17.triggerRelease('+8');
+  AMSynthCue17.volume.rampTo(-99, 8);
+  AMSynthCue17.triggerRelease('+8');
   sugarChimeLoop.volume.rampTo(-99, 5);
   sugarChimeLoop.stop('+5');
 };
@@ -760,7 +765,7 @@ tm.cue[18].triggerShakeSound = function() {
   }
   // pitches down major second
   soundfileCue18.playbackRate = tm.getSectionBreakpoints(18, [0,1, 15000,1, 60000,0.8908987]);
-  soundfileCue18.volume.value = tm.getSectionBreakpoints(18, [0,0, 50000,0, 60000,-24]);
+  soundfileCue18.volume.value = tm.getSectionBreakpoints(18, [0,0, 50000,0, 60000,-99]);
   soundfileCue18.start();
   counterCue18++;
 };
