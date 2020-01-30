@@ -31,7 +31,7 @@ var yTilt = new Tone.Signal(0.5);
 /*
 ** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
 */
-var noSleep = new NoSleep();
+// var noSleep = new NoSleep();
 
 /**
  * Object to encapsulate properties and methods for ToneMotion
@@ -236,7 +236,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
   // prevents screen from automatically locking, which chokes audio/motion
-  noSleep.enable();
+  // noSleep.enable();
   // simply playing back 1-sec. silent file when tapping a button allows
   // audio to sound with ring/silent switch on silent.
   // keeps sound on after 1-sec. silent file elapses.
@@ -312,7 +312,7 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.cueTimeFromServer = 0;
 
   // No need to prevent screen lock any more
-  noSleep.disable();
+  // noSleep.disable();
 };
 
 /*
