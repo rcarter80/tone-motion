@@ -112,6 +112,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // debug mode shows console, stops sync with server, logs messages
   if (this.debug) {
     this.showConsoleOnLaunch = true;
+    this.publicLog('tonemotion v1.2.1 (2020-01-30-22:00) loaded');
     // set to false to speed up load time while testing
     this.shouldSyncToServer = false;
   }
