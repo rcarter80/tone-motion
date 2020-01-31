@@ -1,8 +1,14 @@
 const tm = new ToneMotion();
-tm.debug = true;
+tm.debug = false; // if true, skips clock sync and shows console
+tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
-  tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+  // fetch cues from localhost if tm.localTest is true
+  if (tm.localTest) {
+    tm.init('http://localhost:3000/jack-server/current-cue');
+  } else {
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+  }
 };
 
 // Shortcuts to audio file paths
@@ -57,7 +63,10 @@ tm.cue[1].stopCue = function() {
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', -1);
 tm.cue[2].goCue = function() {
-  tm.publicLog('tm.cue[2].goCue() called');
+  // nothing to play
+}
+tm.cue[2].stopCue = function() {
+  // nothing to clean up
 }
 
 // *******************************************************************
@@ -115,7 +124,8 @@ tm.cue[6].triggerShakeSound = function() {
   // testing how to change sounds throughout section
   // DOLATER: refactor this to tonemotion library as tm.getSectionCounter()
   // and remove log of sectionCounter
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.cue[6].startedAt;
+  console.log(tm.cue[6].startedAt);
   var durationOfSection = 50000; // just short of end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
@@ -296,12 +306,12 @@ var chordArray = [
 var detuneArrCue12 = [22000, 100]; // up half step by end of section
 var volumeArrCue12 = [22000, -6, 26000, -99]; // gradual fade
 var synthChordLoop = new Tone.Loop(function(time) {
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.cue[11].startedAt;
 
   // Pitches bend up half step and volume fades out only during cue 12
   if (tm.currentCue === tm.cue[12]) {
-    var detune = tm.getSectionBreakpoints(detuneArrCue12);
-    var fadeout = tm.getSectionBreakpoints(volumeArrCue12);
+    var detune = tm.getSectionBreakpoints(12, detuneArrCue12);
+    var fadeout = tm.getSectionBreakpoints(12, volumeArrCue12);
     triSynthRound1.detune.value = detune;
     triSynthRound2.detune.value = detune;
     sawSynthRev1.detune.value = detune;
@@ -372,7 +382,7 @@ tm.cue[13].goCue = function() {
 var revChime = new Tone.Player(chimes_sounds + "revChime.mp3").toMaster();
 var durationOfCue14 = 19000; // about 2 bars from end of section
 var loopCue14 = new Tone.Loop(function(time) {
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.cue[14].startedAt;
 
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfCue14 <= 1) ? elapsedTime / durationOfCue14 : 1;
@@ -451,7 +461,7 @@ tm.cue[15].goCue = function() {
 tm.cue[15].triggerShakeSound = function() {
   // testing how to change sounds throughout section
   // DOLATER: refactor this to new getSectionBreakpoints() function
-  var elapsedTime = Date.now() - tm.clientServerOffset - tm.currentCueStartedAt;
+  var elapsedTime = Date.now() - tm.clientServerOffset - tm.cue[15].startedAt;
   var durationOfSection = 38000; // about 4 bars before end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
@@ -489,7 +499,7 @@ tm.cue[17].goCue = function() {
 tm.cue[17].triggerShakeSound = function() {
   thisVcSound = vcJeteArray[vcJeteArrayIndex % vcJeteArray.length];
   // gradually shift up a whole step by end of section
-  thisVcSound.playbackRate = tm.getSectionBreakpoints([0, 1, 44000, 1.1225]);
+  thisVcSound.playbackRate = tm.getSectionBreakpoints(17, [0, 1, 44000, 1.1225]);
   thisVcSound.start();
   // avoid overlapping file playback by cycling through them
   vcJeteArrayIndex++;
@@ -525,7 +535,7 @@ tm.cue[19].goCue = function() {
   Tone.Transport.scheduleRepeat(function(time) {
     // GrainPlayer may not be ready for .seek(). Catch InvalidStateError
     // If try fails, grain player still scrubs but detune is reset to 0
-    granulator.volume.value = tm.getSectionBreakpoints([60000, -3, 80000, -12, 95000, -24, 100000, -99]);
+    granulator.volume.value = tm.getSectionBreakpoints(19, [60000, -3, 80000, -12, 95000, -24, 100000, -99]);
     try { granulator.seek(granulatorOffset); } catch(e) { console.log(e); }
   }, granulatorGrainSize);
 }
