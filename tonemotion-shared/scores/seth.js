@@ -70,6 +70,7 @@ tm.cue[2].stopCue = function() {
   // nothing to clean up
 }
 
+// TODO: increment version number of tonemotion library, link to new version, fix Android issue. NOTE: everything works fine for JACK's piece, which links to tonemotion-1-1-0, so compare that to 1-2-0. I broke library for Android with last update.
 // *******************************************************************
 // CUE 3: shake tutorial
 var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();

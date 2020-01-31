@@ -7,31 +7,30 @@
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" type="text/css" href="tonemotion-shared/css/styles.css">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.2.0.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
 </head>
 <body>
 
 <header>
   <h1>Direct Attention</h1>
-  <button id="helpDisclosureButton" type="button">?</button>
+  <button id="help_button" type="button">?</button>
 </header>
 
 <main> <!-- center panel showing app status, messages, controls -->
   <div id="status_container">
-    <p id="statusLabel">loading</p>
+    <p id="status_label">loading</p>
   </div>
   <!-- button is not displayed until page loads, then shows "start" -->
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
-  <button id="startStopButton" type="button" class="hidden"></button>
+  <button id="start_stop_button" type="button" class="hidden"></button>
   <div id="message_container" class="hidden">
-    <p id="messageLabel"> </p>
+    <p id="message_label"> </p>
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <!-- DOLATER: update and optimize this workaround -->
-  <audio id="setAudioSession"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+  <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
   <fieldset id="sliderFieldset" class="hidden">
@@ -45,7 +44,7 @@
 
 </main>
 
-<section id="helpPanel" class="slide-out"> <!-- left panel with instructions and help -->
+<section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
   <div>
     <h2>About this piece</h2>
     <p><i>Direct Attention</i> is a piece for string quartet and motion-controlled interactive sounds played from the mobile devices of the audience. This extends my previous work with music for mobile devices in <a href="https://ryancarter.org/suboptimal" target="_blank"><i>On the expressive potential of suboptimal speakers</i></a> (a web-based piece for any number of people) and <a href="http://itunes.apple.com/us/app/imonkeypants/id547532522?mt=8" target="_blank">iMonkeypants</a> (an iOS app album).</p>
@@ -53,8 +52,10 @@
   <div>
     <h2>Set up your device</h2>
     <p>To set up your device for the performance, simply set the ring/silent switch to silent and turn up the volume. This will prevent notifications from phone calls or text messages. The music from this site will still play.</p>
-    <p>Once the page has loaded, you will see a start button, which you may tap at any time. From this point, the application will prevent the screen from turning off. Manually locking the screen may interrupt the sound, but if this happens you can simply reload the page.</p>
+    <p>Once the page has loaded, you will see a start button, which you may tap right away. Your device may request permission to access your motion data, or you may need to allow this access in your settings.</p>
+    <p>The application will prevent the screen from turning off. Manually locking the screen may interrupt the sound, but if this happens you can simply reload the page.</p>
     <p>The label in the center of the screen indicates the mode of interactivity for the current section of the piece. "Tilt" allows you to control certain aspects of the sound by tilting your phone to the left and right or up and down. "Shake" allows you to trigger individual sounds by gently shaking your device; a quick flick of the wrist will do. "Tacet" is a musical indication that your part is silent for this section.</p>
+    <p>Even at maximum volume, the sound from your phone speakers may still be quite soft. If you hold your phone close to your ear, you'll be able to hear the sound you control more distinctly, and if you hold your phone farther away, you'll hear a more balanced mix of all the sounds being made around you. Feel free to experiment with this balance!</p>
   </div>
   <!-- DOLATER: could add section-by-section instructions in future -->
   <!-- <div>
@@ -74,16 +75,16 @@
   </div>
   <div>
     <h2>Motion monitor</h2>
-    <input type="checkbox" id="motionDataCheckbox">
-    <label for="motionDataCheckbox">Show motion data (may affect performance)</label>
+    <input type="checkbox" id="motion_data_checkbox">
+    <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
     <div id="motion_container" class="hidden">
-      <p id="motionDataLabel"></p>
+      <p id="motion_data_label"></p>
     </div>
   </div>
   <div id="publicConsole">
     <h2>Console</h2>
-    <input type="checkbox" id="consoleCheckbox">
-    <label for="consoleCheckbox">Show console messages (may affect performance)</label>
+    <input type="checkbox" id="console_checkbox">
+    <label for="console_checkbox">Show console messages (may affect performance)</label>
     <div id="console_container" class="hidden">
     </div>
   </div>
@@ -92,34 +93,12 @@
 <!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
 <!-- They make trivial changes to Tone.js that will break older code -->
 <script src="tonemotion-shared/js/Tone.js"></script>
-<script src="tonemotion-shared/js/tonemotion-1.1.0.js"></script>
+<!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
+<script src="tonemotion-shared/js/NoSleep.js"></script>
+<script src="tonemotion-shared/js/tonemotion-1.2.1.js"></script>
 
 <!-- Score for this piece -->
-<script src="tonemotion-shared/scores/jack.js"></script>
-
-<!-- DOLATER: find best place for NoSleep.js if it works -->
-<script src="tonemotion-shared/js/NoSleep.js"></script>
-
-<script>
- // DOLATER: clean this up. finding <audio> shim workaround inspired by:
- // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
- // This should be moved to tonemotion library for future use in other pieces, but focus for now on composing just this piece
- let audioElem = document.getElementById("setAudioSession");
- let playButton = document.getElementById("startStopButton");
- // NoSleep from https://github.com/richtr/NoSleep.js
- // DOLATER: could removeEventListener after click (see code above)
- // should disable noSleep with stop button in future
- var noSleep = new NoSleep();
-
- playButton.addEventListener("click", handlePlayButton, false);
- // simply playing back 1-sec. silent file when tapping a button allows
- // audio to sound with ring/silent switch on silent.
- // keeps sound on after 1-sec. silent file elapses.
- function handlePlayButton() {
-   audioElem.play();
-   noSleep.enable();
- }
- </script>
+<script src="tonemotion-shared/scores/jack-v2.js"></script>
 
 </body>
 </html>
