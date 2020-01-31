@@ -1,24 +1,36 @@
+// NOTE: This version of the tonemotion library is what ryancarter.org/jack linked to when I tested on Google Pixel on 2020-01-30 and everything worked. Tilt, shake, accelerometer readings all worked on Android device with this source file.
+
 /*********************************************************************
 ************************ APPLICATION SETUP ***************************
 *********************************************************************/
-
 // NOTE: This all depends on Tone.js, which must appear first
 
 /*
 ** DOM HOOKS
 */
 
-const help_button = document.querySelector('#help_button');
+const helpDisclosureButton = document.querySelector('#helpDisclosureButton');
+
 const status_container = document.querySelector('#status_container');
-const status_label = document.querySelector('#status_label');
-const start_stop_button = document.querySelector('#start_stop_button');
+
+const statusLabel = document.querySelector('#statusLabel');
+
+const startStopButton = document.querySelector('#startStopButton');
+
 const message_container = document.querySelector('#message_container');
-const message_label = document.querySelector('#message_label');
-const help_panel = document.querySelector('#help_panel');
-const section_instructions = document.querySelector('#section_instructions');
-const motion_data_checkbox = document.querySelector('#motion_data_checkbox');
-const motion_data_label = document.querySelector('#motion_data_label');
-const console_checkbox = document.querySelector('#console_checkbox');
+
+const messageLabel = document.querySelector('#messageLabel');
+
+const helpPanel = document.querySelector('#helpPanel');
+
+const sectionInstructions = document.querySelector('#sectionInstructions');
+
+const motionDataCheckbox = document.querySelector('#motionDataCheckbox');
+
+const motionDataLabel = document.querySelector('#motionDataLabel');
+
+const consoleCheckbox = document.querySelector('#consoleCheckbox');
+
 const console_container = document.querySelector('#console_container');
 
 /*
@@ -28,16 +40,10 @@ const console_container = document.querySelector('#console_container');
 var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
 var yTilt = new Tone.Signal(0.5);
 
-/*
-** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
-*/
-var noSleep = new NoSleep();
-
 /**
  * Object to encapsulate properties and methods for ToneMotion
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
- * @param {boolean} localTest - Set to 'true' in score.js to test locally
  * @param {boolean} showConsoleOnLaunch - Shows console log by default
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
@@ -67,6 +73,7 @@ var noSleep = new NoSleep();
  * @param {array} cue - Array of TMCue objects that hold all properties
  *    and methods of each cue
  * @param {TMCue} currentCue - Reference to the current cue
+ * @param {number} currentCueStartedAt - Time when cue began
  * @param {number} MAX_DELAY - (ms.) Max. duration for delaying cue
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
@@ -76,7 +83,6 @@ var noSleep = new NoSleep();
 function ToneMotion() {
   this.status = '';
   this.debug = false;
-  this.localTest = false;
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
@@ -101,6 +107,7 @@ function ToneMotion() {
   this.cueTimeFromServer = 0;
   this.cue = [];
   this.currentCue = {};
+  this.currentCueStartedAt = 0;
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
   this.urlForCues = '';
@@ -117,7 +124,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   }
   // Can automatically show console in left panel when page loads
   if (this.showConsoleOnLaunch) {
-    console_checkbox.checked = true;
+    consoleCheckbox.checked = true;
     console_container.className = '';
   }
 
@@ -152,6 +159,9 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('error', () => {
     this.publicError('Error loading the audio files');
   });
+
+  // Begin motion handling
+  this.beginMotionHandling();
 };
 
 // Manages application status and interface updates
@@ -235,67 +245,12 @@ ToneMotion.prototype.setStatus = function(status) {
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
-  // prevents screen from automatically locking, which chokes audio/motion
-  noSleep.enable();
-  // simply playing back 1-sec. silent file when tapping a button allows
-  // audio to sound with ring/silent switch on silent.
-  // keeps sound on after 1-sec. silent file elapses.
-  //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
-  silent_buffer.play();
+  Tone.Transport.start();
 
-  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
-  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
-  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
-  // Could also have user select checkbox to invert axes, but that requires more setup of device
-  const userAgent = window.navigator.userAgent;
-  if (userAgent.match(/Android/i)) {
-    this.deviceIsAndroid = true;
-    if (this.debug) {
-      this.publicLog('This device appears to be an Android');
-    }
-  }
-  else {
-    this.deviceIsAndroid = false;
-    if (this.debug) {
-      this.publicLog('This device does not appear to be an Android');
-    }
-  }
-  // testing iOS 13 motion permission
-  // Guard against reference erros by checking that DeviceMotionEvent is defined
-  if (typeof DeviceMotionEvent !== 'undefined' &&
-  typeof DeviceMotionEvent.requestPermission === 'function') {
-    if (this.debug) {
-      this.publicLog('Requesting permission for motion data');
-    }
-    // Device requests motion permission (e.g., iOS 13+)
-    DeviceMotionEvent.requestPermission()
-    .then(permissionState => {
-      if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-      } else {
-        // user has not give permission for motion. Pretend device is desktop
-        this.testWithoutMotion();
-      }
-      Tone.Transport.start();
-      this.beginMotionUpdates();
-    })
-    .catch(console.error);
-  } else {
-    // handle non iOS 13+ devices, which could still report motion
-    if (this.debug) {
-      this.publicLog('Not an iOS 13+ device');
-    }
-    if ('DeviceMotionEvent' in window) {
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-    } else {
-      this.testWithoutMotion();
-    }
-    Tone.Transport.start();
-    this.beginMotionUpdates();
-  }
+  startStopButton.className = 'disabled'; // while waiting for cue
+  statusLabel.innerHTML = ''; // label will update with cue
 
-  start_stop_button.className = 'disabled'; // while waiting for cue
-  status_label.innerHTML = ''; // label will update with cue
+  this.beginMotionUpdates();
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
@@ -310,9 +265,6 @@ ToneMotion.prototype.shutEverythingDown = function() {
 
   // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
   this.cueTimeFromServer = 0;
-
-  // No need to prevent screen lock any more
-  noSleep.disable();
 };
 
 /*
@@ -322,13 +274,13 @@ ToneMotion.prototype.shutEverythingDown = function() {
 // Prints to message label on center panel
 ToneMotion.prototype.publicMessage = function(message) {
   message_container.className = 'default';
-  message_label.innerHTML = message;
+  messageLabel.innerHTML = message;
 };
 
 // Prints to message label (styled as warning), prints console warning
 ToneMotion.prototype.publicWarning = function(message) {
   message_container.className = 'warning';
-  message_label.innerHTML = message;
+  messageLabel.innerHTML = message;
   console.warn(message);
 };
 
@@ -336,19 +288,19 @@ ToneMotion.prototype.publicWarning = function(message) {
 ToneMotion.prototype.publicError = function(message) {
   this.setStatus('error');
   message_container.className = 'error';
-  message_label.innerHTML = message;
+  messageLabel.innerHTML = message;
   console.error(message);
 };
 
 // Clears message label
 ToneMotion.prototype.clearMessageLabel = function() {
   message_container.className = 'hidden';
-  message_label.innerHTML = '';
+  messageLabel.innerHTML = '';
 }
 
-// Prints to console and to help panel if console_checkbox is checked
+// Prints to console and to help panel if consoleCheckbox is checked
 ToneMotion.prototype.publicLog = function(message) {
-  if (console_checkbox.checked) {
+  if (consoleCheckbox.checked) {
     var logMessage = document.createElement('p');
     logMessage.className = 'logMessage';
     logMessage.innerHTML = message;
@@ -373,23 +325,23 @@ ToneMotion.prototype.clearConsole = function() {
 // Sets text and class name for main status label in center panel
 ToneMotion.prototype.setStatusLabel = function(text, className) {
   status_container.className = className;
-  status_label.innerHTML = text;
+  statusLabel.innerHTML = text;
 };
 
 // Sets text and class name for main button in center panel
 ToneMotion.prototype.setStartStopButton = function(text, className) {
-  start_stop_button.className = className;
-  start_stop_button.innerHTML = text;
+  startStopButton.className = className;
+  startStopButton.innerHTML = text;
 }
 
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
-  start_stop_button.addEventListener("click", () => {
+  startStopButton.addEventListener("click", () => {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
       Tone.context.resume().then(() => {
-        console.log('Audio context started');
+        this.publicLog('Audio context started');
       });
     }
 
@@ -420,8 +372,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 
 // Toggles display for console in side panel. Hiding clears log.
 ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
-  console_checkbox.addEventListener('change', () => {
-    if (console_checkbox.checked) {
+  consoleCheckbox.addEventListener('change', () => {
+    if (consoleCheckbox.checked) {
       // Console is now displayed. Print message to confirm.
       console_container.className = '';
       this.publicLog('(Console messages will go here)');
@@ -434,10 +386,10 @@ ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
 
 // Toggles display for motion data monitor in side panel.
 ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
-  motion_data_checkbox.addEventListener('change', () => {
-    if (motion_data_checkbox.checked) {
+  motionDataCheckbox.addEventListener('change', () => {
+    if (motionDataCheckbox.checked) {
       motion_container.className = '';
-      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+      motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
     } else {
       motion_container.className = 'hidden';
     }
@@ -445,13 +397,13 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
 };
 
 // Slides side panel in and out
-help_button.onclick = function() {
-  if (help_panel.className === 'slide-out') {
-    help_panel.className = 'slide-in';
-    help_button.className = 'slide-in';
+helpDisclosureButton.onclick = function() {
+  if (helpPanel.className === 'slide-out') {
+    helpPanel.className = 'slide-in';
+    helpDisclosureButton.className = 'slide-in';
   } else {
-    help_panel.className = 'slide-out';
-    help_button.className = 'slide-out';
+    helpPanel.className = 'slide-out';
+    helpDisclosureButton.className = 'slide-out';
   }
 }
 
@@ -482,6 +434,35 @@ ToneMotion.prototype.testWithoutMotion = function() {
 /*********************************************************************
 ********************** DEVICE MOTION HANDLING ************************
 *********************************************************************/
+
+// Tests if device is Android, registers 'devicemotion' event listener
+ToneMotion.prototype.beginMotionHandling = function() {
+  if (this.debug) {
+    this.publicLog('Beginning motion detection')
+  }
+
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  // Could also have user select checkbox to invert axes, but that requires more setup of device
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    if (this.debug) {
+      this.publicLog('This device appears to be an Android');
+    }
+  }
+  else {
+    this.deviceIsAndroid = false;
+    if (this.debug) {
+      this.publicLog('This device does not appear to be an Android');
+    }
+  }
+
+  // Just sets accelerometer data to object properties and determines
+  // if gyro data should set shake flag
+  window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+};
 
 // Sets ToneMotion object accel properties and sets shake flag
 // Bound to 'devicemotion' event listener, so this is called very often
@@ -517,24 +498,9 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   }
 
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
-  // Another possibility is an iOS 12.2 - 12.4 device with motion access off
-  // Need to provide instructions for turning it on
   // Automatically make sliders visible for desktop testing if needed
   if (this.accel.rawX === undefined) {
-    var motionTestTimeoutID = setTimeout(() => {
-      if (this.debug) {
-        this.publicLog('Device claims to report motion. Checking if this is true.');
-      }
-      if (this.accel.rawX === undefined) {
-        // still no motion reported. Probably either 1) device is desktop or 2) device is iOS 12.2-12.4 and has motion access permission off
-        if (window.confirm("Your device is not reporting motion. You may either be on a desktop computer, or this may be a result of your mobile browser settings. If you're on an iPhone, go to Settings > Safari > Motion & Orientation Access and make sure this setting is on. Reload the page to try again, or continue to launch the desktop version.")) {
-          this.testWithoutMotion();
-        } else {
-          this.setStatus('stopped');
-          this.shutEverythingDown();
-        }
-      }
-    }, 500);
+    this.testWithoutMotion();
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
@@ -618,12 +584,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // Left panel has checkbox to allow monitoring of accel values
-  if (motion_data_checkbox.checked) {
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+  if (motionDataCheckbox.checked) {
+    motionDataLabel.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
 
     // Will display DeviceMotionEvent interval if debugging
     if (this.debug) {
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
+      motionDataLabel.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
     }
   }
 };
@@ -745,15 +711,14 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   if (this.cue[cue].waitTime == -1) {
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
-    //  use this timestamp to facilitate gradual process during a section
-    this.cue[cue].startedAt = this.cueTimeFromServer;
     return;
   }
 
   // lower priority cue (may be deliberately delayed). check client time
   var timestamp = Date.now() - this.clientServerOffset;
   var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
-  this.cue[cue].startedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
+  //  use this timestamp to facilitate gradual process during a section
+  this.currentCueStartedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
   if ((this.cue[cue].openWindow + delay) < 0) {
@@ -817,29 +782,20 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
   this.currentCue.isPlaying = true;
 };
 
-// Takes cue number and breakpoint array of time/value pairs. Returns interpolated values reflecting elapsed time in current segment of requested cue. Requires cue number since gradual process may overlap with next cue called. Can't use current cue number because that may be next cue.
-ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
-  // check that function is passed cue number AND array of breakpoints
-  // Each time needs a corresponding value (need even # of elements in array)
-  if (arguments.length < 2 || breakpointArray.length % 2 !== 0) {
-    this.publicLog('Missing value for getSectionBreakpoints(), which requires a cue number and an array of time/value pairs. Example: getSectionBreakpoints(3, [1000, 0.5, 2000, 1.0]).')
-    return 0;
+// Takes breakpoint array of time/value pairs and returns interpolated values reflecting elapsed time in current segment
+ToneMotion.prototype.getSectionBreakpoints = function(breakpointArray) {
+  // Each time needs a corresponding value (need even # of args)
+  if (breakpointArray.length % 2 !== 0) {
+    this.publicLog('Missing value for getSectionBreakpoints(), which requires an array of time/value pairs (e.g., [1000, 0.5, 2000, 1.0]).')
+    return;
   }
-
-  // check that requested cue has actually begun
-  if (this.cue[cue].startedAt === 0) {
-    this.publicLog('Section breakpoint value requested for cue that has not started yet.');
-    return 0;
-  } else {
-    var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
-  }
-
   // Go through array of time/value pairs
+  var elapsedTime = Date.now() - this.clientServerOffset - this.currentCueStartedAt;
   for (var i = 0; i < breakpointArray.length; i = i + 2) {
     // Each time needs to be greater than previous
     if (breakpointArray[i] >= breakpointArray[i+2]) {
       this.publicLog('getSectionBreakpoints() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
-      return 0;
+      return;
     }
     // Find which segment current time is in
     if (elapsedTime <= breakpointArray[i]) {
@@ -857,31 +813,6 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
   }
   // If time has elapsed, return last value
   return breakpointArray[breakpointArray.length-1];
-};
-
-// Takes cue number and time elapsed since that cue began (or 0 if it hasn't)
-ToneMotion.prototype.getElapsedTimeInCue = function(cue) {
-  var elapsedTime;
-
-  // check that function is passed cue number
-  if (arguments.length < 1) {
-    this.publicLog('Missing value for cue number.');
-    return 0;
-  }
-
-  // check that requested cue has actually begun
-  if (this.cue[cue].startedAt === 0) {
-    this.publicLog('Elapsed time requested for cue that has not started yet.');
-    return 0;
-  } else {
-    elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
-    if (elapsedTime < 0) {
-      // this cue is still in the waitTime phase
-      return 0;
-    } else {
-      return elapsedTime;
-    }
-  }
 };
 
 /*********************************************************************
@@ -909,7 +840,6 @@ function TMCue(mode, waitTime, openWindow) {
   this.waitTime = waitTime;
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
-  this.startedAt = 0; // not set by constructor. used by getSectionBreakpoints()
 }
 
 // Override this method in score to code the music for this section
@@ -925,7 +855,7 @@ TMCue.prototype.stopCue = function() {
 // Override this method in score to make "tilt" interactive sounds
 TMCue.prototype.updateTiltSounds = function() {
   // This will get real annoying unless this method is overridden
-  status_label.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
+  statusLabel.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
 }
 
 // Override this method in score to make "shake" interactive sounds
