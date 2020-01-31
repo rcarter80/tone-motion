@@ -144,7 +144,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('load', () => {
     if (this.debug) {
       this.publicLog('Audio buffers finished loading');
-      this.publicLog('tonemotion v1.2.1 (2020-01-30-22:31) loaded');
+      this.publicLog('tonemotion v1.2.1 (2020-01-30-22:54) loaded');
     }
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
@@ -154,15 +154,14 @@ ToneMotion.prototype.init = function(urlOfServer) {
     this.publicError('Error loading the audio files');
   });
 
-  // TODO: remove this method
-  this.beginMotionHandling();
+  this.beginMotionHandlingOnAndroid();
 };
 
-// TODO: remove this method
-// Tests if device is Android, registers 'devicemotion' event listener
-ToneMotion.prototype.beginMotionHandling = function() {
+
+// Tests if device is Android, registers 'devicemotion' event listener. iOS devices require permission after user interaction, but Android devices can begin polling motion sensor data immediately. Waiting to get motion data on Android until same point as I ask for permission on iOS does NOT work on Android. Motion polling chokes.
+ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
   if (this.debug) {
-    this.publicLog('Beginning motion detection')
+    this.publicLog('Will begin motion handling if device is Android.');
   }
 
   // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
@@ -175,6 +174,8 @@ ToneMotion.prototype.beginMotionHandling = function() {
     if (this.debug) {
       this.publicLog('This device appears to be an Android');
     }
+    // Immediately begin polling motion sensors ONLY on Android
+    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
   }
   else {
     this.deviceIsAndroid = false;
@@ -182,10 +183,6 @@ ToneMotion.prototype.beginMotionHandling = function() {
       this.publicLog('This device does not appear to be an Android');
     }
   }
-
-  // Just sets accelerometer data to object properties and determines
-  // if gyro data should set shake flag
-  window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
 };
 
 // Manages application status and interface updates
@@ -277,23 +274,6 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
   silent_buffer.play();
 
-  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
-  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
-  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
-  // Could also have user select checkbox to invert axes, but that requires more setup of device
-  const userAgent = window.navigator.userAgent;
-  if (userAgent.match(/Android/i)) {
-    this.deviceIsAndroid = true;
-    if (this.debug) {
-      this.publicLog('This device appears to be an Android');
-    }
-  }
-  else {
-    this.deviceIsAndroid = false;
-    if (this.debug) {
-      this.publicLog('This device does not appear to be an Android');
-    }
-  }
   // testing iOS 13 motion permission
   // Guard against reference erros by checking that DeviceMotionEvent is defined
   if (typeof DeviceMotionEvent !== 'undefined' &&
@@ -320,6 +300,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
       this.publicLog('Not an iOS 13+ device');
     }
     if ('DeviceMotionEvent' in window) {
+      // If device is Android, handleMotionEvent is already running
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
     } else {
       this.testWithoutMotion();
