@@ -112,7 +112,6 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // debug mode shows console, stops sync with server, logs messages
   if (this.debug) {
     this.showConsoleOnLaunch = true;
-    this.publicLog('tonemotion v1.2.1 (2020-01-30-22:00) loaded');
     // set to false to speed up load time while testing
     this.shouldSyncToServer = false;
   }
@@ -145,6 +144,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('load', () => {
     if (this.debug) {
       this.publicLog('Audio buffers finished loading');
+      this.publicLog('tonemotion v1.2.1 (2020-01-30-22:31) loaded');
     }
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
@@ -153,6 +153,39 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('error', () => {
     this.publicError('Error loading the audio files');
   });
+
+  // TODO: remove this method
+  this.beginMotionHandling();
+};
+
+// TODO: remove this method
+// Tests if device is Android, registers 'devicemotion' event listener
+ToneMotion.prototype.beginMotionHandling = function() {
+  if (this.debug) {
+    this.publicLog('Beginning motion detection')
+  }
+
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  // Could also have user select checkbox to invert axes, but that requires more setup of device
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    if (this.debug) {
+      this.publicLog('This device appears to be an Android');
+    }
+  }
+  else {
+    this.deviceIsAndroid = false;
+    if (this.debug) {
+      this.publicLog('This device does not appear to be an Android');
+    }
+  }
+
+  // Just sets accelerometer data to object properties and determines
+  // if gyro data should set shake flag
+  window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
 };
 
 // Manages application status and interface updates
