@@ -1,5 +1,6 @@
 const tm = new ToneMotion();
-tm.debug = false; // if true, skips clock sync and shows console
+// TODO: turn debug off
+tm.debug = true; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -32,29 +33,31 @@ tm.cue[0].goCue = function() {
 // *******************************************************************
 // CUE 1: tilt tutorial
 // Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
-var testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
+var testTone = new Tone.FMSynth().toMaster();
+testTone.harmonicity.value = 3;
+testTone.volume.value = -12;
+
+// pitch array for both instruments
+var testToneFreqArray = ['Bb2', 'C3', 'E3', 'F3', 'G3', 'A3', 'Bb3', 'C4', 'E4', 'F4', 'G4', 'A4', 'Bb4'];
+
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack(440);
+  testTone.triggerAttack('Bb2');
 }
 tm.cue[1].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
+  // control pitch on x-axis using array above (can change number of pitches)
+  // note that accel.x COULD be 1.0, which accesses last element of array
+  testTone.frequency.value = testToneFreqArray[Math.floor(tm.accel.x * (testToneFreqArray.length - 1))];
+
+  if (tm.accel.y < 0.5) {
+    // if phone is mostly upright scale from silence to full volume
+    testTone.volume.value = -32 + tm.accel.y * 40;
+    testTone.modulationIndex.value = 0;
+  } else {
+    // stay at full volume and increase brightness of timbre
+    testTone.volume.value = -12;
+    testTone.modulationIndex.value = (tm.accel.y - 0.5) * 30;
+  }
 }
 tm.cue[1].stopCue = function() {
   testTone.triggerRelease();
