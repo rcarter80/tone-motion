@@ -36,28 +36,22 @@ tm.cue[0].goCue = function() {
 var testTone = new Tone.FMSynth().toMaster();
 testTone.harmonicity.value = 3;
 testTone.volume.value = -12;
+var testToneFreqScale = new Tone.Scale(55, 220); // scales control sig (0.-1.)
+xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
 
 // pitch array for both instruments
 var testToneFreqArray = ['Bb2', 'C3', 'E3', 'F3', 'G3', 'A3', 'Bb3', 'C4', 'E4', 'F4', 'G4', 'A4', 'Bb4'];
 
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack('Bb2');
+  testTone.triggerAttack(110);
 }
 tm.cue[1].updateTiltSounds = function() {
   // control pitch on x-axis using array above (can change number of pitches)
   // note that accel.x COULD be 1.0, which accesses last element of array
-  testTone.frequency.value = testToneFreqArray[Math.floor(tm.accel.x * (testToneFreqArray.length - 1))];
+  // testTone.frequency.value = testToneFreqArray[Math.floor(tm.accel.x * (testToneFreqArray.length - 1))];
 
-  if (tm.accel.y < 0.5) {
-    // if phone is mostly upright scale from silence to full volume
-    testTone.volume.value = -32 + tm.accel.y * 40;
-    testTone.modulationIndex.value = 0;
-  } else {
-    // stay at full volume and increase brightness of timbre
-    testTone.volume.value = -12;
-    testTone.modulationIndex.value = (tm.accel.y - 0.5) * 30;
-  }
+  testTone.modulationIndex.value = tm.accel.y * 15;
 }
 tm.cue[1].stopCue = function() {
   testTone.triggerRelease();
