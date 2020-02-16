@@ -47,25 +47,28 @@ var c0_loopD3 = new Tone.Loop(function(time) {
   glassRimD3.start('+8');
 }, 18);
 
+// loops have slight randomization to cause back-and-forth drift (.humanize) but also long-term phasing between playback devices (Math.random() in interval)
 var c0_loopG3 = new Tone.Loop(function(time) {
   // audio file is c. 6 long
   glassRimG3.start('+2');
-}, 10);
+}, 10 + (Math.random() * 2));
 c0_loopG3.humanize = 1;
 var c0_loopC4 = new Tone.Loop(function(time) {
   // audio file is c. 5 long
   glassRimC4.start('+5');
-}, 15);
+}, 13 + (Math.random() * 4));
 c0_loopC4.humanize = 2;
 var c0_loopB4 = new Tone.Loop(function(time) {
   // audio file is c. 5 long
   glassRimB4.start('+7');
-}, 18);
+}, 16 + (Math.random() * 4));
 c0_loopB4.humanize = 3;
 
-tm.cue[0] = new TMCue('tilt', -1);
+// all sections start 2 seconds after cue
+tm.cue[0] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[0].goCue = function() {
   // set levels, which may have been turned down to -99 at end of section before
+  // TODO: set levels appropriate for files I record
   glassRimE3.volume.value = -24;
   glassRimD3.volume.value = -24;
   glassRimG3.volume.value = -24;
@@ -80,7 +83,7 @@ tm.cue[0].goCue = function() {
 
 
 tm.cue[0].updateTiltSounds = function() {
-  // no interactivity on this site 
+  // no interactivity on this site
 }
 tm.cue[0].stopCue = function() {
   tm.fadeFilesOverCurve(c0_soundFileArray, 2, 3);
