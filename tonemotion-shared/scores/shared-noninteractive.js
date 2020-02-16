@@ -27,12 +27,15 @@ Tone.Transport.bpm.value = 64;
 // CUE 0: First section of piece. Looped long tones and shake sounds
 // TODO: replace mockup sounds below with tuned glass played on rim
 // TODO: lower volume of every sound to balance them
+// TODO: add one more sound layer: noisy sound that pops up sporadically
 var glassRimD3 = new Tone.Player(glass_sounds + "glassRimD3.mp3").toMaster();
 var glassRimE3 = new Tone.Player(glass_sounds + "glassRimE3.mp3").toMaster();
 var glassRimG3 = new Tone.Player(glass_sounds + "glassRimG3.mp3").toMaster();
 // TODO: C4 pitch should bend down to B3
 var glassRimC4 = new Tone.Player(glass_sounds + "glassRimC4.mp3").toMaster();
 var glassRimB4 = new Tone.Player(glass_sounds + "glassRimB4.mp3").toMaster();
+// put files in array to fade collectively at end of cue
+var c0_soundFileArray = [glassRimD3, glassRimE3, glassRimG3, glassRimC4, glassRimB4];
 
 // E3 and D3 form alternating bass line at first, but gradually phase
 var c0_loopE3 = new Tone.Loop(function(time) {
@@ -62,6 +65,12 @@ c0_loopB4.humanize = 3;
 
 tm.cue[0] = new TMCue('tilt', -1);
 tm.cue[0].goCue = function() {
+  // set levels, which may have been turned down to -99 at end of section before
+  glassRimE3.volume.value = -24;
+  glassRimD3.volume.value = -24;
+  glassRimG3.volume.value = -24;
+  glassRimC4.volume.value = -24;
+  glassRimB4.volume.value = -24;
   c0_loopE3.start();
   c0_loopD3.start();
   c0_loopG3.start();
@@ -71,9 +80,10 @@ tm.cue[0].goCue = function() {
 
 
 tm.cue[0].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
+  // no interactivity on this site 
 }
 tm.cue[0].stopCue = function() {
+  tm.fadeFilesOverCurve(c0_soundFileArray, 2, 3);
   c0_loopE3.stop();
   c0_loopD3.stop();
   c0_loopG3.stop();
