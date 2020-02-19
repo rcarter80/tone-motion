@@ -91,14 +91,18 @@ tm.cue[0].stopCue = function() {
 // *******************************************************************
 // CUE 1: continued long tones with sporadic interjections of noisy layer
 
-// TODO: add one more sound layer: noisy sound that pops up sporadically
 var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimC3andB2.mp3").toMaster();
 var glassRimA3 = new Tone.Player(glass_sounds + "glassRimA3.mp3").toMaster();
 var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp.mp3").toMaster();
 var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown.mp3").toMaster();
 
+// TODO: create different noisy sound that pops up sporadically
+var popRocksLoop = new Tone.Player(granulated_sounds + "popRocksLoop.mp3").toMaster();
+// gap between sounds is 15 - 25 seconds
+var c1_noiseDelay = 15 + (Math.random() * 10);
+
 // put files in array to fade collectively at end of cue
-var c1_soundFileArray = [glassRimC3andB2, glassRimA3, glassRimE4BendUp, glassRimF5BendDown];
+var c1_soundFileArray = [glassRimC3andB2, glassRimA3, glassRimE4BendUp, glassRimF5BendDown, popRocksLoop];
 
 // C3 and B2 alternate and don't phase in one part, but phase between devices
 // loop interval discrepancy between parts is 0.0 to just less than 1 second
@@ -121,6 +125,10 @@ var c1_loopF5 = new Tone.Loop(function(time) {
   glassRimF5BendDown.start('+7');
 }, 16 + (Math.random() * 4));
 c1_loopF5.humanize = 3;
+var c1_noiseLoop = new Tone.Loop(function(time) {
+  // delay before first hearing is handled in goCue()
+  popRocksLoop.start();
+}, c1_noiseDelay);
 
 // all sections start 2 seconds after cue
 tm.cue[1] = new TMCue('listen', 2000, NO_LIMIT);
@@ -131,10 +139,12 @@ tm.cue[1].goCue = function() {
   glassRimA3.volume.value = -16;
   glassRimE4BendUp.volume.value = -20;
   glassRimF5BendDown.volume.value = -24;
+  popRocksLoop.volume.value = -20;
   c1_loopC3B2.start();
   c1_loopA3.start();
   c1_loopE4.start();
   c1_loopF5.start();
+  c1_noiseLoop.start('+' + c1_noiseDelay);
 };
 
 tm.cue[1].stopCue = function() {
@@ -143,6 +153,7 @@ tm.cue[1].stopCue = function() {
   c1_loopA3.stop();
   c1_loopE4.stop();
   c1_loopF5.stop();
+  c1_noiseLoop.stop();
 };
 
 // *******************************************************************
@@ -278,39 +289,7 @@ tm.cue[8].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 9: [B1] quasi-granulated sparkles
-var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
-pingPongLoop.loop = true;
-
-var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
-popRocksLoop.loop = true;
-
-tm.cue[9] = new TMCue('tilt', 1875, NO_LIMIT); // 2 beats @ 64bpm
-// REVISION: could add third sound
-tm.cue[9].goCue = function() {
-  // mute both loops by default - unmute below
-  pingPongLoop.volume.value = -99;
-  popRocksLoop.volume.value = -99;
-  pingPongLoop.start();
-  popRocksLoop.start();
-};
-tm.cue[9].updateTiltSounds = function() {
-  // playback rate can range from quarter speed to four times speed
-  pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
-  popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
-  if (tm.accel.x > 0.5) {
-    // ping pong audible when device tilted to right
-    pingPongLoop.volume.value = tm.getSectionBreakpoints(9, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
-    popRocksLoop.volume.value = -99;
-  } else {
-    popRocksLoop.volume.value = tm.getSectionBreakpoints(9, [0,0, 26250,0, 33750,-3, 37500,-12, 41250,-99]);
-    pingPongLoop.volume.value = -99;
-  }
-};
-tm.cue[9].stopCue = function() {
-  pingPongLoop.stop();
-  popRocksLoop.stop();
-};
+// CUE 9:
 
 // *******************************************************************
 // CUE 10: [A2] Shaking glass through predefined pitch array (with looped tail)
