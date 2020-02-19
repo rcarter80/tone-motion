@@ -13,6 +13,7 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
+// TODO: delete unused paths
 const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
@@ -21,13 +22,10 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 
-Tone.Transport.bpm.value = 64;
-
 // *******************************************************************
 // CUE 0: First section of piece. Looped long tones and shake sounds
 // TODO: replace mockup sounds below with tuned glass played on rim
 // TODO: lower volume of every sound to balance them
-// TODO: add one more sound layer: noisy sound that pops up sporadically
 var glassRimD3 = new Tone.Player(glass_sounds + "glassRimD3.mp3").toMaster();
 var glassRimE3 = new Tone.Player(glass_sounds + "glassRimE3.mp3").toMaster();
 var glassRimG3 = new Tone.Player(glass_sounds + "glassRimG3.mp3").toMaster();
@@ -65,7 +63,7 @@ var c0_loopB4 = new Tone.Loop(function(time) {
 c0_loopB4.humanize = 3;
 
 // all sections start 2 seconds after cue
-tm.cue[0] = new TMCue('tilt', 2000, NO_LIMIT);
+tm.cue[0] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[0].goCue = function() {
   // set levels, which may have been turned down to -99 at end of section before
   // TODO: set levels appropriate for files I record
@@ -79,12 +77,8 @@ tm.cue[0].goCue = function() {
   c0_loopG3.start();
   c0_loopC4.start();
   c0_loopB4.start();
-}
+};
 
-
-tm.cue[0].updateTiltSounds = function() {
-  // no interactivity on this site
-}
 tm.cue[0].stopCue = function() {
   tm.fadeFilesOverCurve(c0_soundFileArray, 2, 3);
   c0_loopE3.stop();
@@ -92,38 +86,64 @@ tm.cue[0].stopCue = function() {
   c0_loopG3.stop();
   c0_loopC4.stop();
   c0_loopB4.stop();
-}
+};
 
 // *******************************************************************
-// CUE 1: tilt tutorial
-// Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
-var testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[1] = new TMCue('tilt', -1);
+// CUE 1: continued long tones with sporadic interjections of noisy layer
+
+// TODO: add one more sound layer: noisy sound that pops up sporadically
+var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimC3andB2.mp3").toMaster();
+var glassRimA3 = new Tone.Player(glass_sounds + "glassRimA3.mp3").toMaster();
+var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp.mp3").toMaster();
+var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown.mp3").toMaster();
+
+// put files in array to fade collectively at end of cue
+var c1_soundFileArray = [glassRimC3andB2, glassRimA3, glassRimE4BendUp, glassRimF5BendDown];
+
+// C3 and B2 alternate and don't phase in one part, but phase between devices
+// loop interval discrepancy between parts is 0.0 to just less than 1 second
+var c1_loopC3B2 = new Tone.Loop(function(time) {
+  // audio file is c. 12 long
+  glassRimC3andB2.start();
+}, 12 + Math.random());
+var c1_loopA3 = new Tone.Loop(function(time) {
+  // audio file is c. 6 long
+  glassRimA3.start('+3');
+}, 10 + (Math.random() * 2));
+c1_loopA3.humanize = 1;
+var c1_loopE4 = new Tone.Loop(function(time) {
+  // audio file is c. 6 long
+  glassRimE4BendUp.start('+5');
+}, 13 + (Math.random() * 4));
+c1_loopE4.humanize = 2;
+var c1_loopF5 = new Tone.Loop(function(time) {
+  // audio file is c. 5 long
+  glassRimF5BendDown.start('+7');
+}, 16 + (Math.random() * 4));
+c1_loopF5.humanize = 3;
+
+// all sections start 2 seconds after cue
+tm.cue[1] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack(440);
-}
-tm.cue[1].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
-}
+  // set levels, which may have been turned down to -99 at end of section before
+  // TODO: set levels appropriate for files I record
+  glassRimC3andB2.volume.value = -12;
+  glassRimA3.volume.value = -16;
+  glassRimE4BendUp.volume.value = -20;
+  glassRimF5BendDown.volume.value = -24;
+  c1_loopC3B2.start();
+  c1_loopA3.start();
+  c1_loopE4.start();
+  c1_loopF5.start();
+};
+
 tm.cue[1].stopCue = function() {
-  testTone.triggerRelease();
-}
+  tm.fadeFilesOverCurve(c1_soundFileArray, 2, 3);
+  c1_loopC3B2.stop();
+  c1_loopA3.stop();
+  c1_loopE4.stop();
+  c1_loopF5.stop();
+};
 
 // *******************************************************************
 // CUE 2: tacet tutorial
