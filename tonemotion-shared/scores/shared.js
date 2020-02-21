@@ -23,7 +23,7 @@ const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 Tone.Transport.bpm.value = 64;
 
-// TODO: fix bug that disables noSleep if device has gone to another page or app and returned?
+// TODO: fix bug that disables noSleep if device has gone to another page or app and returned? seems to even happening when tapping start again after tapping stop
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
