@@ -23,6 +23,8 @@ const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 Tone.Transport.bpm.value = 64;
 
+// TODO: fix bug that disables noSleep if device has gone to another page or app and returned?
+
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', -1);
