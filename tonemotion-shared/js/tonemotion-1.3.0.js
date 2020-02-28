@@ -97,8 +97,10 @@ function ToneMotion() {
   this.shouldTestOnDesktop = false;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
+  // when server restarts, both cue number and time revert to 0
+  // init with -1 for both so cue 0 is still triggered when server restarts
   this.cueOnClient = -1;
-  this.cueTimeFromServer = 0;
+  this.cueTimeFromServer = -1;
   this.cue = [];
   this.currentCue = {};
   this.MAX_DELAY = 10000;
