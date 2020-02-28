@@ -157,6 +157,7 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: Bass line that phases between parts
+// TODO: add percussive sound on A that bends pitch down 
 var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toMaster();
 var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toMaster();
 var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
