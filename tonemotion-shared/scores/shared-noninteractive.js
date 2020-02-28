@@ -101,7 +101,8 @@ var popRocksLoop = new Tone.Player(granulated_sounds + "popRocksLoop.mp3").toMas
 var c1_noiseDelay = 15 + (Math.random() * 10);
 
 // put files in array to fade collectively at end of cue
-var c1_soundFileArray = [glassRimC3andB2, glassRimA3, glassRimE4BendUp, glassRimF5BendDown, popRocksLoop];
+// does NOT include the two files that continue in next section
+var c1_soundFileArray = [glassRimC3andB2, glassRimA3, popRocksLoop];
 
 // C3 and B2 alternate and don't phase in one part, but phase between devices
 // loop interval discrepancy between parts is 0.0 to just less than 1 second
@@ -150,9 +151,8 @@ tm.cue[1].stopCue = function() {
   tm.fadeFilesOverCurve(c1_soundFileArray, 2, 3);
   c1_loopC3B2.stop();
   c1_loopA3.stop();
-  c1_loopE4.stop();
-  c1_loopF5.stop();
   c1_noiseLoop.stop();
+  // c1_loopE4 and c1_loopF5 do NOT stop because they continue in next cue
 };
 
 // *******************************************************************
@@ -162,7 +162,7 @@ var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").to
 var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
 var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toMaster();
 
-var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3];
+var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown];
 
 var c2_bassLoop = new Tone.Loop(function(time) {
   // each audio file is c. 12 long
@@ -182,11 +182,18 @@ tm.cue[2].goCue = function() {
   modeledGlassE3.volume.value = -6;
   modeledGlassG3.volume.value = -6;
   c2_bassLoop.start();
+  // next two loops were already going in cue 1, but need to be retriggered here just in case client starts with this cue
+  glassRimE4BendUp.volume.value = -20;
+  glassRimF5BendDown.volume.value = -24;
+  c1_loopE4.start();
+  c1_loopF5.start();
 }
 
 tm.cue[2].stopCue = function() {
   tm.fadeFilesOverCurve(c2_soundFileArray, 1, 5);
   c2_bassLoop.stop();
+  c1_loopE4.stop();
+  c1_loopF5.stop();
 }
 
 // TODO: improve tutorials
