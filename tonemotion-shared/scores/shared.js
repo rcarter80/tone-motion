@@ -26,10 +26,48 @@ Tone.Transport.bpm.value = 64;
 // TODO: fix bug that disables noSleep if device has gone to another page or app and returned? seems to even happening when tapping start again after tapping stop
 
 // *******************************************************************
-// CUE 0: sets status to 'waitingForPieceToStart'
-tm.cue[0] = new TMCue('waiting', -1);
+// CUE 0: First section (struck glass sounds)
+var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
+var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
+var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
+var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
+var glassG6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toMaster();
+var glassD3 = new Tone.Player(glass_sounds + "glassRealD3.mp3").toMaster();
+var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toMaster();
+var glassD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
+var glassC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
+var glassC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
+var glassC5_thirdFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
+// plays a third tone flat
+glassC5_thirdFlat.playbackRate = 0.9809;
+var glassC6_thirdFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
+glassC6_thirdFlat.playbackRate = 0.9809;
+var glassC5_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
+// plays 2/3 tone flat
+glassC5_twoThirdsFlat.playbackRate = 0.962;
+var glassC6_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
+glassC6_twoThirdsFlat.playbackRate = 0.962;
+var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
+var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
+
+var c0_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
+
+var c0_counter;
+
+tm.cue[0] = new TMCue('shake', -1);
+
 tm.cue[0].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  c0_counter = 0;
+};
+
+tm.cue[0].triggerShakeSound = function() {
+  c0_glassArray[c0_counter % c0_glassArray.length].start();
+  c0_counter++;
+};
+
+tm.cue[0].stopCue = function() {
+  // nothing to clean up
 };
 
 // *******************************************************************
