@@ -55,7 +55,7 @@ var c0_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glass
 
 var c0_counter;
 
-tm.cue[0] = new TMCue('shake', -1);
+tm.cue[0] = new TMCue('shake', 2000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;

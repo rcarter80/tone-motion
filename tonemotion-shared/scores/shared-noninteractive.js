@@ -90,7 +90,6 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: continued long tones with sporadic interjections of noisy layer
-
 var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimC3andB2.mp3").toMaster();
 var glassRimA3 = new Tone.Player(glass_sounds + "glassRimA3.mp3").toMaster();
 var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp.mp3").toMaster();
@@ -157,13 +156,37 @@ tm.cue[1].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 2: tacet tutorial
-tm.cue[2] = new TMCue('tacet', -1);
+// CUE 2: Bass line that phases between parts
+var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toMaster();
+var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toMaster();
+var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
+var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toMaster();
+
+var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3];
+
+var c2_bassLoop = new Tone.Loop(function(time) {
+  // each audio file is c. 12 long
+  modeledGlassD3.start();
+  // overlap between notes varies (up to 2 sec.) with each loop iteration
+  modeledGlassF3.start('+' + (4 + Math.random() * 2));
+  modeledGlassE3.start('+' + (9 + Math.random() * 2));
+  modeledGlassG3.start('+' + (13 + Math.random() * 2));
+  // notes will not phase within one part, but WILL phase among devices
+}, 20 + Math.random());
+
+tm.cue[2] = new TMCue('listen', 2000, NO_LIMIT);
+
 tm.cue[2].goCue = function() {
-  // nothing to play
+  modeledGlassD3.volume.value = -6;
+  modeledGlassF3.volume.value = -6;
+  modeledGlassE3.volume.value = -6;
+  modeledGlassG3.volume.value = -6;
+  c2_bassLoop.start();
 }
+
 tm.cue[2].stopCue = function() {
-  // nothing to clean up
+  tm.fadeFilesOverCurve(c2_soundFileArray, 1, 5);
+  c2_bassLoop.stop();
 }
 
 // TODO: improve tutorials
