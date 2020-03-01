@@ -24,54 +24,63 @@ const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 // *******************************************************************
 // CUE 0: First section of piece. Looped long tones and shake sounds
-// TODO: replace mockup sounds below with tuned glass played on rim
-// TODO: lower volume of every sound to balance them
-var glassRimD3 = new Tone.Player(glass_sounds + "glassRimD3.mp3").toMaster();
-var glassRimE3 = new Tone.Player(glass_sounds + "glassRimE3.mp3").toMaster();
-var glassRimG3 = new Tone.Player(glass_sounds + "glassRimG3.mp3").toMaster();
-// TODO: C4 pitch should bend down to B3
-var glassRimC4 = new Tone.Player(glass_sounds + "glassRimC4.mp3").toMaster();
-var glassRimB4 = new Tone.Player(glass_sounds + "glassRimB4.mp3").toMaster();
+var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toMaster();
+var glassRimE3 = new Tone.Player(glass_sounds + "glassRimRealE3_10s.mp3").toMaster();
+var glassRimG3 = new Tone.Player(glass_sounds + "glassRimRealG3_10s.mp3").toMaster();
+var glassRimC4 = new Tone.Player(glass_sounds + "glassRimRealC4-B3.mp3").toMaster();
+var glassRimB4 = new Tone.Player(glass_sounds + "glassRimRealB4_10s.mp3").toMaster();
+
+var glassSynthRimD3 = new Tone.Player(glass_sounds + "glassRimD3_triEnv.mp3").toMaster();
+var glassSynthRimE3 = new Tone.Player(glass_sounds + "glassRimE3_triEnv.mp3").toMaster();
+var glassSynthRimG3 = new Tone.Player(glass_sounds + "glassRimG3_triEnv.mp3").toMaster();
+var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toMaster();
 // put files in array to fade collectively at end of cue
-var c0_soundFileArray = [glassRimD3, glassRimE3, glassRimG3, glassRimC4, glassRimB4];
+var c0_soundFileArray = [glassRimD3, glassRimE3, glassRimG3, glassRimC4, glassRimB4, glassSynthRimD3, glassSynthRimE3, glassSynthRimG3, glassSynthRimB4];
 
 // E3 and D3 form alternating bass line at first, but gradually phase
 var c0_loopE3 = new Tone.Loop(function(time) {
-  // audio file is c. 5 long
+  // first sound is actual glass played on rim
   glassRimE3.start();
+  // second sound in physically modeled synthesized "glass rim"
+  glassSynthRimE3.start();
 }, 17.5);
 var c0_loopD3 = new Tone.Loop(function(time) {
-  // audio file is c. 6 long
   glassRimD3.start('+8');
+  glassSynthRimD3.start('+8');
 }, 18);
 
 // loops have slight randomization to cause back-and-forth drift (.humanize) but also long-term phasing between playback devices (Math.random() in interval)
 var c0_loopG3 = new Tone.Loop(function(time) {
-  // audio file is c. 6 long
   glassRimG3.start('+2');
+  glassSynthRimG3.start('+2');
 }, 10 + (Math.random() * 2));
 c0_loopG3.humanize = 1;
 var c0_loopC4 = new Tone.Loop(function(time) {
-  // audio file is c. 5 long
   glassRimC4.start('+5');
 }, 13 + (Math.random() * 4));
 c0_loopC4.humanize = 2;
 var c0_loopB4 = new Tone.Loop(function(time) {
-  // audio file is c. 5 long
+  // slight detuning from varied playback rate in real glass only
+  glassRimB4.playbackRate = 1 + (Math.random() * 0.02);
   glassRimB4.start('+7');
+  // synth glass always plays B4 in tune
+  glassSynthRimB4.start('+7');
 }, 16 + (Math.random() * 4));
 c0_loopB4.humanize = 3;
 
 // all sections start 2 seconds after cue
 tm.cue[0] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  // set levels, which may have been turned down to -99 at end of section before
-  // TODO: set levels appropriate for files I record
-  glassRimE3.volume.value = -24;
-  glassRimD3.volume.value = -24;
-  glassRimG3.volume.value = -24;
-  glassRimC4.volume.value = -24;
-  glassRimB4.volume.value = -24;
+  // set levels, which may have been turned down at end of previous section 
+  glassRimE3.volume.value = -6;
+  glassRimD3.volume.value = -6;
+  glassRimG3.volume.value = -12;
+  glassRimC4.volume.value = -6;
+  glassRimB4.volume.value = -16;
+  glassSynthRimE3.volume.value = -12;
+  glassSynthRimD3.volume.value = -12;
+  glassSynthRimG3.volume.value = -16;
+  glassSynthRimB4.volume.value = -16;
   c0_loopE3.start();
   c0_loopD3.start();
   c0_loopG3.start();
@@ -157,7 +166,7 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: Bass line that phases between parts
-// TODO: add percussive sound on A that bends pitch down 
+// TODO: add percussive sound on A that bends pitch down
 var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toMaster();
 var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toMaster();
 var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
