@@ -71,7 +71,7 @@ c0_loopB4.humanize = 3;
 // all sections start 2 seconds after cue
 tm.cue[0] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  // set levels, which may have been turned down at end of previous section 
+  // set levels, which may have been turned down at end of previous section
   glassRimE3.volume.value = -6;
   glassRimD3.volume.value = -6;
   glassRimG3.volume.value = -12;
@@ -100,18 +100,22 @@ tm.cue[0].stopCue = function() {
 // *******************************************************************
 // CUE 1: continued long tones with sporadic interjections of noisy layer
 var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimC3andB2.mp3").toMaster();
-var glassRimA3 = new Tone.Player(glass_sounds + "glassRimA3.mp3").toMaster();
-var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp.mp3").toMaster();
-var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown.mp3").toMaster();
+var glassRimA3 = new Tone.Player(glass_sounds + "glassRimRealA3_9s.mp3").toMaster();
+var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimRealE4-F4.mp3").toMaster();
+var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimRealF5-E5.mp3").toMaster();
+
+var glassSynthRimA3 = new Tone.Player(glass_sounds + "glassRimA3_triEnv.mp3").toMaster();
+var glassSynthRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp_triEnv.mp3").toMaster();
+var glassSynthRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown_envTri.mp3").toMaster();
 
 // TODO: create different noisy sound that pops up sporadically
-var popRocksLoop = new Tone.Player(granulated_sounds + "popRocksLoop.mp3").toMaster();
+var iceCrunch = new Tone.Player(granulated_sounds + "iceInWineGlass.mp3").toMaster();
 // gap between sounds is 15 - 25 seconds
-var c1_noiseDelay = 15 + (Math.random() * 10);
+var c1_noiseDelay = 20 + (Math.random() * 10);
 
 // put files in array to fade collectively at end of cue
 // does NOT include the two files that continue in next section
-var c1_soundFileArray = [glassRimC3andB2, glassRimA3, popRocksLoop];
+var c1_soundFileArray = [glassRimC3andB2, glassRimA3, iceCrunch, glassSynthRimA3, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
 // C3 and B2 alternate and don't phase in one part, but phase between devices
 // loop interval discrepancy between parts is 0.0 to just less than 1 second
@@ -120,23 +124,28 @@ var c1_loopC3B2 = new Tone.Loop(function(time) {
   glassRimC3andB2.start();
 }, 12 + Math.random());
 var c1_loopA3 = new Tone.Loop(function(time) {
-  // audio file is c. 6 long
+  // slight detuning from varied playback rate in real glass only
+  glassRimA3.playbackRate = 1 + (Math.random() * 0.01);
   glassRimA3.start('+3');
+  glassSynthRimA3.start('+3');
 }, 10 + (Math.random() * 2));
 c1_loopA3.humanize = 1;
 var c1_loopE4 = new Tone.Loop(function(time) {
   // audio file is c. 6 long
   glassRimE4BendUp.start('+5');
+  glassSynthRimE4BendUp.start('+5');
 }, 13 + (Math.random() * 4));
 c1_loopE4.humanize = 2;
 var c1_loopF5 = new Tone.Loop(function(time) {
   // audio file is c. 5 long
   glassRimF5BendDown.start('+7');
+  glassSynthRimF5BendDown.start('+7');
 }, 16 + (Math.random() * 4));
 c1_loopF5.humanize = 3;
 var c1_noiseLoop = new Tone.Loop(function(time) {
+  iceCrunch.playbackRate = 1.8 + (Math.random() * 0.2);
   // delay before first hearing is handled in goCue()
-  popRocksLoop.start();
+  iceCrunch.start();
 }, c1_noiseDelay);
 
 // all sections start 2 seconds after cue
@@ -144,11 +153,14 @@ tm.cue[1] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   // set levels, which may have been turned down to -99 at end of section before
   // TODO: set levels appropriate for files I record
-  glassRimC3andB2.volume.value = -12;
+  glassRimC3andB2.volume.value = -9;
   glassRimA3.volume.value = -16;
   glassRimE4BendUp.volume.value = -20;
   glassRimF5BendDown.volume.value = -24;
-  popRocksLoop.volume.value = -20;
+  glassSynthRimA3.volume.value = -16;
+  glassSynthRimE4BendUp.volume.value = -20;
+  glassSynthRimF5BendDown.volume.value = -24;
+  iceCrunch.volume.value = -3;
   c1_loopC3B2.start();
   c1_loopA3.start();
   c1_loopE4.start();
@@ -172,7 +184,7 @@ var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").to
 var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
 var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toMaster();
 
-var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown];
+var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
 var c2_bassLoop = new Tone.Loop(function(time) {
   // each audio file is c. 12 long
