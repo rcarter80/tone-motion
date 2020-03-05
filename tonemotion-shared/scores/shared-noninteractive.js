@@ -187,6 +187,7 @@ var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").to
 var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
 var c2_bassLoop = new Tone.Loop(function(time) {
+  // TODO: add randomized octave jump up by setting playackRate to 2
   // each audio file is c. 12 long
   modeledGlassD3.start();
   // overlap between notes varies (up to 2 sec.) with each loop iteration
@@ -199,14 +200,14 @@ var c2_bassLoop = new Tone.Loop(function(time) {
 tm.cue[2] = new TMCue('listen', 2000, NO_LIMIT);
 
 tm.cue[2].goCue = function() {
-  modeledGlassD3.volume.value = -6;
-  modeledGlassF3.volume.value = -6;
-  modeledGlassE3.volume.value = -6;
-  modeledGlassG3.volume.value = -6;
+  modeledGlassD3.volume.value = -9;
+  modeledGlassF3.volume.value = -9;
+  modeledGlassE3.volume.value = -9;
+  modeledGlassG3.volume.value = -9;
   c2_bassLoop.start();
   // next two loops were already going in cue 1, but need to be retriggered here just in case client starts with this cue
-  glassRimE4BendUp.volume.value = -20;
-  glassRimF5BendDown.volume.value = -24;
+  glassRimE4BendUp.volume.value = -24;
+  glassRimF5BendDown.volume.value = -28;
   c1_loopE4.start();
   c1_loopF5.start();
 }
