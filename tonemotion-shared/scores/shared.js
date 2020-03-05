@@ -103,26 +103,23 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: shake-triggered chimes with octaves selected by device position
-var glA4 = new Tone.Player(glock_sounds + "glockA4.mp3").toMaster();
-var glA5 = new Tone.Player(glock_sounds + "glockA5.mp3").toMaster();
-var chA6lo = new Tone.Player(chime_sounds + "chime-1748Hz-A6.mp3").toMaster();
+var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
+var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
 
 tm.cue[2] = new TMCue('shake', 2000, NO_LIMIT);
 
 tm.cue[2].goCue = function() {
-  // nothing to do until shake gestures
+  chimeA6.volume.value = -12;
+  chimeA7.volume.value = -12;
 };
 
 tm.cue[2].triggerShakeSound = function() {
-  if (tm.accel.y < 0.33) {
+  if (tm.accel.y < 0.5) {
     // device is shaken while mostly upright
-    chA6lo.start();
-  } else if (tm.accel.y < 0.66) {
-    // device is mostly flat
-    glA5.start();
+    chimeA7.start();
   } else {
     // device is mostly upside down
-    glA4.start();
+    chimeA6.start();
   }
 };
 
@@ -130,7 +127,6 @@ tm.cue[2].stopCue = function() {
   // nothing to clean up
 };
 
-// TODO: improve tutorials
 // *******************************************************************
 // CUE 3: shake tutorial
 var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
