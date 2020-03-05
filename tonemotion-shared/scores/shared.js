@@ -71,35 +71,51 @@ tm.cue[0].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: tilt tutorial
-// Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
-var testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[1] = new TMCue('tilt', -1);
+// CUE 1: tilt sparkly sounds that can be muted when phone is upright
+// TODO: replace these sounds with iceCrunch and another glass sound?
+var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
+pingPongLoop.loop = true;
+
+var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
+popRocksLoop.loop = true;
+
+tm.cue[1] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack(440);
-}
+  // mute both loops by default - unmute below
+  pingPongLoop.volume.value = -99;
+  popRocksLoop.volume.value = -99;
+  pingPongLoop.start();
+  popRocksLoop.start();
+};
 tm.cue[1].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
-}
+  // playback rate can range from quarter speed to four times speed
+  pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.5) {
+    // ping pong audible when device tilted to right
+    popRocksLoop.volume.value = -99;
+    if (tm.accel.y < 0.5) {
+      // volume fades to silence when device is upright
+      pingPongLoop.volume.value = -99 + ((tm.accel.y * 2) * 99);
+    } else {
+      // if device is mostly upright, full volume
+      pingPongLoop.volume.value = 0;
+    }
+  } else {
+    pingPongLoop.volume.value = -99;
+    if (tm.accel.y < 0.5) {
+      // volume fades to silence when device is upright
+      popRocksLoop.volume.value = -99 + ((tm.accel.y * 2) * 99);
+    } else {
+      // if device is mostly upright, full volume
+      popRocksLoop.volume.value = 0;
+    }
+  }
+};
 tm.cue[1].stopCue = function() {
-  testTone.triggerRelease();
-}
+  pingPongLoop.stop();
+  popRocksLoop.stop();
+};
 
 // *******************************************************************
 // CUE 2: shake-triggered chimes with octaves selected by device position

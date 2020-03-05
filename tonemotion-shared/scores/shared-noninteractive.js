@@ -108,7 +108,6 @@ var glassSynthRimA3 = new Tone.Player(glass_sounds + "glassRimA3_triEnv.mp3").to
 var glassSynthRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp_triEnv.mp3").toMaster();
 var glassSynthRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown_envTri.mp3").toMaster();
 
-// TODO: create different noisy sound that pops up sporadically
 var iceCrunch = new Tone.Player(granulated_sounds + "iceInWineGlass.mp3").toMaster();
 // gap between sounds is 15 - 25 seconds
 var c1_noiseDelay = 20 + (Math.random() * 10);
@@ -152,7 +151,6 @@ var c1_noiseLoop = new Tone.Loop(function(time) {
 tm.cue[1] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   // set levels, which may have been turned down to -99 at end of section before
-  // TODO: set levels appropriate for files I record
   glassRimC3andB2.volume.value = -9;
   glassRimA3.volume.value = -16;
   glassRimE4BendUp.volume.value = -20;
@@ -178,16 +176,41 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: Bass line that phases between parts
-// TODO: add percussive sound on A that bends pitch down
 var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toMaster();
 var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toMaster();
 var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
 var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toMaster();
+var glassRealC5_15s = new Tone.Player(glass_sounds + "glassRealC5_15s.mp3").toMaster();
 
 var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
+var c2_octaveShift;
+// TODO: add pitch bend down and back for C - define getLooping...()
 var c2_bassLoop = new Tone.Loop(function(time) {
-  // TODO: add randomized octave jump up by setting playackRate to 2
+  // random sporadic struck glass on C5 (automatically shifts D up octave)
+  if (Math.random() > 0.9) {
+    modeledGlassD3.playbackRate = 2;
+    // shift D up octave and use volume gap to play struck C
+    glassRealC5_15s.start('+3');
+  } else {
+    modeledGlassD3.playbackRate = 1;
+  }
+  // other glasses can be randomly shifted up octave
+  c2_octaveShift = Math.random();
+  if (c2_octaveShift >  0.95) {
+    modeledGlassF3.playbackRate = 2;
+  } else if (c2_octaveShift > 0.9) {
+    modeledGlassE3.playbackRate = 2;
+  } else if (c2_octaveShift > 0.85) {
+    modeledGlassG3.playbackRate = 2;
+  } else {
+    // octave only reset by c2_octaveShift under 0.85
+    // so multiple octave shifts could accumulate
+    modeledGlassF3.playbackRate = 1;
+    modeledGlassE3.playbackRate = 1;
+    modeledGlassG3.playbackRate = 1;
+  }
+
   // each audio file is c. 12 long
   modeledGlassD3.start();
   // overlap between notes varies (up to 2 sec.) with each loop iteration
@@ -200,14 +223,17 @@ var c2_bassLoop = new Tone.Loop(function(time) {
 tm.cue[2] = new TMCue('listen', 2000, NO_LIMIT);
 
 tm.cue[2].goCue = function() {
-  modeledGlassD3.volume.value = -9;
-  modeledGlassF3.volume.value = -9;
-  modeledGlassE3.volume.value = -9;
-  modeledGlassG3.volume.value = -9;
+  modeledGlassD3.volume.value = -12;
+  modeledGlassF3.volume.value = -12;
+  modeledGlassE3.volume.value = -12;
+  modeledGlassG3.volume.value = -12;
+  glassRealC5_15s.volume.value= -3;
   c2_bassLoop.start();
   // next two loops were already going in cue 1, but need to be retriggered here just in case client starts with this cue
-  glassRimE4BendUp.volume.value = -24;
-  glassRimF5BendDown.volume.value = -28;
+  glassRimE4BendUp.volume.value = -22;
+  glassSynthRimE4BendUp.volume.value = -22;
+  glassRimF5BendDown.volume.value = -24;
+  glassSynthRimF5BendDown.volume.value = -24;
   c1_loopE4.start();
   c1_loopF5.start();
 }
@@ -219,7 +245,6 @@ tm.cue[2].stopCue = function() {
   c1_loopF5.stop();
 }
 
-// TODO: improve tutorials
 // *******************************************************************
 // CUE 3: shake tutorial
 var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
