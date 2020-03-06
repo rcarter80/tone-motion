@@ -303,7 +303,7 @@ var c3_bassLoop = new Tone.Loop(function(time) {
   c3_note4 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'C4' : 'C3';
   glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
   glassBassSynth.triggerAttackRelease(c3_note4, 2, '+12');
-}, 16 + (Math.random() * 0.25));
+}, 16 + (Math.random() * 0.4));
 
 tm.cue[3] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {

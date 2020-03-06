@@ -67,7 +67,7 @@ tm.cue[0].triggerShakeSound = function() {
 };
 
 tm.cue[0].stopCue = function() {
-  // nothing to clean up
+  // TODO: add fade out to glass shakes 
 };
 
 // *******************************************************************
