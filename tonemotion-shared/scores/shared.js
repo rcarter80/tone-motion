@@ -132,9 +132,12 @@ tm.cue[2].goCue = function() {
 tm.cue[2].triggerShakeSound = function() {
   if (tm.accel.y < 0.5) {
     // device is shaken while mostly upright
+    // pitch bends down quarter tone over 20s and then goes back up
+    chimeA7.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.97, 40000,1]);
     chimeA7.start();
   } else {
     // device is mostly upside down
+    chimeA6.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.97, 40000,1]);
     chimeA6.start();
   }
 };

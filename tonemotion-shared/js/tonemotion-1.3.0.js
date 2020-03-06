@@ -876,6 +876,48 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
   return breakpointArray[breakpointArray.length-1];
 };
 
+// Same as getSectionBreakpoints(), but loops pattern continuously
+ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
+  // check that function is passed cue number AND array of breakpoints
+  // Each time needs a corresponding value (need even # of elements in array)
+  if (arguments.length < 2 || breakpointArray.length % 2 !== 0) {
+    this.publicLog('Missing value for getSectionBreakpointLoop(), which requires a cue number and an array of time/value pairs. Example: getSectionBreakpointLoop(3, [1000, 0.5, 2000, 1.0]).')
+    return 0;
+  }
+
+  // check that requested cue has actually begun
+  if (this.cue[cue].startedAt === 0) {
+    this.publicLog('Section breakpoint value requested for cue that has not started yet.');
+    return 0;
+  } else {
+    var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+    // time elapsed in this iteration of loop determined by final loop time
+    var elapsedTimeInLoop = elapsedTime % breakpointArray[breakpointArray.length - 2];
+  }
+
+  // Go through array of time/value pairs
+  for (var i = 0; i < breakpointArray.length; i = i + 2) {
+    // Each time needs to be greater than previous (error check for above)
+    if (breakpointArray[i] >= breakpointArray[i+2]) {
+      this.publicLog('getSectionBreakpointLoop() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
+      return 0;
+    }
+    // Find which segment current time is in
+    if (elapsedTimeInLoop <= breakpointArray[i]) {
+      // time of previous breakpoint (if there was one)
+      var prevTime = breakpointArray[i-2] || 0;
+      // duration of this segment
+      var segTime = breakpointArray[i] - prevTime;
+      // progress in this segment
+      var segProg = (elapsedTimeInLoop - prevTime) / segTime;
+      // previous value (or zero if none)
+      var prevVal = breakpointArray[i-1] || 0;
+      // interpolated value for progress along this segment
+      return prevVal + segProg * (breakpointArray[i+1] - prevVal);
+    }
+  }
+};
+
 // Takes cue number and time elapsed since that cue began (or 0 if it hasn't)
 ToneMotion.prototype.getElapsedTimeInCue = function(cue) {
   var elapsedTime;
