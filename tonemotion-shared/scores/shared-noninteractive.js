@@ -35,7 +35,7 @@ var glassSynthRimE3 = new Tone.Player(glass_sounds + "glassRimE3_triEnv.mp3").to
 var glassSynthRimG3 = new Tone.Player(glass_sounds + "glassRimG3_triEnv.mp3").toMaster();
 var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toMaster();
 
-var revGlassC5_2s = new Tone.Player(glass_sounds + "revGlassC5_2s.mp3").toMaster();
+var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toMaster();
 // randomized playbackRate yields F#4, C5, D5, A5
 var c0_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 // put files in array to fade collectively at end of cue
@@ -86,7 +86,7 @@ tm.cue[0].goCue = function() {
   glassSynthRimD3.volume.value = -12;
   glassSynthRimG3.volume.value = -16;
   glassSynthRimB4.volume.value = -16;
-  revGlassC5_2s.volume.value = -3;
+  revGlassC5_7s.volume.value = -3;
   c0_loopE3.start();
   c0_loopD3.start();
   c0_loopG3.start();
@@ -95,8 +95,8 @@ tm.cue[0].goCue = function() {
 };
 tm.cue[0].stopCue = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
-  revGlassC5_2s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
-  revGlassC5_2s.start();
+  revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
   tm.fadeFilesOverCurve(c0_soundFileArray, 0, 3);
   c0_loopE3.stop();
   c0_loopD3.stop();
@@ -170,7 +170,7 @@ tm.cue[1].goCue = function() {
   glassSynthRimE4BendUp.volume.value = -20;
   glassSynthRimF5BendDown.volume.value = -24;
   iceCrunch.volume.value = -3;
-  revGlassC5_2s.volume.value = -3;
+  revGlassC5_7s.volume.value = -3;
   c1_loopC3B2.start();
   c1_loopA3.start();
   c1_loopE4.start();
@@ -179,8 +179,8 @@ tm.cue[1].goCue = function() {
 };
 tm.cue[1].stopCue = function() {
   // randomly select 1 of 2 possible pitches for reversed glass sound
-  revGlassC5_2s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
-  revGlassC5_2s.start();
+  revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
   tm.fadeFilesOverCurve(c1_soundFileArray, 2, 3);
   c1_loopC3B2.stop();
   c1_loopA3.stop();
@@ -204,7 +204,7 @@ var c2_revGlassPitchArray = [1.122, 1.587, 3.175];
 var c2_octaveShift;
 var c2_bassLoop = new Tone.Loop(function(time) {
   // random sporadic struck glass on C5 (automatically shifts D up octave)
-  if (Math.random() > 0.9) {
+  if (Math.random() > 0.8) {
     modeledGlassD3.playbackRate = 2;
     // shift D up octave and use volume gap to play struck C
     // pitch bends down quarter tone over 20s and then goes back up
@@ -245,7 +245,7 @@ tm.cue[2].goCue = function() {
   modeledGlassE3.volume.value = -12;
   modeledGlassG3.volume.value = -12;
   glassRealC5_15s.volume.value= -6;
-  revGlassC5_2s.volume.value = -3;
+  revGlassC5_7s.volume.value = -3;
   c2_bassLoop.start();
   // next two loops were already going in cue 1, but need to be retriggered here just in case client starts with this cue
   glassRimE4BendUp.volume.value = -22;
@@ -257,8 +257,8 @@ tm.cue[2].goCue = function() {
 }
 tm.cue[2].stopCue = function() {
   // randomly select 1 of 3 possible pitches for reversed glass sound
-  revGlassC5_2s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
-  revGlassC5_2s.start();
+  revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
   tm.fadeFilesOverCurve(c2_soundFileArray, 1, 5);
   c2_bassLoop.stop();
   c1_loopE4.stop();
@@ -285,6 +285,7 @@ var c3_note1, c3_note2, c3_note3, c3_note4;
 // after 2 minutes, all guaranteed to be octave up, and then they move down
 var c3_switch = [0,0, 30000,0, 60000,0.5, 120000,1, 180000,0.5, 210000,0, 240000,0];
 
+// loop will slowly phase between devices
 var c3_bassLoop = new Tone.Loop(function(time) {
   // weighted probabilities of octave shift and waveform change
   c3_note1 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'Bb3' : 'Bb2';
@@ -302,7 +303,7 @@ var c3_bassLoop = new Tone.Loop(function(time) {
   c3_note4 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'C4' : 'C3';
   glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
   glassBassSynth.triggerAttackRelease(c3_note4, 2, '+12');
-}, 16);
+}, 16 + (Math.random() * 0.25));
 
 tm.cue[3] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
@@ -310,7 +311,8 @@ tm.cue[3].goCue = function() {
   c3_bassLoop.start();
 };
 tm.cue[3].stopCue = function() {
-  glassRimD3.volume.value = -9;
+  glassRimD3.volume.value = -99;
+  glassRimD3.volume.rampTo(0, 3);
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
   glassBassSynth.volume.rampTo(-40, 10);
