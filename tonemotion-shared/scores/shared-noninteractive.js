@@ -22,6 +22,10 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 
+// send everything through a limiter to be safe
+var masterLimiter = new Tone.Limiter(-1);
+Tone.Master.chain(masterLimiter);
+
 // *******************************************************************
 // CUE 0: First section of piece. Looped long tones and shake sounds
 var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toMaster();
