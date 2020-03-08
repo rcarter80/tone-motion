@@ -52,8 +52,6 @@ var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
 var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
 
 var c0_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
-// array for fading out files
-var c0_soundFileArray = [glassE4, glassE5, glassE6, glassG4, glassG6, glassD3, glassFsharp6, glassD5, glassD6, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
 
 var c0_counter;
 
@@ -61,24 +59,6 @@ tm.cue[0] = new TMCue('shake', 2000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;
-  // reset volumes levels in case they were changed
-  glassE4.volume.value = 0;
-  glassE5.volume.value = 0;
-  glassE6.volume.value = 0;
-  glassG4.volume.value = 0;
-  glassG6.volume.value = 0;
-  glassD3.volume.value = 0;
-  glassFsharp6.volume.value = 0;
-  glassD5.volume.value = 0;
-  glassD6.volume.value = 0;
-  glassC5.volume.value = 0;
-  glassC6.volume.value = 0;
-  glassC5_thirdFlat.volume.value = 0;
-  glassC6_thirdFlat.volume.value = 0;
-  glassC5_twoThirdsFlat.volume.value = 0;
-  glassC6_twoThirdsFlat.volume.value = 0;
-  glassB4.volume.value = 0;
-  glassB5.volume.value = 0;
 };
 
 tm.cue[0].triggerShakeSound = function() {
@@ -87,8 +67,7 @@ tm.cue[0].triggerShakeSound = function() {
 };
 
 tm.cue[0].stopCue = function() {
-  // fade out all sound files, but ditch this if performance issues
-  tm.fadeFilesOverCurve(c0_soundFileArray, 0, 1.5);
+  // TODO: add fade out to glass shakes 
 };
 
 // *******************************************************************
