@@ -21,7 +21,7 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 
-Tone.Transport.bpm.value = 64;
+Tone.Transport.bpm.value = 60;
 
 // TODO: fix bug that disables noSleep if device has gone to another page or app and returned? seems to even happening when tapping start again after tapping stop
 
@@ -51,6 +51,10 @@ glassC6_twoThirdsFlat.playbackRate = 0.962;
 var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
 var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
 
+var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toMaster();
+// randomized playbackRate yields F#4, C5, D5, A5
+var c0_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
+
 var c0_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
 
 var c0_counter;
@@ -67,7 +71,10 @@ tm.cue[0].triggerShakeSound = function() {
 };
 
 tm.cue[0].stopCue = function() {
-  // TODO: add fade out to glass shakes 
+  revGlassC5_7s.volume.value = -9;
+  // randomly select 1 of 4 possible pitches for reversed glass sound
+  revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
 };
 
 // *******************************************************************
@@ -78,6 +85,9 @@ pingPongLoop.loop = true;
 
 var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
 popRocksLoop.loop = true;
+
+// randomized playbackRate yields D5, D6
+var c1_revGlassPitchArray = [1.122, 2.244];
 
 tm.cue[1] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[1].goCue = function() {
@@ -113,6 +123,10 @@ tm.cue[1].updateTiltSounds = function() {
   }
 };
 tm.cue[1].stopCue = function() {
+  revGlassC5_7s.volume.value = -9;
+  // randomly select 1 of 2 possible pitches for reversed glass sound
+  revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
@@ -121,6 +135,9 @@ tm.cue[1].stopCue = function() {
 // CUE 2: shake-triggered chimes with octaves selected by device position
 var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
 var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
+
+// randomized playbackRate yields D5, Ab5, Ab6
+var c2_revGlassPitchArray = [1.122, 1.587, 3.175];
 
 tm.cue[2] = new TMCue('shake', 2000, NO_LIMIT);
 
@@ -143,21 +160,68 @@ tm.cue[2].triggerShakeSound = function() {
 };
 
 tm.cue[2].stopCue = function() {
-  // nothing to clean up
+  revGlassC5_7s.volume.value = -9;
+  // randomly select 1 of 3 possible pitches for reversed glass sound
+  revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
 };
 
 // *******************************************************************
-// CUE 3: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
-tm.cue[3] = new TMCue('shake', -1);
+// CUE 3: tilt octaves on D, F, E, A, Bb
+// TODO: may need to modify sound files to avoid click on retrigger 
+var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toMaster();
+var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toMaster();
+var octaveBellsBb3 = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toMaster();
+var octaveBellsBb5 = new Tone.Player(glock_sounds + "octaveBellsBb5.mp3").toMaster();
+var octaveBellsD3 = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toMaster();
+var octaveBellsD3b = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toMaster();
+var octaveBellsD5 = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toMaster();
+var octaveBellsD5b = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toMaster();
+var octaveBellsE3 = new Tone.Player(glock_sounds + "octaveBellsE3.mp3").toMaster();
+var octaveBellsE5 = new Tone.Player(glock_sounds + "octaveBellsE5.mp3").toMaster();
+var octaveBellsF3 = new Tone.Player(glock_sounds + "octaveBellsF3.mp3").toMaster();
+var octaveBellsF5 = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toMaster();
+
+var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toMaster();
+
+var c3_hiBellArray = [octaveBellsD5, octaveBellsF5, octaveBellsE5, octaveBellsA5, octaveBellsBb5];
+var c3_hiBellArrayb = [octaveBellsD5, octaveBellsF5, octaveBellsE5, octaveBellsA5, octaveBellsBb5];
+var c3_loBellArray = [octaveBellsD3, octaveBellsF3, octaveBellsE3, octaveBellsA3, octaveBellsBb3];
+var c3_loBellArrayb = [octaveBellsD3, octaveBellsF3, octaveBellsE3, octaveBellsA3, octaveBellsBb3];
+
+var c3_counter, c3_i, c3_thisBellArray;
+
+var c3_bellLoop = new Tone.Loop(function(time) {
+  // find pitch index from x-axis (tm.accel.x CAN be 1.0, so need to scale)
+  c3_i = Math.floor((tm.accel.x * 0.99) * c3_hiBellArray.length);
+  if (tm.accel.y > 0.5) {
+    // high bells when phone flat or upside down
+    // alternate buffer to avoid retrigger artifacts
+    c3_thisBellArray = (c3_counter % 2) ? c3_hiBellArray : c3_hiBellArrayb;
+    c3_thisBellArray[c3_i].start();
+  } else if (tm.accel.y > 0.25) {
+    // high bells when phone flat or upside down
+    c3_thisBellArray = (c3_counter % 2) ? c3_loBellArray : c3_loBellArrayb;
+    c3_thisBellArray[c3_i].start();
+  } else {
+    // no sound when phone mostly upright
+  }
+  c3_counter++;
+}, '16n');
+
+tm.cue[3] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
-  // nothing to do until shake gestures
+  c3_counter = 0;
+  c3_bellLoop.start();
 };
-tm.cue[3].triggerShakeSound = function() {
-  cowbell.start();
+tm.cue[3].updateTiltSounds = function() {
 };
 tm.cue[3].stopCue = function() {
-  // nothing to clean up
+  glassRimD3.volume.value = -99;
+  glassRimD3.volume.rampTo(0, 3);
+  glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
+  glassRimD3.start();
+  c3_bellLoop.stop();
 };
 
 // *******************************************************************
