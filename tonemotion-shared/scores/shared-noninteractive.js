@@ -260,6 +260,7 @@ tm.cue[2].goCue = function() {
   c1_loopF5.start();
 }
 tm.cue[2].stopCue = function() {
+  // TODO: maybe also trigger glassRealC5_15s here?
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
