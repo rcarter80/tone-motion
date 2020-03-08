@@ -271,6 +271,10 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: bass synthesized from glass waveform
+// waveforms for synths to alternate between
+var waveHollow = [1, 0.1, 0, 0, 0.5, 0, 0.01];
+var waveGlass = [1.000000, 0.033102, 0.006012, 0.000684, 0.018704, 0, 0.000944, 0.003032, 0.002122, 0.000996, 0.002339, 0.002330, 0.001975, 0.000728, 0.001273, 0.001438, 0.003552, 0.001057, 0.001507, 0, 0, 0.002512,  0.001126, 0, 0.000658, 0.000624, 0, 0, 0.000615, 0, 0.000312];
+
 var glassBassSynth = new Tone.Synth({
   envelope: {
     attack: 2,
@@ -279,39 +283,68 @@ var glassBassSynth = new Tone.Synth({
     release: 1.9
   }
 }).toMaster();
-// waveforms to alternate between
-var waveHollow = [1, 0.1, 0, 0, 0.5, 0, 0.01];
-var waveGlass = [1.000000, 0.033102, 0.006012, 0.000684, 0.018704, 0, 0.000944, 0.003032, 0.002122, 0.000996, 0.002339, 0.002330, 0.001975, 0.000728, 0.001273, 0.001438, 0.003552, 0.001057, 0.001507, 0, 0, 0.002512,  0.001126, 0, 0.000658, 0.000624, 0, 0, 0.000615, 0, 0.000312];
 glassBassSynth.envelope.attackCurve = [0, 0.05, 0.15, 0.3, 0.6, 1];
+
+// second voice
+var glassBassSynth2 = new Tone.Synth({
+  envelope: {
+    attack: 3,
+    decay: 0,
+    sustain: 1,
+    release: 0.9
+  }
+}).toMaster();
+glassBassSynth2.envelope.attackCurve = [0, 0.1, 0.2, 0.4, 1.0];
+glassBassSynth2.oscillator.partials = waveHollow;
+// LFO to slightly detune upper voice
+var c3_detuneLFO = new Tone.LFO(0.1, 1180, 1220);
+c3_detuneLFO.connect(glassBassSynth2.detune);
 
 var c3_note1, c3_note2, c3_note3, c3_note4;
 // all notes in lower octave for 1st 30s, but then they randomly move up
 // after 2 minutes, all guaranteed to be octave up, and then they move down
 var c3_switch = [0,0, 30000,0, 60000,0.5, 120000,1, 180000,0.5, 210000,0, 240000,0];
+var c3_breakpointVal;
 
 // loop will slowly phase between devices
 var c3_bassLoop = new Tone.Loop(function(time) {
-  // weighted probabilities of octave shift and waveform change
-  c3_note1 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'Bb3' : 'Bb2';
-  glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
+  // interpolated value in c3_switch breakpoint loop (updated once per Loop)
+  c3_breakpointVal = tm.getSectionBreakpointLoop(3, c3_switch);
+  // randomly select waveform for lower voice (same throughout Loop)
+  glassBassSynth.oscillator.partials = (Math.random() < c3_breakpointVal) ? waveHollow : waveGlass;
+
+  // weighted probability of octave shift
+  c3_note1 = (Math.random() < c3_breakpointVal) ? 'Bb3' : 'Bb1';
   glassBassSynth.triggerAttackRelease(c3_note1, 2);
+  // weighted probability of second voice added higher
+  if (Math.random() < c3_breakpointVal) {
+    glassBassSynth2.triggerAttackRelease(c3_note1, 3, '+2');
+  }
 
-  c3_note2 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'G3' : 'G2';
-  glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
+  c3_note2 = (Math.random() < c3_breakpointVal) ? 'G3' : 'G2';
   glassBassSynth.triggerAttackRelease(c3_note2, 2, '+4');
+  if (Math.random() < c3_breakpointVal) {
+    glassBassSynth2.triggerAttackRelease(c3_note2, 3, '+6');
+  }
 
-  c3_note3 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'D3' : 'D2';
-  glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
+  c3_note3 = (Math.random() < c3_breakpointVal) ? 'D3' : 'D2';
   glassBassSynth.triggerAttackRelease(c3_note3, 2, '+8');
+  if (Math.random() < c3_breakpointVal) {
+    glassBassSynth2.triggerAttackRelease(c3_note3, 3, '+10');
+  }
 
-  c3_note4 = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? 'C4' : 'C3';
-  glassBassSynth.oscillator.partials = (Math.random() < tm.getSectionBreakpointLoop(3, c3_switch)) ? waveHollow : waveGlass;
+  c3_note4 = (Math.random() < c3_breakpointVal) ? 'C4' : 'C3';
   glassBassSynth.triggerAttackRelease(c3_note4, 2, '+12');
+  if (Math.random() < c3_breakpointVal) {
+    glassBassSynth2.triggerAttackRelease(c3_note4, 3, '+14');
+  }
 }, 16 + (Math.random() * 0.4));
 
 tm.cue[3] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   glassBassSynth.volume.value = -3;
+  glassBassSynth2.volume.value = -20;
+  c3_detuneLFO.start();
   c3_bassLoop.start();
 };
 tm.cue[3].stopCue = function() {
@@ -319,7 +352,10 @@ tm.cue[3].stopCue = function() {
   glassRimD3.volume.rampTo(0, 3);
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
-  glassBassSynth.volume.rampTo(-40, 10);
+  glassBassSynth.volume.rampTo(-40, 8);
+  glassBassSynth2.volume.rampTo(-40, 8);
+  // stop LFO that detune second synth right now? or after fade out?
+  c3_detuneLFO.stop();
   c3_bassLoop.stop();
 };
 
