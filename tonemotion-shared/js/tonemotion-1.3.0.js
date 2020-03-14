@@ -970,6 +970,11 @@ ToneMotion.prototype.fadeFilesOverCurve = function(audioFiles, delayTime, fadeTi
   }
 };
 
+// picks random element from array
+ToneMotion.prototype.pickRand = function(array) {
+  return array[Math.floor(Math.random() * array.length)];
+};
+
 /*********************************************************************
 ************************ CUE LIST MANAGEMENT *************************
 *********************************************************************/

@@ -364,41 +364,64 @@ tm.cue[3].stopCue = function() {
 
 // *******************************************************************
 // CUE 4: drone on B slowly fades in and slides up octave
-var glassRimB3_27s = new Tone.Player(glass_sounds + "glassRimB3_27s.mp3").toMaster();
-glassRimB3_27s.loop = true;
-var glassRimB3_27s2 = new Tone.Player(glass_sounds + "glassRimB3_27s.mp3").toMaster();
-var glassRimD3_42s = new Tone.Player(glass_sounds + "glassRimD3_42s.mp3").toMaster();
-glassRimD3_42s.loop = true;
+
+// reverb for drone
+var c4_delay = new Tone.FeedbackDelay({
+  delayTime: 0.2,
+  feedback: 0.8
+}).toMaster();
+var c4_drone = new Tone.Player(glass_sounds + "drone.mp3").connect(c4_delay);
+
+var c4_highSynthTremolo = new Tone.Tremolo(6, 1).toMaster().start();
+var c4_highSynth = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 2,
+    attackCurve: [0, 0.05, 0.15, 0.4, 1.0],
+    decay: 0.01,
+    sustain: 0.8,
+    release: 2
+  }
+}).connect(c4_highSynthTremolo);
+
+var c4_highPitch, c4_highDur;
+
+// loop of very high wobbly shiny synths (will phase among devices)
+var c4_highSynthLoop = new Tone.Loop(function(time) {
+  // high synth drops by a major 9th
+  c4_highSynth.detune.value = tm.getSectionBreakpoints(4, [0,0, 30000,0, 60000,-1400]);
+  // randomly change tremolo speed
+  c4_highSynthTremolo.frequency.value = 3 + (Math.random() * 4);
+  // randomly select very high partials of D0 (18.354 in Hz)
+  c4_highPitch = 18.354 * tm.pickRand([160, 192, 224, 256, 288, 320, 352]);
+  c4_highDur = 2 + (Math.random() * 1);
+  c4_highSynth.triggerAttackRelease(c4_highPitch, c4_highDur);
+}, 5 + (Math.random() * 10));
 
 var c4_counter;
 
 var c4_playbackRateLoop = new Tone.Loop(function(time) {
-  glassRimB3_27s2.playbackRate = 2;
-  glassRimB3_27s2.start();
+  c4_drone.start();
   c4_counter++;
-}, 14);
+}, 32);
 
 
 tm.cue[4] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicMessage('Section 4');
 
-  // gradually fade in on first iteration, then sound loops
-  // glassRimB3_27s.volume.value = -99;
-  // glassRimB3_27s.volume.rampTo(-3, 8);
-  // glassRimB3_27s.start();
-  //
-  // c4_playbackRateLoop.start('+8');
+  c4_drone.volume.value = -9;
+  c4_playbackRateLoop.start();
 
-  glassRimD3_42s.volume = 0;
-  glassRimD3_42s.start();
+  c4_highSynth.volume.value = -32;
+  c4_highSynthLoop.start();
 };
 tm.cue[4].stopCue = function() {
-  // glassRimB3_27s.stop();
-  // c4_playbackRateLoop.stop();
-
-  glassRimD3_42s.volume.rampTo(-99, 5);
-  glassRimD3_42s.stop('+5');
+  // TODO: add drone fade out
+  c4_playbackRateLoop.stop();
+  c4_highSynthLoop.stop();
 };
 
 // *******************************************************************
@@ -694,8 +717,9 @@ synthTriangle17c.volume.value = -12;
 var loPitchArrayCue14 = ['B2', 'B2', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'F#3', 'F#3', 'F#3', 'F#3', 'F3', 'F3', 'D#3', 'D#3', 'C#3', 'C#3', 'C#3', 'C#3', 'D#3', 'D#3', 'A#2', 'A#2', 'C#3', 'C#3', 'C#3', 'C#3', 'F#3', 'F#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'A#3', 'A#3', 'F#3', 'F#3', 'G#3', 'G#3', 'G#3', 'G#3', 'F#3', 'F#3', 'F3', 'F3', 'G#3', 'G#3', 'D#3', 'D#3', 'B2', 'B2', 'C#3', 'C#3', 'A#2', 'A#2', 'A#2', 'A#2', 'C#3', 'C#3'];
 var hiPitchArrayCue14 = ['B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4', 'B3', 'C#4', 'C#4', 'D#4', 'A#3', 'F#4', 'F#4', 'F4', 'D#4', 'C#4', 'C#4', 'D#4', 'A#3', 'C#4', 'C#4', 'F#4', 'F#4', 'G#4', 'G#4', 'A#4', 'F#4', 'G#4', 'G#4', 'F#4', 'F4', 'G#4', 'D#4', 'B3', 'C#4', 'A#3', 'A#3','C#4'];
 
-var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
 var pingPong = new Tone.Player(perc_sounds + "pingPong.mp3").toMaster();
+var clave = new Tone.Player(perc_sounds + "clave.mp3").toMaster();
+
 var ziplockClick = new Tone.Player(perc_sounds + "ziplockClick.mp3").toMaster();
 var percArrayCue14 = [clave, ziplockClick, pingPong, ziplockClick, pingPong, clave, pingPong, ziplockClick, pingPong];
 
