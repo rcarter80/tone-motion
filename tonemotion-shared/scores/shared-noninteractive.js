@@ -364,15 +364,42 @@ tm.cue[3].stopCue = function() {
 
 // *******************************************************************
 // CUE 4: drone on B slowly fades in and slides up octave
-tm.cue[4] = new TMCue('listen', 2000, NO_LIMIT);
-var glassRimC5_13s = new Tone.Player(glass_sounds + "glassRimC5_13s.mp3").toMaster();
+var glassRimB3_27s = new Tone.Player(glass_sounds + "glassRimB3_27s.mp3").toMaster();
+glassRimB3_27s.loop = true;
+var glassRimB3_27s2 = new Tone.Player(glass_sounds + "glassRimB3_27s.mp3").toMaster();
+var glassRimD3_42s = new Tone.Player(glass_sounds + "glassRimD3_42s.mp3").toMaster();
+glassRimD3_42s.loop = true;
 
+var c4_counter;
+
+var c4_playbackRateLoop = new Tone.Loop(function(time) {
+  glassRimB3_27s2.playbackRate = 2;
+  glassRimB3_27s2.start();
+  c4_counter++;
+}, 14);
+
+
+tm.cue[4] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
-  console.log('hi');
   tm.publicMessage('Section 4');
+
+  // gradually fade in on first iteration, then sound loops
+  // glassRimB3_27s.volume.value = -99;
+  // glassRimB3_27s.volume.rampTo(-3, 8);
+  // glassRimB3_27s.start();
+  //
+  // c4_playbackRateLoop.start('+8');
+
+  glassRimD3_42s.volume = 0;
+  glassRimD3_42s.start();
 };
 tm.cue[4].stopCue = function() {
-  // nothing to clean up
+  // // TODO: add fadeout
+  // glassRimB3_27s.stop();
+  // c4_playbackRateLoop.stop();
+
+  glassRimD3_42s.volume.rampTo(-99, 5);
+  glassRimD3_42s.stop('+5');
 };
 
 // *******************************************************************
