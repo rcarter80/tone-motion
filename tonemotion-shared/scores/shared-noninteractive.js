@@ -394,7 +394,6 @@ tm.cue[4].goCue = function() {
   glassRimD3_42s.start();
 };
 tm.cue[4].stopCue = function() {
-  // // TODO: add fadeout
   // glassRimB3_27s.stop();
   // c4_playbackRateLoop.stop();
 
