@@ -149,8 +149,8 @@ tm.cue[2].goCue = function() {
 tm.cue[2].triggerShakeSound = function() {
   if (tm.accel.y < 0.5) {
     // device is shaken while mostly upright
-    // pitch bends down quarter tone over 20s and then goes back up
-    chimeA7.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.97, 40000,1]);
+    // pitch bends down half step over 20s and then goes back up
+    chimeA7.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.944, 40000,1]);
     chimeA7.start();
   } else {
     // device is mostly upside down
@@ -168,7 +168,7 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: tilt octaves on D, F, E, A, Bb
-// TODO: may need to modify sound files to avoid click on retrigger 
+// TODO: may need to modify sound files to avoid click on retrigger
 var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toMaster();
 var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toMaster();
 var octaveBellsBb3 = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toMaster();

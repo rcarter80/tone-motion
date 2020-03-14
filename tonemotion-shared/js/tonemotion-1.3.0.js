@@ -196,9 +196,6 @@ ToneMotion.prototype.setStatus = function(status) {
   }
   this.status = status;
 
-  // clear any previous message from previous state
-  this.clearMessageLabel();
-
   switch (status) {
     case 'loading':
       this.setStatusLabel('loading', 'active');
@@ -755,6 +752,8 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
 
   // clear all current cues
   this.clearActiveCues();
+  // clear any previous message from previous cue
+  this.clearMessageLabel();
 
   // immediately trigger cue with minimum latency if waitTime is -1
   // This could be faster if moved to top of function,

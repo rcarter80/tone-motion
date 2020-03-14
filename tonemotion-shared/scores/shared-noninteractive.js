@@ -211,8 +211,8 @@ var c2_bassLoop = new Tone.Loop(function(time) {
   if (Math.random() > 0.8) {
     modeledGlassD3.playbackRate = 2;
     // shift D up octave and use volume gap to play struck C
-    // pitch bends down quarter tone over 20s and then goes back up
-    glassRealC5_15s.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.97, 40000,1]);
+    // randomly detuned up to almost semitone
+    glassRealC5_15s.playbackRate = 0.95 + (Math.random() * 0.05);
     glassRealC5_15s.start('+3');
   } else {
     modeledGlassD3.playbackRate = 1;
@@ -260,7 +260,9 @@ tm.cue[2].goCue = function() {
   c1_loopF5.start();
 }
 tm.cue[2].stopCue = function() {
-  // TODO: maybe also trigger glassRealC5_15s here?
+  // play struck glass on Bb
+  glassRealC5_15s.playbackRate = 0.89;
+  glassRealC5_15s.start();
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
@@ -361,10 +363,13 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'
-tm.cue[4] = new TMCue('waiting', -1);
+// CUE 4: drone on B slowly fades in and slides up octave
+tm.cue[4] = new TMCue('listen', 2000, NO_LIMIT);
+var glassRimC5_13s = new Tone.Player(glass_sounds + "glassRimC5_13s.mp3").toMaster();
+
 tm.cue[4].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  console.log('hi');
+  tm.publicMessage('Section 4');
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -439,7 +444,7 @@ tm.cue[7].goCue = function() {
   // reset counter
   counterCue7 = 0;
 };
-// REVISION: decide whether to fade out shake sounds in second half of section. maybe fade to softer but NOT silence (in part because silent sounds make it seem cue isn't working if it was triggered too long ago)
+
 tm.cue[7].triggerShakeSound = function() {
   if (counterCue7 < pitchArrayCue7.length) {
     thisGlockenspiel = pitchArrayCue7[counterCue7];
@@ -671,8 +676,6 @@ var percArrayCue14 = [clave, ziplockClick, pingPong, ziplockClick, pingPong, cla
 var percCounterCue14 = 0;
 var pitchIndexCue14, pitchCue14, pitchBendCue14, pitchShiftCue14;
 
-// REVISION could add gradual filter sweep on synths (through section) AND coudl tweak synth sounds
-
 var loopCue14 = new Tone.Loop(function(time) {
   // select note based on time since cue started (to keep all parts synched)
   pitchIndexCue14 = Math.floor(tm.getElapsedTimeInCue(14)/noteDur);
@@ -779,7 +782,6 @@ var vcCounter = 0;
 var vcProb, indexCue15, soundfileCue15;
 
 // upper voice of canon
-// REVISION: could change some As to chimes?
 var hiPitchArrayCue15 = [harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5, harpG5, harpB5, harpFsharp5, harpCsharp6, harpD6, harpCsharp6, harpB5, harpA5, harpG5, harpD6, harpD7, harpE6, harpFsharp6, harpCsharp6, harpCsharp7, harpE6, harpE7, harpA6, harpFsharp6, harpG6, harpE6, harpD6, harpD7, harpCsharp6, harpB5, harpE6, harpE7, harpD6, harpD7, harpCsharp6, harpCsharp7, harpB5];
 // lower voice of canon
 var loPitchArrayCue15 = [harpG3, harpG4, harpB3, harpB4, harpFsharp3, harpFsharp4, harpCsharp4, harpCsharp5, harpD4, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpA3, harpA4, harpG3, harpG4, harpD4, harpD5, harpD6, harpD5, harpE4, harpE5, harpFsharp4, harpFsharp5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpE4, harpE5, harpE6, harpE5, harpA5, harpA6, harpFsharp4, harpFsharp5, harpG4, harpG5, harpE4, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpB3, harpB4, harpE4, harpE5, harpE6, harpE5, harpD4, harpD5, harpD6, harpD5, harpCsharp4, harpCsharp5, harpCsharp6, harpCsharp5, harpB3, harpB4];
