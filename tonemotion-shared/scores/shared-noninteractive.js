@@ -370,7 +370,7 @@ var c4_delay = new Tone.FeedbackDelay({
   delayTime: 0.2,
   feedback: 0.8
 }).toMaster();
-var c4_drone = new Tone.Player(glass_sounds + "drone.mp3").connect(c4_delay);
+var c4_drone = new Tone.Player(glass_sounds + "glassRimC3_30s.mp3").connect(c4_delay);
 
 var c4_highSynthTremolo = new Tone.Tremolo(6, 1).toMaster().start();
 var c4_highSynth = new Tone.Synth({
