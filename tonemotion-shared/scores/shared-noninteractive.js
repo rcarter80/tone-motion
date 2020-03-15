@@ -363,16 +363,19 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 4: drone on B slowly fades in and slides up octave
+// CUE 4: drone on D slowly fades in and slides down major 2nd
 
-// reverb for drone
+// delay for drone
 var c4_delay = new Tone.FeedbackDelay({
   delayTime: 0.2,
   feedback: 0.8
 }).toMaster();
 var c4_drone = new Tone.Player(glass_sounds + "glassRimC3_30s.mp3").connect(c4_delay);
+// second drone at staggered interval
+var c4_drone2 = new Tone.Player(glass_sounds + "glassRimC3_30s.mp3").connect(c4_delay);
 
 var c4_highSynthTremolo = new Tone.Tremolo(6, 1).toMaster().start();
+var c4_highSynthPan = new Tone.Panner(-1);
 var c4_highSynth = new Tone.Synth({
   oscillator: {
     type: 'triangle17'
@@ -384,11 +387,25 @@ var c4_highSynth = new Tone.Synth({
     sustain: 0.8,
     release: 2
   }
-}).connect(c4_highSynthTremolo);
+}).chain(c4_highSynthPan, c4_highSynthTremolo);
+var c4_highSynthTremolo2 = new Tone.Tremolo(6, 1).toMaster().start();
+var c4_highSynthPan2 = new Tone.Panner(1);
+var c4_highSynth2 = new Tone.Synth({
+  oscillator: {
+    type: 'triangle17'
+  },
+  envelope: {
+    attack: 2,
+    attackCurve: [0, 0.05, 0.15, 0.4, 1.0],
+    decay: 0.01,
+    sustain: 0.8,
+    release: 2
+  }
+}).chain(c4_highSynthPan2, c4_highSynthTremolo2);
 
-var c4_highPitch, c4_highDur;
+var c4_highPitch, c4_highDur, c4_highPitch2, c4_highDur;
 
-// loop of very high wobbly shiny synths (will phase among devices)
+// loops of very high wobbly shiny synths (will phase among devices)
 var c4_highSynthLoop = new Tone.Loop(function(time) {
   // high synth drops by a major 9th
   c4_highSynth.detune.value = tm.getSectionBreakpoints(4, [0,0, 30000,0, 60000,-1400]);
@@ -399,29 +416,51 @@ var c4_highSynthLoop = new Tone.Loop(function(time) {
   c4_highDur = 2 + (Math.random() * 1);
   c4_highSynth.triggerAttackRelease(c4_highPitch, c4_highDur);
 }, 5 + (Math.random() * 10));
+var c4_highSynthLoop2 = new Tone.Loop(function(time) {
+  // high synth drops by a major 9th
+  c4_highSynth2.detune.value = tm.getSectionBreakpoints(4, [0,0, 30000,0, 60000,-1400]);
+  // randomly change tremolo speed
+  c4_highSynthTremolo2.frequency.value = 3 + (Math.random() * 4);
+  // randomly select very high partials of D0 (18.354 in Hz)
+  c4_highPitch2 = 18.354 * tm.pickRand([160, 192, 224, 256, 288, 320, 352]);
+  c4_highDur2 = 2 + (Math.random() * 1);
+  c4_highSynth2.triggerAttackRelease(c4_highPitch2, c4_highDur2);
+}, 5 + (Math.random() * 10));
 
-var c4_counter;
-
-var c4_playbackRateLoop = new Tone.Loop(function(time) {
+var c4_droneLoop = new Tone.Loop(function(time) {
+  // audio file is on C3 and slides down to D3 after 3 minutes
+  c4_drone.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
   c4_drone.start();
-  c4_counter++;
-}, 32);
+}, 30);
+var c4_droneLoop2 = new Tone.Loop(function(time) {
+  // audio file is on C3 and slides down to D3 after 3 minutes
+  c4_drone2.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
+  c4_drone2.start();
+}, 30);
 
 
 tm.cue[4] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicMessage('Section 4');
 
-  c4_drone.volume.value = -9;
-  c4_playbackRateLoop.start();
+  c4_drone.volume.value = -6;
+  c4_droneLoop.start();
+  c4_drone2.volume.value = -6;
+  c4_droneLoop2.start('+10');
 
-  c4_highSynth.volume.value = -32;
+  c4_highSynth.volume.value = -28;
   c4_highSynthLoop.start();
+  c4_highSynth2.volume.value = -28;
+  c4_highSynthLoop2.start('+5');
 };
 tm.cue[4].stopCue = function() {
-  // TODO: add drone fade out
-  c4_playbackRateLoop.stop();
+  // loops stop immediately but sound in current loop continues (with fadeout)
+  c4_droneLoop.stop();
+  c4_drone.volume.rampTo(-99, 5);
+  c4_droneLoop2.stop();
+  c4_drone2.volume.rampTo(-99, 5);
   c4_highSynthLoop.stop();
+  c4_highSynthLoop2.stop();
 };
 
 // *******************************************************************

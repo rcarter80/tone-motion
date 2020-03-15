@@ -225,13 +225,26 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'
-tm.cue[4] = new TMCue('waiting', -1);
+// CUE 4: shake glass through array
+var glassBb5 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toMaster();
+
+var c4_glassArray = [glassE5, glassG4, glassBb5, glassG6, glassD3, glassD6, glassE5, glassG4, glassBb5, glassG6, glassE4, glassE6, glassE4, glassE6];
+
+var c4_counter, c4_thisGlass;
+
+tm.cue[4] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  c4_counter = 0;
 };
-tm.cue[4].stopCue = function() {
-  // nothing to clean up
+tm.cue[4].triggerShakeSound = function() {
+  // find next sound in array
+  c4_thisGlass = c4_glassArray[c4_counter % c4_glassArray.length];
+  // start transposed up major 2nd, bend down over 2.5 minutes 
+  c4_thisGlass.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
+  c4_thisGlass.start();
+  c4_counter++;
+};
+tm.cue[0].stopCue = function() {
 };
 
 // *******************************************************************
