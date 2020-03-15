@@ -239,12 +239,12 @@ tm.cue[4].goCue = function() {
 tm.cue[4].triggerShakeSound = function() {
   // find next sound in array
   c4_thisGlass = c4_glassArray[c4_counter % c4_glassArray.length];
-  // start transposed up major 2nd, bend down over 2.5 minutes 
+  // start transposed up major 2nd, bend down over 2.5 minutes
   c4_thisGlass.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
   c4_thisGlass.start();
   c4_counter++;
 };
-tm.cue[0].stopCue = function() {
+tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************

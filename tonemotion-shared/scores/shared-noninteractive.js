@@ -464,8 +464,8 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5: [intro] Actual beginning of piece, but first section is tacet
-tm.cue[5] = new TMCue('tacet', -1);
+// CUE 5: phasing struck glass in sparse texture
+tm.cue[5] = new TMCue('listen', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   if (tm.debug) { tm.publicLog('The piece has started.'); }
 };
