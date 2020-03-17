@@ -469,7 +469,7 @@ var c5_loDelay = new Tone.FeedbackDelay({
   delayTime: 0.375,
   feedback: 0.65
 }).toMaster();
-var glassB3 = new Tone.Player(glass_sounds + "glassRealB3_10s.mp3").connect(c5_loDelay);
+var glassB3 = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_loDelay);
 
 var c5_midDelay = new Tone.FeedbackDelay({
   delayTime: 0.375,
@@ -543,7 +543,7 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: turn everything off (only accessible through my safe mode server)
+// CUE 6: turn all sound off (only accessible through my safe mode server)
 tm.cue[6] = new TMCue('tacet', -1);
 tm.cue[6].goCue = function() {
   // should post message
