@@ -536,7 +536,7 @@ tm.cue[5].goCue = function() {
   c5_midGlassLoop.start(c5_hiGlassPreDelay);
 };
 tm.cue[5].stopCue = function() {
-  // loops will gradually fade out with feedback delay 
+  // loops will gradually fade out with feedback delay
   c5_loGlassLoop.stop();
   c5_midGlassLoop.stop();
   c5_hiGlassLoop.stop();
@@ -544,7 +544,7 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: turn everything off (only accessible through my safe mode server)
-tm.cue[6] = new TMCue('finished', -1);
+tm.cue[6] = new TMCue('tacet', -1);
 tm.cue[6].goCue = function() {
   // should post message
 };
