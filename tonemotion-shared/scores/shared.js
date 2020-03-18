@@ -320,7 +320,7 @@ tm.cue[5].goCue = function() {
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
-  ziplockClickLoop.volume.value = -65 + (tm.accel.y * 56);
+  ziplockClickLoop.volume.value = -65 + (tm.accel.y * 59);
 };
 tm.cue[5].stopCue = function() {
   c5_glassLoop.stop();
