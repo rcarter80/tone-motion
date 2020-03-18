@@ -486,6 +486,9 @@ var c5_hiDelayTarget = 0.22 + (Math.random() * 0.08);
 var c5_loDelayTargetTime = 120000 + (Math.random() * 60000);
 var c5_loDelayTarget = 0.3 + (Math.random() * 0.05);
 
+// array of pitches for final transition sound (wrapping back to beginning)
+c5_revGlassPitchArray = [0.94387, 1.8877, 3.7755];
+
 // three layers of struck glass sounds with feedback delay
 var c5_hiGlassLoop = new Tone.Loop(function(time) {
   // delay times start synchronized and then phase within and across devices
@@ -534,6 +537,10 @@ tm.cue[5].stopCue = function() {
   c5_loGlassLoop.stop();
   c5_midGlassLoop.stop();
   c5_hiGlassLoop.stop();
+  revGlassC5_7s.volume.value = -9;
+  // randomly select 1 of 3 possible octaves for reversed glass sound
+  revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
 };
 
 // *******************************************************************
