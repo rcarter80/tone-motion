@@ -285,7 +285,10 @@ var arrGlassFsharp5 = [glassFsharp5a, glassFsharp5b, glassFsharp5c, glassFsharp5
 
 // array of playbackRates to create pitches: C, D, B, E
 var c5_pitchArr = [1.05946, 1.1892, 1, 1.3348];
-var c5_thisGlass, c5_counter, c5_pitch;
+var c5_thisGlass, c5_counter;
+
+// array of pitches for final transition sound (wrapping back to beginning)
+c5_revGlassPitchArray = [0.94387, 1.8877, 3.7755];
 
 var c5_glassLoop = new Tone.Loop(function(time) {
   if (tm.accel.y < 0.25) {
@@ -302,8 +305,7 @@ var c5_glassLoop = new Tone.Loop(function(time) {
     c5_thisGlass = arrGlassFsharp5[c5_counter % arrGlassFsharp5.length];
   }
   // select pitch on y-axis by referencing pitch array (scale tm.accel.x first)
-  c5_pitch = c5_pitchArr[Math.floor((tm.accel.x * 0.99) * c5_pitchArr.length)];
-  c5_thisGlass.playbackRate = c5_pitch;
+  c5_thisGlass.playbackRate = c5_pitchArr[Math.floor((tm.accel.x * 0.99) * c5_pitchArr.length)];
   c5_thisGlass.start();
   c5_counter++;
 }, 0.375);
@@ -319,7 +321,10 @@ tm.cue[5].updateTiltSounds = function() {
 };
 tm.cue[5].stopCue = function() {
   c5_glassLoop.stop();
-    // TODO: add reversed chime no octave Bs
+  revGlassC5_7s.volume.value = -9;
+  // randomly select 1 of 3 possible octaves for reversed glass sound
+  revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
+  revGlassC5_7s.start();
 };
 
 // *******************************************************************
