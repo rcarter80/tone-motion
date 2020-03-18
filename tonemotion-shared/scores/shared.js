@@ -13,13 +13,10 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
-const perc_sounds = 'tonemotion-shared/audio/perc/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
-const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 Tone.Transport.bpm.value = 60;
 
@@ -283,6 +280,9 @@ var glassFsharp5e = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3")
 var glassFsharp5f = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
 var arrGlassFsharp5 = [glassFsharp5a, glassFsharp5b, glassFsharp5c, glassFsharp5d, glassFsharp5e, glassFsharp5f];
 
+var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toMaster();
+ziplockClickLoop.loop = true;
+
 // array of playbackRates to create pitches: C, D, B, E
 var c5_pitchArr = [1.05946, 1.1892, 1, 1.3348];
 var c5_thisGlass, c5_counter;
@@ -315,12 +315,16 @@ tm.cue[5].goCue = function() {
   c5_counter = 0;
   // if I need to reset volume because it was changed, there are LOTS to reset
   c5_glassLoop.start();
+  ziplockClickLoop.start();
 };
 tm.cue[5].updateTiltSounds = function() {
-// delay feedback controlled above with yTilt
+  // soft clicking sound with speed and volume on y-axis
+  ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
+  ziplockClickLoop.volume.value = -65 + (tm.accel.y * 56);
 };
 tm.cue[5].stopCue = function() {
   c5_glassLoop.stop();
+  ziplockClickLoop.stop();
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 3 possible octaves for reversed glass sound
   revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];

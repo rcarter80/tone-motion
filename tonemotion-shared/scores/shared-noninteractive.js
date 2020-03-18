@@ -13,14 +13,8 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-// TODO: delete unused paths
-const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
-const perc_sounds = 'tonemotion-shared/audio/perc/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
-const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
-const chime_sounds = 'tonemotion-shared/audio/chimes/';
-const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 // send everything through a limiter to be safe
 var masterLimiter = new Tone.Limiter(-1);
