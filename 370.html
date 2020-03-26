@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>Listening site</title>
+  <meta name="description" content="Web-based algorithmic generation of interactive music">
+  <meta name="author" content="Ryan Carter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.2.0.css">
+  <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
+</head>
+<body>
+
+<header>
+  <h1>Listening site</h1>
+  <button id="help_button" type="button">?</button>
+</header>
+
+<main> <!-- center panel showing app status, messages, controls -->
+  <div id="status_container">
+    <p id="status_label">loading</p>
+  </div>
+  <!-- button is not displayed until page loads, then shows "start" -->
+  <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
+  <!-- when piece is done, button goes away -->
+  <button id="start_stop_button" type="button" class="hidden"></button>
+  <div id="message_container" class="hidden">
+    <p id="message_label"> </p>
+  </div>
+
+  <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
+  <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+  <!-- append sliders and "shake" button here -->
+  <fieldset id="sliderFieldset" class="hidden" style="display:none">
+    <legend>Motion simulation</legend>
+    <label for="x_slider">X-axis of accelerometer</label>
+    <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
+    <label for="y_slider">Y-axis of accelerometer</label>
+    <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
+    <button id="simulateShakeButton" type="button">shake device</button>
+  </fieldset>
+
+</main>
+
+<section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
+  <div>
+    <h2>Information</h2>
+    <p>This software was built for an entirely different purpose, but we'll use it for listening to music together. This is compatible with Chrome and Safari (but not Firefox). You can click the "start" button any time once the page loads.</p>
+  </div>
+  <!-- I'm hiding the consoles below with inline styling -->
+  <div style="display:none">
+    <h2>Motion monitor</h2>
+    <input type="checkbox" id="motion_data_checkbox">
+    <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
+    <div id="motion_container" class="hidden">
+      <p id="motion_data_label"></p>
+    </div>
+  </div>
+  <div id="publicConsole" style="display:none">
+    <h2>Console</h2>
+    <input type="checkbox" id="console_checkbox">
+    <label for="console_checkbox">Show console messages (may affect performance)</label>
+    <div id="console_container" class="hidden">
+    </div>
+  </div>
+  </section>
+
+<!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
+<!-- They make trivial changes to Tone.js that will break older code -->
+<!-- NOTE: I'm linking to v12 of Tone.js. On Feb 13, 2020, I looked at v13.8.25, which has major changes, like toMaster() is replaced with toDestination(), but nothing useful from what I can see. Keep using v12 unless a new version has useful change or this version breaks. -->
+<script src="tonemotion-shared/js/Tone.js"></script>
+<!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
+<script src="tonemotion-shared/js/NoSleep.js"></script>
+<script src="tonemotion-shared/js/tonemotion-1.3.0-fork.js"></script>
+
+<!-- Score for this piece -->
+<script src="tonemotion-shared/scores/370-03-30.js"></script>
+
+</body>
+</html>
