@@ -14,6 +14,8 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const class_270 = 'tonemotion-shared/audio/class_270/';
 // load audio files for listening to in class
+// NOTE: I can instruct students to listen to specific location by having them open the console and invoking e.g., cue1.start(0, 60) (starts immediately playing from 60-second point). They need to call cue1.stop() to stop.
+
 // var cue1 = new Tone.Player(class_270 + "group-project-laura-caius.mp3").toMaster();
 // createCue(1, cue1);
 // var cue3 = new Tone.Player(class_270 + "group-project-zoe.mp3").toMaster();
