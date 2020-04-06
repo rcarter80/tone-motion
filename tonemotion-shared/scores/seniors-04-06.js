@@ -16,6 +16,12 @@ const class_seniors = 'tonemotion-shared/audio/class_seniors/';
 // load audio files for listening to in class
 var cue1 = new Tone.Player(class_seniors + "UnAttached.mp3").toMaster();
 createCue(1, cue1);
+var cue3 = new Tone.Player(class_seniors + "blessings draft 2 3rd mix.mp3").toMaster();
+createCue(3, cue3);
+var cue5 = new Tone.Player(class_seniors + "Run (fourth).mp3").toMaster();
+createCue(5, cue5);
+var cue7 = new Tone.Player(class_seniors + "The Hole In The Ceiling (final).mp3").toMaster();
+createCue(7, cue7);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 40; i = i + 2) {
