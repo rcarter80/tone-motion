@@ -14,8 +14,8 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const class_seniors = 'tonemotion-shared/audio/class_seniors/';
 // load audio files for listening to in class
-// var cue1 = new Tone.Player(class_270 + "group-project-laura-caius.mp3").toMaster();
-// createCue(1, cue1);
+var cue1 = new Tone.Player(class_seniors + "UnAttached.mp3").toMaster();
+createCue(1, cue1);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 40; i = i + 2) {
