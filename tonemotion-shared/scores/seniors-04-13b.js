@@ -18,7 +18,7 @@ var cue1 = new Tone.Player(class_seniors + "Clone_Me_041220.mp3").toMaster();
 createCue(1, cue1);
 var cue3 = new Tone.Player(class_seniors + "A Capella Final 2.mp3").toMaster();
 createCue(3, cue3);
-var cue5 = new Tone.Player(class_seniors + "Speak to Me - Test.mp3").toMaster();
+var cue5 = new Tone.Player(class_seniors + "aidan.mp3").toMaster();
 createCue(5, cue5);
 var cue7 = new Tone.Player(class_seniors + "BOOOWWWAAAAPPP.mp3").toMaster();
 createCue(7, cue7);
