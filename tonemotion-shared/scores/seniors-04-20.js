@@ -20,6 +20,10 @@ var cue3 = new Tone.Player(class_seniors + "SOTB vFINAL.mp3").toMaster();
 createCue(3, cue3);
 var cue5 = new Tone.Player(class_seniors + "Think Like Freak.mp3").toMaster();
 createCue(5, cue5);
+var cue7 = new Tone.Player(class_seniors + "Fly Right By.mp3").toMaster();
+createCue(7, cue7);
+var cue9 = new Tone.Player(class_seniors + "Her Porch.mp3").toMaster();
+createCue(9, cue9);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 40; i = i + 2) {
