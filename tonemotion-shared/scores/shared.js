@@ -12,6 +12,11 @@ window.onload = function() {
   }
 };
 
+// TODO:
+// BUG: known issue: shake and NoSleep.js DO NOT WORK on iOS 13.4
+// https://github.com/richtr/NoSleep.js/issues/85
+// hopefully it resolves with iOS 13.5 but if not need to find workaround
+
 // Shortcuts to audio file paths
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
