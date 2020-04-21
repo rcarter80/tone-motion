@@ -127,7 +127,7 @@ tm.cue[6].triggerShakeSound = function() {
 var revCym = new Tone.Player(perc_sounds + "revCym.mp3").toMaster();
 tm.cue[7] = new TMCue('hidden');
 tm.cue[7].goCue = function() {
-  revCym.start();
+
 }
 
 // *******************************************************************
