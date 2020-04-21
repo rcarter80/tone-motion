@@ -418,7 +418,7 @@ tm.cue[15].triggerShakeSound = function() {
 // duration of revCym is 4467 ms.
 tm.cue[16] = new TMCue('hidden');
 tm.cue[16].goCue = function() {
-  revCym.start();
+
 };
 
 // *******************************************************************
