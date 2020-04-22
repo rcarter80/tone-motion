@@ -46,20 +46,18 @@ const class_370 = 'tonemotion-shared/audio/class_370/';
 // createCue(29, cue29);
 // var cue31 = new Tone.Player(class_370 + "p1_kyle").toMaster();
 // createCue(31, cue31);
-var cue33 = new Tone.Player(class_370 + "p1_lucas1").toMaster();
-createCue(33, cue33);
-var cue35 = new Tone.Player(class_370 + "p1_lucas2").toMaster();
-createCue(35, cue35);
-var cue37 = new Tone.Player(class_370 + "p1_marc").toMaster();
+// var cue33 = new Tone.Player(class_370 + "p1_lucas1").toMaster();
+// createCue(33, cue33);
+// var cue35 = new Tone.Player(class_370 + "p1_lucas2").toMaster();
+// createCue(35, cue35);
+// var cue37 = new Tone.Player(class_370 + "p1_marc").toMaster();
+// createCue(37, cue37);
+var cue37 = new Tone.Player(class_370 + "p1_taomi2").toMaster();
 createCue(37, cue37);
-// var cue39 = new Tone.Player(class_370 + "p1_michaela1").toMaster();
-// createCue(39, cue39);
-// var cue41 = new Tone.Player(class_370 + "p1_michaela2").toMaster();
-// createCue(41, cue41);
-var cue43 = new Tone.Player(class_370 + "p1_taomi1").toMaster();
-createCue(43, cue43);
-var cue45 = new Tone.Player(class_370 + "p1_taomi2").toMaster();
-createCue(45, cue45);
+var cue39 = new Tone.Player(class_370 + "p1_michaela1").toMaster();
+createCue(39, cue39);
+var cue41 = new Tone.Player(class_370 + "p1_michaela2").toMaster();
+createCue(41, cue41);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 48; i = i + 2) {
