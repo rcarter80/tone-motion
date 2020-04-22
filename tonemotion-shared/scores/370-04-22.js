@@ -56,10 +56,10 @@ createCue(37, cue37);
 // createCue(39, cue39);
 // var cue41 = new Tone.Player(class_370 + "p1_michaela2").toMaster();
 // createCue(41, cue41);
-// var cue43 = new Tone.Player(class_370 + "p1_taomi1").toMaster();
-// createCue(43, cue43);
-// var cue45 = new Tone.Player(class_370 + "p1_taomi2").toMaster();
-// createCue(45, cue45);
+var cue43 = new Tone.Player(class_370 + "p1_taomi1").toMaster();
+createCue(43, cue43);
+var cue45 = new Tone.Player(class_370 + "p1_taomi2").toMaster();
+createCue(45, cue45);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 48; i = i + 2) {
