@@ -28,7 +28,7 @@ var cue11 = new Tone.Player(class_370 + "A. try beginning.mp3").toMaster();
 createCue(11, cue11);
 var cue13 = new Tone.Player(class_370 + "B. Beginning of Song 1.mp3").toMaster();
 createCue(13, cue13);
-var cue7 = new Tone.Player(class_370 + "C. end of chorus 1.mp3").toMaster();
+var cue15 = new Tone.Player(class_370 + "C. end of chorus 1.mp3").toMaster();
 createCue(15, cue15);
 var cue17 = new Tone.Player(class_370 + "D. Chorus Bass and Drums.mp3").toMaster();
 createCue(17, cue17);
