@@ -30,22 +30,22 @@ var cue11 = new Tone.Player(class_270 + "p2_jake.mp3").toMaster();
 createCue(11, cue11);
 var cue13 = new Tone.Player(class_270 + "p2_julia.mp3").toMaster();
 createCue(13, cue13);
-var cue15 = new Tone.Player(class_270 + "p2_julian.mp3").toMaster();
-createCue(15, cue15);
-var cue17 = new Tone.Player(class_270 + "p2_kayla.mp3").toMaster();
-createCue(17, cue17);
-var cue19 = new Tone.Player(class_270 + "p2_kevin.mp3").toMaster();
-createCue(19, cue19);
-var cue21 = new Tone.Player(class_270 + "p2_laura.mp3").toMaster();
-createCue(21, cue21);
-var cue23 = new Tone.Player(class_270 + "p2_matt.mp3").toMaster();
-createCue(23, cue23);
-var cue25 = new Tone.Player(class_270 + "p2_megan.mp3").toMaster();
-createCue(25, cue25);
-var cue27 = new Tone.Player(class_270 + "p2_russell.mp3").toMaster();
-createCue(27, cue27);
-var cue29 = new Tone.Player(class_270 + "p2_zoe.mp3").toMaster();
-createCue(29, cue29);
+// var cue15 = new Tone.Player(class_270 + "p2_julian.mp3").toMaster();
+// createCue(15, cue15);
+// var cue17 = new Tone.Player(class_270 + "p2_kayla.mp3").toMaster();
+// createCue(17, cue17);
+// var cue19 = new Tone.Player(class_270 + "p2_kevin.mp3").toMaster();
+// createCue(19, cue19);
+// var cue21 = new Tone.Player(class_270 + "p2_laura.mp3").toMaster();
+// createCue(21, cue21);
+// var cue23 = new Tone.Player(class_270 + "p2_matt.mp3").toMaster();
+// createCue(23, cue23);
+// var cue25 = new Tone.Player(class_270 + "p2_megan.mp3").toMaster();
+// createCue(25, cue25);
+// var cue27 = new Tone.Player(class_270 + "p2_russell.mp3").toMaster();
+// createCue(27, cue27);
+// var cue29 = new Tone.Player(class_270 + "p2_zoe.mp3").toMaster();
+// createCue(29, cue29);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 40; i = i + 2) {
