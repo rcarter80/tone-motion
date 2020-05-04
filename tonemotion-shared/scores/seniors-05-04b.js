@@ -16,7 +16,7 @@ const class_seniors = 'tonemotion-shared/audio/class_seniors/';
 // load audio files for listening to in class
 var cue1 = new Tone.Player(class_seniors + "On Fire Escape.mp3").toMaster();
 createCue(1, cue1);
-var cue3 = new Tone.Player(class_seniors + "Dance Movement 2.mp3").toMaster();
+var cue3 = new Tone.Player(class_seniors + "Dance Movement 2b.mp3").toMaster();
 createCue(3, cue3);
 var cue5 = new Tone.Player(class_seniors + "Just Wait On It.mp3").toMaster();
 createCue(5, cue5);
