@@ -16,22 +16,15 @@ const class_270 = 'tonemotion-shared/audio/class_270/';
 // load audio files for listening to in class
 // NOTE: I can instruct students to listen to specific location by having them open the console and invoking e.g., cue1.start(0, 60) (starts immediately playing from 60-second point). They need to call cue1.stop() to stop.
 
-var cue1 = new Tone.Player(class_270 + "p1_russell.mp3").toMaster();
-createCue(1, cue1);
-var cue3 = new Tone.Player(class_270 + "p1_zoe.mp3").toMaster();
-createCue(3, cue3);
-var cue5 = new Tone.Player(class_270 + "p2_ethan.mp3").toMaster();
-createCue(5, cue5);
-var cue7 = new Tone.Player(class_270 + "p2_garrett.mp3").toMaster();
-createCue(7, cue7);
-var cue9 = new Tone.Player(class_270 + "p2_jade.mp3").toMaster();
+
+var cue9 = new Tone.Player(class_270 + "p2_ethan.mp3").toMaster();
 createCue(9, cue9);
 var cue11 = new Tone.Player(class_270 + "p2_jake.mp3").toMaster();
 createCue(11, cue11);
 var cue13 = new Tone.Player(class_270 + "p2_julia.mp3").toMaster();
 createCue(13, cue13);
-// var cue15 = new Tone.Player(class_270 + "p2_julian.mp3").toMaster();
-// createCue(15, cue15);
+var cue15 = new Tone.Player(class_270 + "p2_julian.mp3").toMaster();
+createCue(15, cue15);
 // var cue17 = new Tone.Player(class_270 + "p2_kayla.mp3").toMaster();
 // createCue(17, cue17);
 // var cue19 = new Tone.Player(class_270 + "p2_kevin.mp3").toMaster();
