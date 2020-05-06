@@ -22,10 +22,10 @@ var cue3 = new Tone.Player(class_370 + "In My Arms Again (selection).mp3").toMas
 createCue(3, cue3);
 
 // Kevin
+var cue5 = new Tone.Player(class_370 + "7. Drop Dead. (5-6-20).mp3").toMaster();
+createCue(5, cue5);
 
 // Anthony
-var cue5 = new Tone.Player(class_370 + "We're Going Down (Class Preview).mp3").toMaster();
-createCue(5, cue5);
 var cue7 = new Tone.Player(class_370 + "Tropical House.mp3").toMaster();
 createCue(7, cue7);
 var cue9 = new Tone.Player(class_370 + "For Avicii V_2.mp3").toMaster();
