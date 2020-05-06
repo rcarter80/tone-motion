@@ -26,10 +26,8 @@ var cue5 = new Tone.Player(class_370 + "7. Drop Dead. (5-6-20).mp3").toMaster();
 createCue(5, cue5);
 
 // Anthony
-var cue7 = new Tone.Player(class_370 + "Tropical House.mp3").toMaster();
+var cue7 = new Tone.Player(class_370 + "Future Bass.mp3").toMaster();
 createCue(7, cue7);
-var cue9 = new Tone.Player(class_370 + "For Avicii V_2.mp3").toMaster();
-createCue(9, cue9);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 48; i = i + 2) {
