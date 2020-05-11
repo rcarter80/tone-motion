@@ -15,23 +15,20 @@ window.onload = function() {
 const class_370 = 'tonemotion-shared/audio/class_370/';
 // load audio files for listening to in class
 
-// Lucas
-var cue1 = new Tone.Player(class_370 + "Tie Myself Up (LM).mp3").toMaster();
+// Jake
+var cue1 = new Tone.Player(class_370 + "camel_sample.mp3").toMaster();
 createCue(1, cue1);
-var cue3 = new Tone.Player(class_370 + "In My Arms Again (selection).mp3").toMaster();
+
+// Taomi
+var cue5 = new Tone.Player(class_370 + "LinkedIn-1.mp3").toMaster();
+createCue(5, cue5);
+var cue3 = new Tone.Player(class_370 + "Vacation section.mp3").toMaster();
 createCue(3, cue3);
 
-// Kevin
-var cue5 = new Tone.Player(class_370 + "7. Drop Dead. (5-6-20).mp3").toMaster();
-createCue(5, cue5);
-
-// Anthony
-var cue7 = new Tone.Player(class_370 + "Wired.mp3").toMaster();
+// Ethan
+var cue7 = new Tone.Player(class_370 + "elephant 3.mp3").toMaster();
 createCue(7, cue7);
-var cue9 = new Tone.Player(class_370 + "Industrial Orchestra.mp3").toMaster();
-createCue(9, cue9);
-var cue11 = new Tone.Player(class_370 + "Future Bass.mp3").toMaster();
-createCue(11, cue11);
+var cue9 = new Tone.Player(class_370 + "everything that glitters 4.mp3").toMaster();
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 48; i = i + 2) {
