@@ -29,6 +29,7 @@ createCue(3, cue3);
 var cue7 = new Tone.Player(class_370 + "elephant 3.mp3").toMaster();
 createCue(7, cue7);
 var cue9 = new Tone.Player(class_370 + "everything that glitters 4.mp3").toMaster();
+createCue(9, cue9);
 
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 48; i = i + 2) {
