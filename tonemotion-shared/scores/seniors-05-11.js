@@ -24,6 +24,9 @@ createCue(5, cue5);
 var cue7 = new Tone.Player(class_seniors + "never said THESIS.mp3").toMaster();
 createCue(7, cue7);
 
+var cue9 = new Tone.Player(class_seniors + "Deepend.mp3").toMaster();
+createCue(9, cue9);
+
 // create 40 (more than necessary) 'waiting' cues on even numbers
 for (var i = 0; i < 40; i = i + 2) {
   tm.cue[i] = new TMCue('waiting', -1);
