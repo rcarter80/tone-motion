@@ -162,7 +162,6 @@ tm.cue[6].triggerShakeSound = function() {
     chimeArrayCue6[(counterCue6 - glassArrayCue6.length)].start();
   } else {
     loopCounterCue6 = counterCue6 - glassArrayCue6.length - chimeArrayCue6.length;
-    console.log(loopCounterCue6);
     // plucked sounds fade from 0dBfs to -24dBfs over course of array
     if (loopCounterCue6 < 60) {
       thisVolCue6 = -((loopCounterCue6 / 59) * 24);
