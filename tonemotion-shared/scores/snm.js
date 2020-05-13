@@ -16,6 +16,7 @@ window.onload = function() {
 // TODO: deleted unused paths
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
+const plucked_sounds = 'tonemotion-shared/audio/plucked/';
 const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
@@ -108,7 +109,7 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: glass sounds (getting softer), then single chime, then lower metal
+// CUE 6: glass sounds (getting softer), then single chime, then lower plucked
 var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 var glF4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 // reusing E4 and pitching up half step. could also create second sound file
@@ -120,32 +121,30 @@ var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 // duplicate file to avoid retirggering artifacts
 var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 var glF5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-// reusing E4 and pitching up half step. could also create second sound file
 glF5.playbackRate = semitone;
 var glA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
 var glB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
 var glC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
 var glE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
 var chimeD7 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-// TODO: MAKE ACTUAL CHIME SOUNDS and replace the placeholder sound files below
-var chimeD4 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeD5 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeD5b = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeD6 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeF4 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeF5 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeF5b = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var chimeF6 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
+var pluckedD3 = new Tone.Player(plucked_sounds + "pluckedD3.mp3").toMaster();
+var pluckedD4 = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toMaster();
+var pluckedD4b = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toMaster();
+var pluckedD5 = new Tone.Player(plucked_sounds + "pluckedD5.mp3").toMaster();
+var pluckedF3 = new Tone.Player(plucked_sounds + "pluckedF3.mp3").toMaster();
+var pluckedF4 = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
+var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
+var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
 
 // array of initial glass sounds for first part of cue
 glassArrayCue6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
 // second array of sounds (no fade out)
-chimeArrayCue6 = [chimeD7, chimeD4, chimeD5, chimeD6, chimeD5b, chimeD4, chimeD5, chimeD6, chimeD5b, chimeD4, chimeD5, chimeD6, chimeD5b];
+chimeArrayCue6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
 // final array of sounds to keep looping
-chimeArrayCue6 = [chimeD7, chimeD4, chimeD5, chimeD6, chimeD5b, chimeD4, chimeD5, chimeD6, chimeD5b, chimeD4, chimeD5, chimeD6, chimeD5b];
+pluckedArrayCue6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
 var counterCue6 = 0;
-var thisVolCue6, thisGlassCue6;
+var thisVolCue6, thisGlassCue6, thisPluckedCue6, loopCounterCue6;
 
 // 1667 ms. = 2 beats @ 72bpm
 tm.cue[6] = new TMCue('shake', 1667, NO_LIMIT);
@@ -162,8 +161,17 @@ tm.cue[6].triggerShakeSound = function() {
   } else if (counterCue6 < (glassArrayCue6.length + chimeArrayCue6.length)) {
     chimeArrayCue6[(counterCue6 - glassArrayCue6.length)].start();
   } else {
-    // loop last cue
-    // TODO: add fade out to -24dBfs and hold until end of cue
+    loopCounterCue6 = counterCue6 - glassArrayCue6.length - chimeArrayCue6.length;
+    console.log(loopCounterCue6);
+    // plucked sounds fade from 0dBfs to -24dBfs over course of array
+    if (loopCounterCue6 < 60) {
+      thisVolCue6 = -((loopCounterCue6 / 59) * 24);
+    } else {
+      thisVolCue6 = -24;
+    }
+    thisPluckedCue6 = pluckedArrayCue6[loopCounterCue6 % pluckedArrayCue6.length];
+    thisPluckedCue6.volume.value = thisVolCue6;
+    thisPluckedCue6.start();
   }
   counterCue6++;
 };
