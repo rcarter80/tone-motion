@@ -137,45 +137,132 @@ var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
 var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
 
 // array of initial glass sounds for first part of cue
-glassArrayCue6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
+glassArray_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
 // second array of sounds (no fade out)
-chimeArrayCue6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
+chimeArray_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
 // final array of sounds to keep looping
-pluckedArrayCue6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
+pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
-var counterCue6 = 0;
-var thisVolCue6, thisGlassCue6, thisPluckedCue6, loopCounterCue6;
+var counter_c6 = 0;
+var thisVol_c6, thisGlass_c6, thisPlucked_c6, loopCounter_c6;
 
 // 1667 ms. = 2 beats @ 72bpm
 tm.cue[6] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  counterCue6 = 0;
+  counter_c6 = 0;
 };
 tm.cue[6].triggerShakeSound = function() {
-  if (counterCue6 < glassArrayCue6.length) {
+  if (counter_c6 < glassArray_c6.length) {
     // glass sounds fade from 0dBfs to -24dBfs over course of array
-    thisVolCue6 = -((counterCue6 / 59) * 24);
-    thisGlassCue6 = glassArrayCue6[counterCue6];
-    thisGlassCue6.volume.value = thisVolCue6;
-    thisGlassCue6.start();
-  } else if (counterCue6 < (glassArrayCue6.length + chimeArrayCue6.length)) {
-    chimeArrayCue6[(counterCue6 - glassArrayCue6.length)].start();
+    thisVol_c6 = -((counter_c6 / 59) * 24);
+    thisGlass_c6 = glassArray_c6[counter_c6];
+    thisGlass_c6.volume.value = thisVol_c6;
+    thisGlass_c6.start();
+  } else if (counter_c6 < (glassArray_c6.length + chimeArray_c6.length)) {
+    chimeArray_c6[(counter_c6 - glassArray_c6.length)].start();
   } else {
-    loopCounterCue6 = counterCue6 - glassArrayCue6.length - chimeArrayCue6.length;
+    loopCounter_c6 = counter_c6 - glassArray_c6.length - chimeArray_c6.length;
     // plucked sounds fade from 0dBfs to -24dBfs over course of array
-    if (loopCounterCue6 < 60) {
-      thisVolCue6 = -((loopCounterCue6 / 59) * 24);
+    if (loopCounter_c6 < 60) {
+      thisVol_c6 = -((loopCounter_c6 / 59) * 24);
     } else {
-      thisVolCue6 = -24;
+      thisVol_c6 = -24;
     }
-    thisPluckedCue6 = pluckedArrayCue6[loopCounterCue6 % pluckedArrayCue6.length];
-    thisPluckedCue6.volume.value = thisVolCue6;
-    thisPluckedCue6.start();
+    thisPlucked_c6 = pluckedArray_c6[loopCounter_c6 % pluckedArray_c6.length];
+    thisPlucked_c6.volume.value = thisVol_c6;
+    thisPlucked_c6.start();
   }
-  counterCue6++;
+  counter_c6++;
 };
 tm.cue[6].stopCue = function() {
+  // nothing to do here
 };
 
 // *******************************************************************
 // CUE 7:
+
+// TODO: fix these two layers and add next two
+
+var fmSynth_c7 = new Tone.FMSynth({
+  harmonicity: 1.5,
+  envelope: {
+    attack: 1.25,
+    decay: 0,
+    sustain: 1,
+    release: 1.25,
+    releaseCurve: 'linear',
+  },
+  modulation: {
+    type: 'sine',
+  },
+  modulationEnvelope: {
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 10,
+  },
+}).toMaster();
+fmSynth_c7.detune.value = 1200;
+fmSynth_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+var lfo_c7 = new Tone.LFO('32n', -99, 0);
+lfo_c7.connect(fmSynth_c7.volume);
+
+var fmSynth_c7b = new Tone.FMSynth({
+  harmonicity: 1.5,
+  envelope: {
+    attack: 1.25,
+    decay: 0,
+    sustain: 1,
+    release: 1.25,
+    releaseCurve: 'linear',
+  },
+  modulation: {
+    type: 'sine',
+  },
+  modulationEnvelope: {
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 10,
+  },
+}).toMaster();
+fmSynth_c7b.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+
+var counter_c7 = 0;
+
+var testArr = ['C3', 'D3'];
+
+var loop_c7 = new Tone.Loop(function(time) {
+  fmSynth_c7.frequency.value = testArr[counter_c7 % testArr.length];
+  fmSynth_c7b.frequency.value = testArr[counter_c7 % testArr.length];
+  counter_c7++;
+},'2n.');
+loop_c7.iterations = 24;
+
+// TODO: change wait time to something like 1 second
+tm.cue[7] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[7].goCue = function() {
+  counter_c7   = 0;
+  fmSynth_c7b.triggerAttack('E3');
+  fmSynth_c7.triggerAttack('E3');
+  lfo_c7.start();
+  loop_c7.start();
+};
+tm.cue[7].updateTiltSounds = function() {
+  fmSynth_c7.modulationIndex.value = 1 + tm.accel.y * 19;
+  fmSynth_c7b.modulationIndex.value = 1 + tm.accel.y * 19;
+
+  if (tm.accel.x > 0.5) {
+    fmSynth_c7.volume.value = 0;
+    fmSynth_c7b.volume.value = -99;
+  } else {
+    fmSynth_c7.volume.value = -99;
+    fmSynth_c7b.volume.value = 0;
+  }
+};
+tm.cue[7].stopCue = function() {
+  loop_c7.stop();
+  fmSynth_c7.triggerRelease();
+  fmSynth_c7b.triggerRelease();
+  lfo_c7.stop();
+};
