@@ -182,6 +182,8 @@ tm.cue[6].stopCue = function() {
 // CUE 7:
 
 // TODO: fix these two layers and add next two
+// merge two synths and just change LFO depth when synth needs to be smooth
+// also map volume to y-axis
 
 var fmSynth_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
