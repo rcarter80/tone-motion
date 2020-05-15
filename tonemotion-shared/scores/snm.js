@@ -179,64 +179,65 @@ tm.cue[6].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 7:
+// CUE 7: two pitch layers of FM synths with toggling LFO on amplitude
 
-// TODO: fix these two layers and add next two
-// merge two synths and just change LFO depth when synth needs to be smooth
-// also map volume to y-axis
+var ampEnv_c7 = {
+  attack: 2,
+  decay: 0,
+  sustain: 1,
+  release: 2,
+};
+var modEnv_c7 = {
+  attack: 0.1,
+  decay: 0,
+  sustain: 1,
+  release: 2,
+};
 
-var fmSynth_c7 = new Tone.FMSynth({
+var fmSynthLo_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
-  envelope: {
-    attack: 1.25,
-    decay: 0,
-    sustain: 1,
-    release: 1.25,
-    releaseCurve: 'linear',
-  },
+  envelope: ampEnv_c7,
   modulation: {
     type: 'sine',
   },
-  modulationEnvelope: {
-    attack: 0,
-    decay: 0,
-    sustain: 1,
-    release: 10,
-  },
+  modulationEnvelope: modEnv_c7,
 }).toMaster();
-fmSynth_c7.detune.value = 1200;
-fmSynth_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
-var lfo_c7 = new Tone.LFO('32n', -99, 0);
-lfo_c7.connect(fmSynth_c7.volume);
+fmSynthLo_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 
-var fmSynth_c7b = new Tone.FMSynth({
+var fmSynthHi_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
-  envelope: {
-    attack: 1.25,
-    decay: 0,
-    sustain: 1,
-    release: 1.25,
-    releaseCurve: 'linear',
-  },
+  envelope: ampEnv_c7,
   modulation: {
     type: 'sine',
   },
-  modulationEnvelope: {
-    attack: 0,
-    decay: 0,
-    sustain: 1,
-    release: 10,
-  },
+  modulationEnvelope: modEnv_c7,
 }).toMaster();
-fmSynth_c7b.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+fmSynthHi_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+
+var peakVol_c7 = -9;
+var lfoLo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
+lfoLo_c7.connect(fmSynthLo_c7.volume);
+var lfoHi_c7 = new Tone.LFO('32n', -99, peakVol_c7);
+lfoHi_c7.connect(fmSynthHi_c7.volume);
 
 var counter_c7 = 0;
+var xZone = 0;
 
-var testArr = ['C3', 'D3'];
+var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3', 'C3', 'A2', 'A2', 'A2', 'B2', 'B2', 'B2', 'G2', 'G2', 'G2', 'G2', 'G2', 'G2'];
+
+var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
 
 var loop_c7 = new Tone.Loop(function(time) {
-  fmSynth_c7.frequency.value = testArr[counter_c7 % testArr.length];
-  fmSynth_c7b.frequency.value = testArr[counter_c7 % testArr.length];
+  // only one actual note is played, by note is reset here
+  fmSynthLo_c7.setNote(loArr_c7[counter_c7 % loArr_c7.length]);
+  fmSynthHi_c7.setNote(hiArr_c7[counter_c7 % hiArr_c7.length]);
+  // two notes have pitch bends to next note
+  if (counter_c7 === 15) {
+    fmSynthHi_c7.detune.rampTo(-200, 5);
+  } else if (counter_c7 === 18) {
+    // G2 bends down to F
+    fmSynthLo_c7.detune.rampTo(-200, 15);
+  }
   counter_c7++;
 },'2n.');
 loop_c7.iterations = 24;
@@ -244,27 +245,61 @@ loop_c7.iterations = 24;
 // TODO: change wait time to something like 1 second
 tm.cue[7] = new TMCue('tilt', 1667, NO_LIMIT);
 tm.cue[7].goCue = function() {
-  counter_c7   = 0;
-  fmSynth_c7b.triggerAttack('E3');
-  fmSynth_c7.triggerAttack('E3');
-  lfo_c7.start();
+  counter_c7 = 0;
+  fmSynthLo_c7.triggerAttack('E3');
+  fmSynthHi_c7.triggerAttack('C4');
+  lfoLo_c7.start();
+  lfoHi_c7.start();
   loop_c7.start();
 };
 tm.cue[7].updateTiltSounds = function() {
-  fmSynth_c7.modulationIndex.value = 1 + tm.accel.y * 19;
-  fmSynth_c7b.modulationIndex.value = 1 + tm.accel.y * 19;
+  fmSynthLo_c7.modulationIndex.value = 1 + tm.accel.y * 19;
+  fmSynthHi_c7.modulationIndex.value = 1 + tm.accel.y * 9;
 
-  if (tm.accel.x > 0.5) {
-    fmSynth_c7.volume.value = 0;
-    fmSynth_c7b.volume.value = -99;
-  } else {
-    fmSynth_c7.volume.value = -99;
-    fmSynth_c7b.volume.value = 0;
+  // determine which of 4 x-axis strips is current position
+  // 0: left, 1: second-to-left, 2: second-to-right, 3: right
+  xZoneNow = Math.floor(tm.accel.x * 3.99);
+  if (xZoneNow != xZone) {
+    // position has changed
+    xZone = xZoneNow;
+    console.log(xZone);
+    switch (xZone) {
+      // uses range of LFOs (min and max) to toggle amplitude mod and mutes
+      case 0:
+        // low vox continuous (no amp mod) and high vox muted
+        lfoLo_c7.min = peakVol_c7;
+        lfoLo_c7.max = peakVol_c7;
+        lfoHi_c7.min = -99;
+        lfoHi_c7.max = -99;
+        break;
+      case 1:
+        // low vox pulsing and high vox muted
+        lfoLo_c7.min = -99;
+        lfoLo_c7.max = peakVol_c7;
+        lfoHi_c7.min = -99;
+        lfoHi_c7.max = -99;
+        break;
+      case 2:
+        // low vox muted and high vox continuous
+        lfoLo_c7.min = -99;
+        lfoLo_c7.max = -99;
+        lfoHi_c7.min = peakVol_c7;
+        lfoHi_c7.max = peakVol_c7;
+        break;
+      case 3:
+        // low vox muted and high vox continuous
+        lfoLo_c7.min = -99;
+        lfoLo_c7.max = -99;
+        lfoHi_c7.min = -99;
+        lfoHi_c7.max = peakVol_c7;
+        break;
+    }
   }
 };
 tm.cue[7].stopCue = function() {
+  fmSynthLo_c7.triggerRelease();
+  fmSynthHi_c7.triggerRelease();
+  lfoLo_c7.stop();
+  lfoHi_c7.stop();
   loop_c7.stop();
-  fmSynth_c7.triggerRelease();
-  fmSynth_c7b.triggerRelease();
-  lfo_c7.stop();
 };
