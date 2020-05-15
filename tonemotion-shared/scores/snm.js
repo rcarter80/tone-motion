@@ -204,37 +204,22 @@ var fmSynthLo_c7 = new Tone.FMSynth({
 }).toMaster();
 fmSynthLo_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 
-var fmSynthHi_c7 = new Tone.FMSynth({
-  harmonicity: 1.5,
-  envelope: ampEnv_c7,
-  modulation: {
-    type: 'sine',
-  },
-  modulationEnvelope: modEnv_c7,
-}).toMaster();
-fmSynthHi_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
-
 var peakVol_c7 = -9;
 var lfoLo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
 lfoLo_c7.connect(fmSynthLo_c7.volume);
-var lfoHi_c7 = new Tone.LFO('32n', -99, peakVol_c7);
-lfoHi_c7.connect(fmSynthHi_c7.volume);
 
 var counter_c7 = 0;
 var xZone = 0;
 
 var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3', 'C3', 'A2', 'A2', 'A2', 'B2', 'B2', 'B2', 'G2', 'G2', 'G2', 'G2', 'G2', 'G2'];
 
-var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
+// TODO: delete this pitch loop if not ever needed
+// var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
 
 var loop_c7 = new Tone.Loop(function(time) {
   // only one actual note is played, by note is reset here
   fmSynthLo_c7.setNote(loArr_c7[counter_c7 % loArr_c7.length]);
-  fmSynthHi_c7.setNote(hiArr_c7[counter_c7 % hiArr_c7.length]);
-  // two notes have pitch bends to next note
-  if (counter_c7 === 15) {
-    fmSynthHi_c7.detune.rampTo(-200, 5);
-  } else if (counter_c7 === 18) {
+  if (counter_c7 === 18) {
     // G2 bends down to F
     fmSynthLo_c7.detune.rampTo(-200, 15);
   }
@@ -247,59 +232,61 @@ tm.cue[7] = new TMCue('tilt', 1667, NO_LIMIT);
 tm.cue[7].goCue = function() {
   counter_c7 = 0;
   fmSynthLo_c7.triggerAttack('E3');
-  fmSynthHi_c7.triggerAttack('C4');
   lfoLo_c7.start();
-  lfoHi_c7.start();
   loop_c7.start();
 };
 tm.cue[7].updateTiltSounds = function() {
   fmSynthLo_c7.modulationIndex.value = 1 + tm.accel.y * 19;
-  fmSynthHi_c7.modulationIndex.value = 1 + tm.accel.y * 9;
 
+  // sound pulses when device is turned to right
+  if (tm.accel.x < 0.5) {
+    lfoLo_c7.min = peakVol_c7;
+  } else {
+    lfoLo_c7.min = peakVol_c7 - ((tm.accel.x-0.5) * 90);
+  }
+
+  // TODO: delete this code if never used
   // determine which of 4 x-axis strips is current position
   // 0: left, 1: second-to-left, 2: second-to-right, 3: right
   xZoneNow = Math.floor(tm.accel.x * 3.99);
   if (xZoneNow != xZone) {
     // position has changed
     xZone = xZoneNow;
-    console.log(xZone);
-    switch (xZone) {
-      // uses range of LFOs (min and max) to toggle amplitude mod and mutes
-      case 0:
-        // low vox continuous (no amp mod) and high vox muted
-        lfoLo_c7.min = peakVol_c7;
-        lfoLo_c7.max = peakVol_c7;
-        lfoHi_c7.min = -99;
-        lfoHi_c7.max = -99;
-        break;
-      case 1:
-        // low vox pulsing and high vox muted
-        lfoLo_c7.min = -99;
-        lfoLo_c7.max = peakVol_c7;
-        lfoHi_c7.min = -99;
-        lfoHi_c7.max = -99;
-        break;
-      case 2:
-        // low vox muted and high vox continuous
-        lfoLo_c7.min = -99;
-        lfoLo_c7.max = -99;
-        lfoHi_c7.min = peakVol_c7;
-        lfoHi_c7.max = peakVol_c7;
-        break;
-      case 3:
-        // low vox muted and high vox continuous
-        lfoLo_c7.min = -99;
-        lfoLo_c7.max = -99;
-        lfoHi_c7.min = -99;
-        lfoHi_c7.max = peakVol_c7;
-        break;
-    }
+    // switch (xZone) {
+    //   // uses range of LFOs (min and max) to toggle amplitude mod and mutes
+    //   case 0:
+    //     // low vox continuous (no amp mod) and high vox muted
+    //     lfoLo_c7.min = peakVol_c7;
+    //     lfoLo_c7.max = peakVol_c7;
+    //     lfoHi_c7.min = -99;
+    //     lfoHi_c7.max = -99;
+    //     break;
+    //   case 1:
+    //     // low vox pulsing and high vox muted
+    //     lfoLo_c7.min = -99;
+    //     lfoLo_c7.max = peakVol_c7;
+    //     lfoHi_c7.min = -99;
+    //     lfoHi_c7.max = -99;
+    //     break;
+    //   case 2:
+    //     // low vox muted and high vox continuous
+    //     lfoLo_c7.min = -99;
+    //     lfoLo_c7.max = -99;
+    //     lfoHi_c7.min = peakVol_c7;
+    //     lfoHi_c7.max = peakVol_c7;
+    //     break;
+    //   case 3:
+    //     // low vox muted and high vox continuous
+    //     lfoLo_c7.min = -99;
+    //     lfoLo_c7.max = -99;
+    //     lfoHi_c7.min = -99;
+    //     lfoHi_c7.max = peakVol_c7;
+    //     break;
+    // }
   }
 };
 tm.cue[7].stopCue = function() {
   fmSynthLo_c7.triggerRelease();
-  fmSynthHi_c7.triggerRelease();
   lfoLo_c7.stop();
-  lfoHi_c7.stop();
   loop_c7.stop();
 };
