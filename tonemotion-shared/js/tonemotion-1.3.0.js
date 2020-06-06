@@ -31,6 +31,7 @@ var yTilt = new Tone.Signal(0.5);
 /*
 ** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
 */
+// TODO: link to new version of NoSleep.js (https://github.com/richtr/NoSleep.js) BUT ALSO: NoSleep doesn't work if user deliberately locks screen or if screen locks before NoSleep is enabled. Solution is to reinstatiate NoSleep() object every time screen lock should be disabled. Need to move some code around.
 var noSleep = new NoSleep();
 
 /**
