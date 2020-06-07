@@ -147,6 +147,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('load', () => {
     if (this.debug) {
       this.publicLog('Audio buffers finished loading');
+      // TODO: move version number to less buried place in code
       this.publicLog('tonemotion v1.3.0 loaded');
     }
     // Synchronize client clock to server once all resources loaded
