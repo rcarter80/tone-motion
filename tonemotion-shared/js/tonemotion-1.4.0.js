@@ -31,6 +31,7 @@ var yTilt = new Tone.Signal(0.5);
 /*
 ** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
 */
+// TODO: link to new version of NoSleep.js (https://github.com/richtr/NoSleep.js) BUT ALSO: NoSleep doesn't work if user deliberately locks screen or if screen locks before NoSleep is enabled. Solution is to reinstatiate NoSleep() object every time screen lock should be disabled. Need to move some code around.
 var noSleep = new NoSleep();
 
 /**
@@ -146,6 +147,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('load', () => {
     if (this.debug) {
       this.publicLog('Audio buffers finished loading');
+      // TODO: move version number to less buried place in code
       this.publicLog('tonemotion v1.3.0 loaded');
     }
     // Synchronize client clock to server once all resources loaded
