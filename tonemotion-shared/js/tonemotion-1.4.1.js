@@ -3,7 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '1.4.0 08-06-2020';
+const VERSION = '1.4.1';
 
 /*
 ** DOM HOOKS
