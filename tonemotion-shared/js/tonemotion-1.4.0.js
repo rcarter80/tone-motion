@@ -3,7 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '1.4.0';
+const VERSION = '1.4.0 08-06-2020';
 
 /*
 ** DOM HOOKS
@@ -28,12 +28,6 @@ const console_container = document.querySelector('#console_container');
 
 var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
 var yTilt = new Tone.Signal(0.5);
-
-/*
-** Prevents automatic screen lock (from https://github.com/richtr/NoSleep.js)
-*/
-// TODO: link to new version of NoSleep.js (https://github.com/richtr/NoSleep.js) BUT ALSO: NoSleep doesn't work if user deliberately locks screen or if screen locks before NoSleep is enabled. Solution is to reinstatiate NoSleep() object every time screen lock should be disabled. Need to move some code around.
-var noSleep = new NoSleep();
 
 /**
  * Object to encapsulate properties and methods for ToneMotion
@@ -268,6 +262,10 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
   // prevents screen from automatically locking, which chokes audio/motion
+  // (from https://github.com/richtr/NoSleep.js)
+  // NoSleep object must be reconstructed each time it's enabled
+  // TODO:  update other pieces (Seth's) with new library and iOS 13.4 warning
+  var noSleep = new NoSleep();
   noSleep.enable();
   // simply playing back 1-sec. silent file when tapping a button allows
   // audio to sound with ring/silent switch on silent.
