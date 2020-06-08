@@ -137,11 +137,11 @@ var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
 var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
 
 // array of initial glass sounds for first part of cue
-glassArray_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
+var glassArray_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
 // second array of sounds (no fade out)
-chimeArray_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
+var chimeArray_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
 // final array of sounds to keep looping
-pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
+var pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
 var counter_c6 = 0;
 var thisVol_c6, thisGlass_c6, thisPlucked_c6, loopCounter_c6;
