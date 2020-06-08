@@ -3,6 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
+const VERSION = '1.4.0';
 
 /*
 ** DOM HOOKS
@@ -147,8 +148,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
   Tone.Buffer.on('load', () => {
     if (this.debug) {
       this.publicLog('Audio buffers finished loading');
-      // TODO: move version number to less buried place in code
-      this.publicLog('tonemotion v1.3.0 loaded');
+      this.publicLog(`tonemotion v${VERSION} loaded`);
     }
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
@@ -519,10 +519,11 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
     }
   }
 
-  // For debugging, add property to read DeviceMotionEvent interval
+  // For debugging, add properties to read DeviceMotionEvent interval and display acceleration (not including gravity), used for shake gesture
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
   if (this.debug) {
     this.motionPollingInterval = event.interval;
+    this.gyro_y = event.acceleration.y;
   }
 };
 
@@ -637,9 +638,10 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   if (motion_data_checkbox.checked) {
     motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
 
-    // Will display DeviceMotionEvent interval if debugging
+    // Will display DeviceMotionEvent interval and gyro data if debugging
     if (this.debug) {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  (this.gyro_y || 'n/a'));
     }
   }
 };
