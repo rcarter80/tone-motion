@@ -326,6 +326,7 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.cueTimeFromServer = 0;
 
   // No need to prevent screen lock any more
+  // BUG: noSleep is out of scope. need to define outside block in which it's created
   noSleep.disable();
 };
 
