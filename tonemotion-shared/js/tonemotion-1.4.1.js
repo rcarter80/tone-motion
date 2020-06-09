@@ -258,6 +258,7 @@ ToneMotion.prototype.setStatus = function(status) {
 };
 
 // Starts Transport, loops, motion handling, and network requests
+var noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting Transport, motion updates, and cue fetching');
 
@@ -265,7 +266,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   // (from https://github.com/richtr/NoSleep.js)
   // NoSleep object must be reconstructed each time it's enabled
   // TODO:  update other pieces (Seth's) with new library and iOS 13.4 warning
-  var noSleep = new NoSleep();
+  noSleep = new NoSleep();
   noSleep.enable();
   // simply playing back 1-sec. silent file when tapping a button allows
   // audio to sound with ring/silent switch on silent.
@@ -274,7 +275,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   silent_buffer.play();
 
   // testing iOS 13 motion permission
-  // Guard against reference erros by checking that DeviceMotionEvent is defined
+  // Guard against reference errors by checking that DeviceMotionEvent is defined
   if (typeof DeviceMotionEvent !== 'undefined' &&
   typeof DeviceMotionEvent.requestPermission === 'function') {
     if (this.debug) {
@@ -326,7 +327,6 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.cueTimeFromServer = 0;
 
   // No need to prevent screen lock any more
-  // BUG: noSleep is out of scope. need to define outside block in which it's created
   noSleep.disable();
 };
 
