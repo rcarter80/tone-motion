@@ -155,7 +155,6 @@ ToneMotion.prototype.init = function(urlOfServer) {
   this.beginMotionHandlingOnAndroid();
 };
 
-
 // Tests if device is Android, registers 'devicemotion' event listener. iOS devices require permission after user interaction, but Android devices can begin polling motion sensor data immediately. Waiting to get motion data on Android until same point as I ask for permission on iOS does NOT work on Android. Motion polling chokes.
 ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
   if (this.debug) {
@@ -601,7 +600,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
     this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
   }
-
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
