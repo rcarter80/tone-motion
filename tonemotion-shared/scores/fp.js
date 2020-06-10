@@ -24,7 +24,8 @@ const piano_sounds = 'tonemotion-shared/audio/piano/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 72;
-const semitone = 1.059463;
+const semitoneUp = 2 ** (1/12);
+const semitoneDown = 1 / semitoneUp;
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -113,7 +114,7 @@ tm.cue[5].stopCue = function() {
 var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 var glF4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 // reusing E4 and pitching up half step. could also create second sound file
-glF4.playbackRate = semitone;
+glF4.playbackRate = semitoneUp;
 var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
 var glB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
 var glC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
@@ -121,7 +122,7 @@ var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 // duplicate file to avoid retirggering artifacts
 var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 var glF5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-glF5.playbackRate = semitone;
+glF5.playbackRate = semitoneUp;
 var glA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
 var glB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
 var glC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
@@ -144,7 +145,8 @@ var chimeArray_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluck
 var pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
 var counter_c6 = 0;
-var thisVol_c6, thisGlass_c6, thisPlucked_c6, loopCounter_c6;
+var thisVol_c6, thisBend_c6, thisGlass_c6, thisPluck_c6, loopCount_c6, step_c6;
+const bendDown = 1 - semitoneDown;
 
 // 1667 ms. = 2 beats @ 72bpm
 tm.cue[6] = new TMCue('shake', 1667, NO_LIMIT);
@@ -161,21 +163,27 @@ tm.cue[6].triggerShakeSound = function() {
   } else if (counter_c6 < (glassArray_c6.length + chimeArray_c6.length)) {
     chimeArray_c6[(counter_c6 - glassArray_c6.length)].start();
   } else {
-    loopCounter_c6 = counter_c6 - glassArray_c6.length - chimeArray_c6.length;
+    loopCount_c6 = counter_c6 - glassArray_c6.length - chimeArray_c6.length;
     // plucked sounds fade from 0dBfs to -24dBfs over course of array
-    if (loopCounter_c6 < 60) {
-      thisVol_c6 = -((loopCounter_c6 / 59) * 24);
+    if (loopCount_c6 < 60) {
+      // step_c6 counts from 0.0 to 1.0
+      step_c6 = loopCount_c6 / 59;
+      thisVol_c6 = -(step_c6 * 24);
+      thisBend_c6 = 1 - (step_c6 * bendDown);
     } else {
       thisVol_c6 = -24;
+      thisBend_c6 = semitoneDown;
     }
-    thisPlucked_c6 = pluckedArray_c6[loopCounter_c6 % pluckedArray_c6.length];
-    thisPlucked_c6.volume.value = thisVol_c6;
-    thisPlucked_c6.start();
+    thisPluck_c6 = pluckedArray_c6[loopCount_c6 % pluckedArray_c6.length];
+    thisPluck_c6.volume.value = thisVol_c6;
+    thisPluck_c6.playbackRate = thisBend_c6;
+    thisPluck_c6.start();
   }
   counter_c6++;
 };
 tm.cue[6].stopCue = function() {
   // nothing to do here
+  // TODO: add transition reversed sound. or riser sound?
 };
 
 // *******************************************************************
