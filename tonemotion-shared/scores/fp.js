@@ -189,36 +189,44 @@ tm.cue[6].stopCue = function() {
 // *******************************************************************
 // CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
 
-var testSynth = new Tone.Synth();
-var testMult = new Tone.Multiply().toMaster();
-yTilt.connect(testMult, 0, 0);
-testSynth.connect(testMult, 0, 1);
-
-
-var ampEnv_c7 = {
-  attack: 2,
-  decay: 0,
-  sustain: 1,
-  release: 2,
-};
-var modEnv_c7 = {
-  attack: 0.1,
-  decay: 0,
-  sustain: 1,
-  release: 2,
-};
-var fmSynthLo_c7 = new Tone.FMSynth({
+// var ampEnv_c7 = {
+//   attack: 2,
+//   decay: 0,
+//   sustain: 1,
+//   release: 2,
+// };
+// var modEnv_c7 = {
+//   attack: 0.1,
+//   decay: 0,
+//   sustain: 1,
+//   release: 2,
+// };
+var fmSynth_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
-  envelope: ampEnv_c7,
+  envelope: {
+    attack: 2,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
   modulation: {
     type: 'sine',
   },
-  modulationEnvelope: modEnv_c7,
-}).toMaster();
-fmSynthLo_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+  modulationEnvelope: {
+    attack: 0.1,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+});
+fmSynth_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 var peakVol_c7 = -9;
-var lfoLo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
-lfoLo_c7.connect(fmSynthLo_c7.volume);
+var lfo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
+lfo_c7.connect(fmSynth_c7.volume);
+// additional gain stage on y-axis
+var synthMult_c7 = new Tone.Multiply().toMaster();
+yTilt.connect(synthMult_c7, 0, 0);
+fmSynth_c7.connect(synthMult_c7, 0, 1);
 
 var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3', 'C3', 'A2', 'A2', 'A2', 'B2', 'B2', 'B2', 'G2', 'G2', 'G2', 'G2', 'G2', 'G2'];
 
@@ -226,37 +234,39 @@ var counter_c7 = 0;
 
 var loop_c7 = new Tone.Loop(function(time) {
   // only one actual note is played, by note is reset here
-  fmSynthLo_c7.setNote(loArr_c7[counter_c7 % loArr_c7.length]);
+  fmSynth_c7.setNote(loArr_c7[counter_c7 % loArr_c7.length]);
   if (counter_c7 === 18) {
     // G2 bends down to F
-    fmSynthLo_c7.detune.rampTo(-200, 15);
+    fmSynth_c7.detune.rampTo(-200, 15);
   }
   counter_c7++;
 },'2n.');
-loop_c7.iterations = 24;
+// goes through pitch array only once, then holds on last pitch
+loop_c7.iterations = loArr_c7.length;
 
 // cue triggered 2 beats before downbeat. clients have extra 2 beats to join
 tm.cue[7] = new TMCue('tilt', 1667, 1667);
 tm.cue[7].goCue = function() {
   counter_c7 = 0;
-  fmSynthLo_c7.triggerAttack('E3');
-  lfoLo_c7.start();
+  fmSynth_c7.triggerAttack('E3');
+  lfo_c7.start();
   loop_c7.start();
 };
 tm.cue[7].updateTiltSounds = function() {
-  fmSynthLo_c7.modulationIndex.value = 1 + tm.accel.y * 19;
+  fmSynth_c7.modulationIndex.value = 1 + tm.accel.y * 19;
 
   // sound pulses when device is turned to right
   if (tm.accel.x < 0.5) {
-    lfoLo_c7.min = peakVol_c7;
+    lfo_c7.min = peakVol_c7;
   } else {
-    lfoLo_c7.min = peakVol_c7 - ((tm.accel.x-0.5) * 90);
+    lfo_c7.min = peakVol_c7 - ((tm.accel.x-0.5) * 90);
   }
 };
 tm.cue[7].stopCue = function() {
-  fmSynthLo_c7.triggerRelease();
-  lfoLo_c7.stop();
+  fmSynth_c7.triggerRelease();
+  lfo_c7.stop();
   loop_c7.stop();
+  // TODO: add transition riser
 };
 
 // *******************************************************************
@@ -288,29 +298,29 @@ tm.cue[8].stopCue = function() {
 //     // uses range of LFOs (min and max) to toggle amplitude mod and mutes
 //     case 0:
 //       // low vox continuous (no amp mod) and high vox muted
-//       lfoLo_c7.min = peakVol_c7;
-//       lfoLo_c7.max = peakVol_c7;
+//       lfo_c7.min = peakVol_c7;
+//       lfo_c7.max = peakVol_c7;
 //       lfoHi_c7.min = -99;
 //       lfoHi_c7.max = -99;
 //       break;
 //     case 1:
 //       // low vox pulsing and high vox muted
-//       lfoLo_c7.min = -99;
-//       lfoLo_c7.max = peakVol_c7;
+//       lfo_c7.min = -99;
+//       lfo_c7.max = peakVol_c7;
 //       lfoHi_c7.min = -99;
 //       lfoHi_c7.max = -99;
 //       break;
 //     case 2:
 //       // low vox muted and high vox continuous
-//       lfoLo_c7.min = -99;
-//       lfoLo_c7.max = -99;
+//       lfo_c7.min = -99;
+//       lfo_c7.max = -99;
 //       lfoHi_c7.min = peakVol_c7;
 //       lfoHi_c7.max = peakVol_c7;
 //       break;
 //     case 3:
 //       // low vox muted and high vox continuous
-//       lfoLo_c7.min = -99;
-//       lfoLo_c7.max = -99;
+//       lfo_c7.min = -99;
+//       lfo_c7.max = -99;
 //       lfoHi_c7.min = -99;
 //       lfoHi_c7.max = peakVol_c7;
 //       break;
