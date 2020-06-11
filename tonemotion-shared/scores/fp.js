@@ -189,6 +189,12 @@ tm.cue[6].stopCue = function() {
 // *******************************************************************
 // CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
 
+var testSynth = new Tone.Synth();
+var testMult = new Tone.Multiply().toMaster();
+yTilt.connect(testMult, 0, 0);
+testSynth.connect(testMult, 0, 1);
+
+
 var ampEnv_c7 = {
   attack: 2,
   decay: 0,
@@ -201,7 +207,6 @@ var modEnv_c7 = {
   sustain: 1,
   release: 2,
 };
-
 var fmSynthLo_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
   envelope: ampEnv_c7,
@@ -211,18 +216,13 @@ var fmSynthLo_c7 = new Tone.FMSynth({
   modulationEnvelope: modEnv_c7,
 }).toMaster();
 fmSynthLo_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
-
 var peakVol_c7 = -9;
 var lfoLo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
 lfoLo_c7.connect(fmSynthLo_c7.volume);
 
-var counter_c7 = 0;
-var xZone = 0;
-
 var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3', 'C3', 'A2', 'A2', 'A2', 'B2', 'B2', 'B2', 'G2', 'G2', 'G2', 'G2', 'G2', 'G2'];
 
-// TODO: delete this pitch loop if not ever needed
-// var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
+var counter_c7 = 0;
 
 var loop_c7 = new Tone.Loop(function(time) {
   // only one actual note is played, by note is reset here
@@ -235,8 +235,8 @@ var loop_c7 = new Tone.Loop(function(time) {
 },'2n.');
 loop_c7.iterations = 24;
 
-// TODO: change wait time to something like 1 second
-tm.cue[7] = new TMCue('tilt', 1667, NO_LIMIT);
+// cue triggered 2 beats before downbeat. clients have extra 2 beats to join
+tm.cue[7] = new TMCue('tilt', 1667, 1667);
 tm.cue[7].goCue = function() {
   counter_c7 = 0;
   fmSynthLo_c7.triggerAttack('E3');
@@ -252,49 +252,67 @@ tm.cue[7].updateTiltSounds = function() {
   } else {
     lfoLo_c7.min = peakVol_c7 - ((tm.accel.x-0.5) * 90);
   }
-
-  // TODO: delete this code if never used
-  // determine which of 4 x-axis strips is current position
-  // 0: left, 1: second-to-left, 2: second-to-right, 3: right
-  xZoneNow = Math.floor(tm.accel.x * 3.99);
-  if (xZoneNow != xZone) {
-    // position has changed
-    xZone = xZoneNow;
-    // switch (xZone) {
-    //   // uses range of LFOs (min and max) to toggle amplitude mod and mutes
-    //   case 0:
-    //     // low vox continuous (no amp mod) and high vox muted
-    //     lfoLo_c7.min = peakVol_c7;
-    //     lfoLo_c7.max = peakVol_c7;
-    //     lfoHi_c7.min = -99;
-    //     lfoHi_c7.max = -99;
-    //     break;
-    //   case 1:
-    //     // low vox pulsing and high vox muted
-    //     lfoLo_c7.min = -99;
-    //     lfoLo_c7.max = peakVol_c7;
-    //     lfoHi_c7.min = -99;
-    //     lfoHi_c7.max = -99;
-    //     break;
-    //   case 2:
-    //     // low vox muted and high vox continuous
-    //     lfoLo_c7.min = -99;
-    //     lfoLo_c7.max = -99;
-    //     lfoHi_c7.min = peakVol_c7;
-    //     lfoHi_c7.max = peakVol_c7;
-    //     break;
-    //   case 3:
-    //     // low vox muted and high vox continuous
-    //     lfoLo_c7.min = -99;
-    //     lfoLo_c7.max = -99;
-    //     lfoHi_c7.min = -99;
-    //     lfoHi_c7.max = peakVol_c7;
-    //     break;
-    // }
-  }
 };
 tm.cue[7].stopCue = function() {
   fmSynthLo_c7.triggerRelease();
   lfoLo_c7.stop();
   loop_c7.stop();
 };
+
+// *******************************************************************
+// CUE 8 [C]
+
+tm.cue[8] = new TMCue('shake', 1667, NO_LIMIT);
+tm.cue[8].goCue = function() {
+};
+tm.cue[8].triggerShakeSound = function() {
+};
+tm.cue[8].stopCue = function() {
+};
+
+
+/*********************************************************************
+************************ EXTRA CODE SNIPPETS *************************
+*********************************************************************/
+// ideas to possibly use in future, but comment out for now
+
+// var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
+
+// determine which of 4 x-axis strips is current position
+// 0: left, 1: second-to-left, 2: second-to-right, 3: right
+// xZoneNow = Math.floor(tm.accel.x * 3.99);
+// if (xZoneNow != xZone) {
+//   // position has changed
+//   xZone = xZoneNow;
+//   switch (xZone) {
+//     // uses range of LFOs (min and max) to toggle amplitude mod and mutes
+//     case 0:
+//       // low vox continuous (no amp mod) and high vox muted
+//       lfoLo_c7.min = peakVol_c7;
+//       lfoLo_c7.max = peakVol_c7;
+//       lfoHi_c7.min = -99;
+//       lfoHi_c7.max = -99;
+//       break;
+//     case 1:
+//       // low vox pulsing and high vox muted
+//       lfoLo_c7.min = -99;
+//       lfoLo_c7.max = peakVol_c7;
+//       lfoHi_c7.min = -99;
+//       lfoHi_c7.max = -99;
+//       break;
+//     case 2:
+//       // low vox muted and high vox continuous
+//       lfoLo_c7.min = -99;
+//       lfoLo_c7.max = -99;
+//       lfoHi_c7.min = peakVol_c7;
+//       lfoHi_c7.max = peakVol_c7;
+//       break;
+//     case 3:
+//       // low vox muted and high vox continuous
+//       lfoLo_c7.min = -99;
+//       lfoLo_c7.max = -99;
+//       lfoHi_c7.min = -99;
+//       lfoHi_c7.max = peakVol_c7;
+//       break;
+//   }
+// }
