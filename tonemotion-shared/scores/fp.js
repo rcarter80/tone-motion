@@ -110,7 +110,7 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: glass sounds (getting softer), then single chime, then lower plucked
+// CUE 6 [A] glass sounds (getting softer), then one chime, then lower plucked
 var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 var glF4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 // reusing E4 and pitching up half step. could also create second sound file
@@ -187,7 +187,7 @@ tm.cue[6].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 7: two pitch layers of FM synths with toggling LFO on amplitude
+// CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
 
 var ampEnv_c7 = {
   attack: 2,
