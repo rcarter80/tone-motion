@@ -119,7 +119,7 @@ var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
 var glB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
 var glC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
 var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-// duplicate file to avoid retirggering artifacts
+// duplicate file to avoid retriggering artifacts
 var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 var glF5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 glF5.playbackRate = semitoneUp;
@@ -182,25 +182,11 @@ tm.cue[6].triggerShakeSound = function() {
   counter_c6++;
 };
 tm.cue[6].stopCue = function() {
-  // nothing to do here
   // TODO: add transition reversed sound. or riser sound?
 };
 
 // *******************************************************************
 // CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
-
-// var ampEnv_c7 = {
-//   attack: 2,
-//   decay: 0,
-//   sustain: 1,
-//   release: 2,
-// };
-// var modEnv_c7 = {
-//   attack: 0.1,
-//   decay: 0,
-//   sustain: 1,
-//   release: 2,
-// };
 var fmSynth_c7 = new Tone.FMSynth({
   harmonicity: 1.5,
   envelope: {
@@ -271,13 +257,22 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8 [C]
-
 tm.cue[8] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[8].goCue = function() {
 };
 tm.cue[8].triggerShakeSound = function() {
 };
 tm.cue[8].stopCue = function() {
+  // TODO: add transition "faller"
+};
+
+// CUE 9 [D] TACET
+tm.cue[9] = new TMCue('tacet', 1667, NO_LIMIT);
+tm.cue[9].goCue = function() {
+  // TODO: add sound on downbeat
+};
+tm.cue[9].stopCue = function() {
+  // nothing to clean up
 };
 
 
