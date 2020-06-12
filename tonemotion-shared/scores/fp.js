@@ -257,10 +257,29 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8 [C]
+// reverb for reversed chime sounds
+var reverb = new Tone.JCReverb().toMaster();
+reverb.roomSize.value = 0.8;
+// reverb.dampening.value = 10000;
+// COULD USE EITHER Freeverb() or JCReverb(). latter sounds like delay.
+
+var glRevC5 = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(reverb);
+// test
+var glRevC5TEST = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(reverb);
+glRevC5TEST.playbackRate = 2;
+
+var revChimeArr_c8 = [glRevC5, glRevC5TEST];
+
+var counter_c8, thisChime_c8;
+
 tm.cue[8] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[8].goCue = function() {
+  counter_c8 = 0;
 };
 tm.cue[8].triggerShakeSound = function() {
+  thisChime_c8 = revChimeArr_c8[counter_c8 % revChimeArr_c8.length];
+  thisChime_c8.start();
+  counter_c8++;
 };
 tm.cue[8].stopCue = function() {
   // TODO: add transition "faller"
