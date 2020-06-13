@@ -21,6 +21,7 @@ const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 72;
@@ -136,6 +137,7 @@ var pluckedF3 = new Tone.Player(plucked_sounds + "pluckedF3.mp3").toMaster();
 var pluckedF4 = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
 var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
 var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
+var riser = new Tone.Player(misc_sounds + "revHatRiser.mp3").toMaster();
 
 // array of initial glass sounds for first part of cue
 var glassArray_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
@@ -182,7 +184,7 @@ tm.cue[6].triggerShakeSound = function() {
   counter_c6++;
 };
 tm.cue[6].stopCue = function() {
-  // TODO: add transition reversed sound. or riser sound?
+  riser.start();
 };
 
 // *******************************************************************
@@ -252,7 +254,7 @@ tm.cue[7].stopCue = function() {
   fmSynth_c7.triggerRelease();
   lfo_c7.stop();
   loop_c7.stop();
-  // TODO: add transition riser
+  riser.start();
 };
 
 // *******************************************************************
@@ -267,6 +269,7 @@ var glRevC5 = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(rever
 // test
 var glRevC5TEST = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(reverb);
 glRevC5TEST.playbackRate = 2;
+var faller = new Tone.Player(misc_sounds + "revHatFaller.mp3").toMaster();
 
 var revChimeArr_c8 = [glRevC5, glRevC5TEST];
 
@@ -277,12 +280,13 @@ tm.cue[8].goCue = function() {
   counter_c8 = 0;
 };
 tm.cue[8].triggerShakeSound = function() {
+  // TODO: add fade out of shake sounds to make room for faller transition
   thisChime_c8 = revChimeArr_c8[counter_c8 % revChimeArr_c8.length];
   thisChime_c8.start();
   counter_c8++;
 };
 tm.cue[8].stopCue = function() {
-  // TODO: add transition "faller"
+  faller.start();
 };
 
 // CUE 9 [D] TACET
