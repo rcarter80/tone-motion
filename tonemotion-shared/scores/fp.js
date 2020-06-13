@@ -23,10 +23,11 @@ const perc_sounds = 'tonemotion-shared/audio/perc/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 
-// Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 72;
 const semitoneUp = 2 ** (1/12);
 const semitoneDown = 1 / semitoneUp;
+const bendUp = semitoneUp - 1;
+const bendDown = 1 - semitoneDown;
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -113,17 +114,14 @@ tm.cue[5].stopCue = function() {
 // *******************************************************************
 // CUE 6 [A] glass sounds (getting softer), then one chime, then lower plucked
 var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
-var glF4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
-// reusing E4 and pitching up half step. could also create second sound file
-glF4.playbackRate = semitoneUp;
+var glF4 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toMaster();
 var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
 var glB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
 var glC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
 var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
 // duplicate file to avoid retriggering artifacts
 var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-var glF5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-glF5.playbackRate = semitoneUp;
+var glF5 = new Tone.Player(glass_sounds + "glassRealF5.mp3").toMaster();
 var glA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
 var glB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
 var glC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
@@ -148,7 +146,6 @@ var pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
 var counter_c6 = 0;
 var thisVol_c6, thisBend_c6, thisGlass_c6, thisPluck_c6, loopCount_c6, step_c6;
-const bendDown = 1 - semitoneDown;
 
 // 1667 ms. = 2 beats @ 72bpm
 tm.cue[6] = new TMCue('shake', 1667, NO_LIMIT);
@@ -260,29 +257,56 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 [C]
 // reverb for reversed chime sounds
-var reverb = new Tone.JCReverb().toMaster();
-reverb.roomSize.value = 0.8;
-// reverb.dampening.value = 10000;
-// COULD USE EITHER Freeverb() or JCReverb(). latter sounds like delay.
-
-var glRevC5 = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(reverb);
-// test
-var glRevC5TEST = new Tone.Player(glass_sounds + "glassRealRevC5.mp3").connect(reverb);
-glRevC5TEST.playbackRate = 2;
+var reverb = new Tone.Freeverb().toMaster();
+reverb.roomSize.value = 0.75;
+reverb.dampening.value = 5000;
+var glRevF4 = new Tone.Player(glass_sounds + "shortRevGlassF4.mp3").connect(reverb);
+var glRevA4 = new Tone.Player(glass_sounds + "shortRevGlassA4.mp3").connect(reverb);
+var glRevB4 = new Tone.Player(glass_sounds + "shortRevGlassB4.mp3").connect(reverb);
+var glRevC5 = new Tone.Player(glass_sounds + "shortRevGlassC5.mp3").connect(reverb);
+var glRevE5 = new Tone.Player(glass_sounds + "shortRevGlassE5.mp3").connect(reverb);
+var glRevF5 = new Tone.Player(glass_sounds + "shortRevGlassF5.mp3").connect(reverb);
+var glRevA5 = new Tone.Player(glass_sounds + "shortRevGlassA5.mp3").connect(reverb);
+var glRevB5 = new Tone.Player(glass_sounds + "shortRevGlassB5.mp3").connect(reverb);
+var glRevC6 = new Tone.Player(glass_sounds + "shortRevGlassC6.mp3").connect(reverb);
+var glRevE6 = new Tone.Player(glass_sounds + "shortRevGlassE6.mp3").connect(reverb);
 var faller = new Tone.Player(misc_sounds + "revHatFaller.mp3").toMaster();
 
-var revChimeArr_c8 = [glRevC5, glRevC5TEST];
+var revChimeArr_c8 = [glRevC5, glRevE5, glRevC6, glRevE6, glRevC5, glRevE5, glRevC6, glRevE6, glRevC5, glRevE5, glRevC6, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6];
+var loopArr_c8 = [glE4, glE5, glE6, glE5, glF4, glF5, glF4, glF5];
 
-var counter_c8, thisChime_c8;
+var counter_c8, thisChime_c8, loopCount_c8, step_c8, thisVol_c8, thisBend_c8, i_c8;
 
 tm.cue[8] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[8].goCue = function() {
   counter_c8 = 0;
 };
 tm.cue[8].triggerShakeSound = function() {
-  // TODO: add fade out of shake sounds to make room for faller transition
-  thisChime_c8 = revChimeArr_c8[counter_c8 % revChimeArr_c8.length];
-  thisChime_c8.start();
+  if (counter_c8 < revChimeArr_c8.length) {
+    thisChime_c8 = revChimeArr_c8[counter_c8];
+    thisChime_c8.start();
+  } else {
+    loopCount_c8 = counter_c8 - revChimeArr_c8.length;
+    if (loopCount_c8 < 32) {
+      // step_c8 counts from 0.0 to 1.0 (but stops at 1.0)
+      step_c8 = loopCount_c8 / 31;
+    } else {
+      step_c8 = 1;
+    }
+    // select array index for current chime sound
+    i_c8 = loopCount_c8 % loopArr_c8.length;
+    thisChime_c8 = loopArr_c8[i_c8];
+    thisVol_c8 = -(step_c8 * 18);
+    thisChime_c8.volume.value = thisVol_c8;
+    if (i_c8 < 4) {
+      // Es bend down to Eb, but Fs bend UP to Gb
+      thisBend_c8 = 1 - (step_c8 * bendDown);
+    } else {
+      thisBend_c8 = 1 + (step_c8 * bendUp);
+    }
+    thisChime_c8.playbackRate = thisBend_c8;
+    thisChime_c8.start();
+  }
   counter_c8++;
 };
 tm.cue[8].stopCue = function() {
@@ -292,7 +316,7 @@ tm.cue[8].stopCue = function() {
 // CUE 9 [D] TACET
 tm.cue[9] = new TMCue('tacet', 1667, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  // TODO: add sound on downbeat
+  // TODO: add sound on downbeat (make in Logic: eighth-note triplets at 72bpm, Eb4, Eb5, Eb6, Gb4, Gb5, Gb6; make long-tail sounds from scratch from original real glass at 518Hz)
 };
 tm.cue[9].stopCue = function() {
   // nothing to clean up
