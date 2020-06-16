@@ -322,6 +322,18 @@ tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
+// CUE 10 [E] TILT
+tm.cue[10] = new TMCue('tilt', 1667, 1667);
+tm.cue[10].goCue = function() {
+
+};
+tm.cue[10].updateTiltSounds = function() {
+
+};
+tm.cue[10].stopCue = function() {
+
+};
+
 
 /*********************************************************************
 ************************ EXTRA CODE SNIPPETS *************************
