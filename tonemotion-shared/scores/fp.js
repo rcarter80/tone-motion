@@ -218,7 +218,7 @@ var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3'
 var counter_c7 = 0;
 
 var loop_c7 = new Tone.Loop(function(time) {
-  // only one actual note is played, by note is reset here
+  // only one actual note is played, but note is reset here
   fmSynth_c7.setNote(loArr_c7[counter_c7 % loArr_c7.length]);
   if (counter_c7 === 18) {
     // G2 bends down to F
@@ -313,25 +313,97 @@ tm.cue[8].stopCue = function() {
   faller.start();
 };
 
-// CUE 9 [D] TACET
+// CUE 9 [D] TACET (but glass sounds on downbeat)
+var downbeat_c9 = new Tone.Player(misc_sounds + "downbeatGlassCue9.mp3").toMaster();
+
 tm.cue[9] = new TMCue('tacet', 1667, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  // TODO: add sound on downbeat (make in Logic: eighth-note triplets at 72bpm, Eb4, Eb5, Eb6, Gb4, Gb5, Gb6; make long-tail sounds from scratch from original real glass at 518Hz)
+  downbeat_c9.start();
 };
 tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
-// CUE 10 [E] TILT
-tm.cue[10] = new TMCue('tilt', 1667, 1667);
-tm.cue[10].goCue = function() {
+// CUE 10 [E] crossfading synth and sparkles
+var fmSynth_c10 = new Tone.FMSynth({
+  harmonicity: 1.5,
+  envelope: {
+    attack: 2,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+  modulation: {
+    type: 'sine',
+  },
+  modulationEnvelope: {
+    attack: 0.1,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+});
+fmSynth_c10.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+var peakVol_c10 = -9;
+var lfo_c10 = new Tone.LFO('16n', -99, peakVol_c10);
+lfo_c10.connect(fmSynth_c10.volume);
+// one control signal multiplies y- and x-axes to set volume on both
+var rightDownVolTilt = new Tone.Multiply();
+yTilt.connect(rightDownVolTilt, 0, 0);
+xTilt.connect(rightDownVolTilt, 0, 1);
+// next Tone.Multiply sets synth's volume from control signal
+var scaledSynth_c10 = new Tone.Multiply().toMaster();
+rightDownVolTilt.connect(scaledSynth_c10, 0, 0);
+fmSynth_c10.connect(scaledSynth_c10, 0, 1);
 
+var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3');
+sugarChimeLoop.loop = true;
+// need to invert x-axis to set vol on mute when turned RIGHT
+var xTiltInverted = new Tone.Subtract();
+var inversionSig = new Tone.Signal(1);
+inversionSig.connect(xTiltInverted, 0, 0);
+xTilt.connect(xTiltInverted, 0, 1);
+// one control signal multiplies y- and x-axes to set volume on both
+var leftDownVolTilt = new Tone.Multiply();
+yTilt.connect(leftDownVolTilt, 0, 0);
+xTiltInverted.connect(leftDownVolTilt, 0, 1);
+// next Tone.Multiply sets sparkly sound's volume from control signal
+var sparkles_c10 = new Tone.Multiply().toMaster();
+leftDownVolTilt.connect(sparkles_c10, 0, 0);
+sugarChimeLoop.connect(sparkles_c10, 0, 1);
+
+// pitch array for synth
+var pitchArr_c10 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
+
+var counter_c10;
+
+var loop_c10 = new Tone.Loop(function(time) {
+  // only one actual note is played, but note is reset here
+  fmSynth_c10.setNote(pitchArr_c10[counter_c10 % pitchArr_c10.length]);
+  counter_c10++;
+},'2n.');
+// goes through pitch array only once, then holds on last pitch
+loop_c10.iterations = pitchArr_c10.length;
+
+// TODO: change openWindow to 1667
+tm.cue[10] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[10].goCue = function() {
+  counter_c10 = 0;
+  lfo_c10.start();
+  fmSynth_c10.triggerAttack('C4');
+  loop_c10.start();
+  sugarChimeLoop.start();
 };
 tm.cue[10].updateTiltSounds = function() {
-
+  fmSynth_c10.modulationIndex.value = 1 + tm.accel.y * 19;
+  // control playback rate (i.e., pitch) of sparkles on y-axis
+  sugarChimeLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
 };
 tm.cue[10].stopCue = function() {
-
+  fmSynth_c10.triggerRelease();
+  sugarChimeLoop.stop();
+  lfo_c10.stop();
+  loop_c10.stop();
 };
 
 // CUE 11 [F] SHAKE
@@ -363,8 +435,6 @@ tm.cue[12].stopCue = function() {
 ************************ EXTRA CODE SNIPPETS *************************
 *********************************************************************/
 // ideas to possibly use in future, but comment out for now
-
-// var hiArr_c7 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
 
 // determine which of 4 x-axis strips is current position
 // 0: left, 1: second-to-left, 2: second-to-right, 3: right
