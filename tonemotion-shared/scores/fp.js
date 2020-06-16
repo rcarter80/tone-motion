@@ -334,6 +334,30 @@ tm.cue[10].stopCue = function() {
 
 };
 
+// CUE 11 [F] SHAKE
+tm.cue[11] = new TMCue('shake', 1667, NO_LIMIT);
+tm.cue[11].goCue = function() {
+
+};
+tm.cue[11].triggerShakeSound = function() {
+
+};
+tm.cue[11].stopCue = function() {
+
+};
+
+// CUE 12 [G] TILT
+tm.cue[12] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[12].goCue = function() {
+
+};
+tm.cue[12].updateTiltSounds = function() {
+
+};
+tm.cue[12].stopCue = function() {
+
+};
+
 
 /*********************************************************************
 ************************ EXTRA CODE SNIPPETS *************************
