@@ -358,6 +358,7 @@ fmSynth_c10.connect(scaledSynth_c10, 0, 1);
 
 var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3');
 sugarChimeLoop.loop = true;
+sugarChimeLoop.volume.value = -9;
 // need to invert x-axis to set vol on mute when turned RIGHT
 var xTiltInverted = new Tone.Subtract();
 var inversionSig = new Tone.Signal(1);
