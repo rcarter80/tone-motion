@@ -374,6 +374,8 @@ sugarChimeLoop.connect(sparkles_c10, 0, 1);
 
 // pitch array for synth
 var pitchArr_c10 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
+// pitch array is for first (untransposed) section, so need to transpose
+fmSynth_c10.detune.value = -400;
 
 var counter_c10;
 
