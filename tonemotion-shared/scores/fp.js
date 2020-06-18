@@ -449,17 +449,109 @@ tm.cue[11].stopCue = function() {
   // TODO: add transition sounds to section
 };
 
-// CUE 12 [G] TILT
+// CUE 12 [G] TILT crossfading low pulsing synth with higher faster synth
+var fmSynthLo_c12 = new Tone.FMSynth({
+  harmonicity: 1.5,
+  envelope: {
+    attack: 2,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+  modulation: {
+    type: 'sine',
+  },
+  modulationEnvelope: {
+    attack: 0.1,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+});
+fmSynthLo_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+var lfoLo_c12 = new Tone.LFO('8t', -99, -9);
+lfoLo_c12.type = 'triangle';
+lfoLo_c12.connect(fmSynthLo_c12.volume);
+var scaledSynthLo_c12 = new Tone.Multiply().toMaster();
+// this synth will sound when device is tipped to left
+leftDownVolTilt.connect(scaledSynthLo_c12, 0, 0);
+fmSynthLo_c12.connect(scaledSynthLo_c12, 0, 1);
+
+var fmSynthHi_c12 = new Tone.FMSynth({
+  harmonicity: 1.5,
+  envelope: {
+    attack: 2,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+  modulation: {
+    type: 'sine',
+  },
+  modulationEnvelope: {
+    attack: 0.1,
+    decay: 0,
+    sustain: 1,
+    release: 2,
+  },
+});
+fmSynthHi_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
+var lfoHi_c12 = new Tone.LFO('16t', -99, -24);
+lfoHi_c12.connect(fmSynthHi_c12.volume);
+var scaledSynthHi_c12 = new Tone.Multiply().toMaster();
+// this synth will sound when device is tipped to right
+rightDownVolTilt.connect(scaledSynthHi_c12, 0, 0);
+fmSynthHi_c12.connect(scaledSynthHi_c12, 0, 1);
+
+// pitch array for synth
+var pitchArr_c12 = ['Db2', 'Db2', 'Db2', 'Eb2', 'Eb2', 'Eb2', 'F2', 'F2', 'F2', 'G2', 'G2', 'G2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'G2', 'G2', 'G2', 'Bb2', 'Bb2', 'Bb2'];
+
+var counter_c12, loPitch_c12, hiPitch_c12;
+// randomly select a partial for higher synth
+var partialsArr_c12 = [3, 4, 5, 6, 7, 8];
+var partial_c12 = partialsArr_c12[Math.floor(Math.random()*partialsArr_c12.length)];
+
+var loop_c12 = new Tone.Loop(function(time) {
+  // only one actual note is played, but pitch is reset here
+  loPitch_c12 = pitchArr_c12[counter_c12 % pitchArr_c12.length];
+  fmSynthLo_c12.setNote(loPitch_c12);
+  // upper synth plays randomly selected higher partial of lower synth
+  hiPitch_c12 = (Tone.Frequency(loPitch_c12).toFrequency()) * partial_c12;
+  fmSynthHi_c12.setNote(hiPitch_c12);
+  counter_c12++;
+},'2n.');
+// goes through pitch array only once, then holds on last pitch
+loop_c12.iterations = pitchArr_c12.length;
+
 // TODO: change openWindow to 1667
 tm.cue[12] = new TMCue('tilt', 1667, NO_LIMIT);
 tm.cue[12].goCue = function() {
-
+  counter_c12 = 0;
+  lfoLo_c12.start();
+  lfoHi_c12.start();
+  fmSynthLo_c12.triggerAttack('F2');
+  fmSynthHi_c12.triggerAttack('A4');
+  loop_c12.start();
 };
 tm.cue[12].updateTiltSounds = function() {
-
+  fmSynthLo_c12.modulationIndex.value = 1 + tm.accel.y * 19;
+  fmSynthHi_c12.modulationIndex.value = 1 + tm.accel.y * 19;
 };
 tm.cue[12].stopCue = function() {
+  fmSynthLo_c12.triggerRelease();
+  fmSynthHi_c12.triggerRelease();
+  lfoLo_c12.stop();
+  lfoHi_c12.stop();
+  loop_c12.stop();
+};
 
+// CUE 13 [H] TACET
+// TODO: add downbeat sound. could be low synth on E2
+tm.cue[13] = new TMCue('tacet', 1667, NO_LIMIT);
+tm.cue[13].goCue = function() {
+};
+tm.cue[13].stopCue = function() {
+  // nothing to clean up
 };
 
 
