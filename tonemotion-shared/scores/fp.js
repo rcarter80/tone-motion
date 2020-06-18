@@ -138,11 +138,11 @@ var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
 var riser = new Tone.Player(misc_sounds + "revHatRiser.mp3").toMaster();
 
 // array of initial glass sounds for first part of cue
-var glassArray_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
+var glassArr_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
 // second array of sounds (no fade out)
-var chimeArray_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
+var chimeArr_c6 = [chimeD7, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b, pluckedD3, pluckedD4, pluckedD5, pluckedD4b];
 // final array of sounds to keep looping
-var pluckedArray_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
+var pluckedArr_c6 = [pluckedF3, pluckedF4, pluckedF5, pluckedF4b];
 
 var counter_c6 = 0;
 var thisVol_c6, thisBend_c6, thisGlass_c6, thisPluck_c6, loopCount_c6, step_c6;
@@ -153,16 +153,16 @@ tm.cue[6].goCue = function() {
   counter_c6 = 0;
 };
 tm.cue[6].triggerShakeSound = function() {
-  if (counter_c6 < glassArray_c6.length) {
+  if (counter_c6 < glassArr_c6.length) {
     // glass sounds fade from 0dBfs to -24dBfs over course of array
     thisVol_c6 = -((counter_c6 / 59) * 24);
-    thisGlass_c6 = glassArray_c6[counter_c6];
+    thisGlass_c6 = glassArr_c6[counter_c6];
     thisGlass_c6.volume.value = thisVol_c6;
     thisGlass_c6.start();
-  } else if (counter_c6 < (glassArray_c6.length + chimeArray_c6.length)) {
-    chimeArray_c6[(counter_c6 - glassArray_c6.length)].start();
+  } else if (counter_c6 < (glassArr_c6.length + chimeArr_c6.length)) {
+    chimeArr_c6[(counter_c6 - glassArr_c6.length)].start();
   } else {
-    loopCount_c6 = counter_c6 - glassArray_c6.length - chimeArray_c6.length;
+    loopCount_c6 = counter_c6 - glassArr_c6.length - chimeArr_c6.length;
     // plucked sounds fade from 0dBfs to -24dBfs over course of array
     if (loopCount_c6 < 60) {
       // step_c6 counts from 0.0 to 1.0
@@ -173,7 +173,7 @@ tm.cue[6].triggerShakeSound = function() {
       thisVol_c6 = -24;
       thisBend_c6 = semitoneDown;
     }
-    thisPluck_c6 = pluckedArray_c6[loopCount_c6 % pluckedArray_c6.length];
+    thisPluck_c6 = pluckedArr_c6[loopCount_c6 % pluckedArr_c6.length];
     thisPluck_c6.volume.value = thisVol_c6;
     thisPluck_c6.playbackRate = thisBend_c6;
     thisPluck_c6.start();
@@ -409,19 +409,48 @@ tm.cue[10].stopCue = function() {
   loop_c10.stop();
 };
 
-// CUE 11 [F] SHAKE
+// CUE 11 [F] SHAKE chimes with feedback delay
+var delay = new Tone.FeedbackDelay({
+  // delay time creates 16th-note effect
+  delayTime: 0.208333,
+  feedback: 0.2
+}).toMaster();
+var chF5 = new Tone.Player(chime_sounds + "chime1secF5.mp3").connect(delay);
+var chG5 = new Tone.Player(chime_sounds + "chime1secG5.mp3").connect(delay);
+var chAb5 = new Tone.Player(chime_sounds + "chime1secAb5.mp3").connect(delay);
+var chC6 = new Tone.Player(chime_sounds + "chime1secC6.mp3").connect(delay);
+var chF6 = new Tone.Player(chime_sounds + "chime1secF6.mp3").connect(delay);
+var chG6 = new Tone.Player(chime_sounds + "chime1secG6.mp3").connect(delay);
+var chAb6 = new Tone.Player(chime_sounds + "chime1secAb6.mp3").connect(delay);
+var chC7 = new Tone.Player(chime_sounds + "chime1secC7.mp3").connect(delay);
+
+var counter_c11, thisChime_c11;
+
+var chimeArr_c11 = [chAb5, chAb6, chC6, chC7, chAb5, chAb6, chG5, chG6, chC6, chC7, chG5, chG6, chF5, chF6, chC6, chC7, chF5, chF6, chG5, chG6, chC6, chC7, chG5, chG6];
+
 tm.cue[11] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[11].goCue = function() {
-
+  counter_c11 = 0;
+  // reset feedback in case it was changed
+  delay.feedback.value = 0.2;
 };
 tm.cue[11].triggerShakeSound = function() {
-
+  thisChime_c11 = chimeArr_c11[counter_c11 % chimeArr_c11.length];
+  // chimes gliss up octave during middle of section
+  thisChime_c11.playbackRate = tm.getSectionBreakpoints(11, [0,1, 20000,1, 40000,2]);
+  // chimes fade to softer volume at end of section
+  thisChime_c11.volume.value = tm.getSectionBreakpoints(11, [0,0, 40000,0, 60000,-18]);
+  thisChime_c11.start();
+  counter_c11++;
 };
 tm.cue[11].stopCue = function() {
-
+  // add longer feedback tail as transition to next section
+  delay.feedback.rampTo(0.8, 1);
+  // TODO: add transition sounds to section
 };
 
 // CUE 12 [G] TILT
+// TODO: change openWindow to 1667
 tm.cue[12] = new TMCue('tilt', 1667, NO_LIMIT);
 tm.cue[12].goCue = function() {
 
