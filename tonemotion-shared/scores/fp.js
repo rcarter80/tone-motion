@@ -554,6 +554,77 @@ tm.cue[13].stopCue = function() {
   // nothing to clean up
 };
 
+// CUE 14 [I] SHAKE glass sounds (with fade out and gliss up). 1 chime/triangle
+var glGsharp4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
+glGsharp4.playbackRate = semitoneUp;
+var glGsharp5 = new Tone.Player(glass_sounds + "glassRealG5.mp3").toMaster();
+glGsharp5.playbackRate = semitoneUp;
+var glGsharp6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toMaster();
+glGsharp6.playbackRate = semitoneUp;
+var glCsharp5 = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toMaster();
+var glCsharp6 = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMaster();
+var glDsharp5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+glDsharp5.playbackRate = semitoneUp;
+var glDsharp6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
+glDsharp6.playbackRate = semitoneUp;
+var triangle = new Tone.Player(perc_sounds + "triangle.mp3").toMaster();
+
+var glassArr_c14 = [glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6];
+var loopArr_c14 = [glGsharp4, glGsharp5, glGsharp6];
+
+var counter_c14, thisSound_c14, loopCount_c14, step_c14, bend_c14, flag_c14, time_c14;
+// number of G#s before gliss up begins
+var preGlissNotes_c14 = 18;
+// number of glissing notes before reaching higher pitch
+var glissNotes_c14 = 24;
+// interval to gliss up (m3 goes from G# to B)
+var glissInt_c14 = (semitoneUp ** 4) - semitoneUp;
+
+tm.cue[14] = new TMCue('shake', 1667, NO_LIMIT)
+tm.cue[14].goCue = function() {
+  counter_c14 = 0;
+  // at most once in section, special sound played in one time window
+  flag_c14 = false;
+};
+// TODO: pick exceptional sound, randomly select sound and transposition. create riser (c. 10 sec. long) and trigger along with this sound 
+tm.cue[14].triggerShakeSound = function() {
+  // during time window between 45-50 sec. into section, trigger special sound
+  time_c14 = tm.getElapsedTimeInCue(14);
+  if ((time_c14 > 45000) && (time_c14 < 50000) && !flag_c14) {
+    triangle.start();
+    // set flag to true to prevent sound from playing twice
+    flag_c14 = true;
+  } else {
+    // first go through initial array of pitches
+    if (counter_c14 < glassArr_c14.length) {
+      thisSound_c14 = glassArr_c14[counter_c14];
+    // continue with loop of G#s that gliss up
+    } else {
+      // final loop glisses up
+      loopCount_c14 = counter_c14 - glassArr_c14.length;
+      if (loopCount_c14 < preGlissNotes_c14) {
+        // to get G#s, audio file is already transposed up half step
+        bend_c14 = semitoneUp;
+      } else if (loopCount_c14 < (preGlissNotes_c14 + glissNotes_c14)) {
+        // step_c14 counts from 0.0 to 1.0
+        step_c14 = (loopCount_c14 - preGlissNotes_c14) / glissNotes_c14;
+        bend_c14 = semitoneUp + (glissInt_c14 * step_c14);
+      } else {
+        // octave higher
+        bend_c14 = semitoneUp + glissInt_c14;
+      }
+      thisSound_c14 = loopArr_c14[counter_c14 % loopArr_c14.length];
+      thisSound_c14.playbackRate = bend_c14;
+    }
+    // all sounds dimin. together in second half of section
+    thisSound_c14.volume.value = tm.getSectionBreakpoints(14, [0,0, 30000,0, 60000, -18]);
+    thisSound_c14.start();
+  }
+  counter_c14++;
+};
+tm.cue[14].stopCue = function() {
+};
+
 
 /*********************************************************************
 ************************ EXTRA CODE SNIPPETS *************************
