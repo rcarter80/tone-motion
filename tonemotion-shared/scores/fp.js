@@ -372,6 +372,7 @@ xTiltInverted.connect(leftDownVolTilt, 0, 1);
 var sparkles_c10 = new Tone.Multiply().toMaster();
 leftDownVolTilt.connect(sparkles_c10, 0, 0);
 sugarChimeLoop.connect(sparkles_c10, 0, 1);
+var chimeRiser = new Tone.Player(misc_sounds + "revChimeRiser.mp3").toMaster();
 
 // pitch array for synth
 var pitchArr_c10 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
@@ -388,8 +389,7 @@ var loop_c10 = new Tone.Loop(function(time) {
 // goes through pitch array only once, then holds on last pitch
 loop_c10.iterations = pitchArr_c10.length;
 
-// TODO: change openWindow to 1667
-tm.cue[10] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[10] = new TMCue('tilt', 1667, 1667);
 tm.cue[10].goCue = function() {
   counter_c10 = 0;
   lfo_c10.start();
@@ -407,6 +407,8 @@ tm.cue[10].stopCue = function() {
   sugarChimeLoop.stop();
   lfo_c10.stop();
   loop_c10.stop();
+  chimeRiser.playbackRate = 1 + (0.2 * Math.random());
+  chimeRiser.start();
 };
 
 // CUE 11 [F] SHAKE chimes with feedback delay
@@ -446,7 +448,8 @@ tm.cue[11].triggerShakeSound = function() {
 tm.cue[11].stopCue = function() {
   // add longer feedback tail as transition to next section
   delay.feedback.rampTo(0.8, 1);
-  // TODO: add transition sounds to section
+  chimeRiser.playbackRate = 1 + (0.2 * Math.random());
+  chimeRiser.start();
 };
 
 // CUE 12 [G] TILT crossfading low pulsing synth with higher faster synth
@@ -523,8 +526,7 @@ var loop_c12 = new Tone.Loop(function(time) {
 // goes through pitch array only once, then holds on last pitch
 loop_c12.iterations = pitchArr_c12.length;
 
-// TODO: change openWindow to 1667
-tm.cue[12] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[12] = new TMCue('tilt', 1667, 1667);
 tm.cue[12].goCue = function() {
   counter_c12 = 0;
   lfoLo_c12.start();
@@ -543,6 +545,8 @@ tm.cue[12].stopCue = function() {
   lfoLo_c12.stop();
   lfoHi_c12.stop();
   loop_c12.stop();
+  chimeRiser.playbackRate = 1 + (0.2 * Math.random());
+  chimeRiser.start();
 };
 
 // CUE 13 [H] TACET
@@ -567,12 +571,14 @@ var glDsharp5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
 glDsharp5.playbackRate = semitoneUp;
 var glDsharp6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
 glDsharp6.playbackRate = semitoneUp;
-var triangle = new Tone.Player(perc_sounds + "triangle.mp3").toMaster();
+var chime_c14 = new Tone.Player(chime_sounds + "chime-1570Hz-G6.mp3").toMaster();
+var ride = new Tone.Player(perc_sounds + "rideCymbal.mp3").toMaster();
+var riser10sec = new Tone.Player(misc_sounds + "revRideRiser10sec.mp3").toMaster();
 
 var glassArr_c14 = [glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6];
 var loopArr_c14 = [glGsharp4, glGsharp5, glGsharp6];
 
-var counter_c14, thisSound_c14, loopCount_c14, step_c14, bend_c14, flag_c14, time_c14;
+var counter_c14, thisSound_c14, loopCount_c14, step_c14, bend_c14, flag_c14, time_c14, singleSound_c14;
 // number of G#s before gliss up begins
 var preGlissNotes_c14 = 18;
 // number of glissing notes before reaching higher pitch
@@ -585,13 +591,21 @@ tm.cue[14].goCue = function() {
   counter_c14 = 0;
   // at most once in section, special sound played in one time window
   flag_c14 = false;
+  // select random sound (and playback rate) for special sound moment
+  if (Math.random() < 0.3) {
+    singleSound_c14 = ride;
+  } else {
+    singleSound_c14 = chime_c14;
+  }
+  // randomly set playback rate to create splashy effect
+  singleSound_c14.playbackRate = 1 + Math.random();
 };
-// TODO: pick exceptional sound, randomly select sound and transposition. create riser (c. 10 sec. long) and trigger along with this sound 
 tm.cue[14].triggerShakeSound = function() {
   // during time window between 45-50 sec. into section, trigger special sound
   time_c14 = tm.getElapsedTimeInCue(14);
   if ((time_c14 > 45000) && (time_c14 < 50000) && !flag_c14) {
-    triangle.start();
+    singleSound_c14.start();
+    riser10sec.start();
     // set flag to true to prevent sound from playing twice
     flag_c14 = true;
   } else {
@@ -623,6 +637,7 @@ tm.cue[14].triggerShakeSound = function() {
   counter_c14++;
 };
 tm.cue[14].stopCue = function() {
+  // no transition sound trigger here because it's triggered by shake
 };
 
 
