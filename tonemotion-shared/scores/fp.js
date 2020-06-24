@@ -207,7 +207,7 @@ var fmSynth_c7 = new Tone.FMSynth({
   },
 });
 fmSynth_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
-var peakVol_c7 = -9;
+var peakVol_c7 = -3;
 var lfo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
 lfo_c7.connect(fmSynth_c7.volume);
 // additional gain stage on y-axis
@@ -482,7 +482,7 @@ var fmSynthLo_c12 = new Tone.FMSynth({
   },
 });
 fmSynthLo_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
-var lfoLo_c12 = new Tone.LFO('8t', -99, -9);
+var lfoLo_c12 = new Tone.LFO('8t', -99, -3);
 lfoLo_c12.type = 'triangle';
 lfoLo_c12.connect(fmSynthLo_c12.volume);
 var scaledSynthLo_c12 = new Tone.Multiply().toMaster();
@@ -712,8 +712,8 @@ const totalDur_c15 = noteDur_c15 * 8;
 const upM2 = semitoneUp ** 2;
 
 var loLoop_c15 = new Tone.Loop(function(time) {
-  // only play low sound if device tilted left
-  if (tm.accel.x < 0.33) {
+  // only play low sound if device is mostly flat
+  if ((tm.accel.x >= 0.33) && (tm.accel.x < 0.67)) {
     // select octave among the possibilities on y-axis
     yVal_c15 = Math.floor(tm.accel.y * 2.99)
     // select pitch based on time elapsed in section
@@ -733,8 +733,8 @@ var loLoop_c15 = new Tone.Loop(function(time) {
   countLo_c15++;
 },'8t');
 var hiLoop_c15 = new Tone.Loop(function(time) {
-  // only play high sound if device mostly flat
-  if ((tm.accel.x >= 0.33) && (tm.accel.x < 0.67)) {
+  // only play high reversed sound if device is tilted left
+  if (tm.accel.x < 0.33) {
     // select octave among the possibilities on y-axis
     yVal_c15 = Math.floor(tm.accel.y * 2.99)
     // select pitch based on time elapsed in section
