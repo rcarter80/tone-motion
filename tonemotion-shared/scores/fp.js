@@ -150,6 +150,8 @@ var thisVol_c6, thisBend_c6, thisGlass_c6, thisPluck_c6, loopCount_c6, step_c6;
 // 1667 ms. = 2 beats @ 72bpm
 tm.cue[6] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[6].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c6 = 0;
 };
 tm.cue[6].triggerShakeSound = function() {
@@ -232,6 +234,8 @@ loop_c7.iterations = loArr_c7.length;
 // cue triggered 2 beats before downbeat. clients have extra 2 beats to join
 tm.cue[7] = new TMCue('tilt', 1667, 1667);
 tm.cue[7].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c7 = 0;
   fmSynth_c7.triggerAttack('E3');
   lfo_c7.start();
@@ -279,6 +283,8 @@ var counter_c8, thisChime_c8, loopCount_c8, step_c8, thisVol_c8, thisBend_c8, i_
 
 tm.cue[8] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[8].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c8 = 0;
 };
 tm.cue[8].triggerShakeSound = function() {
@@ -391,6 +397,8 @@ loop_c10.iterations = pitchArr_c10.length;
 
 tm.cue[10] = new TMCue('tilt', 1667, 1667);
 tm.cue[10].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c10 = 0;
   lfo_c10.start();
   fmSynth_c10.triggerAttack('C4');
@@ -432,6 +440,8 @@ var chimeArr_c11 = [chAb5, chAb6, chC6, chC7, chAb5, chAb6, chG5, chG6, chC6, ch
 
 tm.cue[11] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[11].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c11 = 0;
   // reset feedback in case it was changed
   delay.feedback.value = 0.2;
@@ -528,6 +538,8 @@ loop_c12.iterations = pitchArr_c12.length;
 
 tm.cue[12] = new TMCue('tilt', 1667, 1667);
 tm.cue[12].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c12 = 0;
   lfoLo_c12.start();
   lfoHi_c12.start();
@@ -588,6 +600,8 @@ var glissInt_c14 = (semitoneUp ** 4) - semitoneUp;
 
 tm.cue[14] = new TMCue('shake', 1667, NO_LIMIT)
 tm.cue[14].goCue = function() {
+  // reset tempo just in case cue 15 was last triggered (and tempo changed)
+  Tone.Transport.bpm.value = 72;
   counter_c14 = 0;
   // at most once in section, special sound played in one time window
   flag_c14 = false;
@@ -640,47 +654,86 @@ tm.cue[14].stopCue = function() {
   // no transition sound trigger here because it's triggered by shake
 };
 
+// CUE 15 [J] TILT piano / reversed piano / clave loops
+var pnoA1 = new Tone.Player(piano_sounds + "pianoA1.mp3").connect(reverb);
+var pnoA2 = new Tone.Player(piano_sounds + "pianoA2.mp3").connect(reverb);
+var pnoA3 = new Tone.Player(piano_sounds + "pianoA3.mp3").connect(reverb);
+var pnoAb2 = new Tone.Player(piano_sounds + "pianoAb2.mp3").connect(reverb);
+var pnoAb3 = new Tone.Player(piano_sounds + "pianoAb3.mp3").connect(reverb);
+var pnoAb4 = new Tone.Player(piano_sounds + "pianoAb4.mp3").connect(reverb);
+var pnoDb2 = new Tone.Player(piano_sounds + "pianoDb2.mp3").connect(reverb);
+var pnoDb3 = new Tone.Player(piano_sounds + "pianoDb3.mp3").connect(reverb);
+var pnoDb4 = new Tone.Player(piano_sounds + "pianoDb4.mp3").connect(reverb);
+var pnoE2 = new Tone.Player(piano_sounds + "pianoE2.mp3").connect(reverb);
+var pnoE3 = new Tone.Player(piano_sounds + "pianoE3.mp3").connect(reverb);
+var pnoE4 = new Tone.Player(piano_sounds + "pianoE4.mp3").connect(reverb);
+var pnoEb2 = new Tone.Player(piano_sounds + "pianoEb2.mp3").connect(reverb);
+var pnoEb3 = new Tone.Player(piano_sounds + "pianoEb3.mp3").connect(reverb);
+var pnoEb4 = new Tone.Player(piano_sounds + "pianoEb4.mp3").connect(reverb);
+var pnoRevA1 = new Tone.Player(piano_sounds + "pianoRevA1.mp3").connect(reverb);
+var pnoRevA2 = new Tone.Player(piano_sounds + "pianoRevA2.mp3").connect(reverb);
+var pnoRevA3 = new Tone.Player(piano_sounds + "pianoRevA3.mp3").connect(reverb);
+var pnoRevAb2 = new Tone.Player(piano_sounds + "pianoRevAb2.mp3").connect(reverb);
+var pnoRevAb3 = new Tone.Player(piano_sounds + "pianoRevAb3.mp3").connect(reverb);
+var pnoRevAb4 = new Tone.Player(piano_sounds + "pianoRevAb4.mp3").connect(reverb);
+var pnoRevDb2 = new Tone.Player(piano_sounds + "pianoRevDb2.mp3").connect(reverb);
+var pnoRevDb3 = new Tone.Player(piano_sounds + "pianoRevDb3.mp3").connect(reverb);
+var pnoRevDb4 = new Tone.Player(piano_sounds + "pianoRevDb4.mp3").connect(reverb);
+var pnoRevE2 = new Tone.Player(piano_sounds + "pianoRevE2.mp3").connect(reverb);
+var pnoRevE3 = new Tone.Player(piano_sounds + "pianoRevE3.mp3").connect(reverb);
+var pnoRevE4 = new Tone.Player(piano_sounds + "pianoRevE4.mp3").connect(reverb);
+var pnoRevEb2 = new Tone.Player(piano_sounds + "pianoRevEb2.mp3").connect(reverb);
+var pnoRevEb3 = new Tone.Player(piano_sounds + "pianoRevEb3.mp3").connect(reverb);
+var pnoRevEb4 = new Tone.Player(piano_sounds + "pianoRevEb4.mp3").connect(reverb);
 
-/*********************************************************************
-************************ EXTRA CODE SNIPPETS *************************
-*********************************************************************/
-// ideas to possibly use in future, but comment out for now
+// arrays of octave-transposed piano samples (to select on y-axis)
+var pnoA = [pnoA1, pnoA2, pnoA3];
+var pnoAb = [pnoAb2, pnoAb3, pnoAb4];
+var pnoDb = [pnoDb2, pnoDb3, pnoDb4];
+var pnoE = [pnoE2, pnoE3, pnoE4];
+var pnoEb = [pnoEb2, pnoEb3, pnoEb4];
+var revA = [pnoRevA1, pnoRevA2, pnoRevA3];
+var revAb = [pnoRevAb2, pnoRevAb3, pnoRevAb4];
+var revDb = [pnoRevDb2, pnoRevDb3, pnoRevDb4];
+var revE = [pnoRevE2, pnoRevE3, pnoRevE4];
+var revEb = [pnoRevEb2, pnoRevEb3, pnoRevEb4];
+// array of pitches (selected by time since cue began - syncs w/ensemble notes)
+var loPitch_c15 = [pnoAb, pnoAb, pnoEb, pnoE, pnoDb, pnoEb, pnoA, pnoA];
+var hiPitch_c15 = [revAb, revAb, revEb, revE, revDb, revEb, revA, revA];
 
-// determine which of 4 x-axis strips is current position
-// 0: left, 1: second-to-left, 2: second-to-right, 3: right
-// xZoneNow = Math.floor(tm.accel.x * 3.99);
-// if (xZoneNow != xZone) {
-//   // position has changed
-//   xZone = xZoneNow;
-//   switch (xZone) {
-//     // uses range of LFOs (min and max) to toggle amplitude mod and mutes
-//     case 0:
-//       // low vox continuous (no amp mod) and high vox muted
-//       lfo_c7.min = peakVol_c7;
-//       lfo_c7.max = peakVol_c7;
-//       lfoHi_c7.min = -99;
-//       lfoHi_c7.max = -99;
-//       break;
-//     case 1:
-//       // low vox pulsing and high vox muted
-//       lfo_c7.min = -99;
-//       lfo_c7.max = peakVol_c7;
-//       lfoHi_c7.min = -99;
-//       lfoHi_c7.max = -99;
-//       break;
-//     case 2:
-//       // low vox muted and high vox continuous
-//       lfo_c7.min = -99;
-//       lfo_c7.max = -99;
-//       lfoHi_c7.min = peakVol_c7;
-//       lfoHi_c7.max = peakVol_c7;
-//       break;
-//     case 3:
-//       // low vox muted and high vox continuous
-//       lfo_c7.min = -99;
-//       lfo_c7.max = -99;
-//       lfoHi_c7.min = -99;
-//       lfoHi_c7.max = peakVol_c7;
-//       break;
-//   }
-// }
+var countLo_c15, countHi_c15, loSound_c15, hiSound_c15, yVal_c15, loIndex_c15, hiIndex_c15, time_c15;
+// 3 bars of 4/4 @ 108bpm is 6.6666 second (or 20/3). time encoded in ms. tho
+const noteDur_c15 = 20/3 * 1000;
+
+var loLoop_c15 = new Tone.Loop(function(time) {
+  // only play low sound if device tilted left
+  if (tm.accel.x < 0.33) {
+    // select octave among the possibilities on y-axis
+    yVal_c15 = Math.floor(tm.accel.y * 2.99)
+    // select pitch based on time elapsed in section
+    time_c15 = Math.floor(tm.getElapsedTimeInCue(15) / noteDur_c15);
+    loIndex_c15 = (time_c15 < loPitch_c15.length) ? time_c15 : (loPitch_c15.length - 1);
+    // TODO: add pitch bend on last note (start up M2, gliss down)
+    // trigger specific sample (time-determined pitch and y-determined oct)
+    loSound_c15 = loPitch_c15[loIndex_c15][yVal_c15];
+    // create triplet pulsing effect
+    loSound_c15.volume.value = (countLo_c15 % 3) ? -18 : -9;
+    loSound_c15.start();
+  }
+  countLo_c15++;
+},'8t');
+
+// TODO: change openWindow to 1667
+tm.cue[15] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[15].goCue = function() {
+  // new tempo
+  Tone.Transport.bpm.value = 108;
+  countLo_c15 = 0;
+  loLoop_c15.start();
+  // TODO: determine reverb parameters?
+};
+tm.cue[15].updateTiltSounds = function() {
+};
+tm.cue[15].stopCue = function() {
+  loLoop_c15.stop();
+};
