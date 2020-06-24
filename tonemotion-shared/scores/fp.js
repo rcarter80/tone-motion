@@ -685,6 +685,8 @@ var pnoRevE4 = new Tone.Player(piano_sounds + "pianoRevE4.mp3").connect(reverb);
 var pnoRevEb2 = new Tone.Player(piano_sounds + "pianoRevEb2.mp3").connect(reverb);
 var pnoRevEb3 = new Tone.Player(piano_sounds + "pianoRevEb3.mp3").connect(reverb);
 var pnoRevEb4 = new Tone.Player(piano_sounds + "pianoRevEb4.mp3").connect(reverb);
+var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
+claveLoop.loop = true;
 
 // arrays of octave-transposed piano samples (to select on y-axis)
 var pnoA = [pnoA1, pnoA2, pnoA3];
@@ -720,7 +722,7 @@ var loLoop_c15 = new Tone.Loop(function(time) {
     // trigger specific sample (time-determined pitch and y-determined oct)
     loSound_c15 = loPitch_c15[loIndex_c15][yVal_c15];
     // create triplet pulsing effect
-    loSound_c15.volume.value = (countLo_c15 % 3) ? -18 : -9;
+    loSound_c15.volume.value = (countLo_c15 % 3) ? -18 : -12;
     // last note bends from B down to A
     if (loIndex_c15 > 5) {
       // gliss lasts 6 measures, after which pitch remains on A
@@ -730,6 +732,27 @@ var loLoop_c15 = new Tone.Loop(function(time) {
   }
   countLo_c15++;
 },'8t');
+var hiLoop_c15 = new Tone.Loop(function(time) {
+  // only play high sound if device mostly flat
+  if ((tm.accel.x >= 0.33) && (tm.accel.x < 0.67)) {
+    // select octave among the possibilities on y-axis
+    yVal_c15 = Math.floor(tm.accel.y * 2.99)
+    // select pitch based on time elapsed in section
+    time_c15 = Math.floor(tm.getElapsedTimeInCue(15) / noteDur_c15);
+    hiIndex_c15 = (time_c15 < hiPitch_c15.length) ? time_c15 : (hiPitch_c15.length - 1);
+    // trigger specific sample (time-determined pitch and y-determined oct)
+    hiSound_c15 = hiPitch_c15[hiIndex_c15][yVal_c15];
+    // create 8th-note pulsing effect
+    hiSound_c15.volume.value = (countHi_c15 % 2) ? -18 : -12;
+    // last note bends from B down to A
+    if (hiIndex_c15 > 5) {
+      // gliss lasts 6 measures, after which pitch remains on A
+      hiSound_c15.playbackRate = tm.getSectionBreakpoints(15, [0,upM2, noBend_c15,upM2, totalDur_c15,1]);
+    }
+    hiSound_c15.start();
+  }
+  countHi_c15++;
+},'8n');
 
 // TODO: change openWindow to 1667
 tm.cue[15] = new TMCue('tilt', 1667, NO_LIMIT);
@@ -737,12 +760,24 @@ tm.cue[15].goCue = function() {
   // new tempo
   Tone.Transport.bpm.value = 108;
   countLo_c15 = 0;
-  bendCount_c15 = 0;
+  countHi_c15 = 0;
   loLoop_c15.start();
-  // TODO: determine reverb parameters?
+  hiLoop_c15.start();
+  claveLoop.volume.value = -99;
+  claveLoop.start();
 };
 tm.cue[15].updateTiltSounds = function() {
+  // wooden sounds with pitch and speed on y-axis audible only w/ right tilt
+  claveLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
+  if (tm.accel.x > 0.67) {
+    claveLoop.volume.value = -3;
+  } else {
+    claveLoop.volume.value = -99;
+  }
 };
 tm.cue[15].stopCue = function() {
+  // TODO: add transition sound
   loLoop_c15.stop();
+  hiLoop_c15.stop();
+  claveLoop.stop();
 };
