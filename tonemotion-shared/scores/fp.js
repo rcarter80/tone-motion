@@ -655,6 +655,7 @@ tm.cue[14].stopCue = function() {
 };
 
 // CUE 15 [J] TILT piano / reversed piano / clave loops
+// TODO: maybe replace these sounds with shorter, more articulate sounds?
 var pnoA1 = new Tone.Player(piano_sounds + "pianoA1.mp3").connect(reverb);
 var pnoA2 = new Tone.Player(piano_sounds + "pianoA2.mp3").connect(reverb);
 var pnoA3 = new Tone.Player(piano_sounds + "pianoA3.mp3").connect(reverb);
