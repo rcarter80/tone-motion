@@ -704,6 +704,10 @@ var hiPitch_c15 = [revAb, revAb, revEb, revE, revDb, revEb, revA, revA];
 var countLo_c15, countHi_c15, loSound_c15, hiSound_c15, yVal_c15, loIndex_c15, hiIndex_c15, time_c15;
 // 3 bars of 4/4 @ 108bpm is 6.6666 second (or 20/3). time encoded in ms. tho
 const noteDur_c15 = 20/3 * 1000;
+// no pitch bending during first 6 notes
+const noBend_c15 = noteDur_c15 * 6;
+const totalDur_c15 = noteDur_c15 * 8;
+const upM2 = semitoneUp ** 2;
 
 var loLoop_c15 = new Tone.Loop(function(time) {
   // only play low sound if device tilted left
@@ -713,11 +717,15 @@ var loLoop_c15 = new Tone.Loop(function(time) {
     // select pitch based on time elapsed in section
     time_c15 = Math.floor(tm.getElapsedTimeInCue(15) / noteDur_c15);
     loIndex_c15 = (time_c15 < loPitch_c15.length) ? time_c15 : (loPitch_c15.length - 1);
-    // TODO: add pitch bend on last note (start up M2, gliss down)
     // trigger specific sample (time-determined pitch and y-determined oct)
     loSound_c15 = loPitch_c15[loIndex_c15][yVal_c15];
     // create triplet pulsing effect
     loSound_c15.volume.value = (countLo_c15 % 3) ? -18 : -9;
+    // last note bends from B down to A
+    if (loIndex_c15 > 5) {
+      // gliss lasts 6 measures, after which pitch remains on A
+      loSound_c15.playbackRate = tm.getSectionBreakpoints(15, [0,upM2, noBend_c15,upM2, totalDur_c15,1]);
+    }
     loSound_c15.start();
   }
   countLo_c15++;
@@ -729,6 +737,7 @@ tm.cue[15].goCue = function() {
   // new tempo
   Tone.Transport.bpm.value = 108;
   countLo_c15 = 0;
+  bendCount_c15 = 0;
   loLoop_c15.start();
   // TODO: determine reverb parameters?
 };
