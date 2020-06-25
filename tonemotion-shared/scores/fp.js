@@ -792,18 +792,64 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16 [K] SHAKE
+
+// some glass sounds declared earlier, some new here (some duplicates new)
+var glA4b = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
+var glA5b = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
+var glA6 = new Tone.Player(glass_sounds + "glassRealA6.mp3").toMaster();
+var glB4b = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
+var glB5b = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
+var glB6 = new Tone.Player(glass_sounds + "glassRealB6.mp3").toMaster();
+var glCsharp5b = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toMaster();
+var glCsharp6b = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMaster();
+var glCsharp7 = new Tone.Player(glass_sounds + "glassRealCsharp7.mp3").toMaster();
+// earlier version of D# was just D pitched up. could change later.
+var glDsharpReal5 = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toMaster();
+var glDsharpReal5b = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toMaster();
+var glDsharpReal6 = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toMaster();
+var glDsharpReal6b = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toMaster();
+var glDsharpReal7 = new Tone.Player(glass_sounds + "glassRealDsharp7.mp3").toMaster();
+var glE6b = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
+var glE7 = new Tone.Player(glass_sounds + "glassRealE7.mp3").toMaster();
+
+var counter_c16, thisGlass_c16, flag_c16;
+
+var glassArr_c16 = [glA4, glA5, glA4b, glB4, glB5, glB4b, glCsharp5, glCsharp6, glCsharp5b, glDsharpReal5, glDsharpReal6, glDsharpReal5b, glE5, glE6, glE5b, glA5, glA6, glA5b, glB5, glB6, glB5b, glCsharp6, glCsharp7, glCsharp6b, glDsharpReal6, glDsharpReal7, glDsharpReal6b, glE6, glE7, glE6b];
+var loopArr_c16 = [glE4, glE5, glE6, glE5b, glE6b, glE7];
+
 tm.cue[16] = new TMCue('shake', 1667, NO_LIMIT);
 tm.cue[16].goCue = function() {
+  counter_c16 = 0;
+  flag_c16 = false;
 };
 tm.cue[16].triggerShakeSound = function() {
+  // during time window between 45-50 sec. into section, cue final riser
+  time_c16 = tm.getElapsedTimeInCue(16);
+  if ((time_c16 > 45000) && (time_c16 < 50000) && !flag_c16) {
+    riser10sec.start();
+    // set flag to true to prevent sound from playing twice
+    flag_c16 = true;
+  } else {
+    // goes through initial loop 3 times
+    if (counter_c16 < (glassArr_c16.length * 3)) {
+      thisGlass_c16 = glassArr_c16[counter_c16 % glassArr_c16.length];
+    } else {
+      // then loops through octaves of Es
+      thisGlass_c16 = loopArr_c16[(counter_c16 - glassArr_c16.length) % loopArr_c16.length];
+    }
+    thisGlass_c16.start();
+    counter_c16++;
+  }
 };
 tm.cue[16].stopCue = function() {
+  // nothing to clean up. transition triggered in window above
 };
 
 // *******************************************************************
 // CUE 17 [L] TACET
 tm.cue[17] = new TMCue('tacet', 1667, NO_LIMIT);
 tm.cue[17].goCue = function() {
+  // TODO: add final downbeat sound for coda?
 };
 tm.cue[17].stopCue = function() {
 };
