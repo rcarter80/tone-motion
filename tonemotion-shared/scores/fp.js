@@ -319,6 +319,7 @@ tm.cue[8].stopCue = function() {
   faller.start();
 };
 
+// *******************************************************************
 // CUE 9 [D] TACET (but glass sounds on downbeat)
 var downbeat_c9 = new Tone.Player(misc_sounds + "downbeatGlassCue9.mp3").toMaster();
 
@@ -330,6 +331,7 @@ tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
+// *******************************************************************
 // CUE 10 [E] crossfading synth and sparkles
 var fmSynth_c10 = new Tone.FMSynth({
   harmonicity: 1.5,
@@ -419,6 +421,7 @@ tm.cue[10].stopCue = function() {
   chimeRiser.start();
 };
 
+// *******************************************************************
 // CUE 11 [F] SHAKE chimes with feedback delay
 var delay = new Tone.FeedbackDelay({
   // delay time creates 16th-note effect
@@ -462,6 +465,7 @@ tm.cue[11].stopCue = function() {
   chimeRiser.start();
 };
 
+// *******************************************************************
 // CUE 12 [G] TILT crossfading low pulsing synth with higher faster synth
 var fmSynthLo_c12 = new Tone.FMSynth({
   harmonicity: 1.5,
@@ -561,6 +565,7 @@ tm.cue[12].stopCue = function() {
   chimeRiser.start();
 };
 
+// *******************************************************************
 // CUE 13 [H] TACET
 // TODO: add downbeat sound. could be low synth on E2
 tm.cue[13] = new TMCue('tacet', 1667, NO_LIMIT);
@@ -570,6 +575,7 @@ tm.cue[13].stopCue = function() {
   // nothing to clean up
 };
 
+// *******************************************************************
 // CUE 14 [I] SHAKE glass sounds (with fade out and gliss up). 1 chime/triangle
 var glGsharp4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
 glGsharp4.playbackRate = semitoneUp;
@@ -654,6 +660,7 @@ tm.cue[14].stopCue = function() {
   // no transition sound trigger here because it's triggered by shake
 };
 
+// *******************************************************************
 // CUE 15 [J] TILT piano / reversed piano / clave loops
 // TODO: maybe replace these sounds with shorter, more articulate sounds?
 var pnoA1 = new Tone.Player(piano_sounds + "pianoA1.mp3").connect(reverb);
@@ -782,3 +789,28 @@ tm.cue[15].stopCue = function() {
   hiLoop_c15.stop();
   claveLoop.stop();
 };
+
+// *******************************************************************
+// CUE 16 [K] SHAKE
+tm.cue[16] = new TMCue('shake', 1667, NO_LIMIT);
+tm.cue[16].goCue = function() {
+};
+tm.cue[16].triggerShakeSound = function() {
+};
+tm.cue[16].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 17 [L] TACET
+tm.cue[17] = new TMCue('tacet', 1667, NO_LIMIT);
+tm.cue[17].goCue = function() {
+};
+tm.cue[17].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 18: finished
+tm.cue[18] = new TMCue('finished', -1);
+tm.cue[18].goCue = function() {
+  tm.publicLog('The piece is done.');
+}
