@@ -13,11 +13,9 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-// TODO: deleted unused paths
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const plucked_sounds = 'tonemotion-shared/audio/plucked/';
-const cello_sounds = 'tonemotion-shared/audio/cello/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
@@ -762,8 +760,7 @@ var hiLoop_c15 = new Tone.Loop(function(time) {
   countHi_c15++;
 },'8n');
 
-// TODO: change openWindow to 1667
-tm.cue[15] = new TMCue('tilt', 1667, NO_LIMIT);
+tm.cue[15] = new TMCue('tilt', 1667, 1667);
 tm.cue[15].goCue = function() {
   // new tempo
   Tone.Transport.bpm.value = 108;
