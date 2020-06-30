@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
-tm.localTest = false; // if true, fetches cues from localhost, not Heroku
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -321,7 +320,8 @@ tm.cue[8].stopCue = function() {
 // CUE 9 [D] TACET (but glass sounds on downbeat)
 var downbeat_c9 = new Tone.Player(misc_sounds + "downbeatGlassCue9.mp3").toMaster();
 
-tm.cue[9] = new TMCue('tacet', 1667, NO_LIMIT);
+// tightly synchronized sound - ok if some phones don't play
+tm.cue[9] = new TMCue('tacet', 1667, 277);
 tm.cue[9].goCue = function() {
   downbeat_c9.start();
 };
@@ -465,13 +465,15 @@ tm.cue[11].stopCue = function() {
 
 // *******************************************************************
 // CUE 12 [G] TILT crossfading low pulsing synth with higher faster synth
+// long tail needed for synth release at end of cue
+var synthTail_c12 = 8;
 var fmSynthLo_c12 = new Tone.FMSynth({
   harmonicity: 1.5,
   envelope: {
     attack: 2,
     decay: 0,
     sustain: 1,
-    release: 2,
+    release: synthTail_c12,
   },
   modulation: {
     type: 'sine',
@@ -480,7 +482,7 @@ var fmSynthLo_c12 = new Tone.FMSynth({
     attack: 0.1,
     decay: 0,
     sustain: 1,
-    release: 2,
+    release: synthTail_c12,
   },
 });
 fmSynthLo_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
@@ -498,7 +500,7 @@ var fmSynthHi_c12 = new Tone.FMSynth({
     attack: 2,
     decay: 0,
     sustain: 1,
-    release: 2,
+    release: synthTail_c12,
   },
   modulation: {
     type: 'sine',
@@ -507,7 +509,7 @@ var fmSynthHi_c12 = new Tone.FMSynth({
     attack: 0.1,
     decay: 0,
     sustain: 1,
-    release: 2,
+    release: synthTail_c12,
   },
 });
 fmSynthHi_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
@@ -565,9 +567,11 @@ tm.cue[12].stopCue = function() {
 
 // *******************************************************************
 // CUE 13 [H] TACET
-// TODO: add downbeat sound. could be low synth on E2
-tm.cue[13] = new TMCue('tacet', 1667, NO_LIMIT);
+var downbeat_c13 = new Tone.Player(misc_sounds + "downbeatGlassCue13.mp3").toMaster();
+
+tm.cue[13] = new TMCue('tacet', 1667, 277);
 tm.cue[13].goCue = function() {
+  downbeat_c13.start();
 };
 tm.cue[13].stopCue = function() {
   // nothing to clean up
@@ -781,7 +785,7 @@ tm.cue[15].updateTiltSounds = function() {
   }
 };
 tm.cue[15].stopCue = function() {
-  // TODO: add transition sound
+  riser.start();
   loLoop_c15.stop();
   hiLoop_c15.stop();
   claveLoop.stop();
@@ -844,11 +848,14 @@ tm.cue[16].stopCue = function() {
 
 // *******************************************************************
 // CUE 17 [L] TACET
-tm.cue[17] = new TMCue('tacet', 1667, NO_LIMIT);
+var downbeat_c17 = new Tone.Player(misc_sounds + "downbeatGlassCue17.mp3").toMaster();
+
+tm.cue[17] = new TMCue('tacet', 1667, 277);
 tm.cue[17].goCue = function() {
-  // TODO: add final downbeat sound for coda?
+  downbeat_c17.start();
 };
 tm.cue[17].stopCue = function() {
+  // nothing to clean up
 };
 
 // *******************************************************************
