@@ -21,8 +21,9 @@ const motion_data_checkbox = document.querySelector('#motion_data_checkbox');
 const motion_data_label = document.querySelector('#motion_data_label');
 const console_checkbox = document.querySelector('#console_checkbox');
 const console_container = document.querySelector('#console_container');
-// NodeList of all buttons
+// NodeLists of all buttons and links
 const buttonList = document.querySelectorAll('button');
+const linkList = document.querySelectorAll('a');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -472,13 +473,11 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
 // Slides side panel in and out
 help_button.onclick = function() {
   if (help_panel.classList.contains('slide-out')) {
-    console.log('slide-out is yes');
     help_panel.classList.remove('slide-out');
     help_panel.classList.add('slide-in');
     help_button.classList.remove('slide-out');
     help_button.classList.add('slide-in');
   } else {
-    console.log('slide-out is no');
     help_panel.classList.remove('slide-in');
     help_panel.classList.add('slide-out');
     help_button.classList.remove('slide-in');
@@ -514,6 +513,11 @@ ToneMotion.prototype.testWithoutMotion = function() {
 ToneMotion.prototype.setBackgroundGreen = function() {
   document.querySelector('html').classList.add('green');
   document.querySelector('body').classList.add('green');
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.add('green')
+    }
+  );
   buttonList.forEach(
     function(currentValue) {
       currentValue.classList.add('green')
@@ -526,6 +530,11 @@ ToneMotion.prototype.setBackgroundGreen = function() {
 ToneMotion.prototype.setBackgroundBlue = function() {
   document.querySelector('html').classList.remove('green');
   document.querySelector('body').classList.remove('green');
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green')
+    }
+  );
   buttonList.forEach(
     function(currentValue) {
       currentValue.classList.remove('green')

@@ -11,7 +11,7 @@
  --theme-color-error-dark: #b50000;
  --theme-color-warning: #ffcc84;
  --theme-color-light-green: #02b52c;
- --theme-color-dark-green: #01801f;
+ --theme-color-dark-green: #026117;
 }
 
 *,
@@ -44,7 +44,8 @@ body {
   overflow-x: hidden;
 }
 body.green {
-  background: linear-gradient(#01801f, #02b52c);
+  /* gradient goes from theme-color-dark-green to theme-color-light-green */
+  background: linear-gradient(#026117, #02b52c);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -95,14 +96,18 @@ p {
 
 /* TODO: decide on link appearance and touch behavior */
 a {
-  color: #007bff;
-  text-decoration: none;
+  color: var(--theme-color-dark);
+  text-decoration: underline;
   background-color: transparent;
 }
-
 a:hover {
-  color: #0056b3;
-  text-decoration: underline;
+  color: var(--theme-color-light);
+}
+a.green {
+  color: var(--theme-color-light-green);
+}
+a.green:hover {
+  color: var(--theme-color-dark-green);
 }
 
 /*
@@ -161,7 +166,7 @@ input[type=checkbox] {
   box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
 }
 #help_button.green {
-  box-shadow: 0 0 16px rgba(1, 128, 31, 0.28); /* theme-color-dark-green */
+  box-shadow: 0 0 16px rgba(2, 97, 23, 0.28); /* theme-color-dark-green */
 }
 
 
@@ -337,6 +342,9 @@ fieldset {
   border-top: 1px solid var(--theme-color-dark);
   padding-left: 10px;
   font-size: 1.5rem;
+}
+#help_panel.green h2 {
+  border-color: var(--theme-color-dark-green);
 }
 
 #help_panel div {
