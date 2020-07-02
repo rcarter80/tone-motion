@@ -2,8 +2,6 @@
 ** GENERAL STYLING AND RESETTING
 **/
 
-/* NOTE: I know this style sheet is kind of a mess, but it works. Could optimize by going through TODOs below */
-
 :root {
  --theme-color-light: #032dc1;
  --theme-color-dark: #384577;
@@ -69,7 +67,7 @@ h1 {
 h2 {
   font-size: 2rem;
 }
-/* TODO: delete unused selectors (e.g., will I use h6? probs not) */
+
 h3 {
   font-size: 1.75rem;
 }
@@ -94,7 +92,6 @@ p {
   text-align: inherit;
 }
 
-/* TODO: decide on link appearance and touch behavior */
 a {
   color: var(--theme-color-dark);
   text-decoration: underline;
@@ -252,8 +249,6 @@ button.fixed-media:hover {
   to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
 }
 
-/* TODO: do I need anything for 'stop' state? */
-
 /* use after button has been tapped but cue is being fetched */
 #start_stop_button.disabled {
   opacity: 0.5;
@@ -332,7 +327,7 @@ fieldset {
   }
   #help_panel.slide-out {
     visibility: hidden;
-    transform: translateX(-416px); /* TODO: decide size of box-shadow */
+    transform: translateX(-416px);
     transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
   }
 }
@@ -392,6 +387,3 @@ input[type="range"] {
 #simulateShakeButton:hover {
   box-shadow: 0 0 40px rgba(255,255,255,.28);
 }
-
-/* TODO: style elements to be disabled if not usable */
-/* TODO: replace all ID with class selectors */
