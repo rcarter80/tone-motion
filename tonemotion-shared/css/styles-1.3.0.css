@@ -20,6 +20,7 @@
   box-sizing: border-box;
 }
 
+/* TODO: see if it's possible to use "linear gradient" without actual gradient - just color stops to have different colors at top and bottom of page */
 html {
   -webkit-text-size-adjust: 100%;
   background-color: var(--theme-color-dark);
@@ -160,7 +161,6 @@ input[type=checkbox] {
   box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
 }
 #help_button.green {
-  transform: rotate(90deg);
   box-shadow: 0 0 16px rgba(1, 128, 31, 0.28); /* theme-color-dark-green */
 }
 

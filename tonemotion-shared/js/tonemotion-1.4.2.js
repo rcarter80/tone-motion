@@ -196,11 +196,11 @@ ToneMotion.prototype.setStatus = function(status) {
   switch (status) {
     case 'loading':
       this.setStatusLabel('loading', 'active');
-      this.setStartStopButton('', 'hidden');
+      this.setStartStopButton('hidden', '');
       break;
     case 'synchronizing':
       this.setStatusLabel('synchronizing', 'active');
-      this.setStartStopButton('', 'hidden');
+      this.setStartStopButton('hidden', '');
       break;
     case 'readyToPlay':
       this.setStatusLabel('ready', 'default');
@@ -241,13 +241,13 @@ ToneMotion.prototype.setStatus = function(status) {
       break;
     case 'finished':
       this.setStatusLabel('finished', 'default');
-      this.setStartStopButton('', 'hidden');
+      this.setStartStopButton('hidden', '');
       this.shutEverythingDown();
       break;
     case 'error':
       this.shutEverythingDown();
       this.setStatusLabel('error', 'error');
-      this.setStartStopButton('try again', 'reload');
+      this.setStartStopButton('reload', 'try again');
       break;
     default:
       this.publicError('Error setting application status');
@@ -310,7 +310,8 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     this.beginMotionUpdates();
   }
 
-  start_stop_button.className = 'disabled'; // while waiting for cue
+  // while waiting for cue
+  this.setStartStopButton('disabled');
   status_label.innerHTML = ''; // label will update with cue
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
@@ -380,7 +381,7 @@ ToneMotion.prototype.clearConsole = function() {
   while (logMessages[0]) {
     logMessages[0].parentNode.removeChild(logMessages[0]);
   }
-}
+};
 
 /*
 ** INTERFACE LABELS AND ACTIONS
@@ -393,12 +394,18 @@ ToneMotion.prototype.setStatusLabel = function(text, className) {
 };
 
 // Sets text and class name for main button in center panel
-// TODO: need to change this to accommodate green.
-// use classList and remove ALL state classes, then add new state
-ToneMotion.prototype.setStartStopButton = function(text, className) {
-  start_stop_button.className = className;
-  start_stop_button.innerHTML = text;
-}
+ToneMotion.prototype.setStartStopButton = function(className, text) {
+  // only reset class if it's not the current class. otherwise no need.
+  if (!start_stop_button.classList.contains(className)) {
+    // first remove existing state classes (but do NOT remove green class)
+    start_stop_button.classList.remove('hidden', 'start', 'stop', 'reload', 'disabled');
+    start_stop_button.classList.add(className);
+  }
+  if (text) {
+    // text is optional argument
+    start_stop_button.innerHTML = text;
+  }
+};
 
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
