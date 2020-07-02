@@ -1,0 +1,389 @@
+/*
+** GENERAL STYLING AND RESETTING
+**/
+
+/* NOTE: I know this style sheet is kind of a mess, but it works. Could optimize by going through TODOs below */
+
+:root {
+ --theme-color-light: #032dc1;
+ --theme-color-dark: #384577;
+ --theme-color-error-light: #fcc4c4;
+ --theme-color-error-dark: #b50000;
+ --theme-color-warning: #ffcc84;
+ --theme-color-light-green: #02b52c;
+ --theme-color-dark-green: #01801f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--theme-color-dark);
+}
+html.green {
+  background-color: var(--theme-color-light-green);
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #000;
+  text-align: left;
+  /* gradient goes from theme-color-light to theme-color-dark */
+  background: linear-gradient(#032dc1, #384577);
+  overflow-x: hidden;
+}
+body.green {
+  background: linear-gradient(#01801f, #02b52c);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+}
+
+h1 {
+  margin: 0;
+  padding: 25px 90px;
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 0.1rem;
+  color: #fff;
+}
+
+h2 {
+  font-size: 2rem;
+}
+/* TODO: delete unused selectors (e.g., will I use h6? probs not) */
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p {
+  margin: 0.5rem 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: inherit;
+}
+
+/* TODO: decide on link appearance and touch behavior */
+a {
+  color: #007bff;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/*
+** BUTTONS
+**/
+
+button,
+button:hover,
+button:active,
+button:focus {
+  display: inline-block;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  border: 1px solid var(--theme-color-light);
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--theme-color-light);
+  background-color: #fff;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+button.green {
+  border-color: var(--theme-color-dark-green);
+  color: var(--theme-color-dark-green);
+}
+
+input[type=checkbox] {
+  display: inline;
+}
+
+#help_button,
+#help_button.slide-out {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  height: 50px;
+  width: 50px;
+  margin: 20px;
+  border-radius: 100%;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 0.25s;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+#help_button.slide-in {
+  transform: rotate(90deg);
+  box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
+}
+#help_button.green {
+  transform: rotate(90deg);
+  box-shadow: 0 0 16px rgba(1, 128, 31, 0.28); /* theme-color-dark-green */
+}
+
+
+/*
+** PANEL LAYOUT
+**/
+
+header {
+  background-color: transparent;
+}
+
+main {
+  background-color: transparent;
+  margin 0;
+  padding-bottom: 25px;
+}
+
+#status_container,
+#status_container.default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 200px;
+  margin-top: calc(20vh - 75px);
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+  padding: 20px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.75rem;
+  text-align: center;
+  transition: all .2s linear;
+}
+
+#status_container.active {
+  animation: pulsing 2s ease-out 0s infinite alternate;
+}
+@keyframes pulsing {
+  from { opacity: 1; }
+  to   { opacity: 0.2; }
+}
+
+#status_container.error {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
+}
+
+#status_label {
+  padding: 20px;
+}
+
+#start_stop_button,
+#simulateShakeButton,
+button.fixed-media {
+  display: block;
+  margin-top: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 50px;
+  min-width: 100px;
+  border-radius: 10px;
+  padding: 10px;
+  letter-spacing: 0.05rem;
+}
+button.fixed-media:hover {
+  border-color: white;
+}
+
+#start_stop_button.hidden {
+  display: none;
+}
+
+#start_stop_button.start {
+  animation: glowing 1s linear 0s infinite alternate;
+}
+@keyframes glowing {
+  from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
+  to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
+}
+
+/* TODO: do I need anything for 'stop' state? */
+
+/* use after button has been tapped but cue is being fetched */
+#start_stop_button.disabled {
+  opacity: 0.5;
+}
+
+#start_stop_button.reload {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+}
+
+#message_container,
+#message_container.default,
+fieldset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 25px 50px;
+  padding: 20px;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+  opacity: 1;
+  color: #fff;
+  transition: all .2s linear;
+}
+#message_container.warning {
+  color: var(--theme-color-warning);
+  border-color: var(--theme-color-warning);
+}
+
+#message_container.error {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
+}
+
+#message_container.hidden {
+  opacity: 0;
+}
+
+#help_panel {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 100px 20px 20px;
+  background-color: #fff;
+  color: var(--theme-color-light);
+  border-right: 1px solid var(--theme-color-light);
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+#help_panel.slide-in {
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0s;
+}
+#help_panel.green {
+  color: var(--theme-color-dark-green);
+}
+
+@media (max-width: 767px) {
+  #help_panel {
+    width: 90%;
+  }
+  #help_panel.slide-out {
+    visibility: hidden;
+    transform: translateX(-110%);
+    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
+  }
+}
+@media (min-width: 768px) {
+  #help_panel {
+    width: 400px;
+  }
+  #help_panel.slide-out {
+    visibility: hidden;
+    transform: translateX(-416px); /* TODO: decide size of box-shadow */
+    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
+  }
+}
+
+#help_panel h2 {
+  border-left: 5px solid var(--theme-color-dark);
+  border-top: 1px solid var(--theme-color-dark);
+  padding-left: 10px;
+  font-size: 1.5rem;
+}
+
+#help_panel div {
+  margin-bottom: 40px;
+}
+
+#console_container,
+#motion_container {
+  max-height: 200px;
+  overflow-y: scroll;
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid var(--theme-color-dark);
+  font-size: 80%;
+  font-family: Courier, monospace;
+  line-height: 1.25;
+  color: var(--theme-color-dark);
+}
+#console_container.hidden,
+#motion_container.hidden {
+  display: none;
+}
+
+/*
+** MOTION SIMULATION ON DESKTOP
+**/
+
+fieldset {
+  flex-direction: column;
+}
+
+fieldset.hidden {
+  display: none;
+}
+fieldset.visible {
+  display: flex;
+}
+
+input[type="range"] {
+  margin: 15px 0 35px 0;
+  width: 75%;
+  max-width: 240px;
+}
+
+#simulateShakeButton:hover {
+  box-shadow: 0 0 40px rgba(255,255,255,.28);
+}
+
+/* TODO: style elements to be disabled if not usable */
+/* TODO: replace all ID with class selectors */
