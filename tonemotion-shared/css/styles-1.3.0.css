@@ -221,7 +221,6 @@ main {
   text-align: center;
   transition: all .2s linear;
 }
-
 #status_container.active {
   animation: pulsing 2s ease-out 0s infinite alternate;
 }
@@ -229,11 +228,18 @@ main {
   from { opacity: 1; }
   to   { opacity: 0.2; }
 }
-
 #status_container.error {
   color: var(--theme-color-error-dark);
   border-color: var(--theme-color-error-dark);
   background-color: var(--theme-color-error-light);
+}
+/* creates single big pulsing glow to announce end of cue */
+#status_container.swell {
+  animation: swelling 0.5s linear 0s 2 alternate;
+}
+@keyframes swelling {
+  from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
+  to   { box-shadow: 0 0 250px rgba(255,255,255,.28); }
 }
 
 #status_label {

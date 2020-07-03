@@ -71,8 +71,6 @@ tm.cue[0].stopCue = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // changes color to hint at transition
-  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -94,7 +92,6 @@ tm.cue[1].goCue = function() {
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
-  // sets color here (as well as previous stopCue()) in case user joins here
   tm.setBackgroundGreen();
 };
 tm.cue[1].updateTiltSounds = function() {
@@ -129,8 +126,6 @@ tm.cue[1].stopCue = function() {
   revGlassC5_7s.start();
   pingPongLoop.stop();
   popRocksLoop.stop();
-  // changes color to hint at transition
-  tm.setBackgroundBlue();
 };
 
 // *******************************************************************
@@ -167,7 +162,6 @@ tm.cue[2].stopCue = function() {
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -227,7 +221,6 @@ tm.cue[3].stopCue = function() {
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
   c3_bellLoop.stop();
-  tm.setBackgroundBlue();
 };
 
 // *******************************************************************
@@ -252,7 +245,6 @@ tm.cue[4].triggerShakeSound = function() {
   c4_counter++;
 };
 tm.cue[4].stopCue = function() {
-  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -341,7 +333,6 @@ tm.cue[5].stopCue = function() {
   // randomly select 1 of 3 possible octaves for reversed glass sound
   revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.setBackgroundBlue();
 };
 
 // *******************************************************************
@@ -349,6 +340,7 @@ tm.cue[5].stopCue = function() {
 tm.cue[6] = new TMCue('tacet', -1);
 tm.cue[6].goCue = function() {
   // should post message
+  tm.setBackgroundBlue();
 };
 tm.cue[6].stopCue = function() {
   // nothing to clean up

@@ -58,6 +58,7 @@ var yTilt = new Tone.Signal(0.5);
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
+ * @param {boolean} cueEndPulse - Makes status label pulse once at end of cue
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
@@ -97,6 +98,7 @@ function ToneMotion() {
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = false;
+  this.cueEndPulse = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
@@ -394,7 +396,12 @@ ToneMotion.prototype.clearConsole = function() {
 
 // Sets text and class name for main status label in center panel
 ToneMotion.prototype.setStatusLabel = function(text, className) {
-  status_container.className = className;
+  // only reset class if it's not the current class. otherwise no need.
+  if (!status_container.classList.contains(className)) {
+    // first remove existing state classes (but do NOT remove swell class)
+    status_container.classList.remove('active', 'default', 'error');
+    status_container.classList.add(className);
+  }
   status_label.innerHTML = text;
 };
 
@@ -883,6 +890,10 @@ ToneMotion.prototype.clearActiveCues = function() {
       this.cue[i].isPlaying = false;
     }
   }
+  // by default, end of cue causes status label to pulse once
+  if (this.cueEndPulse) {
+    status_container.classList.add('swell');
+  }
 };
 
 // Sets application status from interactivity mode for this new cue
@@ -925,6 +936,10 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
       default:
         this.setBackgroundBlue();
     }
+  }
+  // need to remove 'swell' class to reset pulsing glow at end of next cue
+  if (this.cueEndPulse) {
+    status_container.classList.remove('swell');
   }
 
   this.currentCue = this.cue[cue];
