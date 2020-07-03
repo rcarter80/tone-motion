@@ -1,6 +1,6 @@
 const tm = new ToneMotion();
 tm.debug = true; // if true, skips clock sync and shows console
-tm.localTest = false; // if true, fetches cues from localhost, not Heroku
+tm.colorCodeMode = false; // using different color code system
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -12,11 +12,6 @@ window.onload = function() {
   }
 };
 
-// TODO:
-// BUG: known issue: shake and NoSleep.js DO NOT WORK on iOS 13.4
-// https://github.com/richtr/NoSleep.js/issues/85
-// hopefully it resolves with iOS 13.5 but if not need to find workaround
-
 // Shortcuts to audio file paths
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
@@ -24,8 +19,6 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 
 Tone.Transport.bpm.value = 60;
-
-// TODO: fix bug that disables noSleep if device has gone to another page or app and returned? seems to even happening when tapping start again after tapping stop
 
 // *******************************************************************
 // CUE 0: First section (struck glass sounds)
@@ -65,6 +58,7 @@ tm.cue[0] = new TMCue('shake', 2000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;
+  tm.setBackgroundBlue();
 };
 
 tm.cue[0].triggerShakeSound = function() {
@@ -77,6 +71,8 @@ tm.cue[0].stopCue = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  // changes color to hint at transition
+  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -98,6 +94,8 @@ tm.cue[1].goCue = function() {
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
+  // sets color here (as well as previous stopCue()) in case user joins here
+  tm.setBackgroundGreen();
 };
 tm.cue[1].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -131,6 +129,8 @@ tm.cue[1].stopCue = function() {
   revGlassC5_7s.start();
   pingPongLoop.stop();
   popRocksLoop.stop();
+  // changes color to hint at transition
+  tm.setBackgroundBlue();
 };
 
 // *******************************************************************
@@ -146,6 +146,7 @@ tm.cue[2] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
+  tm.setBackgroundBlue();
 };
 
 tm.cue[2].triggerShakeSound = function() {
@@ -166,6 +167,7 @@ tm.cue[2].stopCue = function() {
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -215,6 +217,7 @@ tm.cue[3] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   c3_counter = 0;
   c3_bellLoop.start();
+  tm.setBackgroundGreen();
 };
 tm.cue[3].updateTiltSounds = function() {
 };
@@ -224,6 +227,7 @@ tm.cue[3].stopCue = function() {
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
   c3_bellLoop.stop();
+  tm.setBackgroundBlue();
 };
 
 // *******************************************************************
@@ -237,6 +241,7 @@ var c4_counter, c4_thisGlass;
 tm.cue[4] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   c4_counter = 0;
+  tm.setBackgroundBlue();
 };
 tm.cue[4].triggerShakeSound = function() {
   // find next sound in array
@@ -247,6 +252,7 @@ tm.cue[4].triggerShakeSound = function() {
   c4_counter++;
 };
 tm.cue[4].stopCue = function() {
+  tm.setBackgroundGreen();
 };
 
 // *******************************************************************
@@ -321,6 +327,7 @@ tm.cue[5].goCue = function() {
   // if I need to reset volume because it was changed, there are LOTS to reset
   c5_glassLoop.start();
   ziplockClickLoop.start();
+  tm.setBackgroundGreen();
 };
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
@@ -334,6 +341,7 @@ tm.cue[5].stopCue = function() {
   // randomly select 1 of 3 possible octaves for reversed glass sound
   revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  tm.setBackgroundBlue();
 };
 
 // *******************************************************************

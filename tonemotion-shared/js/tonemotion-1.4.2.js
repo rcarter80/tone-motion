@@ -3,7 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '1.4.1';
+const VERSION = '1.4.2';
 
 /*
 ** DOM HOOKS
@@ -21,6 +21,8 @@ const motion_data_checkbox = document.querySelector('#motion_data_checkbox');
 const motion_data_label = document.querySelector('#motion_data_label');
 const console_checkbox = document.querySelector('#console_checkbox');
 const console_container = document.querySelector('#console_container');
+const html_element = document.querySelector('html');
+const body_element = document.querySelector('body');
 // NodeLists of all buttons and links
 const buttonList = document.querySelectorAll('button');
 const linkList = document.querySelectorAll('a');
@@ -56,6 +58,7 @@ var yTilt = new Tone.Signal(0.5);
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
+ * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} cuePollingInterval - (ms.) How often server is polled
@@ -94,6 +97,7 @@ function ToneMotion() {
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = false;
+  this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
   // when server restarts, both cue number and time revert to 0
@@ -511,36 +515,65 @@ ToneMotion.prototype.testWithoutMotion = function() {
 
 // Changes background to green gradient
 ToneMotion.prototype.setBackgroundGreen = function() {
-  document.querySelector('html').classList.add('green');
-  document.querySelector('body').classList.add('green');
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.add('green')
-    }
-  );
+  // remove purple class in case background is currently purple
+  html_element.classList.remove('purple');
+  html_element.classList.add('green');
+  body_element.classList.remove('purple');
+  body_element.classList.add('green');
+  help_panel.classList.remove('purple');
+  help_panel.classList.add('green');
   buttonList.forEach(
     function(currentValue) {
-      currentValue.classList.add('green')
+      currentValue.classList.remove('purple');
+      currentValue.classList.add('green');
     }
   );
-  help_panel.classList.add('green');
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('purple');
+      currentValue.classList.add('green');
+    }
+  );
+};
+
+// Changes background to purple gradient
+ToneMotion.prototype.setBackgroundPurple = function() {
+  // remove green class in case background is currently green
+  html_element.classList.remove('green');
+  html_element.classList.add('purple');
+  body_element.classList.remove('green');
+  body_element.classList.add('purple');
+  help_panel.classList.remove('green');
+  help_panel.classList.add('purple');
+  buttonList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green');
+      currentValue.classList.add('purple');
+    }
+  );
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green');
+      currentValue.classList.add('purple');
+    }
+  );
 };
 
 // Changes background to default blue gradient
 ToneMotion.prototype.setBackgroundBlue = function() {
-  document.querySelector('html').classList.remove('green');
-  document.querySelector('body').classList.remove('green');
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green')
-    }
-  );
+  html_element.classList.remove('green', 'purple');
+  body_element.classList.remove('green', 'purple');
+  help_panel.classList.remove('green', 'purple');
   buttonList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('green')
+      currentValue.classList.remove('green', 'purple')
     }
   );
-  help_panel.classList.remove('green');
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green', 'purple')
+    }
+  );
 };
 
 /*********************************************************************
@@ -879,7 +912,20 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
     default:
       this.publicError('Error setting application status for new cue');
   }
-  // TODO: set color coded background here 
+  // changes background color with interactivity mode (if color code is on)
+  if (this.colorCodeMode) {
+    switch (this.cue[cue].mode) {
+      case 'tilt':
+        this.setBackgroundGreen();
+        break;
+      case 'shake':
+      case 'tiltAndShake':
+        this.setBackgroundPurple();
+        break;
+      default:
+        this.setBackgroundBlue();
+    }
+  }
 
   this.currentCue = this.cue[cue];
   this.currentCue.isPlaying = true;
