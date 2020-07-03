@@ -879,6 +879,7 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
     default:
       this.publicError('Error setting application status for new cue');
   }
+  // TODO: set color coded background here 
 
   this.currentCue = this.cue[cue];
   this.currentCue.isPlaying = true;
