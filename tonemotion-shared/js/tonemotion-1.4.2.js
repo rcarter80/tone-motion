@@ -523,21 +523,21 @@ ToneMotion.prototype.testWithoutMotion = function() {
 // Changes background to green gradient
 ToneMotion.prototype.setBackgroundGreen = function() {
   // remove purple class in case background is currently purple
-  html_element.classList.remove('purple');
+  html_element.classList.remove('purple', 'gray');
   html_element.classList.add('green');
-  body_element.classList.remove('purple');
+  body_element.classList.remove('purple', 'gray');
   body_element.classList.add('green');
-  help_panel.classList.remove('purple');
+  help_panel.classList.remove('purple', 'gray');
   help_panel.classList.add('green');
   buttonList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('purple');
+      currentValue.classList.remove('purple', 'gray');
       currentValue.classList.add('green');
     }
   );
   linkList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('purple');
+      currentValue.classList.remove('purple', 'gray');
       currentValue.classList.add('green');
     }
   );
@@ -546,39 +546,62 @@ ToneMotion.prototype.setBackgroundGreen = function() {
 // Changes background to purple gradient
 ToneMotion.prototype.setBackgroundPurple = function() {
   // remove green class in case background is currently green
-  html_element.classList.remove('green');
+  html_element.classList.remove('green', 'gray');
   html_element.classList.add('purple');
-  body_element.classList.remove('green');
+  body_element.classList.remove('green', 'gray');
   body_element.classList.add('purple');
-  help_panel.classList.remove('green');
+  help_panel.classList.remove('green', 'gray');
   help_panel.classList.add('purple');
   buttonList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('green');
+      currentValue.classList.remove('green', 'gray');
       currentValue.classList.add('purple');
     }
   );
   linkList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('green');
+      currentValue.classList.remove('green', 'gray');
       currentValue.classList.add('purple');
+    }
+  );
+};
+
+// Changes background to gray gradient
+ToneMotion.prototype.setBackgroundGray = function() {
+  // remove green class in case background is currently green
+  html_element.classList.remove('green', 'purple');
+  html_element.classList.add('gray');
+  body_element.classList.remove('green', 'purple');
+  body_element.classList.add('gray');
+  help_panel.classList.remove('green', 'purple');
+  help_panel.classList.add('gray');
+  buttonList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green', 'purple');
+      currentValue.classList.add('gray');
+    }
+  );
+  linkList.forEach(
+    function(currentValue) {
+      currentValue.classList.remove('green', 'purple');
+      currentValue.classList.add('gray');
     }
   );
 };
 
 // Changes background to default blue gradient
 ToneMotion.prototype.setBackgroundBlue = function() {
-  html_element.classList.remove('green', 'purple');
-  body_element.classList.remove('green', 'purple');
-  help_panel.classList.remove('green', 'purple');
+  html_element.classList.remove('green', 'purple', 'gray');
+  body_element.classList.remove('green', 'purple', 'gray');
+  help_panel.classList.remove('green', 'purple', 'gray');
   buttonList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('green', 'purple')
+      currentValue.classList.remove('green', 'purple', 'gray')
     }
   );
   linkList.forEach(
     function(currentValue) {
-      currentValue.classList.remove('green', 'purple')
+      currentValue.classList.remove('green', 'purple', 'gray')
     }
   );
 };
@@ -931,7 +954,7 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
         break;
       case 'shake':
       case 'tiltAndShake':
-        this.setBackgroundPurple();
+        this.setBackgroundGray();
         break;
       default:
         this.setBackgroundBlue();
