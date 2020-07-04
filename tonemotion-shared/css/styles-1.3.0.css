@@ -25,6 +25,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   background-color: var(--theme-color-dark);
+  /* <body> can change opacity to make this color transition visible */
+  transition: background-color 0.25s;
 }
 html.green {
   background-color: var(--theme-color-light-green);
@@ -61,6 +63,14 @@ body.purple {
 body.gray {
   /* gradient goes from theme-color-dark-gray to theme-color-light-gray */
   background: linear-gradient(#002529, #6b7d80);
+}
+body.fade {
+  /* allows <html> background-color transition to be visible */
+  animation: fade 0.25s ease-out 0s 2 alternate;
+}
+@keyframes fade {
+  from { opacity: 1; }
+  to   { opacity: 0.75; }
 }
 
 h1, h2, h3, h4, h5, h6 {

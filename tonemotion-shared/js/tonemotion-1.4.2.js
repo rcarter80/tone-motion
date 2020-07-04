@@ -58,7 +58,7 @@ var yTilt = new Tone.Signal(0.5);
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
- * @param {boolean} cueEndPulse - Makes status label pulse once at end of cue
+ * @param {boolean} glowingTransitions - Makes status label pulse once at end of cue
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
@@ -98,7 +98,7 @@ function ToneMotion() {
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = false;
-  this.cueEndPulse = true;
+  this.glowingTransitions = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
@@ -258,6 +258,26 @@ ToneMotion.prototype.setStatus = function(status) {
       break;
     default:
       this.publicError('Error setting application status');
+    }
+    // changes background color with interactivity mode (if color code is on)
+    if (this.colorCodeMode) {
+      switch (status) {
+        case 'playing_tilt':
+          this.setBackgroundGreen();
+          break;
+        case 'playing_shake':
+        case 'playing_tiltAndShake':
+          this.setBackgroundGray();
+          break;
+        default:
+          this.setBackgroundBlue();
+      }
+    }
+    // need to remove 'swell' class to reset pulsing glow at end of next cue
+    // need to add 'fade' class to <body> to create background color transition
+    if (this.glowingTransitions) {
+      status_container.classList.remove('swell');
+      body_element.classList.add('fade');
     }
 
     if (this.debug) {
@@ -914,8 +934,10 @@ ToneMotion.prototype.clearActiveCues = function() {
     }
   }
   // by default, end of cue causes status label to pulse once
-  if (this.cueEndPulse) {
+  // new cue causes background to fade out and in. Need to clear previous fade
+  if (this.glowingTransitions) {
     status_container.classList.add('swell');
+    body_element.classList.remove('fade');
   }
 };
 
@@ -945,24 +967,6 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
       break;
     default:
       this.publicError('Error setting application status for new cue');
-  }
-  // changes background color with interactivity mode (if color code is on)
-  if (this.colorCodeMode) {
-    switch (this.cue[cue].mode) {
-      case 'tilt':
-        this.setBackgroundGreen();
-        break;
-      case 'shake':
-      case 'tiltAndShake':
-        this.setBackgroundGray();
-        break;
-      default:
-        this.setBackgroundBlue();
-    }
-  }
-  // need to remove 'swell' class to reset pulsing glow at end of next cue
-  if (this.cueEndPulse) {
-    status_container.classList.remove('swell');
   }
 
   this.currentCue = this.cue[cue];
