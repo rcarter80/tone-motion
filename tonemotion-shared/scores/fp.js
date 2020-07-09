@@ -3,11 +3,10 @@ tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
-  // TODO: create SNM server and use instead of JACK server
   if (tm.localTest) {
-    tm.init('http://localhost:3000/jack-server/current-cue');
+    tm.init('http://localhost:3000/snm-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/snm-server/current-cue');
   }
 };
 
