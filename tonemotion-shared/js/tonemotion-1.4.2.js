@@ -857,7 +857,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
       if (this.status !== 'error') {
         this.triggerCue(this.cueOnClient, this.cueTimeFromServer);
         if (this.debug) {
-          var timestamp = Date.now();
+          var timestamp = Date.now() - this.clientServerOffset;
           this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + timestamp + ' after being set on server at ' + this.cueTimeFromServer + '. Total latency: ' + (timestamp - this.cueTimeFromServer) + ' milliseconds.');
         }
       }
