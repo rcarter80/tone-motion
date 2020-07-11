@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: turn off debug
-tm.debug = true;
+tm.debug = false;
 tm.showConsoleOnLaunch = true;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
