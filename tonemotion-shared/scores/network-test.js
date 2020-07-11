@@ -19,6 +19,7 @@ const perc_sounds = 'tonemotion-shared/audio/perc/';
 // CUE 0: TACET
 tm.cue[0] = new TMCue('tacet', 1000, NO_LIMIT);
 tm.cue[0].goCue = function() {
+  // TODO: added latency result function with warnings for high latency
   tm.publicMessage('write diagnostic message to go here with latency result');
 };
 tm.cue[0].stopCue = function() {
