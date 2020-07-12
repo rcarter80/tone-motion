@@ -6,9 +6,9 @@ window.onload = function() {
   // fetch cues from localhost if tm.localTest is true
   // TODO: I'm using the JACK server while composing, but create dedicated server with special features (like looping through valid cues only)
   if (tm.localTest) {
-    tm.init('http://localhost:3000/jack-server/current-cue');
+    tm.init('http://localhost:3000/shared-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/shared-server/current-cue');
   }
 };
 
