@@ -4,7 +4,6 @@ tm.localTest = false; // if true, fetches cues from localhost, not Heroku
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
-  // TODO: I'm using the JACK server while composing, but create dedicated server with special features (like looping through valid cues only)
   if (tm.localTest) {
     tm.init('http://localhost:3000/shared-server/current-cue');
   } else {
