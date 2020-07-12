@@ -80,7 +80,8 @@ function ToneMotion() {
   this.status = '';
   this.debug = false;
   this.localTest = false;
-  this.showConsoleOnLaunch = false;
+  // console was hidden by default, but showing it fixes scroll bug in iOS
+  this.showConsoleOnLaunch = true;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
@@ -123,6 +124,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
     this.shouldSyncToServer = false;
   }
   // Can automatically show console in left panel when page loads
+  // This was previously NOT the default behavior, but a scrolling issue in iOS Safari is fixed by displaying console by default. If debug mode is on, lots of messages are generated, but otherwise few are. 
   if (this.showConsoleOnLaunch) {
     console_checkbox.checked = true;
     console_container.className = '';
