@@ -293,7 +293,6 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   // prevents screen from automatically locking, which chokes audio/motion
   // (from https://github.com/richtr/NoSleep.js)
   // NoSleep object must be reconstructed each time it's enabled
-  // TODO:  update other pieces (Seth's) with new library and iOS 13.4 warning
   noSleep = new NoSleep();
   noSleep.enable();
   // simply playing back 1-sec. silent file when tapping a button allows
