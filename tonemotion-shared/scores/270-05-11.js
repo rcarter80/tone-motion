@@ -60,7 +60,6 @@ function createCue(cueNum, cue) {
     cue.start();
   };
   tm.cue[cueNum].stopCue = function() {
-    cue
-    .stop();
+    cue.stop();
   };
 }
