@@ -595,11 +595,10 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   //   this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
   //   this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
   // }
-  
+
   // NOTE: This fork of the library is for non-interactive listening and the code above causes issues on desktop Chromium (Linux), so I'm removing the calls to linearRampTo()
   this.xSig.value = this.accel.x;
   this.ySig.value = this.accel.y;
-
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
