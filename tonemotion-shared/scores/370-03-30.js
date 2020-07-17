@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: turn off debug mode
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -11,22 +10,27 @@ window.onload = function() {
   }
 };
 
-// Shortcut to audio file path
-const class_370 = 'tonemotion-shared/audio/class_370/';
+// *******************************************************************
+// INSERT DATE AND COPY AUDIO FILE NAMES (WITHOUT .mp3 EXTENSION) BELOW
+const listeningDate = 'July 17';
 // list of file names (excluding .mp3 file extension) to load into cues
 var filesToLoad = [
   "p1_anthony1",
   "p1_anthony2",
   "p1_cconley"
 ];
+
+// *******************************************************************
+// NO NEED TO CHANGE ANYTHING BELOW
+
+// load date into title
+document.querySelector('#dateForTitle').innerHTML = listeningDate;
+// Shortcut to audio file path
+const class_370 = 'tonemotion-shared/audio/class_370/';
 // empty array to fill with Tone.Player objects
 var playerArray = [];
 // sound files alternate with 'waiting' cues, so # of cues > # of files to load
 var cueCount = 0;
-// reference to current cue
-var thisCue;
-
-playerArray[0] = new Tone.Player(class_370 + filesToLoad[0] + '.mp3').toMaster();
 
 for (var i = 0; i < filesToLoad.length; i++) {
   // first create 'waiting' cue for before listening
@@ -39,9 +43,9 @@ for (var i = 0; i < filesToLoad.length; i++) {
   };
   cueCount++;
 
-  // next create Tone.Player object and create playing cue
+  // next create Tone.Player object and create listening cue
   playerArray[i] = new Tone.Player(class_370 + filesToLoad[i] + '.mp3').toMaster();
-  createCue(cueCount, playerArray[i]);
+  createCue(cueCount, playerArray[i], filesToLoad[i]);
   cueCount++;
 
   // after last audio file, create one additional 'finished' cue
@@ -57,10 +61,19 @@ for (var i = 0; i < filesToLoad.length; i++) {
 }
 
 // function to generate listening cue
-function createCue(cueNum, cue) {
+function createCue(cueNum, cue, fileName) {
   tm.cue[cueNum] = new TMCue('listen', 2000, NO_LIMIT);
   tm.cue[cueNum].goCue = function() {
-    cue.start();
+    // calculate elapsed time since file started and convert to seconds
+    var elapsedTime = (Date.now() - tm.clientServerOffset - tm.cue[cueNum].startedAt) / 1000;
+    // if cue is triggered late (or someone stops and starts), sync listening
+    if (elapsedTime > 1) {
+      cue.start('+0', elapsedTime);
+    } else {
+      cue.start();
+    }
+    // post label with file name currently playing
+    tm.publicMessage('Current sound file: ' + fileName);
   };
   tm.cue[cueNum].stopCue = function() {
     cue.stop();
