@@ -81,6 +81,7 @@ tm.cue[0].stopCue = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  // TODO: extend fade to cover longer transtion
   tm.fadeFilesOverCurve(c0_soundFileArray, 0, 4);
   c0_loopE3.stop();
   c0_loopD3.stop();
@@ -531,6 +532,7 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: turn all sound off (only accessible through my safe mode server)
+// TODO: implement backdoor on server that allows me to access tacet cue
 tm.cue[6] = new TMCue('tacet', -1);
 tm.cue[6].goCue = function() {
   // should post message
