@@ -44,7 +44,7 @@ var c0_loopD3 = new Tone.Loop(function(time) {
 // loops have slight randomization to cause back-and-forth drift (.humanize) but also long-term phasing between playback devices (Math.random() in interval)
 var c0_loopG3 = new Tone.Loop(function(time) {
   glassRimG4.start('+2');
-}, 10 + (Math.random() * 2));
+}, 14 + (Math.random() * 2));
 c0_loopG3.humanize = 1;
 var c0_loopC4 = new Tone.Loop(function(time) {
   glassRimC4.start('+5');
@@ -56,7 +56,7 @@ var c0_loopB4 = new Tone.Loop(function(time) {
   glassRimB4.start('+7');
   // synth glass always plays B4 in tune
   glassSynthRimB4.start('+7');
-}, 16 + (Math.random() * 4));
+}, 17 + (Math.random() * 4));
 c0_loopB4.humanize = 3;
 
 // all sections start 3 seconds after cue
@@ -81,8 +81,7 @@ tm.cue[0].stopCue = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // TODO: extend fade to cover longer transtion
-  tm.fadeFilesOverCurve(c0_soundFileArray, 0, 4);
+  tm.fadeFilesOverCurve(c0_soundFileArray, 0, 5);
   c0_loopE3.stop();
   c0_loopD3.stop();
   c0_loopG3.stop();
@@ -92,7 +91,7 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: continued long tones with sporadic interjections of noisy layer
-var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimC3andB2.mp3").toMaster();
+var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimLayeredC3andB2.mp3").toMaster();
 var glassRimA3 = new Tone.Player(glass_sounds + "glassRimRealA3_9s.mp3").toMaster();
 var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimRealE4-F4.mp3").toMaster();
 var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimRealF5-E5.mp3").toMaster();
@@ -115,9 +114,9 @@ var c1_revGlassPitchArray = [1.122, 2.244];
 // C3 and B2 alternate and don't phase in one part, but phase between devices
 // loop interval discrepancy between parts is 0.0 to just less than 1 second
 var c1_loopC3B2 = new Tone.Loop(function(time) {
-  // audio file is c. 12 long
+  // audio file is c. 22 long
   glassRimC3andB2.start();
-}, 12 + Math.random());
+}, 22 + Math.random());
 var c1_loopA3 = new Tone.Loop(function(time) {
   // slight detuning from varied playback rate in real glass only
   glassRimA3.playbackRate = 1 + (Math.random() * 0.01);
@@ -143,7 +142,7 @@ var c1_noiseLoop = new Tone.Loop(function(time) {
   iceCrunch.start();
 }, c1_noiseDelay);
 
-// all sections start 2 seconds after cue
+// all sections start 3 seconds after cue
 tm.cue[1] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   // set levels, which may have been turned down to -99 at end of section before
