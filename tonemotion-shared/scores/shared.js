@@ -56,6 +56,7 @@ tm.cue[0] = new TMCue('shake', 2000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;
+  tm.publicMessage('section 1 instructions');
 };
 
 tm.cue[0].triggerShakeSound = function() {
@@ -89,6 +90,7 @@ tm.cue[1].goCue = function() {
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
+  tm.publicMessage('section 2 instructions');
 };
 tm.cue[1].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -137,6 +139,7 @@ tm.cue[2] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
+  tm.publicMessage('section 3 instructions');
 };
 
 tm.cue[2].triggerShakeSound = function() {
@@ -206,6 +209,7 @@ tm.cue[3] = new TMCue('tilt', 2000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   c3_counter = 0;
   c3_bellLoop.start();
+  tm.publicMessage('section 4 instructions');
 };
 tm.cue[3].updateTiltSounds = function() {
 };
@@ -228,6 +232,7 @@ var c4_counter, c4_thisGlass;
 tm.cue[4] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   c4_counter = 0;
+  tm.publicMessage('section 5 instructions');
 };
 tm.cue[4].triggerShakeSound = function() {
   // find next sound in array
@@ -312,6 +317,7 @@ tm.cue[5].goCue = function() {
   // if I need to reset volume because it was changed, there are LOTS to reset
   c5_glassLoop.start();
   ziplockClickLoop.start();
+  tm.publicMessage('section 6 instructions');
 };
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
@@ -336,3 +342,5 @@ tm.cue[6].goCue = function() {
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
+
+// TODO: add same cues (-1 and 6: finished) as desktop site
