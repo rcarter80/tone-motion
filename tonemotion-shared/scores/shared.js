@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: turn off debugging before deployment
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -71,7 +70,7 @@ tm.cue[0] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;
-  tm.publicMessage('section 1 instructions');
+  tm.publicMessage('Section 1: Shake your phone to play a sound.');
 };
 
 tm.cue[0].triggerShakeSound = function() {
@@ -88,7 +87,6 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: tilt sparkly sounds that can be muted when phone is upright
-// TODO: replace these sounds with iceCrunch and another glass sound?
 var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
 pingPongLoop.loop = true;
 
@@ -105,7 +103,7 @@ tm.cue[1].goCue = function() {
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
-  tm.publicMessage('section 2 instructions');
+  tm.publicMessage('Section 2: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
 };
 tm.cue[1].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -154,7 +152,7 @@ tm.cue[2] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
-  tm.publicMessage('section 3 instructions');
+  tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
 };
 
 tm.cue[2].triggerShakeSound = function() {
@@ -212,6 +210,10 @@ var c3_loBellArray = [octaveBellsD3, octaveBellsF3, octaveBellsE3, octaveBellsA3
 var c3_loBellArrayb = [octaveBellsD3b, octaveBellsF3b, octaveBellsE3b, octaveBellsA3b, octaveBellsBb3b];
 
 var c3_counter, c3_i, c3_thisBellArray, c3_fadeLock;
+// set maximum volume of crunchy sounds here
+const c3_sugarChimePeakVol = -9;
+// amount to adjust volume with y-axis roll-off
+const c3_volFader = (c3_sugarChimePeakVol + 99) * 4;
 // cache value of bell array length to avoid computing on each note
 const c3_arrLength = c3_hiBellArray.length;
 
@@ -239,9 +241,9 @@ tm.cue[3].goCue = function() {
   c3_bellLoop.start();
   // sugar chimes have volume control on y-axis, but not during transition fade
   c3_fadeLock = false;
-  sugarChimeLoop.volume.value = 0;
+  sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
   sugarChimeLoop.start();
-  tm.publicMessage('section 4 instructions');
+  tm.publicMessage('Section 4: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
 };
 tm.cue[3].updateTiltSounds = function() {
   c3_filter.frequency.value = 50 + tm.accel.y * 12000;
@@ -250,7 +252,7 @@ tm.cue[3].updateTiltSounds = function() {
     sugarChimeLoop.volume.value = -99 + (tm.accel.y * 396);
   } else if (!c3_fadeLock) {
     // full volume if phone not upright AS LONG AS transition is not started
-    sugarChimeLoop.volume.value = 0;
+    sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
   }
 };
 tm.cue[3].stopCue = function() {
@@ -273,7 +275,7 @@ var c4_counter, c4_thisGlass;
 tm.cue[4] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   c4_counter = 0;
-  tm.publicMessage('section 5 instructions');
+  tm.publicMessage('Section 5: Shake your phone to play a sound.');
 };
 tm.cue[4].triggerShakeSound = function() {
   // find next sound in array
@@ -358,7 +360,7 @@ tm.cue[5].goCue = function() {
   // if I need to reset volume because it was changed, there are LOTS to reset
   c5_glassLoop.start();
   ziplockClickLoop.start();
-  tm.publicMessage('section 6 instructions');
+  tm.publicMessage('Section 6: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
 };
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
