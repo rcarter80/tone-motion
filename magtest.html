@@ -1,0 +1,28 @@
+<p>Magnetic field along the x-axis: <span id="x">x-val</span></p>
+<p>Magnetic field along the y-axis: <span id="y">y-val</span></p>
+<p>Magnetic field along the z-axis: <span id="z">z-val</span></p>
+<p>Error messages go here: <span id="error"></span></p>
+
+<script>
+  const xLabel = document.querySelector("#x");
+  const yLabel = document.querySelector("#y");
+  const zLabel = document.querySelector("#z");
+  const errorLabel = document.querySelector("#error");
+
+  // first just test if browser has magnetometer. desktops won't.
+  try {
+    let magSensor = new Magnetometer({frequency: 10});
+    magSensor.addEventListener('reading', e => {
+      console.log("Magnetic field along the X-axis " + magSensor.x);
+      console.log("Magnetic field along the Y-axis " + magSensor.y);
+      console.log("Magnetic field along the Z-axis " + magSensor.z);
+      xLabel.innerText = '' + magSensor.x;
+      yLabel.innerText = '' + magSensor.y;
+      zLabel.innerText = '' + magSensor.z;
+    });
+    magSensor.start();
+  } catch (error) {
+    console.error(error);
+    errorLabel.innerText = '' + error;
+  }
+</script>
