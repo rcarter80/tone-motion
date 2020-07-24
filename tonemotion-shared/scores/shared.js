@@ -19,6 +19,16 @@ const chime_sounds = 'tonemotion-shared/audio/chimes/';
 Tone.Transport.bpm.value = 60;
 
 // *******************************************************************
+// CUE -1: ONLY used in performance to keep everything silent until start
+tm.cue[-1] = new TMCue('waiting', -1);
+tm.cue[-1].goCue = function() {
+  // nothing to do here
+};
+tm.cue[-1].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
 // CUE 0: First section (struck glass sounds)
 var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
 var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
@@ -165,6 +175,7 @@ tm.cue[2].stopCue = function() {
 // *******************************************************************
 // CUE 3: tilt octaves on D, F, E, A, Bb
 // TODO: may need to modify sound files to avoid click on retrigger
+// REVISION idea: add sparkly sound with band pass filter on y axis
 var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toMaster();
 var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toMaster();
 var octaveBellsBb3 = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toMaster();
@@ -335,12 +346,10 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: turn all sound off (only accessible through my safe mode server)
-tm.cue[6] = new TMCue('tacet', -1);
+tm.cue[6] = new TMCue('finished', -1);
 tm.cue[6].goCue = function() {
-  // should post message
+  // nothing to do here
 };
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
-
-// TODO: add same cues (-1 and 6: finished) as desktop site

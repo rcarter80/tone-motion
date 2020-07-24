@@ -19,6 +19,16 @@ var masterLimiter = new Tone.Limiter(-1);
 Tone.Master.chain(masterLimiter);
 
 // *******************************************************************
+// CUE -1: ONLY used in performance to keep everything silent until start
+tm.cue[-1] = new TMCue('waiting', -1);
+tm.cue[-1].goCue = function() {
+  // nothing to do here
+};
+tm.cue[-1].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
 // CUE 0: First section of piece. Looped long tones and shake sounds
 var glassRimD3 = new Tone.Player(glass_sounds + "glassRimLayeredD3.mp3").toMaster();
 var glassRimE3 = new Tone.Player(glass_sounds + "glassRimLayeredE3.mp3").toMaster();
@@ -527,22 +537,10 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: turn all sound off (only accessible through my safe mode server)
-// TODO: implement backdoor on server that allows me to access tacet cue
 tm.cue[6] = new TMCue('finished', -1);
 tm.cue[6].goCue = function() {
-  // should post message
+  // nothing to do here
 };
 tm.cue[6].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 7: waiting to turn everything on (e.g., for public performance)
-// TODO: make this cue -1 (need to lock server to access - in performance, proceed to cue 0 AND unlock server at start of piece)
-tm.cue[7] = new TMCue('waiting', -1);
-tm.cue[7].goCue = function() {
-  // should post message
-};
-tm.cue[7].stopCue = function() {
   // nothing to clean up
 };
