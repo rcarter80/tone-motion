@@ -70,7 +70,7 @@ tm.cue[0] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[0].goCue = function() {
   c0_counter = 0;
-  tm.publicMessage('Section 1: Shake your phone to play a sound.');
+  tm.publicMessage('Section 0: Shake your phone to play a sound.');
 };
 
 tm.cue[0].triggerShakeSound = function() {
@@ -103,7 +103,7 @@ tm.cue[1].goCue = function() {
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
-  tm.publicMessage('Section 2: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
+  tm.publicMessage('Section 1: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
 };
 tm.cue[1].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
@@ -152,7 +152,7 @@ tm.cue[2] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
-  tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
+  tm.publicMessage('Section 2: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
 };
 
 tm.cue[2].triggerShakeSound = function() {
@@ -243,7 +243,7 @@ tm.cue[3].goCue = function() {
   c3_fadeLock = false;
   sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
   sugarChimeLoop.start();
-  tm.publicMessage('Section 4: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
+  tm.publicMessage('Section 3: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
 };
 tm.cue[3].updateTiltSounds = function() {
   c3_filter.frequency.value = 50 + tm.accel.y * 12000;
@@ -275,7 +275,7 @@ var c4_counter, c4_thisGlass;
 tm.cue[4] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
   c4_counter = 0;
-  tm.publicMessage('Section 5: Shake your phone to play a sound.');
+  tm.publicMessage('Section 4: Shake your phone to play a sound.');
 };
 tm.cue[4].triggerShakeSound = function() {
   // find next sound in array
@@ -360,7 +360,7 @@ tm.cue[5].goCue = function() {
   // if I need to reset volume because it was changed, there are LOTS to reset
   c5_glassLoop.start();
   ziplockClickLoop.start();
-  tm.publicMessage('Section 6: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
+  tm.publicMessage('Section 5: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
 };
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
