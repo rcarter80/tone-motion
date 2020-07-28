@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = false; // if true, skips clock sync and shows console
+tm.debug = true; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -365,7 +365,7 @@ tm.cue[5].goCue = function() {
 tm.cue[5].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
-  ziplockClickLoop.volume.value = -65 + (tm.accel.y * 59);
+  ziplockClickLoop.volume.value = -65 + (tm.accel.y * 65);
 };
 tm.cue[5].stopCue = function() {
   c5_glassLoop.stop();
