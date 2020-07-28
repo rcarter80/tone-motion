@@ -14,6 +14,7 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 // send everything through a limiter to be safe
 var masterLimiter = new Tone.Limiter(-1);
@@ -505,7 +506,7 @@ var c5_loGlassLoop = new Tone.Loop(function(time) {
   c5_loDelay.delayTime.value = tm.getSectionBreakpoints(5, [0,0.375, 48000,0.375, c5_loDelayTargetTime,c5_loDelayTarget]);
   glassB3.playbackRate = c5_pitchArr[c5_loCounter % c5_pitchArr.length];
   glassB3.start();
-  // trigger high loop after 4 iterations of thic pitch loop
+  // trigger high loop after 4 iterations of this pitch loop
   if (c5_loCounter === 16) {
     c5_hiGlassLoop.start();
   }
@@ -537,11 +538,24 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: turn all sound off (only accessible through my safe mode server)
-tm.cue[6] = new TMCue('finished', -1);
+// CUE 6: CODA only accessible through private server - play at end of perf.
+var c6_drop = new Tone.Player(misc_sounds + "finalDrop").toMaster();
+
+tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  // nothing to do here
+  c6_drop.start();
 };
 tm.cue[6].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 7: turn off all sound (only accessible through private server)
+
+tm.cue[7] = new TMCue('finished', -1);
+tm.cue[7].goCue = function() {
+  // nothing to do here
+};
+tm.cue[7].stopCue = function() {
   // nothing to clean up
 };
