@@ -541,6 +541,8 @@ tm.cue[5].stopCue = function() {
 // CUE 6: CODA only accessible through private server - play at end of perf.
 var c6_drop = new Tone.Player(misc_sounds + "finalDrop").toMaster();
 
+// TODO: add top sparkle layer. determine quick rhythmic subdivision, set up array which will have random holes, determine if any chimes need to be double-buffered
+
 tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
   c6_drop.start();

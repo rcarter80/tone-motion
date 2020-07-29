@@ -377,15 +377,28 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6: turn all sound off (only accessible through my safe mode server)
-tm.cue[6] = new TMCue('finished', -1);
+// CUE 6: CODA only accessible through private server - play at end of perf.
+tm.cue[6] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  // nothing to do here
+  // OPTIMIZE: there might be a better way to schedule timed messages
+  Tone.Draw.schedule(function() {
+    tm.publicMessage('3');
+  }, '+0');
+  Tone.Draw.schedule(function() {
+    tm.publicMessage('2');
+  }, '+1');
+  Tone.Draw.schedule(function() {
+    tm.publicMessage('1');
+  }, '+2');
+  Tone.Draw.schedule(function() {
+    tm.publicMessage('INSTRUCTIONS GO HERE');
+  }, '+3');
 };
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
 
+// TODO: increment cue numbers to make room for CODA
 // *******************************************************************
 // CUE 7: tilt tutorial (available to use in performance)
 // Test tone for "tilt" tutorial
