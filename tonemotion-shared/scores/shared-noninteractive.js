@@ -601,8 +601,6 @@ var c6_highSynthLoop2 = new Tone.Loop(function(time) {
   c4_highSynth2.triggerAttackRelease(c4_highPitch2, c4_highDur2);
 }, 5 + (Math.random() * 10));
 
-// TODO: add top sparkle layer. determine quick rhythmic subdivision, set up array which will have random holes, determine if any chimes need to be double-buffered
-
 tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
   c6_chCount = 0;
