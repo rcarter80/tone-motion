@@ -15,6 +15,7 @@ window.onload = function() {
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
+const chime_sounds = 'tonemotion-shared/audio/chimes/';
 
 // send everything through a limiter to be safe
 var masterLimiter = new Tone.Limiter(-1);
@@ -539,16 +540,83 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: CODA only accessible through private server - play at end of perf.
-var c6_drop = new Tone.Player(misc_sounds + "finalDrop").toMaster();
+var c6_drop = new Tone.Player(misc_sounds + "finalDrop.mp3").toMaster();
+// chime tuned to 4th partial above A (220Hz)
+var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+var chP14b = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+var chP18 = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toMaster();
+var chP18b = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toMaster();
+var chP19 = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toMaster();
+var chP19b = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toMaster();
+
+var c6_chimeArr = [chP10, chP7, chP14, chP18, chP4, chP13, chP6, chP19, chP4b, chP14b, chP7, chP18b, chP6b, chP10b, chP13b, chP7b, chP19b];
+// chimes bend from partials over A220 to partials over F3 (174.61Hz)
+var c6_chBendArr = [1.031786, 1.020448, 1.07714, 1.014149, 0.9921, 1.03789, 1.05824, 1.0025454, 0.9921, 1.07714, 1.020448, 1.014149, 1.05824, 1.031786, 1.03789, 1.020448, 1.0025454];
+
+var c6_chCount, c6_index, c6_thisCh;
+var c6_arrLen = c6_chimeArr.length;
+
+var c6_chLoop = new Tone.Loop(function(time) {
+  // chime loop with random holes (only trigger chimes on half of subdivisions)
+  if (Math.random() < 0.5) {
+    c6_index = c6_chCount % c6_arrLen;
+    c6_thisCh = c6_chimeArr[c6_index];
+    // bend chimes independently to morph into spectrum on F
+    // TODO: decide on exact durations of pitch bend breakpoints
+    c6_thisCh.playbackRate = tm.getSectionBreakpoints(6, [0,1, 15000,1, 45000,c6_chBendArr[c6_index]]);
+    c6_thisCh.volume.value = -30;
+    c6_thisCh.start();
+    c6_chCount++;
+  }
+}, (c5_loDelay.delayTime.value / 3));
+// loops of very high wobbly shiny synths (reuses cue 4 synths
+var c6_highSynthLoop = new Tone.Loop(function(time) {
+  // high synth drops by a major 10th
+  c4_highSynth.detune.value = tm.getSectionBreakpoints(6, [0,0, 15000,0, 45000,-1600]);
+  // randomly change tremolo speed
+  c4_highSynthTremolo.frequency.value = 3 + (Math.random() * 4);
+  // randomize same initial pitches as chime loop, but they detune differently
+  c4_highPitch = tm.pickRand([1760, 2640, 3080, 4400, 5720, 6160, 7920, 8360]);
+  c4_highDur = 2 + (Math.random() * 1);
+  c4_highSynth.triggerAttackRelease(c4_highPitch, c4_highDur);
+}, 5 + (Math.random() * 10));
+var c6_highSynthLoop2 = new Tone.Loop(function(time) {
+  // high synth drops by a major 10th
+  c4_highSynth2.detune.value = tm.getSectionBreakpoints(6, [0,0, 15000,0, 45000,-1600]);
+  // randomly change tremolo speed
+  c4_highSynthTremolo2.frequency.value = 3 + (Math.random() * 4);
+  // same initial pitches as chime loop (8va), but they detune differently
+  c4_highPitch2 = tm.pickRand([1760, 2640, 3080, 4400, 5720, 6160, 7920, 8360]);
+  c4_highDur2 = 2 + (Math.random() * 1);
+  c4_highSynth2.triggerAttackRelease(c4_highPitch2, c4_highDur2);
+}, 5 + (Math.random() * 10));
 
 // TODO: add top sparkle layer. determine quick rhythmic subdivision, set up array which will have random holes, determine if any chimes need to be double-buffered
 
 tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
+  c6_chCount = 0;
   c6_drop.start();
+  c6_chLoop.start('+3.25');
+  c4_highSynth.volume.value = -32;
+  c6_highSynthLoop.start('+3.25');
+  c4_highSynth2.volume.value = -32;
+  c6_highSynthLoop2.start('+8.25');
 };
 tm.cue[6].stopCue = function() {
-  // nothing to clean up
+  c6_chLoop.stop();
+  c6_highSynthLoop.stop();
+  c6_highSynthLoop2.stop();
 };
 
 // *******************************************************************

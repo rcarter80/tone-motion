@@ -394,6 +394,7 @@ tm.cue[6].goCue = function() {
     tm.publicMessage('INSTRUCTIONS GO HERE');
   }, '+3');
 };
+// TODO: limit shake sound to only after 3.25 seconds have elapsed
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
