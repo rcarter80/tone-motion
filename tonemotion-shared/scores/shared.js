@@ -378,8 +378,32 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: CODA only accessible through private server - play at end of perf.
+// chime tuned to 4th partial above A (220Hz)
+var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+
+// TODO: add duplicate Players for low chime layer, but define octave shift and pitch bend in SEPARATE bend array, not here. still need to add fadeOut to all to prevent tail click
+var chLoP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+chLoP4.playbackRate = 0.25;
+chLoP4.fadeOut = 5;
+
+var c6_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
+
+var c6_chCount, c6_chIndex, c6_thisCh;
+var c6_chArrLen = c6_chimeArr.length;
+
 tm.cue[6] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
+  c6_chCount = 0;
   // OPTIMIZE: there might be a better way to schedule timed messages
   Tone.Draw.schedule(function() {
     tm.publicMessage('3');
@@ -394,7 +418,20 @@ tm.cue[6].goCue = function() {
     tm.publicMessage('INSTRUCTIONS GO HERE');
   }, '+3');
 };
-// TODO: limit shake sound to only after 3.25 seconds have elapsed
+tm.cue[6].triggerShakeSound = function() {
+  // no sound until final "drop" sound 3.25 seconds into cue
+  if (tm.getElapsedTimeInCue(6) > 3250) {
+    c6_chIndex = c6_chCount % c6_chArrLen;
+    c6_thisCh = c6_chimeArr[c6_chIndex];
+    // TODO: add pitch bend with breakpoints that I haven't decided on yet
+    c6_thisCh.start();
+    c6_chCount++;
+    glassE4.start();
+
+// TODO: add separate counter, array, etc. for low chime (phasing) layer. and add high synth on every 12(?) interations
+    chLoP4.start();
+  }
+};
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
