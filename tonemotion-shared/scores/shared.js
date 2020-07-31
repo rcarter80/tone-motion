@@ -390,20 +390,44 @@ var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
 var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
 var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
 var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
-
-// TODO: add duplicate Players for low chime layer, but define octave shift and pitch bend in SEPARATE bend array, not here. still need to add fadeOut to all to prevent tail click
+// same chime sounds starting at 2 oct lower playback rate and bending up
 var chLoP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
-chLoP4.playbackRate = 0.25;
+// use fade out to prevent clicking at end of sound
 chLoP4.fadeOut = 5;
+var chLoP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+chLoP4b.fadeOut = 5;
+var chLoP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+chLoP6.fadeOut = 5;
+var chLoP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+chLoP6b.fadeOut = 5;
+var chLoP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+chLoP7.fadeOut = 5;
+var chLoP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+chLoP7b.fadeOut = 5;
+var chLoP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+chLoP10b.fadeOut = 5;
+var chLoP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+chLoP13.fadeOut = 5;
+var chLoP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+chLoP13b.fadeOut = 5;
+var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+chLoP14.fadeOut = 5;
 
 var c6_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
+// array of playback rates that represent targets of pitch bends
+var c6_chBendArr = [1.031786, 1.020448, 1.07714, 0.9921, 1.03789, 1.05824, 0.9921, 1.05824, 1.031786, 1.03789, 1.020448];
+var c6_chLoArr = [chLoP7, chLoP14, chLoP4, chLoP13, chLoP6, chLoP4b, chLoP6b, chLoP10b, chLoP13b];
+// low chimes start 2 oct lower but bend up to 1 oct lower than high chimes
+var c6_chLoBendArr = [0.510224, 0.53857, 0.49605, 0.518945, 0.52912, 0.49605, 0.52912, 0.515893, 0.518945];
 
-var c6_chCount, c6_chIndex, c6_thisCh;
+var c6_chCount, c6_chIndex, c6_thisCh, c6_chLoIndex, c6_thisLoCh;
 var c6_chArrLen = c6_chimeArr.length;
+var c6_chLoArrLen = c6_chLoArr.length;
 
 tm.cue[6] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
   c6_chCount = 0;
+  c6_chLoCount = 0;
   // OPTIMIZE: there might be a better way to schedule timed messages
   Tone.Draw.schedule(function() {
     tm.publicMessage('3');
@@ -415,30 +439,45 @@ tm.cue[6].goCue = function() {
     tm.publicMessage('1');
   }, '+2');
   Tone.Draw.schedule(function() {
-    tm.publicMessage('INSTRUCTIONS GO HERE');
+    tm.publicMessage('Section 6: Shake your phone to play a sound.');
   }, '+3');
 };
 tm.cue[6].triggerShakeSound = function() {
   // no sound until final "drop" sound 3.25 seconds into cue
   if (tm.getElapsedTimeInCue(6) > 3250) {
+    // set pitch and properties of lower chime
+    c6_chLoIndex = c6_chCount % c6_chLoArrLen;
+    c6_thisLoCh = c6_chLoArr[c6_chLoIndex];
+    // TODO: decide on exact durations of pitch bend breakpoints
+    c6_thisLoCh.playbackRate = tm.getSectionBreakpoints(6, [0,0.25, 15000,0.25, 45000,c6_chLoBendArr[c6_chLoIndex]]);
+    c6_thisLoCh.volume.value = -1;
+    c6_thisLoCh.start();
+    // set pitch and properties of higher chime triggered just after low
     c6_chIndex = c6_chCount % c6_chArrLen;
     c6_thisCh = c6_chimeArr[c6_chIndex];
-    // TODO: add pitch bend with breakpoints that I haven't decided on yet
-    c6_thisCh.start();
+    c6_thisCh.playbackRate = tm.getSectionBreakpoints(6, [0,1, 15000,1, 45000,c6_chBendArr[c6_chIndex]]);
+    c6_thisCh.volume.value = -6;
+    c6_thisCh.start('+0.05');
+    // increment counter used by BOTH chime layers
     c6_chCount++;
-    glassE4.start();
-
-// TODO: add separate counter, array, etc. for low chime (phasing) layer. and add high synth on every 12(?) interations
-    chLoP4.start();
   }
 };
 tm.cue[6].stopCue = function() {
   // nothing to clean up
 };
 
-// TODO: increment cue numbers to make room for CODA
 // *******************************************************************
-// CUE 7: tilt tutorial (available to use in performance)
+// CUE 7: turn off all sound (only accessible through private server)
+tm.cue[7] = new TMCue('finished', -1);
+tm.cue[7].goCue = function() {
+  // nothing to do here
+};
+tm.cue[7].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 8: tilt tutorial (available to use in performance)
 // Test tone for "tilt" tutorial
 var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
 var testTone = new Tone.Synth({
@@ -457,47 +496,47 @@ var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 
 var testToneFilterScale = new Tone.Scale(440, 10000);
 xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
 yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[7] = new TMCue('tilt', -1);
-tm.cue[7].goCue = function() {
-  testTone.triggerAttack(440);
-}
-tm.cue[7].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
-}
-tm.cue[7].stopCue = function() {
-  testTone.triggerRelease();
-}
-
-// *******************************************************************
-// CUE 8: tacet tutorial
-tm.cue[8] = new TMCue('tacet', -1);
+tm.cue[8] = new TMCue('tilt', -1);
 tm.cue[8].goCue = function() {
-  // nothing to play
-}
+  testTone.triggerAttack(440);
+};
+tm.cue[8].updateTiltSounds = function() {
+  // interactivity handled through tm.xTilt and yTilt signals
+};
 tm.cue[8].stopCue = function() {
-  // nothing to clean up
-}
+  testTone.triggerRelease();
+};
 
 // *******************************************************************
-// CUE 9: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
-tm.cue[9] = new TMCue('shake', -1);
+// CUE 9: tacet tutorial
+tm.cue[9] = new TMCue('tacet', -1);
 tm.cue[9].goCue = function() {
-  // nothing to do until shake gestures
-};
-tm.cue[9].triggerShakeSound = function() {
-  cowbell.start();
+  // nothing to play
 };
 tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 10: tacet cue (use to end tutorial - can then trigger cue -1 to wait)
-tm.cue[10] = new TMCue('tacet', -1);
+// CUE 10: shake tutorial
+var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
+tm.cue[10] = new TMCue('shake', -1);
 tm.cue[10].goCue = function() {
-  // nothing to play
-}
+  // nothing to do until shake gestures
+};
+tm.cue[10].triggerShakeSound = function() {
+  cowbell.start();
+};
 tm.cue[10].stopCue = function() {
   // nothing to clean up
-}
+};
+
+// *******************************************************************
+// CUE 11: tacet cue (use to end tutorial - can then trigger cue -1 to wait)
+tm.cue[11] = new TMCue('tacet', -1);
+tm.cue[11].goCue = function() {
+  // nothing to play
+};
+tm.cue[11].stopCue = function() {
+  // nothing to clean up
+};

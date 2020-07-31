@@ -353,7 +353,6 @@ tm.cue[3].stopCue = function() {
 
 // *******************************************************************
 // CUE 4: drone on D slowly fades in and slides down major 2nd
-
 // delay for drone
 var c4_delay = new Tone.FeedbackDelay({
   delayTime: 0.2,
@@ -619,11 +618,50 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7: turn off all sound (only accessible through private server)
-
 tm.cue[7] = new TMCue('finished', -1);
 tm.cue[7].goCue = function() {
   // nothing to do here
 };
 tm.cue[7].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 8: used as a tutorial for phones
+tm.cue[8] = new TMCue('tacet', -1);
+tm.cue[8].goCue = function() {
+  // nothing to play
+};
+tm.cue[8].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 9: used as a tutorial for phones
+tm.cue[9] = new TMCue('tacet', -1);
+tm.cue[9].goCue = function() {
+  // nothing to play
+};
+tm.cue[9].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 10: used as a tutorial for phones
+tm.cue[10] = new TMCue('tacet', -1);
+tm.cue[10].goCue = function() {
+  // nothing to play
+};
+tm.cue[10].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 11: used as a tutorial for phones
+tm.cue[11] = new TMCue('tacet', -1);
+tm.cue[11].goCue = function() {
+  // nothing to play
+};
+tm.cue[11].stopCue = function() {
   // nothing to clean up
 };
