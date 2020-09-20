@@ -22715,9 +22715,10 @@
 	});
 	Module(function (Tone) {
 	    if (Tone.supported) {
-	        if (!OscillatorNode.prototype.setPeriodicWave) {
-	            OscillatorNode.prototype.setPeriodicWave = OscillatorNode.prototype.setWaveTable;
-	        }
+        // NOTE: on Sep 20, 2020, I tried loading ryancarter.org/network-test on my iOS 14 and MacOS Catalina devices. Safari threw an error at the commented-out code below (Can't find variable OscillatorNode). No issues with Chrome or Firefox. But Tone.js doesn't even load on Safari now, so I commented out this code. If setting a custom wavetable breaks, I may need to uncomment it.
+	        // if (!OscillatorNode.prototype.setPeriodicWave) {
+	        //     OscillatorNode.prototype.setPeriodicWave = OscillatorNode.prototype.setWaveTable;
+	        // }
 	        if (!AudioContext.prototype.createPeriodicWave) {
 	            AudioContext.prototype.createPeriodicWave = AudioContext.prototype.createWaveTable;
 	        }
