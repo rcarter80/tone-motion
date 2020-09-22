@@ -14,7 +14,7 @@ window.onload = function() {
 // INSERT DATE AND COPY AUDIO FILE NAMES (WITHOUT .mp3 EXTENSION) BELOW
 const listeningDate = 'September 26';
 // list of file names (excluding .mp3 file extension) to load into cues
-// TODO: replace test files below with Fall 2020 MUS 270 group projects
+// TODO: replace test files below with Fall 2020 MUS 270 group projects.
 var filesToLoad = [
   "p1_caius",
   "p1_ethan"
