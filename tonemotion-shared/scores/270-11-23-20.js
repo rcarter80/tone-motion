@@ -16,13 +16,7 @@ const listeningDate = 'November 23';
 // list of file names (excluding .mp3 file extension) to load into cues
 // TODO: replace test files below with Fall 2020 MUS 270 group projects
 var filesToLoad = [
-  "group-1",
-  "group-2",
-  "group-3",
-  "group-4",
-  "group-5",
-  "group-6",
-  "Andrew"
+  "Lindsay"
 ];
 
 // *******************************************************************
