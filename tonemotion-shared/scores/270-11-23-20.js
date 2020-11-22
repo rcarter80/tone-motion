@@ -18,7 +18,8 @@ const listeningDate = 'November 23';
 var filesToLoad = [
   "Lindsay",
   "Anthony",
-  "Simon"
+  "Simon",
+  "Ryan"
 ];
 
 // *******************************************************************
