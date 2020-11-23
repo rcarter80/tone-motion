@@ -19,7 +19,11 @@ var filesToLoad = [
   "Lindsay",
   "Anthony",
   "Simon",
-  "Ryan"
+  "Ryan",
+  "Sadye",
+  "Nick",
+  "Michael",
+  "Andrew_Projansky"
 ];
 
 // *******************************************************************
