@@ -344,6 +344,56 @@ ToneMotion.prototype.startMotionUpdates = function() {
   this.setStatus('startNow');
 };
 
+// after shutting everything down, need to start motion handling again
+// OPTIMIZE: should refactor code above with this
+ToneMotion.prototype.resumeMotionUpdates = function() {
+  this.publicLog('Resuming motion updates');
+
+  // prevents screen from automatically locking, which chokes audio/motion
+  // (from https://github.com/richtr/NoSleep.js)
+  // NoSleep object must be reconstructed each time it's enabled
+  noSleep = new NoSleep();
+  noSleep.enable();
+  // simply playing back 1-sec. silent file when tapping a button allows
+  // audio to sound with ring/silent switch on silent.
+  // keeps sound on after 1-sec. silent file elapses.
+  //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
+  silent_buffer.play();
+
+  // testing iOS 13 motion permission
+  // Guard against reference errors by checking that DeviceMotionEvent is defined
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+  typeof DeviceMotionEvent.requestPermission === 'function') {
+    if (this.debug) {
+      this.publicLog('Requesting permission for motion data');
+    }
+    // Device requests motion permission (e.g., iOS 13+)
+    DeviceMotionEvent.requestPermission()
+    .then(permissionState => {
+      if (permissionState === 'granted') {
+        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      } else {
+        // user has not give permission for motion. Pretend device is desktop
+        this.testWithoutMotion();
+      }
+      this.beginMotionUpdates();
+    })
+    .catch(console.error);
+  } else {
+    // handle non iOS 13+ devices, which could still report motion
+    if (this.debug) {
+      this.publicLog('Not an iOS 13+ device');
+    }
+    if ('DeviceMotionEvent' in window) {
+      // If device is Android, handleMotionEvent is already running
+      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    } else {
+      this.testWithoutMotion();
+    }
+    this.beginMotionUpdates();
+  }
+};
+
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
   clearInterval(this.motionUpdateLoopID);
@@ -454,7 +504,10 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.startMotionUpdates();
         break;
       case 'startNow':
+        Tone.Transport.start();
+        break;
       case 'stopped':
+        this.resumeMotionUpdates();
         Tone.Transport.start();
         break;
       case 'waitingForPieceToStart':
