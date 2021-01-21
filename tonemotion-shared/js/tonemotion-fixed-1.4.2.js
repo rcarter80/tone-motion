@@ -346,9 +346,8 @@ ToneMotion.prototype.startMotionUpdates = function() {
 
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
-  clearTimeout(this.cueFetchTimeout);
   clearInterval(this.motionUpdateLoopID);
-  this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
+  this.publicLog('Shutting down Transport, sound, and motion handling');
   this.clearActiveCues();
   Tone.Transport.stop();
 
@@ -839,36 +838,6 @@ ToneMotion.prototype.syncClocks = function() {
     // no client synchronizing (keep clientServerOffset to default of 0)
     this.setStatus('readyToPlay');
   }
-};
-
-// Polls servers for new cues
-// Packet size reduced by subtracting bias on server and adding on client. At time of coding (2018-07-18) Date.now() returns 1531970463500
-const timestampBias = 1531970463500;
-// cueOnClient is set when cue from server doesn't match.
-ToneMotion.prototype.getCuesFromServer = function() {
-  fetch(this.urlForCues)
-  .then(response => response.json())
-  .then(jsonRes => {
-    // check if there's a new cue
-    // checks cue *time* (not number) because in rehearsal the same cue
-    // could be retriggered. same cue number, different time.
-    if (this.cueTimeFromServer !== jsonRes.t+timestampBias) {
-      // Trigger new cue
-      this.cueOnClient = jsonRes.c;
-      this.cueTimeFromServer = jsonRes.t + timestampBias;
-      // Prevent cue triggering if an error has occurred
-      if (this.status !== 'error') {
-        this.triggerCue(this.cueOnClient, this.cueTimeFromServer);
-        if (this.debug) {
-          var timestamp = Date.now() - this.clientServerOffset;
-          this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + timestamp + ' after being set on server at ' + this.cueTimeFromServer + '. Total latency: ' + (timestamp - this.cueTimeFromServer) + ' milliseconds.');
-        }
-      }
-    } // else no new cue and control falls through, on to next loop
-  })
-  .catch(error => this.publicError(error));
-
-  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
 };
 
 // Called when server has new cue
