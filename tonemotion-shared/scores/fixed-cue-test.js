@@ -107,7 +107,7 @@ tm.cue[2].stopCue = function() {
 // testing calling triggerCue from score
 Tone.Transport.schedule((time) => {
 	tm.triggerFixedCue(2);
-}, "+1");
+}, "+0");
 Tone.Transport.schedule((time) => {
 	tm.triggerFixedCue(1, 0);
 }, "+2");

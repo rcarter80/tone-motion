@@ -212,6 +212,12 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStartStopButton('hidden', '');
       break;
     case 'readyToPlay':
+    // on iOS, user still needs to give motion access permission
+    // music won't play until next status (startNow)
+      this.setStatusLabel('ready', 'default');
+      this.setStartStopButton('start', 'tap to complete setup');
+      break;
+    case 'startNow':
       this.setStatusLabel('ready', 'default');
       this.setStartStopButton('start', 'start');
       break;
@@ -290,7 +296,7 @@ ToneMotion.prototype.setStatus = function(status) {
 // Starts Transport, loops, motion handling, and network requests
 var noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
-  this.publicLog('Starting Transport, motion updates, and cue fetching');
+  this.publicLog('Starting motion updates');
 
   // prevents screen from automatically locking, which chokes audio/motion
   // (from https://github.com/richtr/NoSleep.js)
@@ -319,7 +325,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
       }
-      Tone.Transport.start();
+      // Tone.Transport.start();
       this.beginMotionUpdates();
     })
     .catch(console.error);
@@ -334,15 +340,16 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     } else {
       this.testWithoutMotion();
     }
-    Tone.Transport.start();
+    // Tone.Transport.start();
     this.beginMotionUpdates();
+    this.setStatus('startNow');
   }
 
   // while waiting for cue
-  this.setStartStopButton('disabled');
-  status_label.innerHTML = ''; // label will update with cue
-
-  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+  // this.setStartStopButton('disabled');
+  // status_label.innerHTML = ''; // label will update with cue
+  //
+  // this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
 
 // Clears all sound, loops, motion handling, and network requests
@@ -453,8 +460,11 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 
     switch (this.status) {
       case 'readyToPlay':
-      case 'stopped':
         this.startMotionUpdatesAndCueFetching();
+        break;
+      case 'startNow':
+      case 'stopped':
+        Tone.Transport.start();
         break;
       case 'waitingForPieceToStart':
       case 'playing_tacet':
