@@ -112,5 +112,7 @@ Tone.Transport.schedule((time) => {
 	tm.triggerFixedCue(1, 0);
 }, "+2");
 Tone.Transport.schedule((time) => {
+  // 1st argument is cue number to trigger. 2nd is optional gap time in ms.
 	tm.triggerFixedCue(2, 4000);
+  // "+3" is seconds (not ms.) to wait before cue (or gap) is triggered 
 }, "+3");
