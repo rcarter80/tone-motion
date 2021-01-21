@@ -60,7 +60,7 @@ function postMessage(cue) {
 // CUE 0: TACET
 tm.cue[0] = new TMCue('tacet', cueDelay, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  postMessage(0);
+  // nothing to do here
 };
 tm.cue[0].stopCue = function() {
   // nothing to do here
@@ -74,7 +74,6 @@ claveLoop.loop = true;
 tm.cue[1] = new TMCue('tilt', cueDelay, NO_LIMIT);
 tm.cue[1].goCue = function() {
   claveLoop.start();
-  postMessage(1);
 };
 tm.cue[1].updateTiltSounds = function() {
   // sound is full scale if phone is mostly upright. muted if upside down.
@@ -96,7 +95,7 @@ var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
 
 tm.cue[2] = new TMCue('shake', cueDelay, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  postMessage(2);
+  // nothing to do here
 };
 tm.cue[2].triggerShakeSound = function() {
   clave.start();
@@ -104,3 +103,14 @@ tm.cue[2].triggerShakeSound = function() {
 tm.cue[2].stopCue = function() {
   // nothing to clean up
 };
+
+// testing calling triggerCue from score
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(2);
+}, "+1");
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(1, 0);
+}, "+2");
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(2, 4000);
+}, "+3");
