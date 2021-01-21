@@ -293,9 +293,9 @@ ToneMotion.prototype.setStatus = function(status) {
     }
 };
 
-// Starts Transport, loops, motion handling, and network requests
+// Starts motion handling, but NOT cue fetching because there is none here
 var noSleep; // needs global scope
-ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
+ToneMotion.prototype.startMotionUpdates = function() {
   this.publicLog('Starting motion updates');
 
   // prevents screen from automatically locking, which chokes audio/motion
@@ -325,7 +325,6 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
       }
-      // Tone.Transport.start();
       this.beginMotionUpdates();
     })
     .catch(console.error);
@@ -340,16 +339,9 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     } else {
       this.testWithoutMotion();
     }
-    // Tone.Transport.start();
     this.beginMotionUpdates();
-    this.setStatus('startNow');
   }
-
-  // while waiting for cue
-  // this.setStartStopButton('disabled');
-  // status_label.innerHTML = ''; // label will update with cue
-  //
-  // this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+  this.setStatus('startNow');
 };
 
 // Clears all sound, loops, motion handling, and network requests
@@ -460,7 +452,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
 
     switch (this.status) {
       case 'readyToPlay':
-        this.startMotionUpdatesAndCueFetching();
+        this.startMotionUpdates();
         break;
       case 'startNow':
       case 'stopped':
