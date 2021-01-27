@@ -977,10 +977,13 @@ ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
   if (gapTime) {
     setTimeout( () => {
       try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      // need to set time when cue began to facilitate gradual processes
+      this.cue[cue].startedAt = Date.now();
       this.setStatusForNewCue(cue);
     }, gapTime);
   } else {
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+    this.cue[cue].startedAt = Date.now();
     this.setStatusForNewCue(cue);
   }
 };

@@ -753,3 +753,15 @@ tm.cue[26] = new TMCue('waiting', -1);
 tm.cue[26].goCue = function() {
   tm.publicLog('Test cue 26 was triggered.');
 };
+
+// *******************************************************************
+// timeline for fixed cues below
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(5);
+}, "+0");
+
+Tone.Transport.schedule((time) => {
+  // 1st argument is cue number to trigger. 2nd is optional gap time in ms.
+	tm.triggerFixedCue(6, 3000);
+  // "+3" is seconds (not ms.) to wait before cue (or gap) is triggered
+}, "+3");
