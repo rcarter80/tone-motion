@@ -762,6 +762,66 @@ Tone.Transport.schedule((time) => {
 
 Tone.Transport.schedule((time) => {
   // 1st argument is cue number to trigger. 2nd is optional gap time in ms.
-	tm.triggerFixedCue(6, 3000);
+	tm.triggerFixedCue(6);
   // "+3" is seconds (not ms.) to wait before cue (or gap) is triggered
-}, "+3");
+}, "+58.63");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(7, 1740);
+}, "+98");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(8);
+}, "+104");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(9);
+}, "+117");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(10);
+}, "+188");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(11, 2857);
+}, "+250.412");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(12);
+}, "+254.5");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(13);
+}, "+284.5");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(14);
+}, "+313");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(15);
+}, "+347");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(16);
+}, "+373");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(17);
+}, "+392")
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(18, 3000);
+}, "+407.25");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(19, 3000);
+}, "+425.5");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(20, 3000);
+}, "+444.5");
+
+Tone.Transport.schedule((time) => {
+	tm.triggerFixedCue(21);
+}, "+488");
