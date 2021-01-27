@@ -953,7 +953,22 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
 // Called when cue schedule is fixed and does NOT come from server
 // This could be used for interactive videos when timeline is predetermined
 // gapTime allows final sound from previous cue to happen before new cue
+
+// TODO: delete debugging messages
+// DEBUG: testing accuracy of Tone.Transport
+var actualStartTime;
+
 ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
+
+  // DEBUG: checking accuracy of Tone.Transport
+  if (cue === 5) {
+    actualStartTime = Date.now();
+    this.publicLog('actualStartTime is ' + actualStartTime);
+  }
+  this.publicLog('**** cue number ' + cue + ' triggered');
+  this.publicLog('Tone.Transport.seconds time is ' + Tone.Transport.seconds);
+  this.publicLog('Actual elapsed time is ' + ((Date.now() - actualStartTime)/1000));
+
   // Check that cue exists
   if (this.cue[cue]) {
     // A 'hidden' cue is triggered immediately, does NOT set app status

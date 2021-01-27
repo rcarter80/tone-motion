@@ -758,70 +758,84 @@ tm.cue[26].goCue = function() {
 // timeline for fixed cues below
 Tone.Transport.schedule((time) => {
 	tm.triggerFixedCue(5);
-}, "+0");
+  scheduleAllCues();
+}, "0");
 
-Tone.Transport.schedule((time) => {
-  // 1st argument is cue number to trigger. 2nd is optional gap time in ms.
-	tm.triggerFixedCue(6);
-  // "+3" is seconds (not ms.) to wait before cue (or gap) is triggered
-}, "+58.63");
+// Tone.Transport.schedule((time) => {
+//   // 1st argument is cue number to trigger. 2nd is optional gap time in ms.
+// 	tm.triggerFixedCue(6);
+//   // "+3" is seconds (not ms.) to wait before cue (or gap) is triggered
+// }, "58.63");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(7, 1740);
+// }, "98");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(8);
+// }, "104");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(9);
+// }, "117");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(10);
+// }, "188");
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(7, 1740);
-}, "+98");
+function scheduleAllCues() {
+  setTimeout( () => {
+    tm.triggerFixedCue(6);
+  }, 3000);
+  setTimeout( () => {
+    tm.triggerFixedCue(7);
+  }, 60000);
+  setTimeout( () => {
+    tm.triggerFixedCue(8);
+  }, 250412);
+}
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(8);
-}, "+104");
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(9);
-}, "+117");
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(11, 2857);
+// }, "+250.412");
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(10);
-}, "+188");
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(12);
+// }, "254.5");
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(11, 2857);
-}, "+250.412");
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(13);
+// }, "284.5");
 
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(12);
-}, "+254.5");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(13);
-}, "+284.5");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(14);
-}, "+313");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(15);
-}, "+347");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(16);
-}, "+373");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(17);
-}, "+392")
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(18, 3000);
-}, "+407.25");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(19, 3000);
-}, "+425.5");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(20, 3000);
-}, "+444.5");
-
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(21);
-}, "+488");
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(14);
+// }, "+313");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(15);
+// }, "+347");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(16);
+// }, "+373");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(17);
+// }, "+392")
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(18, 3000);
+// }, "+407.25");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(19, 3000);
+// }, "+425.5");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(20, 3000);
+// }, "+444.5");
+//
+// Tone.Transport.schedule((time) => {
+// 	tm.triggerFixedCue(21);
+// }, "+488");
