@@ -396,6 +396,11 @@ ToneMotion.prototype.resumeMotionUpdates = function() {
 
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
+  // clear all previously scheduled cue triggers
+  for (var i = 0; i < this.cue.length; i++) {
+    window.clearTimeout(this.cue[i].timeoutID);
+  }
+
   clearInterval(this.motionUpdateLoopID);
   this.publicLog('Shutting down Transport, sound, and motion handling');
   this.clearActiveCues();
@@ -1204,6 +1209,7 @@ function TMCue(mode, waitTime, openWindow) {
   this.openWindow = openWindow;
   this.isPlaying = false; // not set by constructor
   this.startedAt = 0; // not set by constructor. used by getSectionBreakpoints()
+  this.timeoutID = 0; // needed to cancel scheduled cues if user stops playing
 }
 
 // Override this method in score to code the music for this section

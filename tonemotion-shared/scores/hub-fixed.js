@@ -761,55 +761,53 @@ Tone.Transport.schedule((time) => {
   scheduleAllCues();
 }, "0");
 
-// TODO: really need to give each timer ID so I can clear them when user stops
-
 function scheduleAllCues() {
-  setTimeout( () => {
+  tm.cue[6].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(6);
   }, 58630);
-  setTimeout( () => {
+  tm.cue[7].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(7, 1740);
   }, 98000);
-  setTimeout( () => {
+  tm.cue[8].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(8);
   }, 104000);
-  setTimeout( () => {
+  tm.cue[9].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(9);
   }, 117000);
-  setTimeout( () => {
+  tm.cue[10].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(10);
   }, 188000);
-  setTimeout( () => {
+  tm.cue[11].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(11, 2857);
   }, 250410);
-  setTimeout( () => {
+  tm.cue[12].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(12);
   }, 254500);
-  setTimeout( () => {
+  tm.cue[13].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(13);
   }, 284500);
-  setTimeout( () => {
+  tm.cue[14].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(14);
   }, 313000);
-  setTimeout( () => {
+  tm.cue[15].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(15);
   }, 347000);
-  setTimeout( () => {
+  tm.cue[16].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(16);
   }, 373000);
-  setTimeout( () => {
+  tm.cue[17].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(17);
   }, 392000);
-  setTimeout( () => {
+  tm.cue[18].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(18, 3000);
   }, 407250);
-  setTimeout( () => {
+  tm.cue[19].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(19, 3000);
   }, 425500);
-  setTimeout( () => {
+  tm.cue[20].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(20, 3000);
   }, 444500);
-  setTimeout( () => {
+  tm.cue[21].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(21);
   }, 488000);
 }
