@@ -29,38 +29,31 @@ tm.cue[0].goCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: tilt tutorial
-// Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
-var testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
+// CUE 1: tilt practice
+var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
+claveLoop.loop = true;
+
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack(440);
-}
+  claveLoop.start();
+  tm.publicMessage('During a section marked "tilt," your device will make sounds that respond to the position of your phone. In this case, you can mute your phone by holding it right-side up. The short, repeated sound gets louder, faster, and higher as you tip your phone upside down.');
+};
 tm.cue[1].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
-}
+  // sound is full scale if phone is mostly upright. muted if upside down.
+  if (tm.accel.y < 0.5) {
+    claveLoop.volume.value = (tm.accel.y * 198 - 99);
+  } else {
+    claveLoop.volume.value = 0;
+  }
+  // pitch and speed go up on y-axis
+  claveLoop.playbackRate = 0.1 + tm.accel.y * 2.9;
+};
 tm.cue[1].stopCue = function() {
-  testTone.triggerRelease();
-}
+  claveLoop.stop();
+};
 
 // *******************************************************************
-// CUE 2: tacet tutorial
+// CUE 2: tacet tutorial. NOT USED FOR FIXED CUE SITES.
 tm.cue[2] = new TMCue('tacet', -1);
 tm.cue[2].goCue = function() {
   // nothing to play
@@ -70,21 +63,22 @@ tm.cue[2].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 3: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
+// CUE 3: shake practice
+var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
+
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
-  // nothing to do until shake gestures
+  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. If you hold your phone still, it will not make sound.');
 };
 tm.cue[3].triggerShakeSound = function() {
-  cowbell.start();
+  clave.start();
 };
 tm.cue[3].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'
+// CUE 4: sets status to 'waitingForPieceToStart'. NOT USED FOR FIXED CUES.
 tm.cue[4] = new TMCue('waiting', -1);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
@@ -735,27 +729,7 @@ tm.cue[22].goCue = function() {
 }
 
 // *******************************************************************
-// CUES 23-26: use for quartet to test pedal and cue counter
-
-tm.cue[23] = new TMCue('waiting', -1);
-tm.cue[23].goCue = function() {
-  tm.publicLog('Test cue 23 was triggered.');
-};
-tm.cue[24] = new TMCue('waiting', -1);
-tm.cue[24].goCue = function() {
-  tm.publicLog('Test cue 24 was triggered.');
-};
-tm.cue[25] = new TMCue('waiting', -1);
-tm.cue[25].goCue = function() {
-  tm.publicLog('Test cue 25 was triggered.');
-};
-tm.cue[26] = new TMCue('waiting', -1);
-tm.cue[26].goCue = function() {
-  tm.publicLog('Test cue 26 was triggered.');
-};
-
-// *******************************************************************
-// timeline for fixed cues below
+// timeline for fixed cues below. Starts at cue 5; earlier cues are practice
 Tone.Transport.schedule((time) => {
 	tm.triggerFixedCue(5);
   scheduleAllCues();

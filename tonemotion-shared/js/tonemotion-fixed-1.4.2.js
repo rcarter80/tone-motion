@@ -507,13 +507,20 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     switch (this.status) {
       case 'readyToPlay':
         this.startMotionUpdates();
+        shake_test_button.classList.remove('hidden');
+        tilt_test_button.classList.remove('hidden');
+        this.publicMessage("You can use the buttons above to practice the two modes of interactive sound, or tap start when you're ready to play the piece.");
         break;
       case 'startNow':
         Tone.Transport.start();
+        shake_test_button.classList.add('hidden');
+        tilt_test_button.classList.add('hidden');
         break;
       case 'stopped':
         this.resumeMotionUpdates();
         Tone.Transport.start();
+        shake_test_button.classList.add('hidden');
+        tilt_test_button.classList.add('hidden');
         break;
       case 'waitingForPieceToStart':
       case 'playing_tacet':
@@ -524,6 +531,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'missedCue':
         this.setStatus('stopped');
         this.shutEverythingDown();
+        shake_test_button.classList.remove('hidden');
+        tilt_test_button.classList.remove('hidden');
         break;
       case 'error':
         // Reload the current page, without using the cache
@@ -532,6 +541,15 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       default:
         this.publicError('Error setting function for button');
     }
+  });
+
+  shake_test_button.addEventListener("click", () => {
+    // cue 3 is shake tutorial (in live piece) or practice in fixed cue site
+    this.triggerFixedCue(3, 0);
+  });
+  tilt_test_button.addEventListener("click", () => {
+    // cue 1 is tilt tutorial (in live piece) or practice in fixed cue site
+    this.triggerFixedCue(1, 0);
   });
 };
 
@@ -546,7 +564,7 @@ ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
       // Checkbox is unchecked and console should be cleared
       this.clearConsole();
     }
-  })
+  });
 };
 
 // Toggles display for motion data monitor in side panel.
@@ -916,8 +934,6 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
 
   // clear all current cues
   this.clearActiveCues();
-  // clear any previous message from previous cue
-  this.clearMessageLabel();
 
   // immediately trigger cue with minimum latency if waitTime is -1
   // This could be faster if moved to top of function,
@@ -975,8 +991,6 @@ ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
 
   // clear all current cues
   this.clearActiveCues();
-  // clear any previous message from previous cue
-  this.clearMessageLabel();
 
   // trigger new cue (immediately or after gapTime)
   if (gapTime) {
@@ -1007,6 +1021,7 @@ ToneMotion.prototype.clearActiveCues = function() {
     status_container.classList.add('swell');
     body_element.classList.remove('fade');
   }
+  this.clearMessageLabel();
 };
 
 // Sets application status from interactivity mode for this new cue

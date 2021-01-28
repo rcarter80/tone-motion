@@ -7,7 +7,7 @@
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.3.0.css">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.4.0.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
 </head>
 <body>
@@ -24,7 +24,9 @@
   <!-- button is not displayed until page loads, then shows "start" -->
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
-  <button id="start_stop_button" type="button" class="hidden"></button>
+  <button id="start_stop_button" type="button" class="transport hidden"></button>
+  <button id="shake_test_button" type="button" class="transport hidden">practice shake mode</button>
+  <button id="tilt_test_button" type="button" class="transport hidden">practice tilt mode</button>
   <div id="message_container" class="hidden">
     <p id="message_label"> </p>
   </div>
