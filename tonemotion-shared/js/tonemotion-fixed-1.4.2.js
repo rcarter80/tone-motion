@@ -544,10 +544,16 @@ ToneMotion.prototype.bindButtonFunctions = function() {
   });
 
   shake_test_button.addEventListener("click", () => {
+    if (this.status === 'stopped') {
+      this.resumeMotionUpdates();
+    }
     // cue 3 is shake tutorial (in live piece) or practice in fixed cue site
     this.triggerFixedCue(3, 0);
   });
   tilt_test_button.addEventListener("click", () => {
+    if (this.status === 'stopped') {
+      this.resumeMotionUpdates();
+    }
     // cue 1 is tilt tutorial (in live piece) or practice in fixed cue site
     this.triggerFixedCue(1, 0);
   });
