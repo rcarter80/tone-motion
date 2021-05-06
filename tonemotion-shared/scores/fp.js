@@ -52,9 +52,11 @@ var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 
 var testToneFilterScale = new Tone.Scale(440, 10000);
 xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
 yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[1] = new TMCue('tilt', -1);
+// changed -1 to 0, NO_LIMIT to allow using pedalLatency for live-stream
+tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
   testTone.triggerAttack(440);
+  tm.publicLog('using updated score');
 }
 tm.cue[1].updateTiltSounds = function() {
   // interactivity handled through tm.xTilt and yTilt signals
