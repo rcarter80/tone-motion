@@ -1,6 +1,7 @@
 const tm = new ToneMotion();
 tm.debug = false; // if true, skips clock sync and shows console
 tm.localTest = false; // if true, fetches cues from localhost, not Heroku
+tm.MAX_DELAY = 60000; // allows for latency compensation for live-stream
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
