@@ -895,7 +895,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   // immediately trigger cue with minimum latency if waitTime is -1
   // This could be faster if moved to top of function,
   // but that makes the code messy.
-  if (this.cue[cue].waitTime == -1)
+  if (this.cue[cue].waitTime == -1) {
     // clear all current cues and previous messages
     this.clearActiveCues();
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
