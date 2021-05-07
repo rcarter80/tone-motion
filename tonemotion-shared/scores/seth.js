@@ -49,7 +49,7 @@ var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 
 var testToneFilterScale = new Tone.Scale(440, 10000);
 xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
 yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[1] = new TMCue('tilt', -1);
+tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
   testTone.triggerAttack(440);
 }
@@ -62,7 +62,7 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: tacet tutorial
-tm.cue[2] = new TMCue('tacet', -1);
+tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
   // nothing to play
 }
@@ -74,7 +74,7 @@ tm.cue[2].stopCue = function() {
 // *******************************************************************
 // CUE 3: shake tutorial
 var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
-tm.cue[3] = new TMCue('shake', -1);
+tm.cue[3] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
   // nothing to do until shake gestures
 };
@@ -87,7 +87,7 @@ tm.cue[3].stopCue = function() {
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart'
-tm.cue[4] = new TMCue('waiting', -1);
+tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
@@ -97,7 +97,7 @@ tm.cue[4].stopCue = function() {
 
 // *******************************************************************
 // CUE 5: [intro] Actual beginning of piece, but first section is tacet
-tm.cue[5] = new TMCue('tacet', -1);
+tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
   if (tm.debug) { tm.publicLog('The piece has started.'); }
 };
@@ -107,7 +107,7 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6: [intro] CUE FIXED MEDIA FILE 1
-tm.cue[6] = new TMCue('tacet', -1);
+tm.cue[6] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[6].goCue = function() {
   // nothing happens for audience - just cues fixed media
 };
@@ -777,7 +777,7 @@ tm.cue[18].stopCue = function() {
 
 // *******************************************************************
 // CUE 19: tacet fermata
-tm.cue[19] = new TMCue('tacet', -1);
+tm.cue[19] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[19].goCue = function() {
   // nothing to play
 }
@@ -787,7 +787,7 @@ tm.cue[19].stopCue = function() {
 
 // *******************************************************************
 // CUE 20: finished
-tm.cue[20] = new TMCue('finished', -1);
+tm.cue[20] = new TMCue('finished', 0, NO_LIMIT);
 tm.cue[20].goCue = function() {
   tm.publicLog('The piece is done.');
 }
