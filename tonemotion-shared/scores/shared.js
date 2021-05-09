@@ -89,7 +89,7 @@ tm.cue[0].cueTransition = function() {
 };
 
 tm.cue[0].stopCue = function() {
-  console.log('nothing happens when cue 0 stops');
+  // nothing to do here
 };
 
 // *******************************************************************
@@ -137,11 +137,17 @@ tm.cue[1].updateTiltSounds = function() {
     }
   }
 };
-tm.cue[1].stopCue = function() {
+tm.cue[1].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 2 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  // TODO: could fade out loop to make smoother transition 
+  pingPongLoop.stop();
+  popRocksLoop.stop();
+};
+tm.cue[1].stopCue = function() {
+  // NEED to include loop stopping here so that sound stops when people tap "stop" - otherwise they don't stop because cueTransition() isn't called
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
@@ -174,12 +180,14 @@ tm.cue[2].triggerShakeSound = function() {
     chimeA6.start();
   }
 };
-
-tm.cue[2].stopCue = function() {
+tm.cue[2].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+};
+tm.cue[2].stopCue = function() {
+  // nothing to do here?
 };
 
 // *******************************************************************
@@ -262,13 +270,19 @@ tm.cue[3].updateTiltSounds = function() {
     sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
   }
 };
-tm.cue[3].stopCue = function() {
+tm.cue[3].cueTransition = function() {
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
   c3_bellLoop.stop();
   c3_fadeLock = true;
   sugarChimeLoop.volume.rampTo(-60, 3);
   sugarChimeLoop.stop('+3');
+};
+tm.cue[3].stopCue = function() {
+  // cueTransition() is not called if user taps "stop"
+  // redundant stop methods are for that case
+  c3_bellLoop.stop();
+  sugarChimeLoop.stop();
 };
 
 // *******************************************************************
@@ -374,6 +388,7 @@ tm.cue[5].updateTiltSounds = function() {
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
   ziplockClickLoop.volume.value = -65 + (tm.accel.y * 65);
 };
+// NOTE: cueTransition() won't be called when this returns to beginning because cues are not consecutive (from cue 5 back to cue 0). Only way around this is to change how library handles cueTransition()
 tm.cue[5].stopCue = function() {
   c5_glassLoop.stop();
   ziplockClickLoop.stop();
