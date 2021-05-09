@@ -78,11 +78,18 @@ tm.cue[0].triggerShakeSound = function() {
   c0_counter++;
 };
 
-tm.cue[0].stopCue = function() {
+tm.cue[0].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  // TODO: decide whether to prevent more shake sounds during transition?
+
+  tm.publicMessage('cueTransition() for cue 0 called');
+};
+
+tm.cue[0].stopCue = function() {
+  console.log('nothing happens when cue 0 stops');
 };
 
 // *******************************************************************

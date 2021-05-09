@@ -3,7 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '1.4.2';
+const VERSION = '1.5.0';
 
 /*
 ** DOM HOOKS
@@ -886,11 +886,13 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   }
 
   // by default, end of cue causes status label to pulse once
-  // new cue causes background to fade out and in. Need to clear previous fade
+  // new cue causes background to fade out / in. Need to clear previous fade
   if (this.glowingTransitions) {
     status_container.classList.add('swell');
     body_element.classList.remove('fade');
   }
+  // new with v1.5.0, this method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients, but also won't be triggered if user taps "stop"
+  try { this.cue[cue].cueTransition(); } catch(e) { this.publicError(e); }
 
   // immediately trigger cue with minimum latency if waitTime is -1
   // This could be faster if moved to top of function,
@@ -1153,6 +1155,11 @@ function TMCue(mode, waitTime, openWindow) {
 // Override this method in score to code the music for this section
 TMCue.prototype.goCue = function() {
   console.log('No music coded for this section.');
+};
+
+// Override this method in score to code the music for this section
+TMCue.prototype.cueTransition = function() {
+  console.log('No transition sound coded for this cue.');
 };
 
 // Override this method in score to code the cleanup for this section
