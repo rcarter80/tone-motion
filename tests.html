@@ -25,11 +25,10 @@
   const player = new Tone.Player({
     url: "tonemotion-shared/audio/misc/test-square.mp3",
     loop: true,
-  }).toDestination();
+  });
 
-// TODO: replace with Tone.Limiter
-  const comp = new Tone.Compressor(-0.1, 5);
-  
+  const limiter = new Tone.Limiter(-0.1).toDestination();
+
   const meter = new Tone.Meter();
   const masterMeter = new Tone.Meter();
   const meterLabel = document.querySelector('#meterLabel');
@@ -37,7 +36,8 @@
   const masterMeterLabel = document.querySelector('#masterMeterLabel');
   const masterPeakLabel = document.querySelector('#masterPeakLabel');
 
-  player.connect(meter);
+  // player.chain(meter, limiter);
+  player.connect(limiter);
   Tone.Destination.connect(masterMeter);
 
   document.querySelector('#start-button').addEventListener('click', () => {
