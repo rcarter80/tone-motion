@@ -8,8 +8,10 @@
   <button id="stop-button">stop</button>
   <p id="meterLabel">meter</p>
   <p id="peakLabel">peak</p>
+  <p id="masterMeterLabel">master meter</p>
+  <p id="masterPeakLabel">master peak</p>
 
-  <script src="build-v14-7-77/Tone.js"></script>
+  <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 
   <script>
   document.querySelector('#load-button')?.addEventListener('click', async () => {
@@ -21,32 +23,42 @@
   });
 
   const player = new Tone.Player({
-    url: "test-square.mp3",
+    url: "tonemotion-shared/audio/misc/test-square.mp3",
     loop: true,
   }).toDestination();
 
 // TODO: replace with Tone.Limiter
   const comp = new Tone.Compressor(-0.1, 5);
-  const distortion = new Tone.Distortion(0.5);
+  
   const meter = new Tone.Meter();
+  const masterMeter = new Tone.Meter();
   const meterLabel = document.querySelector('#meterLabel');
   const peakLabel = document.querySelector('#peakLabel');
+  const masterMeterLabel = document.querySelector('#masterMeterLabel');
+  const masterPeakLabel = document.querySelector('#masterPeakLabel');
 
-  Tone.Destination.chain(comp, meter);
+  player.connect(meter);
+  Tone.Destination.connect(masterMeter);
 
   document.querySelector('#start-button').addEventListener('click', () => {
     player.start();
     setInterval(updateMeter, 20);
   });
 
-  var meterLevel;
-  var peakLevel = Number.NEGATIVE_INFINITY;
+  var meterLevel, masterMeterLevel;
+  var peakLevel = masterPeakLevel = Number.NEGATIVE_INFINITY;
   function updateMeter() {
     meterLevel = meter.getValue();
-    meterLabel.innerText = meter.getValue();
+    meterLabel.innerText = meterLevel;
     if (meterLevel > peakLevel) {
       peakLevel = meterLevel;
       peakLabel.innerText = peakLevel;
+    }
+    masterMeterLevel = masterMeter.getValue();
+    masterMeterLabel.innerText = masterMeterLevel;
+    if (masterMeterLevel > masterPeakLevel) {
+      masterPeakLevel = masterMeterLevel;
+      masterPeakLabel.innerText = masterPeakLevel;
     }
   }
 
