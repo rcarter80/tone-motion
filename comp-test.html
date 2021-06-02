@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Listening site for May 11</h1>
+  <h1>Testing Master Compressor/Limiter</h1>
   <button id="help_button" type="button">?</button>
 </header>
 
@@ -69,14 +69,13 @@
 
 <!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
 <!-- They make trivial changes to Tone.js that will break older code -->
-<!-- NOTE: I'm linking to v12 of Tone.js. On Feb 13, 2020, I looked at v13.8.25, which has major changes, like toMaster() is replaced with toDestination(), but nothing useful from what I can see. Keep using v12 unless a new version has useful change or this version breaks. -->
-<script src="tonemotion-shared/js/Tone-debug-test.js"></script>
+<script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 <!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
-<script src="tonemotion-shared/js/NoSleep.js"></script>
-<script src="tonemotion-shared/js/tonemotion-1.3.0-fork.js"></script>
+<script src="tonemotion-shared/js/NoSleep-v0-11-0.js"></script>
+<script src="tonemotion-shared/js/tonemotion-2.0.0.js"></script>
 
 <!-- Score for this piece -->
-<script src="tonemotion-shared/scores/seniors-05-11.js"></script>
+<script src="tonemotion-shared/scores/comp-test.js"></script>
 
 </body>
 </html>
