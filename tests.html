@@ -10,6 +10,7 @@
   <p id="peakLabel">peak</p>
   <p id="masterMeterLabel">master meter</p>
   <p id="masterPeakLabel">master peak</p>
+  <p id="gainReductionlabel">gain reduction</p>
 
   <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 
@@ -27,7 +28,7 @@
     loop: true,
   });
 
-  const limiter = new Tone.Limiter(-0.1).toDestination();
+  const comp = new Tone.Compressor(0, 1).toDestination();
 
   const meter = new Tone.Meter();
   const masterMeter = new Tone.Meter();
@@ -35,9 +36,9 @@
   const peakLabel = document.querySelector('#peakLabel');
   const masterMeterLabel = document.querySelector('#masterMeterLabel');
   const masterPeakLabel = document.querySelector('#masterPeakLabel');
+  const gainReductionLabel = document.querySelector('#gainReductionLabel');
 
-  // player.chain(meter, limiter);
-  player.connect(limiter);
+  player.chain(meter, comp);
   Tone.Destination.connect(masterMeter);
 
   document.querySelector('#start-button').addEventListener('click', () => {
@@ -60,6 +61,7 @@
       masterPeakLevel = masterMeterLevel;
       masterPeakLabel.innerText = masterPeakLevel;
     }
+    gainReductionLabel.innerText = comp.reduction;
   }
 
   document.querySelector('#stop-button').addEventListener('click', () => {
