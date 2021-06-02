@@ -142,25 +142,30 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
-  Tone.Buffer.on('progress', () => {
-    this.setStatus('loading');
-    if (this.debug) {
-      this.publicLog('Audio buffers loading');
-    }
-  });
+  // Tone.Buffer.on('progress', () => {
+  //   this.setStatus('loading');
+  //   if (this.debug) {
+  //     this.publicLog('Audio buffers loading');
+  //   }
+  // });
+  // // Called when all buffers are done loading
+  // Tone.Buffer.on('load', () => {
+  //   if (this.debug) {
+  //     this.publicLog('Audio buffers finished loading');
+  //     this.publicLog(`tonemotion v${VERSION} loaded`);
+  //   }
+  //   // Synchronize client clock to server once all resources loaded
+  //   this.syncClocks();
+  // });
+  //
+  // Tone.Buffer.on('error', () => {
+  //   this.publicError('Error loading the audio files');
+  // });
 
-  // Called when all buffers are done loading
-  Tone.Buffer.on('load', () => {
-    if (this.debug) {
-      this.publicLog('Audio buffers finished loading');
-      this.publicLog(`tonemotion v${VERSION} loaded`);
-    }
-    // Synchronize client clock to server once all resources loaded
+// TODO: figure out how to include progress and error states
+  Tone.loaded().then(() => {
+    console.log('audio files loaded');
     this.syncClocks();
-  });
-
-  Tone.Buffer.on('error', () => {
-    this.publicError('Error loading the audio files');
   });
 
   this.beginMotionHandlingOnAndroid();
@@ -334,8 +339,15 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     } else {
       this.testWithoutMotion();
     }
-    Tone.Transport.start();
-    this.beginMotionUpdates();
+    // Tone.start();
+    // Tone.Transport.start();
+    // this.beginMotionUpdates();
+    Tone.start().then(() => {
+      Tone.Transport.start();
+      // TODO:  delete this comment
+      console.log('Tone.start() promise resolved');
+      this.beginMotionUpdates();
+    })
   }
 
   // while waiting for cue
@@ -446,9 +458,12 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
-      Tone.context.resume().then(() => {
-        console.log('Audio context started');
-      });
+      // TODO: I commented out code below to silence warning that AudioContext is "suspended" butdon't know if this is the best solution
+      Tone.start();
+
+      // Tone.context.resume().then(() => {
+      //   console.log('Audio context started');
+      // });
     }
 
     switch (this.status) {
@@ -731,6 +746,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.ySig.value = this.accel.y;
   } else {
     // BUT this is for mobile anyway, so use this to smooth signal
+    // TODO: fix errors on Chrome when loading. and why aren't sliders added
     this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
     this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
   }

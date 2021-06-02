@@ -14,4 +14,13 @@ window.onload = function() {
 const player = new Tone.Player({
   url: "tonemotion-shared/audio/misc/test-square.mp3",
   loop: true,
-});
+}).toDestination();
+
+// *******************************************************************
+tm.cue[0] = new TMCue('shake', -1);
+tm.cue[0].goCue = function() {
+  player.start();
+};
+tm.cue[0].stopCue = function() {
+  player.stop();
+};
