@@ -154,7 +154,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
   }).catch(() => {
-    // BUG: Safari resolves promise even if files don't load 
+    // BUG: Safari resolves promise even if files don't load
     this.publicError('Error loading the audio files');
   });
 
@@ -300,6 +300,9 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
   // testing iOS 13 motion permission
   // Guard against reference errors by checking that DeviceMotionEvent is defined
+
+  // TODO: split off motion updates from cue fetching. Start motion updates immediately when page loads, but cue fetching not until user taps start button. Simplify motion testing process to assume device that doesn't report motion is desktop, but add initial public message explaining that motion permission may need to be reset (and add sliders anyway). BUT test if user interaction is required by iOS to request permission. If so, can't change sequence of events.
+
   if (typeof DeviceMotionEvent !== 'undefined' &&
   typeof DeviceMotionEvent.requestPermission === 'function') {
     if (this.debug) {
@@ -314,6 +317,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
       }
+      // TODO: I think I need to call Tone.start() here (like below)
       Tone.Transport.start();
       this.beginMotionUpdates();
     })
@@ -451,7 +455,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
-      // TODO: I commented out code below to silence warning that AudioContext is "suspended" butdon't know if this is the best solution
+      // TODO: I commented out code below to silence warning that AudioContext is "suspended" butdon't know if this is the best solution. Should I also start Transport here?
       Tone.start();
 
       // Tone.context.resume().then(() => {
@@ -684,6 +688,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
       }
       if (this.accel.rawX === undefined) {
         // still no motion reported. Probably either 1) device is desktop or 2) device is iOS 12.2-12.4 and has motion access permission off
+        // TODO: remove this because it's annoying. Replace with publicMessage explaining situation
         if (window.confirm("Your device is not reporting motion. You may either be on a desktop computer, or this may be a result of your mobile browser settings. If you're on an iPhone, go to Settings > Safari > Motion & Orientation Access and make sure this setting is on. Reload the page to try again, or continue to launch the desktop version.")) {
           this.testWithoutMotion();
         } else {
