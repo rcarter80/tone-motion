@@ -154,6 +154,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
   }).catch(() => {
+    // BUG: Safari resolves promise even if files don't load 
     this.publicError('Error loading the audio files');
   });
 
