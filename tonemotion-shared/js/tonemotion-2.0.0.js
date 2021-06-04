@@ -163,7 +163,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
 // Tests if device is Android, registers 'devicemotion' event listener. iOS devices require permission after user interaction, but Android devices can begin polling motion sensor data immediately. Waiting to get motion data on Android until same point as I ask for permission on iOS does NOT work on Android. Motion polling chokes.
 ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
   if (this.debug) {
-    this.publicLog('Will begin motion handling if device is Android.');
+    this.publicLog('Will begin motion handling if device is Android');
   }
 
   // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
@@ -360,7 +360,7 @@ ToneMotion.prototype.shutEverythingDown = function() {
     noSleep.disable();
   } catch (e) {
     // possible corner case: noSleep isn't enabled, and can't be disabled
-    console.log(e);
+    console.error(e);
   }
 };
 
