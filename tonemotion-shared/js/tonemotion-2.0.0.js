@@ -142,30 +142,19 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
-  // Tone.Buffer.on('progress', () => {
-  //   this.setStatus('loading');
-  //   if (this.debug) {
-  //     this.publicLog('Audio buffers loading');
-  //   }
-  // });
-  // // Called when all buffers are done loading
-  // Tone.Buffer.on('load', () => {
-  //   if (this.debug) {
-  //     this.publicLog('Audio buffers finished loading');
-  //     this.publicLog(`tonemotion v${VERSION} loaded`);
-  //   }
-  //   // Synchronize client clock to server once all resources loaded
-  //   this.syncClocks();
-  // });
-  //
-  // Tone.Buffer.on('error', () => {
-  //   this.publicError('Error loading the audio files');
-  // });
-
-// TODO: figure out how to include progress and error states
+  this.setStatus('loading');
+  if (this.debug) {
+    this.publicLog('Audio buffers loading...');
+  }
   Tone.loaded().then(() => {
-    console.log('audio files loaded');
+    if (this.debug) {
+      this.publicLog('Audio buffers finished loading...');
+      this.publicLog(`tonemotion v${VERSION} loaded`);
+    }
+    // Synchronize client clock to server once all resources loaded
     this.syncClocks();
+  }).catch(() => {
+    this.publicError('Error loading the audio files');
   });
 
   this.beginMotionHandlingOnAndroid();
@@ -344,8 +333,6 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     // this.beginMotionUpdates();
     Tone.start().then(() => {
       Tone.Transport.start();
-      // TODO:  delete this comment
-      console.log('Tone.start() promise resolved');
       this.beginMotionUpdates();
     })
   }
@@ -369,7 +356,12 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.cueTimeFromServer = 0;
 
   // No need to prevent screen lock any more
-  noSleep.disable();
+  try {
+    noSleep.disable();
+  } catch (e) {
+    // possible corner case: noSleep isn't enabled, and can't be disabled
+    console.log(e);
+  }
 };
 
 /*
