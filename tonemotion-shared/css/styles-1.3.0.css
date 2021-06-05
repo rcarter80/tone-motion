@@ -449,8 +449,12 @@ fieldset.visible {
   display: flex;
 }
 
+label {
+  margin-top: 15px;
+}
+
 input[type="range"] {
-  margin: 15px 0 35px 0;
+  margin: 15px 0 15px 0;
   width: 75%;
   max-width: 240px;
 }

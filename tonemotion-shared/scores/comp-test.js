@@ -12,7 +12,7 @@ window.onload = function() {
 };
 
 const player = new Tone.Player({
-  url: "tonemotion-shared/audio/misc/bigger-file.mp3",
+  url: "tonemotion-shared/audio/misc/test-square.mp3",
   loop: true,
 }).toDestination();
 

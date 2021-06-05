@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Listening site</title>
+  <title>Test</title>
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.2.0.css">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.3.0.css">
   <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
 </head>
 <body>
 
 <header>
-  <h1>Testing Master Compressor/Limiter</h1>
+  <h1>Test</h1>
   <button id="help_button" type="button">?</button>
 </header>
 
@@ -33,8 +33,9 @@
   <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
 
   <!-- append sliders and "shake" button here -->
-  <fieldset id="sliderFieldset" class="hidden" style="display:none">
+  <fieldset id="sliderFieldset" class="hidden">
     <legend>Motion simulation</legend>
+    <p>Your device is not reporting motion. You can use the sliders below to simulate tilting your device and the button to simulate shaking your device. If you're on a mobile device, you may need to change your settings. Please tap the question mark and refer to the "Compatibility" section of the help panel.</p>
     <label for="x_slider">X-axis of accelerometer</label>
     <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
     <label for="y_slider">Y-axis of accelerometer</label>
@@ -46,22 +47,26 @@
 
 <section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
   <div>
-    <h2>Information</h2>
-    <p>This software was built for an entirely different purpose, but we'll use it for listening to music together. This is compatible with Chrome and Safari (but not Firefox). You can click the "start" button any time once the page loads.</p>
+    <h2>Instructions</h2>
+    <p>(should go here)</p>
   </div>
-  <!-- I'm hiding the consoles below with inline styling -->
-  <div style="display:none">
+  <div>
+    <h2>Compatibility</h2>
+    <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
+    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to iOS 13.5 fixes the issue.)</p>
+  </div>
+  <div>
     <h2>Motion monitor</h2>
     <input type="checkbox" id="motion_data_checkbox">
-    <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
+    <label for="motion_data_checkbox">Show motion data</label>
     <div id="motion_container" class="hidden">
       <p id="motion_data_label"></p>
     </div>
   </div>
-  <div id="publicConsole" style="display:none">
+  <div id="publicConsole">
     <h2>Console</h2>
     <input type="checkbox" id="console_checkbox">
-    <label for="console_checkbox">Show console messages (may affect performance)</label>
+    <label for="console_checkbox">Show console messages</label>
     <div id="console_container" class="hidden">
     </div>
   </div>
