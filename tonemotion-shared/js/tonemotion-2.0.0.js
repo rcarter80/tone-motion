@@ -316,6 +316,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
       } else {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
+        this.beginMotionUpdates();
       }
     })
     .catch(console.error);
@@ -329,9 +330,11 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
       // If device is Android, handleMotionEvent is already running
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
       // But even if Android, still need to start motion updates *here*
+      this.testDeviceMotion();
       this.beginMotionUpdates();
     } else {
       this.testWithoutMotion();
+      this.beginMotionUpdates();
     }
   }
 
@@ -508,7 +511,7 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
   motion_data_checkbox.addEventListener('change', () => {
     if (motion_data_checkbox.checked) {
       motion_container.className = '';
-      motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+      motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
     } else {
       motion_container.className = 'hidden';
     }
@@ -532,25 +535,27 @@ help_button.onclick = function() {
 
 // Adds sliders for accelerometer simulation and a "shake" button
 ToneMotion.prototype.testWithoutMotion = function() {
-  this.shouldTestOnDesktop = true;
-  this.accel.rawX = 0; // initialize values to be set later by sliders
-  this.accel.rawY = 0;
+  // only need to set up if not already set up
+  if (!this.shouldTestOnDesktop) {
+    this.shouldTestOnDesktop = true;
+    this.accel.rawX = 0; // initialize values to be set later by sliders
+    this.accel.rawY = 0;
 
-  // Add fieldset to ToneMotion object and make visible
-  this.sliderFieldset = document.querySelector('#sliderFieldset');
-  sliderFieldset.className = 'visible';
+    // Add fieldset to ToneMotion object and make visible
+    this.sliderFieldset = document.querySelector('#sliderFieldset');
+    sliderFieldset.className = 'visible';
 
-  // Add slider properties to ToneMotion object
-  this.sliderX = document.querySelector('#x_slider');
-  this.sliderY = document.querySelector('#y_slider');
-  this.shakeButton = document.querySelector('#simulateShakeButton');
+    // Add slider properties to ToneMotion object
+    this.sliderX = document.querySelector('#x_slider');
+    this.sliderY = document.querySelector('#y_slider');
+    this.shakeButton = document.querySelector('#simulateShakeButton');
 
-  this.shakeButton.addEventListener("click", () => {
-    this.currentCue.triggerShakeSound();
-  });
-
-  if (this.debug) {
-    this.publicLog('This device does not appear to report motion. Sliders can be used to simulate motion.');
+    this.shakeButton.addEventListener("click", () => {
+      this.currentCue.triggerShakeSound();
+    });
+    if (this.debug) {
+      this.publicLog('This device does not appear to report motion. Sliders can be used to simulate motion.');
+    }
   }
 };
 
@@ -672,28 +677,31 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   }
 };
 
-// Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
-ToneMotion.prototype.beginMotionUpdates = function() {
+// Tests if device actually reports motion or is lying.
+ToneMotion.prototype.testDeviceMotion = function() {
   if (this.debug) {
-    this.publicLog('Motion mapping loop starting up');
+    this.publicLog('Device claims to report motion. Checking if this is true.');
   }
-
   // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
   // Another possibility is an iOS 12.2 - 12.4 device with motion access off
   // Need to provide instructions for turning it on
   // Automatically make sliders visible for desktop testing if needed
   if (this.accel.rawX === undefined) {
     var motionTestTimeoutID = setTimeout(() => {
-      if (this.debug) {
-        this.publicLog('Device claims to report motion. Checking if this is true.');
-      }
       if (this.accel.rawX === undefined) {
         // still no motion reported. Probably either 1) device is desktop or 2) device is iOS 12.2-12.4 and has motion access permission off. Add sliders and message that device isn't reporting motion
         this.testWithoutMotion();
       }
     }, 1000);
+  } else {
+    if (this.debug) {
+      this.publicLog('Device does report motion.');
+    }
   }
+};
 
+// Starts motionUpdateLoop. Call this to restart motion updates.
+ToneMotion.prototype.beginMotionUpdates = function() {
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
 };
 
@@ -706,8 +714,8 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ToneMotion.prototype.motionUpdateLoop = function() {
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldTestOnDesktop) {
-    this.accel.x = this.sliderX.value;
-    this.accel.y = this.sliderY.value;
+    this.accel.x = parseFloat(this.sliderX.value);
+    this.accel.y = parseFloat(this.sliderY.value);
   } else {
     // NORMALIZE ACCELEROMETER DATA
     if (this.accel.rawX < -10) { // clamp
@@ -733,16 +741,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
-  if (this.shouldTestOnDesktop) {
-    // desktop Chrome has issues with linearRampTo next value, so value is set directly and could cause zipper noise on desktop
-    this.xSig.value = this.accel.x;
-    this.ySig.value = this.accel.y;
-  } else {
-    // BUT this is for mobile anyway, so use this to smooth signal
-    // TODO: fix errors on Chrome when loading. and why aren't sliders added
-    this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
-    this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
-  }
+  this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
+  this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
@@ -776,12 +776,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // Left panel has checkbox to allow monitoring of accel values
   if (motion_data_checkbox.checked) {
-    motion_data_label.innerHTML = 'x: ' + (this.accel.x || 'no value reported') + '<br>' + 'y: ' + (this.accel.y || 'no value reported');
+    motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
 
     // Will display DeviceMotionEvent interval and gyro data if debugging
     if (this.debug) {
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  (this.motionPollingInterval || 'n/a'));
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  (this.gyro_y || 'n/a'));
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  this.gyro_y);
     }
   }
 };
