@@ -739,6 +739,13 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
+  // CORNER CASE: For 1 sec. desktop Chrome will be tested for motion data, which won't be available, and THEN shouldTestOnDesktop is set to true. During that second, accel values are undefined and cause errors below
+  if (isNaN(this.accel.x)) {
+    console.log('Unable to poll or simulate motion data');
+    // for 1 sec., just fake values
+    this.accel.x = this.accel.y = 0.5;
+  }
+
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
   this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
