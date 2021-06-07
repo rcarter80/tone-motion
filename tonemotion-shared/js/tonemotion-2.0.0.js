@@ -457,7 +457,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       Tone.start().then(() => {
         Tone.Transport.start();
       });
-    } else if (Tone.Transport.state !== 'running') {
+    } else if (Tone.Transport.state !== 'started') {
       // possible that audio context is running but Transport was stopped
       if (this.debug) {
         this.publicLog('Starting Transport');
@@ -479,8 +479,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'playing_tiltAndShake':
       case 'playing_listen':
       case 'missedCue':
-        this.setStatus('stopped');
         this.shutEverythingDown();
+        this.setStatus('stopped');
         break;
       case 'error':
         // Reload the current page, without using the cache
@@ -711,6 +711,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** (e.g.,) this.ySig.chain(filterFreqScale, filter.frequency);
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
+// TODO: can implement my own master compressor/limiter to add here
 ToneMotion.prototype.motionUpdateLoop = function() {
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldTestOnDesktop) {
