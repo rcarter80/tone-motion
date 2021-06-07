@@ -112,6 +112,16 @@ function ToneMotion() {
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
   this.urlForCues = '';
+  // TODO: add master compressor parameters here AND ABOVE in comments
+  this.useMasterCompressor = false;
+  this.masterMeter = undefined;
+  // TODO: decide on default values 
+  this.masterCompressor = {
+    threshold: 0,
+    ratio: 20,
+    attack: 0.1,
+    release: 0.1,
+  }
 }
 
 // Registers event handlers to interface elements, confirms that buffers are loaded, begins devicemotion handling
@@ -791,6 +801,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  this.gyro_y);
     }
+  }
+
+  // insert master limiter here
+  if (0) {
+    Tone.Destination.volume.value = -17;
   }
 };
 
