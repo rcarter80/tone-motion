@@ -117,6 +117,7 @@ function ToneMotion() {
   this.mLimit = {
     isOn: false,
     threshold: 0,
+    release: 0.2,
     input: 0,
     gr: 0,
   }
@@ -762,6 +763,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
+  // TODO: can cache this.motionUpdateLoopInterval/1000 in variable to optimize
   this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
   this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
 
@@ -802,10 +804,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       // need to apply gain reduction
       this.mLimit.gr = this.mLimit.threshold - this.mLimit.input;
       Tone.Destination.volume.rampTo(this.mLimit.gr, (this.motionUpdateLoopInterval/1000));
-    } else if (this.mLimit.gr < this.mLimit.threshold) {
-      // no need for gain reduction, so reset volume to threshold
-      this.mLimit.gr = this.mLimit.threshold;
-      Tone.Destination.volume.rampTo(this.mLimit.gr, (this.motionUpdateLoopInterval/1000));
+    } else if (this.mLimit.gr < 0) {
+      // no need for gain reduction, so reset volume to 0
+      // my simple master limiter ONLY WORKS if master volume is 0dB
+      this.mLimit.gr = 0;
+      Tone.Destination.volume.rampTo(0, this.mLimit.release);
     }
   }
 
@@ -820,7 +823,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       if (this.mLimit.isOn) {
         motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master volume: ' +  Tone.Destination.volume.value);
         motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master meter: ' +  this.masterMeter.getValue());
-        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gain reduction: ' +  this.mLimit.gr);
+        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gain reduction: ' +  -(this.mLimit.gr));
       }
     }
   }
