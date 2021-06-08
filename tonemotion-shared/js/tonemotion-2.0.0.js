@@ -112,15 +112,13 @@ function ToneMotion() {
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
   this.urlForCues = '';
-  // TODO: add master compressor parameters here AND ABOVE in comments
-  this.useMasterCompressor = false;
+  // TODO: add master limiter parameters ABOVE in comments
   this.masterMeter = undefined;
-  // TODO: decide on default values 
-  this.masterCompressor = {
+  this.mLimit = {
+    isOn: false,
     threshold: 0,
-    ratio: 20,
-    attack: 0.1,
-    release: 0.1,
+    input: 0,
+    gr: 0,
   }
 }
 
@@ -151,6 +149,11 @@ ToneMotion.prototype.init = function(urlOfServer) {
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
+  // If using master limiter, create and connect it here
+  if (this.mLimit.isOn) {
+    this.masterMeter = new Tone.Meter();
+    Tone.Destination.connect(this.masterMeter);
+  }
 
   this.setStatus('loading');
   if (this.debug) {
@@ -721,7 +724,6 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** (e.g.,) this.ySig.chain(filterFreqScale, filter.frequency);
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
-// TODO: can implement my own master compressor/limiter to add here
 ToneMotion.prototype.motionUpdateLoop = function() {
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldTestOnDesktop) {
@@ -792,20 +794,29 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
+  // (optional) master limiter checks and sets levels in this motion loop
+  if (this.mLimit.isOn) {
+    this.mLimit.input = this.masterMeter.getValue();
+    if (this.mLimit.input > this.mLimit.threshold) {
+      this.mLimit.gr = this.mLimit.threshold - this.mLimit.input;
+      Tone.Destination.volume.rampTo(this.mLimit.gr, 2);
+    }
+  }
+
   // Left panel has checkbox to allow monitoring of accel values
   if (motion_data_checkbox.checked) {
     motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
-
     // Will display DeviceMotionEvent interval and gyro data if debugging
     if (this.debug) {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  this.gyro_y);
+      // Can also monitor limiter parameters
+      if (this.mLimit.isOn) {
+        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master volume: ' +  Tone.Destination.volume.value);
+        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master meter: ' +  this.masterMeter.getValue());
+        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gain reduction: ' +  this.mLimit.gr);
+      }
     }
-  }
-
-  // insert master limiter here
-  if (0) {
-    Tone.Destination.volume.value = -17;
   }
 };
 
