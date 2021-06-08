@@ -152,6 +152,8 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // If using master limiter, create and connect it here
   if (this.mLimit.isOn) {
     this.masterMeter = new Tone.Meter();
+    // by default, meter smooths from one block to the next
+    this.masterMeter.smoothing = 0;
     Tone.Destination.connect(this.masterMeter);
   }
 
@@ -366,9 +368,6 @@ ToneMotion.prototype.shutEverythingDown = function() {
   this.clearActiveCues();
   Tone.Transport.stop();
 
-  // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
-  this.cueTimeFromServer = 0;
-
   // No need to prevent screen lock any more
   try {
     noSleep.disable();
@@ -483,6 +482,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     switch (this.status) {
       case 'readyToPlay':
       case 'stopped':
+        // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
+        this.cueTimeFromServer = 0;
         this.startMotionUpdatesAndCueFetching();
         break;
       case 'waitingForPieceToStart':
@@ -798,8 +799,13 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   if (this.mLimit.isOn) {
     this.mLimit.input = this.masterMeter.getValue();
     if (this.mLimit.input > this.mLimit.threshold) {
+      // need to apply gain reduction
       this.mLimit.gr = this.mLimit.threshold - this.mLimit.input;
-      Tone.Destination.volume.rampTo(this.mLimit.gr, 2);
+      Tone.Destination.volume.rampTo(this.mLimit.gr, (this.motionUpdateLoopInterval/1000));
+    } else if (this.mLimit.gr < this.mLimit.threshold) {
+      // no need for gain reduction, so reset volume to threshold
+      this.mLimit.gr = this.mLimit.threshold;
+      Tone.Destination.volume.rampTo(this.mLimit.gr, (this.motionUpdateLoopInterval/1000));
     }
   }
 
