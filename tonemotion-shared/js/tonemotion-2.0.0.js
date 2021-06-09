@@ -47,6 +47,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
+ * @param {number} gyroPeak - when debugging, used to monitor peak gyro values
  * @param {Tone.Signal} xSig - Control signal mapped to x-axis of accel
  * @param {Tone.Signal} ySig - Control signal mapped to y-axis of accel
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
@@ -94,6 +95,7 @@ function ToneMotion() {
     x: undefined,
     y: undefined,
   }
+  this.gyroPeak = Number.NEGATIVE_INFINITY;
   this.xSig = xTilt;
   this.ySig = yTilt;
   this.shakeThreshold = 2;
@@ -161,11 +163,11 @@ ToneMotion.prototype.init = function(urlOfServer) {
 
   this.setStatus('loading');
   if (this.debug) {
-    this.publicLog('Audio buffers loading...');
+    this.publicLog('Audio buffers loading');
   }
   Tone.loaded().then(() => {
     if (this.debug) {
-      this.publicLog('Audio buffers finished loading...');
+      this.publicLog('Audio buffers finished loading');
       this.publicLog(`tonemotion v${VERSION} loaded`);
     }
     // Synchronize client clock to server once all resources loaded
@@ -342,7 +344,6 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     if (this.debug) {
       this.publicLog('Not an iOS 13+ device');
     }
-    // TODO: test on Android and pre-iOS 13 device
     if ('DeviceMotionEvent' in window && !(this.shouldTestOnDesktop)) {
       // If device is Android, handleMotionEvent is already running
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
@@ -530,8 +531,9 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
       motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
     } else {
       motion_container.className = 'hidden';
-      // hiding motion monitor also resets peak level in (optional) meter
+      // hiding motion monitor also resets peak levels in (optional) monitors
       this.meter.peak = Number.NEGATIVE_INFINITY;
+      this.gyroPeak = Number.NEGATIVE_INFINITY;
     }
   })
 };
@@ -814,13 +816,20 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
     // Will display DeviceMotionEvent interval and gyro data if debugging
     if (this.debug) {
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  this.gyro_y);
+      let pollingInterval = (this.motionPollingInterval) ? this.motionPollingInterval.toFixed(6) : 'n/a';
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  pollingInterval);
+      let gyroY = (this.gyro_y) ? this.gyro_y.toFixed(6) : 'n/a';
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  gyroY);
+      if (this.gyro_y > this.gyroPeak) {
+        // new peak gyro value
+        this.gyroPeak = this.gyro_y;
+      }
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak gyro y: ' +  this.gyroPeak.toFixed(6));
     }
     // Can also monitor meter levels
     if (this.meter.isOn) {
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master output level: ' +  this.meter.level);
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak level: ' +  this.meter.peak);
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master output level: ' +  this.meter.level.toFixed(6));
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak level: ' +  this.meter.peak.toFixed(6));
     }
   }
 };
