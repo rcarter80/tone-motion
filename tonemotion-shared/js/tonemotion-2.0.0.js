@@ -77,7 +77,7 @@ const yTilt = new Tone.Signal(0.5);
  *    latency between musician panel and cue being set on server
  * @param {string} urlForCues - URL for cues from this particular ensemble
  * @param {Tone.Meter} masterMeter - meter for master output
- * @param {object} meter - isOn: boolean value to choose whether to use metering. level: current value of meter. peak: highest peak up to this point, which can be reset by unchecking "Show motion data"
+ * @param {object} meter - isOn: boolean value to choose whether to use metering. rapid: creates additional loop to poll meter at rate of block size (otherwise metering is embedded in motion loop at slower rate and might miss transients). level: current value of meter. peak: highest peak up to this point, which can be reset by unchecking "Show motion data"
  */
 
 function ToneMotion() {
@@ -121,6 +121,7 @@ function ToneMotion() {
   this.masterMeter = undefined;
   this.meter = {
     isOn: false,
+    rapid: false,
     level: 0,
     peak: Number.NEGATIVE_INFINITY,
   }
@@ -159,6 +160,17 @@ ToneMotion.prototype.init = function(urlOfServer) {
     // by default, meter smooths from one block to the next
     this.masterMeter.smoothing = 0;
     Tone.Destination.connect(this.masterMeter);
+    // rapid metering sets up faster rate for meter polling
+    // NOTE: This is expensive and probably shouldn't be used on mobile!
+    if (this.meter.rapid) {
+      setInterval(() => {
+        this.meter.level = this.masterMeter.getValue();
+        if (this.meter.level > this.meter.peak) {
+          this.meter.peak = this.meter.level;
+        }
+        // default block time is 128 samples @ 44.1kHz (~3 milliseconds)
+      }, (Tone.Destination.blockTime * 1000));
+    }
   }
 
   this.setStatus('loading');
@@ -803,7 +815,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   }
 
   // (optional) meter on master out lets me see if output clips (to set level)
-  if (this.meter.isOn) {
+  // NOTE: if rapid metering is on, a separate interval is set for faster rate
+  if (this.meter.isOn && !(this.meter.rapid)) {
     this.meter.level = this.masterMeter.getValue();
     if (this.meter.level > this.meter.peak) {
       // new peak will be displayed in motion monitor (also used for metering)

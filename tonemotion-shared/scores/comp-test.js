@@ -1,6 +1,7 @@
 const tm = new ToneMotion();
 tm.debug = true; // if true, skips clock sync and shows console
 tm.meter.isOn = true;
+tm.meter.rapid = false;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -10,6 +11,9 @@ window.onload = function() {
     tm.init('https://tonemotion-cue-manager.herokuapp.com/shared-server/current-cue');
   }
 };
+
+// Shortcuts to audio file paths
+const perc_sounds = 'tonemotion-shared/audio/perc/';
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
