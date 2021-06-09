@@ -1,6 +1,6 @@
 const tm = new ToneMotion();
 tm.debug = true; // if true, skips clock sync and shows console
-tm.mLimit.isOn = true;
+tm.meter.isOn = true;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true

@@ -31,8 +31,8 @@ const linkList = document.querySelectorAll('a');
 ** Tone.Signal objects: set by accelerometer to act as control signals
 */
 
-var xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
-var yTilt = new Tone.Signal(0.5);
+const xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
+const yTilt = new Tone.Signal(0.5);
 
 /**
  * Object to encapsulate properties and methods for ToneMotion
@@ -62,6 +62,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
+ * @param {number} motionUpdateInSeconds - (seconds) Same value as above but in seconds (to minimize calculations for Tone.js objects that take seconds)
  * @param {number} cuePollingInterval - (ms.) How often server is polled
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
@@ -74,6 +75,8 @@ var yTilt = new Tone.Signal(0.5);
  * @param {number} serverLatency - (ms.) Can use to offset estimated
  *    latency between musician panel and cue being set on server
  * @param {string} urlForCues - URL for cues from this particular ensemble
+ * @param {Tone.Meter} masterMeter - meter for master output
+ * @param {object} meter - isOn: boolean value to choose whether to use metering. level: current value of meter. peak: highest peak up to this point, which can be reset by unchecking "Show motion data"
  */
 
 function ToneMotion() {
@@ -102,6 +105,7 @@ function ToneMotion() {
   this.glowingTransitions = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
+  this.motionUpdateInSeconds = 0.05;
   this.cuePollingInterval = 500;
   // when server restarts, both cue number and time revert to 0
   // init with -1 for both so cue 0 is still triggered when server restarts
@@ -112,14 +116,11 @@ function ToneMotion() {
   this.MAX_DELAY = 10000;
   this.serverLatency = 0;
   this.urlForCues = '';
-  // TODO: add master limiter parameters ABOVE in comments
   this.masterMeter = undefined;
-  this.mLimit = {
+  this.meter = {
     isOn: false,
-    threshold: 0,
-    release: 0.2,
-    input: 0,
-    gr: 0,
+    level: 0,
+    peak: Number.NEGATIVE_INFINITY,
   }
 }
 
@@ -150,8 +151,8 @@ ToneMotion.prototype.init = function(urlOfServer) {
 
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
-  // If using master limiter, create and connect it here
-  if (this.mLimit.isOn) {
+  // If using metering on master out, create and connect it here
+  if (this.meter.isOn) {
     this.masterMeter = new Tone.Meter();
     // by default, meter smooths from one block to the next
     this.masterMeter.smoothing = 0;
@@ -529,6 +530,8 @@ ToneMotion.prototype.bindMotionCheckboxFunctions = function() {
       motion_data_label.innerHTML = 'x: ' + this.accel.x + '<br>' + 'y: ' + this.accel.y;
     } else {
       motion_container.className = 'hidden';
+      // hiding motion monitor also resets peak level in (optional) meter
+      this.meter.peak = Number.NEGATIVE_INFINITY;
     }
   })
 };
@@ -717,6 +720,7 @@ ToneMotion.prototype.testDeviceMotion = function() {
 
 // Starts motionUpdateLoop. Call this to restart motion updates.
 ToneMotion.prototype.beginMotionUpdates = function() {
+  this.motionUpdateInSeconds = this.motionUpdateLoopInterval/1000;
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
 };
 
@@ -763,9 +767,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
-  // TODO: can cache this.motionUpdateLoopInterval/1000 in variable to optimize
-  this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
-  this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
+  this.xSig.linearRampTo(this.accel.x, this.motionUpdateInSeconds);
+  this.ySig.linearRampTo(this.accel.y, this.motionUpdateInSeconds);
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
     this.currentCue.updateTiltSounds();
@@ -797,18 +800,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
-  // (optional) master limiter checks and sets levels in this motion loop
-  if (this.mLimit.isOn) {
-    this.mLimit.input = this.masterMeter.getValue();
-    if (this.mLimit.input > this.mLimit.threshold) {
-      // need to apply gain reduction
-      this.mLimit.gr = this.mLimit.threshold - this.mLimit.input;
-      Tone.Destination.volume.rampTo(this.mLimit.gr, (this.motionUpdateLoopInterval/1000));
-    } else if (this.mLimit.gr < 0) {
-      // no need for gain reduction, so reset volume to 0
-      // my simple master limiter ONLY WORKS if master volume is 0dB
-      this.mLimit.gr = 0;
-      Tone.Destination.volume.rampTo(0, this.mLimit.release);
+  // (optional) meter on master out lets me see if output clips (to set level)
+  if (this.meter.isOn) {
+    this.meter.level = this.masterMeter.getValue();
+    if (this.meter.level > this.meter.peak) {
+      // new peak will be displayed in motion monitor (also used for metering)
+      this.meter.peak = this.meter.level;
     }
   }
 
@@ -819,12 +816,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     if (this.debug) {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'polling interval: ' +  this.motionPollingInterval);
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  this.gyro_y);
-      // Can also monitor limiter parameters
-      if (this.mLimit.isOn) {
-        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master volume: ' +  Tone.Destination.volume.value);
-        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master meter: ' +  this.masterMeter.getValue());
-        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gain reduction: ' +  -(this.mLimit.gr));
-      }
+    }
+    // Can also monitor meter levels
+    if (this.meter.isOn) {
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'master output level: ' +  this.meter.level);
+      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak level: ' +  this.meter.peak);
     }
   }
 };
