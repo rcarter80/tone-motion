@@ -14,6 +14,7 @@ window.onload = function() {
 
 // Shortcuts to audio file paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
+const chime_sounds = 'tonemotion-shared/audio/chimes/';
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
@@ -40,12 +41,21 @@ const Dqb4 = 220 * ((2**(1/24))**9); // D quarter-flat 4
 const testArr = ['E4', 'E5', 'E4', 'D5', 'E4', 'C#5', 'E4', 'B4', 'D4', 'B4', Dqb4, 'B4', 'C#4', 'B4', 'B3', 'B4'];
 let count0 = 0;
 
+const testSampler = new Tone.Sampler({
+  urls: {
+    A6: '2sec-chime-A6.mp3',
+  },
+  baseUrl: chime_sounds,
+}).toDestination();
+
 tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
   // nothing to do here
 };
 tm.cue[0].triggerShakeSound = function() {
-  sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
+  // sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
+  // TODO: see if I can access playbackRate of note in sampler?
+  testSampler.triggerAttackRelease('A6', 1);
   count0++;
 };
 tm.cue[0].stopCue = function() {
