@@ -1,7 +1,7 @@
 const tm = new ToneMotion();
 tm.debug = true; // if true, skips clock sync and shows console
 tm.meter.isOn = true;
-tm.meter.rapid = false;
+tm.meter.rapid = true;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -15,11 +15,41 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 
+// INSTRUMENTS USED IN MULTIPLE CUES
+// sinusoidal tails to add to shake sounds (poly voice allocation automatic)
+// 1 sec attack and 3 sec attack means up to 16 vox may be allocated with SHAKE
+const sineTails = new Tone.PolySynth(Tone.Synth, {
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 3,
+    releaseCurve: "linear",
+  },
+  volume: -24,
+}).toDestination();
+
 // *******************************************************************
-// CUE 0: sets status to 'waitingForPieceToStart'
-tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
+// CUE 0:
+const Dqb4 = 220 * ((2**(1/24))**9); // D quarter-flat 4
+const testArr = ['E4', 'E5', 'E4', 'D5', 'E4', 'C#5', 'E4', 'B4', 'D4', 'B4', Dqb4, 'B4', 'C#4', 'B4', 'B3', 'B4'];
+let count0 = 0;
+
+tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  // nothing to do here
+};
+tm.cue[0].triggerShakeSound = function() {
+  sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
+  count0++;
+};
+tm.cue[0].stopCue = function() {
+  sineTails.releaseAll();
 };
 
 // *******************************************************************
