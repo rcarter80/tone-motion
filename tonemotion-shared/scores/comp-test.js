@@ -53,9 +53,8 @@ tm.cue[0].goCue = function() {
   // nothing to do here
 };
 tm.cue[0].triggerShakeSound = function() {
-  // sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
-  // TODO: see if I can access playbackRate of note in sampler?
-  testSampler.triggerAttackRelease('A6', 1);
+  sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
+  testSampler.triggerAttackRelease(testArr[count0 % testArr.length], 4);
   count0++;
 };
 tm.cue[0].stopCue = function() {
