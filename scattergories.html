@@ -17,38 +17,39 @@
     <button id="letters_all" class="picker selected" type="button">all letters</button>
     <button id="letters_noXZ" class="picker" type="button">no X or Z</button>
     <button id="letters_noQXZ" class="picker" type="button">no Q, X, or Z</button>
+    <button id="cancel_alarm" type"button">cancel timer</button>
   </main>
 
-<style>
-main {
-  width: 500px;
-  margin: 0 auto;
-}
-p#letter_label {
-  font-size: 150px;
-}
-button#letter_button {
-  font-size: 36px;
-}
-button.picker {
-  color: #777;
-}
-button.selected {
-  color: blue;
-}
+  <style>
+  main {
+    width: 500px;
+    margin: 0 auto;
+  }
+  p#letter_label {
+    font-size: 150px;
+  }
+  button#letter_button {
+    font-size: 36px;
+  }
+  button.picker {
+    color: #777;
+  }
+  button.selected {
+    color: blue;
+  }
 </style>
 
-<!-- TODO: add wake lock -->
-<!-- TODO: add cancel button (also stop alarm) -->
 <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 <!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
 <script src="tonemotion-shared/js/NoSleep-v0-11-0.js"></script>
 
 <script>
+let noSleep;
 document.querySelector('#letter_button').onclick = function() {
   if (Tone.context.state !== 'running') {
     Tone.start().then(() => {
       console.log('Audio context running');
+      noSleep = new NoSleep();
       getLetter();
     })
     Tone.loaded().then(() => {
@@ -62,7 +63,11 @@ document.querySelector('#letter_button').onclick = function() {
 const letterLabel = document.querySelector('#letter_label');
 let letterArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 let lastLetter = '?';
+let timerID = undefined;
 function getLetter() {
+  if (timerID) {
+    clearTimeout(timerID);
+  }
   letter = letterArr[Math.floor(Math.random() * letterArr.length)];
   if (letter === lastLetter) {
     console.log('Rolled same letter twice. Trying again.');
@@ -70,8 +75,34 @@ function getLetter() {
   } else {
     letterLabel.textContent = letter;
     lastLetter = letter;
+    // set 3-minute timer
+    timerID = setTimeout(ringAlarm, (3*60*1000));
+    noSleep.enable();
     console.log('New letter: ' + letter);
   }
+}
+
+function ringAlarm() {
+  alarm.start();
+  letterLabel.textContent = '!!';
+  console.log('ringAlarm() called');
+  try {
+    noSleep.disable();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function cancelAlarm() {
+  clearTimeout(timerID);
+  alarm.stop();
+  letterLabel.textContent = '?';
+  try {
+    noSleep.disable();
+  } catch (e) {
+    console.log(e);
+  }
+  console.log('Timer canceled');
 }
 
 var alarm = new Tone.Player('tonemotion-shared/audio/misc/alarm.mp3').toDestination();
@@ -96,6 +127,9 @@ lettersNoQXZ.onclick = function() {
   lettersAll.classList.remove('selected');
   lettersNoXZ.classList.remove('selected');
   lettersNoQXZ.classList.add('selected');
+}
+document.querySelector('#cancel_alarm').onclick = function() {
+  cancelAlarm();
 }
 </script>
 
