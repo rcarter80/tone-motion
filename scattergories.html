@@ -10,14 +10,94 @@
 </head>
 <body>
 
-  <h1>Random Letter Generator</h1>
-  <button id="letter_button" type="button">?</button>
+  <main>
+    <h1>Random Letter Generator</h1>
+    <button id="letter_button" type="button">get a letter</button>
+    <p id="letter_label">?</p>
+    <button id="letters_all" class="picker selected" type="button">all letters</button>
+    <button id="letters_noXZ" class="picker" type="button">no X or Z</button>
+    <button id="letters_noQXZ" class="picker" type="button">no Q, X, or Z</button>
+  </main>
 
-<!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
-<!-- They make trivial changes to Tone.js that will break older code -->
+<style>
+main {
+  width: 500px;
+  margin: 0 auto;
+}
+p#letter_label {
+  font-size: 150px;
+}
+button#letter_button {
+  font-size: 36px;
+}
+button.picker {
+  color: #777;
+}
+button.selected {
+  color: blue;
+}
+</style>
+
+<!-- TODO: add wake lock -->
+<!-- TODO: add cancel button (also stop alarm) -->
 <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 <!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
 <script src="tonemotion-shared/js/NoSleep-v0-11-0.js"></script>
+
+<script>
+document.querySelector('#letter_button').onclick = function() {
+  if (Tone.context.state !== 'running') {
+    Tone.start().then(() => {
+      console.log('Audio context running');
+      getLetter();
+    })
+    Tone.loaded().then(() => {
+      console.log('Audio buffers loaded');
+    })
+  } else {
+    getLetter();
+  }
+};
+
+const letterLabel = document.querySelector('#letter_label');
+let letterArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+let lastLetter = '?';
+function getLetter() {
+  letter = letterArr[Math.floor(Math.random() * letterArr.length)];
+  if (letter === lastLetter) {
+    console.log('Rolled same letter twice. Trying again.');
+    getLetter();
+  } else {
+    letterLabel.textContent = letter;
+    lastLetter = letter;
+    console.log('New letter: ' + letter);
+  }
+}
+
+var alarm = new Tone.Player('tonemotion-shared/audio/misc/alarm.mp3').toDestination();
+
+const lettersAll = document.querySelector('#letters_all');
+const lettersNoXZ = document.querySelector('#letters_noXZ');
+const lettersNoQXZ = document.querySelector('#letters_noQXZ');
+lettersAll.onclick = function() {
+  letterArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+  lettersAll.classList.add('selected');
+  lettersNoXZ.classList.remove('selected');
+  lettersNoQXZ.classList.remove('selected');
+}
+lettersNoXZ.onclick = function() {
+  letterArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W','Y'];
+  lettersAll.classList.remove('selected');
+  lettersNoXZ.classList.add('selected');
+  lettersNoQXZ.classList.remove('selected');
+}
+lettersNoQXZ.onclick = function() {
+  letterArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'Y'];
+  lettersAll.classList.remove('selected');
+  lettersNoXZ.classList.remove('selected');
+  lettersNoQXZ.classList.add('selected');
+}
+</script>
 
 </body>
 </html>
