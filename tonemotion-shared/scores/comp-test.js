@@ -53,6 +53,10 @@ tm.cue[0].goCue = function() {
   // nothing to do here
 };
 tm.cue[0].triggerShakeSound = function() {
+  // TODO: implement time-based pitch selection, followed by array rotation
+  let time0 = tm.getElapsedTimeInCue(0);
+  console.log(time0);
+
   sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
   testSampler.triggerAttackRelease(testArr[count0 % testArr.length], 4);
   count0++;
