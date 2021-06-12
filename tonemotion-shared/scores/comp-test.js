@@ -50,7 +50,7 @@ const testSampler = new Tone.Sampler({
 
 tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  // nothing to do here
+  count0 = 0;
 };
 tm.cue[0].triggerShakeSound = function() {
   // TODO: implement time-based pitch selection, followed by array rotation
