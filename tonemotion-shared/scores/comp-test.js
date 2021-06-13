@@ -38,7 +38,11 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
 // *******************************************************************
 // CUE 0:
 const Dqb4 = 220 * ((2**(1/24))**9); // D quarter-flat 4
-const testArr = ['E4', 'E5', 'E4', 'D5', 'E4', 'C#5', 'E4', 'B4', 'D4', 'B4', Dqb4, 'B4', 'C#4', 'B4', 'B3', 'B4'];
+const Aqb4 = 220 * ((2**(1/24))**23); // A quarter-flat 4
+const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
+const pitchArr1 = ['E4', 'E5', 'E5', 'E4', 'D5', 'D5', 'E4', 'C#5', 'C#5', 'E4', 'B4', 'B4', 'D4', 'B4', 'B4', Dqb4, 'B4', 'B4', 'C#4', 'B4', 'B4', 'B3', 'B4', 'B4'];
+const pitchArr2 = ['B4', 'A5', 'B4', 'A5', 'B4', Aqb5, 'B4', Aqb5, 'B4', 'G#5', 'B4', 'G#5', 'B4', 'F#5', 'B4', 'F#5', 'A4', 'F#5', 'A4', 'F#5', Aqb4, 'F#5', Aqb4, 'F#5', 'G#4', 'F#5', 'G#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'C7', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'F4', 'F5', 'Eb6', 'A5'];
+const pitchArr3 = ['F4', 'F5', 'F6', 'F5'];
 let count0 = 0;
 
 const testSampler = new Tone.Sampler({
@@ -53,13 +57,22 @@ tm.cue[0].goCue = function() {
   count0 = 0;
 };
 tm.cue[0].triggerShakeSound = function() {
-  // TODO: implement time-based pitch selection, followed by array rotation
   let time0 = tm.getElapsedTimeInCue(0);
-  console.log(time0);
-
-  sineTails.triggerAttackRelease(testArr[count0 % testArr.length], 1);
-  testSampler.triggerAttackRelease(testArr[count0 % testArr.length], 4);
-  count0++;
+  // TODO: adjust timing for tempo (if not quarter=60)
+  if (time0 < 24000) {
+    // first notes are coordinated by time so everyone is playing same note
+    testSampler.triggerAttackRelease(pitchArr1[Math.floor(time0 / 1000)], 4);
+  } else if (count0 < pitchArr2.length) {
+    // then notes go through array, creating an independent canon
+    sineTails.triggerAttackRelease(pitchArr2[count0], 1);
+    testSampler.triggerAttackRelease(pitchArr2[count0], 4);
+    count0++;
+  } else {
+    // final loop of pitches
+    sineTails.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 1);
+    testSampler.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 4);
+    count0++;
+  }
 };
 tm.cue[0].stopCue = function() {
   sineTails.releaseAll();
