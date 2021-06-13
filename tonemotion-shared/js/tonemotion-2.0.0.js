@@ -837,7 +837,9 @@ ToneMotion.prototype.motionUpdateLoop = function() {
         // new peak gyro value
         this.gyroPeak = this.gyro_y;
       }
-      motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak gyro y: ' +  this.gyroPeak.toFixed(6));
+      if (this.gyroPeak) {
+        motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak gyro y: ' +  this.gyroPeak.toFixed(6));
+      }
     }
     // Can also monitor meter levels
     if (this.meter.isOn) {
