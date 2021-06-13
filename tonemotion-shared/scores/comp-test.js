@@ -37,10 +37,10 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
 
 // *******************************************************************
 // CUE 0:
-const Dqb4 = 220 * ((2**(1/24))**9); // D quarter-flat 4
 const Aqb4 = 220 * ((2**(1/24))**23); // A quarter-flat 4
+const Dqb5 = 440 * ((2**(1/24))**9); // D quarter-flat 5
 const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
-const pitchArr1 = ['E4', 'E5', 'E5', 'E4', 'D5', 'D5', 'E4', 'C#5', 'C#5', 'E4', 'B4', 'B4', 'D4', 'B4', 'B4', Dqb4, 'B4', 'B4', 'C#4', 'B4', 'B4', 'B3', 'B4', 'B4'];
+const pitchArr1 = ['E5', 'E6', 'E6', 'E5', 'D6', 'D6', 'E5', 'C#6', 'C#6', 'E5', 'B5', 'B5', 'D5', 'B5', 'B5', Dqb5, 'B5', 'B5', 'C#5', 'B5', 'B5', 'B4', 'B5', 'B5'];
 const pitchArr2 = ['B4', 'A5', 'B4', 'A5', 'B4', Aqb5, 'B4', Aqb5, 'B4', 'G#5', 'B4', 'G#5', 'B4', 'F#5', 'B4', 'F#5', 'A4', 'F#5', 'A4', 'F#5', Aqb4, 'F#5', Aqb4, 'F#5', 'G#4', 'F#5', 'G#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'C7', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'F4', 'F5', 'Eb6', 'A5'];
 const pitchArr3 = ['F4', 'F5', 'F6', 'F5'];
 let count0 = 0;
