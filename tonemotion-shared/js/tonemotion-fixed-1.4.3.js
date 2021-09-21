@@ -509,7 +509,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.startMotionUpdates();
         shake_test_button.classList.remove('hidden');
         tilt_test_button.classList.remove('hidden');
-        this.publicMessage("To experience the interactive sounds for this piece, load this site on your phone and load the concert recording of <i>Direct Attention</i> on another device. Then begin playing that recording at the same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.");
+        this.publicMessage("To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.");
         break;
       case 'startNow':
         Tone.Transport.start();
