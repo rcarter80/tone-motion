@@ -91,7 +91,7 @@ tm.cue[4].stopCue = function() {
 // CUE 5: Actual beginning of piece, but first section is tacet
 tm.cue[5] = new TMCue('tacet', -1);
 tm.cue[5].goCue = function() {
-  if (tm.debug) { tm.publicLog('The piece has started.'); }
+  tm.publicMessage('The beginning of the piece is just for string quartet, but your part will start soon!');
 };
 
 // *******************************************************************
