@@ -40,13 +40,14 @@ tm.cue[1].goCue = function() {
 };
 tm.cue[1].updateTiltSounds = function() {
   // sound is full scale if phone is mostly upright. muted if upside down.
-  if (tm.accel.y < 0.5) {
-    claveLoop.volume.value = (tm.accel.y * 198 - 99);
+  if (tm.accel.y < 0.15) {
+    // full-scale volume at y:0.15, roll off to silence if upright
+    claveLoop.volume.value = (tm.accel.y * 660 - 99);
   } else {
     claveLoop.volume.value = 0;
   }
   // pitch and speed go up on y-axis
-  claveLoop.playbackRate = 0.1 + tm.accel.y * 2.9;
+  claveLoop.playbackRate = 0.1 + tm.accel.y * 4.9;
 };
 tm.cue[1].stopCue = function() {
   claveLoop.stop();
