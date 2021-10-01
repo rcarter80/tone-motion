@@ -69,7 +69,9 @@ tm.cue[2].stopCue = function() {
 var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
 
 var glassC = new Tone.Player(glass_sounds + 'glassRealC6.mp3').toMaster();
+glassC.volume.value = -6;
 var glassE = new Tone.Player(glass_sounds + 'glassRealE6.mp3').toMaster();
+glassE.volume.value = -6;
 var shakeCueCounter = 0;
 
 tm.cue[3] = new TMCue('shake', -1);
