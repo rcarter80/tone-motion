@@ -33,31 +33,10 @@ tm.cue[0].goCue = function() {
 var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
 claveLoop.loop = true;
 
-// new demo sounds
-const fmSynth = new Tone.FMSynth().toMaster();
-const fmDrone = new Tone.FMSynth().toMaster();
-fmDrone.volume.value = -12;
-var fmPitch = 'E2';
-var fmPitch2;
-var fmPitchArr = ['E2', 'F#2', 'G2', 'A2', 'C3', 'D3', 'E3', 'F#3', 'G3', 'A3', 'C4', 'D4', 'E4'];
-const fmLoop = new Tone.Loop((time) => {
-	fmSynth.triggerAttackRelease(fmPitch, '16n');
-  // var hertz = Tone.Frequency(fmPitch).toFrequency();
-  // console.log(hertz);
-  fmPitch2 = (Tone.Frequency(fmPitch).toFrequency() * 2);
-  // fmSynth.triggerAttackRelease(fmPitch2, '8n', '+16n');
-}, '8n');
-
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
-  // claveLoop.start();
+  claveLoop.start();
   tm.publicMessage('During a section marked "tilt," your device will make sounds that respond to the position of your phone. In this case, you can mute your phone by holding it right-side up. The short, repeated sound gets louder, faster, and higher as you tip your phone upside down.');
-
-  // HACK: Normally Transport would be triggered by tapping start button, but that's for fixed-cue interactive sites, and this is not meant to match any existing recording, so I'm just starting the transport here
-  Tone.Transport.start();
-  // fmLoop.start();
-  fmSynth.triggerAttack(fmPitch);
-  fmDrone.triggerAttack('E2');
 };
 tm.cue[1].updateTiltSounds = function() {
   // sound is full scale if phone is mostly upright. muted if upside down.
@@ -68,18 +47,10 @@ tm.cue[1].updateTiltSounds = function() {
     claveLoop.volume.value = 0;
   }
   // pitch and speed go up on y-axis
-  claveLoop.playbackRate = 0.5 + tm.accel.y * 4.5;
-
-  // select pitch based on notes in array but guard against corner case when tm.accel.x is exactly equal to 1.0
-  fmPitch = fmPitchArr[Math.floor(tm.accel.x * 0.99 * fmPitchArr.length)];
-  fmSynth.frequency.value = fmPitch;
+  claveLoop.playbackRate = 0.75 + tm.accel.y * 4.25;
 };
 tm.cue[1].stopCue = function() {
   claveLoop.stop();
-
-  // fmLoop.stop();
-  fmSynth.triggerRelease();
-  fmDrone.triggerRelease();
 };
 
 // *******************************************************************
