@@ -17,6 +17,7 @@ const chimes_sounds = 'tonemotion-shared/audio/chimes/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
+const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 // Instruments need global scope within this file, but can appear just above the first cue in which they sound
 Tone.Transport.bpm.value = 120;
@@ -67,12 +68,18 @@ tm.cue[2].stopCue = function() {
 // CUE 3: shake practice
 var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
 
+var glassC = new Tone.Player(glass_sounds + 'glassRealC6.mp3').toMaster();
+var glassE = new Tone.Player(glass_sounds + 'glassRealE6.mp3').toMaster();
+var shakeCueCounter = 0;
+
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
+  shakeCueCounter = 0;
   tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. If you hold your phone still, it will not make sound.');
 };
 tm.cue[3].triggerShakeSound = function() {
-  clave.start();
+  shakeCueCounter % 2 ? glassE.start() : glassC.start();
+  shakeCueCounter++;
 };
 tm.cue[3].stopCue = function() {
   // nothing to clean up
