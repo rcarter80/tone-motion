@@ -221,7 +221,11 @@ ToneMotion.prototype.setStatus = function(status) {
       break;
     case 'startNow':
       this.setStatusLabel('ready', 'default');
-      this.setStartStopButton('start', 'start');
+      if (this.demoOnly) {
+        this.setStartStopButton('hidden', '');
+      } else {
+        this.setStartStopButton('start', 'start');
+      }
       break;
     case 'waitingForPieceToStart':
       this.setStatusLabel('waiting', 'active');
@@ -512,7 +516,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         shake_test_button.classList.remove('hidden');
         tilt_test_button.classList.remove('hidden');
         if (this.demoOnly) {
-          this.publicMessage('To try out the two modes of interactive sound, tap the buttons above. (For this demo site, the "start" button does not do anything, so you can ignore that.)');
+          this.publicMessage('To try out the two modes of interactive sound, tap the buttons above.');
         } else {
         this.publicMessage('To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.');
         }
@@ -539,6 +543,9 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.shutEverythingDown();
         shake_test_button.classList.remove('hidden');
         tilt_test_button.classList.remove('hidden');
+        if (this.demoOnly) {
+          this.setStartStopButton('hidden', '');
+        }
         break;
       case 'error':
         // Reload the current page, without using the cache
