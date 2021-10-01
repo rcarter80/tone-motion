@@ -58,6 +58,7 @@ var yTilt = new Tone.Signal(0.5);
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
+ * @param {boolean} demoOnly - Does not use cue counter at all
  * @param {boolean} glowingTransitions - Makes status label pulse once at end of cue
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
@@ -99,6 +100,7 @@ function ToneMotion() {
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = false;
+  this.demoOnly = false;
   this.glowingTransitions = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
@@ -509,7 +511,11 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         this.startMotionUpdates();
         shake_test_button.classList.remove('hidden');
         tilt_test_button.classList.remove('hidden');
-        this.publicMessage("To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.");
+        if (this.demoOnly) {
+          this.publicMessage('To try out the two modes of interactive sound, tap the buttons above. (For this demo site, the "start" button does not do anything, so you can ignore that.)');
+        } else {
+        this.publicMessage('To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.');
+        }
         break;
       case 'startNow':
         Tone.Transport.start();

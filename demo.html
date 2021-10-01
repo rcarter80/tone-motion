@@ -25,11 +25,11 @@
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
   <button id="start_stop_button" type="button" class="transport hidden"></button>
+  <button id="shake_test_button" type="button" class="transport hidden">practice shake mode</button>
+  <button id="tilt_test_button" type="button" class="transport hidden">practice tilt mode</button>
   <div id="message_container" class="hidden">
     <p id="message_label"> </p>
   </div>
-  <button id="shake_test_button" type="button" class="transport hidden">practice shake mode</button>
-  <button id="tilt_test_button" type="button" class="transport hidden">practice tilt mode</button>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
   <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
@@ -50,7 +50,7 @@
   <div>
     <h2>Compatibility and accessibility</h2>
     <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
-    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to iOS 13.5 fixes the issue.)</p>
+    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to any later version of iOS fixes the issue.)</p>
     <p>I hope that the site I have designed is maximally accessible to all users. If you have thoughts on improving the accessibility of this site, please feel free to contact me at ryan (at) ryancarter (dot) org.</p>
   </div>
   <div>
