@@ -47,7 +47,7 @@ tm.cue[1].updateTiltSounds = function() {
     claveLoop.volume.value = 0;
   }
   // pitch and speed go up on y-axis
-  claveLoop.playbackRate = 0.1 + tm.accel.y * 4.9;
+  claveLoop.playbackRate = 0.5 + tm.accel.y * 4.5;
 };
 tm.cue[1].stopCue = function() {
   claveLoop.stop();
