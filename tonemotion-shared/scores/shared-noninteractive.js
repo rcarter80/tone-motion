@@ -2,8 +2,6 @@ const tm = new ToneMotion();
 // TODO: turn off debugging before deployment
 tm.debug = true; // if true, skips clock sync and shows console
 
-tm.localTest = true;
-
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
