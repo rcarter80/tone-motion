@@ -417,13 +417,13 @@ var c4_highSynthLoop2 = new Tone.Loop(function(time) {
 }, 5 + (Math.random() * 10));
 
 var c4_droneLoop = new Tone.Loop(function(time) {
-  // audio file is on C3 and slides down to D3 after 3 minutes
-  c4_drone.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
+  // audio file is on C3 and slides down to D3 after 2 minutes (WAS 3 min.)
+  c4_drone.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 120000,1]);
   c4_drone.start();
 }, 30);
 var c4_droneLoop2 = new Tone.Loop(function(time) {
-  // audio file is on C3 and slides down to D3 after 3 minutes
-  c4_drone2.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
+  // audio file is on C3 and slides down to D3 after 2 minutes (WAS 3 min.)
+  c4_drone2.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 120000,1]);
   c4_drone2.start();
 }, 30);
 
