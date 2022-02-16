@@ -35,10 +35,11 @@
       DeviceMotionEvent.requestPermission()
       .then(permissionState => {
         if (permissionState === 'granted') {
+          postMessage('permission granted')
           window.addEventListener('devicemotion', () => {});
         } else {
           // user has not give permission for motion.
-          postMessage('Permission for motion data access was denied');
+          postMessage('permission for motion data access was denied');
         }
       })
       .catch(console.error);
