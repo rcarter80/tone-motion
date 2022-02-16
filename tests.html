@@ -32,10 +32,14 @@
 
     postMessage('motion button was clicked');
 
-    if (true || typeof DeviceMotionEvent !== 'undefined' &&
+    if (typeof DeviceMotionEvent !== 'undefined' &&
     typeof DeviceMotionEvent.requestPermission === 'function') {
       DeviceMotionEvent.requestPermission()
       .then(permissionState => {
+
+        postMessage('about to throw error');
+        throw Error('bar');
+
         if (permissionState === 'granted') {
           postMessage('permission granted')
           window.addEventListener('devicemotion', () => {});
@@ -46,6 +50,7 @@
       })
       .catch(err => {
         testStatus = 'error';
+        postMessage('error');
         console.error('error: ', err);
       });
     } else {
