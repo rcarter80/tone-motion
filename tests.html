@@ -2,9 +2,12 @@
 <head>
 </head>
 <body>
-  <p>device motion tests below</p>
+  <p>device motion tests below:</p>
   <button id="motion-button">request motion permission</button>
-  <p id="motionStatusLabel">motion status label</p>
+  <div id="motionStatusConsole">
+    <p>motion status console:</p>
+  </div>
+  <hr>
   <p>compressor tests below</p>
   <button id="load-button">load</button>
   <button id="start-button">start</button>
@@ -23,9 +26,10 @@
   device motion access tests are below
   *****/
 
-  const motionStatusLabel = document.querySelector('#motionStatusLabel');
-
   document.querySelector('#motion-button').addEventListener('click', () => {
+
+    postMessage('motion button was clicked');
+
     if (typeof DeviceMotionEvent !== 'undefined' &&
     typeof DeviceMotionEvent.requestPermission === 'function') {
       DeviceMotionEvent.requestPermission()
@@ -34,15 +38,22 @@
           window.addEventListener('devicemotion', () => {});
         } else {
           // user has not give permission for motion.
-          motionStatusLabel.innerText = 'Permission for motion data access was denied';
+          postMessage('Permission for motion data access was denied');
         }
       })
       .catch(console.error);
     } else {
       // handle regular non iOS 13+ devices
-      motionStatusLabel.innerText = 'DeviceMotionEvent.requestPermission is not a function in this browser';
+      postMessage('DeviceMotionEvent.requestPermission is not a function in this browser');
     }
   });
+
+  const motionStatusConsole = document.querySelector('#motionStatusConsole');
+  function postMessage(message) {
+    let logMessage = document.createElement('p');
+    logMessage.innerHTML = message;
+    motionStatusConsole.appendChild(logMessage);
+  }
 
   /*****
   Tone.js compressor tests are below
