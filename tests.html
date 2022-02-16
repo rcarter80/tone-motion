@@ -2,7 +2,10 @@
 <head>
 </head>
 <body>
-  <p>test.</p>
+  <p>device motion tests below</p>
+  <button id="motion-button">request motion permission</button>
+  <p id="motionStatusLabel">motion status label</p>
+  <p>compressor tests below</p>
   <button id="load-button">load</button>
   <button id="start-button">start</button>
   <button id="stop-button">stop</button>
@@ -15,7 +18,36 @@
   <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
 
   <script>
-  document.querySelector('#load-button')?.addEventListener('click', async () => {
+
+  /*****
+  device motion access tests are below
+  *****/
+
+  const motionStatusLabel = document.querySelector('#motionStatusLabel');
+
+  document.querySelector('#motion-button').addEventListener('click', () => {
+    if (typeof DeviceMotionEvent !== 'undefined' &&
+    typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === 'granted') {
+          window.addEventListener('devicemotion', () => {});
+        } else {
+          // user has not give permission for motion.
+          motionStatusLabel.innerText = 'Permission for motion data access was denied';
+        }
+      })
+      .catch(console.error);
+    } else {
+      // handle regular non iOS 13+ devices
+      motionStatusLabel.innerText = 'DeviceMotionEvent.requestPermission is not a function in this browser';
+    }
+  });
+
+  /*****
+  Tone.js compressor tests are below
+  *****/
+  document.querySelector('#load-button').addEventListener('click', async () => {
     await Tone.start();
     console.log('audio is ready');
     Tone.loaded().then( () => {
