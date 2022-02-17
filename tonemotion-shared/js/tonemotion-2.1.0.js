@@ -100,6 +100,7 @@ function ToneMotion() {
   this.accel = {
     rawX: undefined,
     rawY: undefined,
+    // TODO: add lastRawX, lastRawY for motion test
     x: undefined,
     y: undefined,
   }
@@ -212,6 +213,7 @@ ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
   // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
   // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
   // Could also have user select checkbox to invert axes, but that requires more setup of device
+  // TODO: still need to test whether device is Android
   const userAgent = window.navigator.userAgent;
   if (userAgent.match(/Android/i)) {
     this.deviceIsAndroid = true;
@@ -338,6 +340,8 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   // keeps sound on after 1-sec. silent file elapses.
   //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
   silent_buffer.play();
+
+  // TODO: put Android test here
 
   // testing iOS 13+ motion permission
   // KNOWN ISSUE: iOS 12.2 - 12.4 requires motion access permission in settings (but I note this in compatibility message to user)
