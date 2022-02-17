@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>Test</title>
+  <meta name="description" content="Web-based algorithmic generation of interactive music">
+  <meta name="author" content="Ryan Carter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./tonemotion-shared/css/styles-1.3.0.css">
+  <link rel="icon" type="image/png" href="tonemotion-shared/img/favicon.ico">
+</head>
+<body>
+
+<header>
+  <h1>Test</h1>
+  <button id="help_button" type="button">?</button>
+</header>
+
+<main> <!-- center panel showing app status, messages, controls -->
+  <div id="status_container">
+    <p id="status_label">loading</p>
+  </div>
+  <!-- button is not displayed until page loads, then shows "start" -->
+  <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
+  <!-- when piece is done, button goes away -->
+  <button id="start_stop_button" type="button" class="hidden"></button>
+  <div id="message_container" class="hidden">
+    <p id="message_label"> </p>
+  </div>
+
+  <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
+  <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+  <!-- append sliders and "shake" button here -->
+  <fieldset id="sliderFieldset" class="hidden">
+    <legend>Motion simulation</legend>
+    <label for="x_slider">X-axis of accelerometer</label>
+    <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
+    <label for="y_slider">Y-axis of accelerometer</label>
+    <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
+    <button id="simulateShakeButton" type="button">shake device</button>
+  </fieldset>
+
+</main>
+
+<section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
+  <div>
+    <!-- TODO: change instrutions for this site. should be short and simple -->
+    <h2>Instructions</h2>
+    <p>This site can be used to ensure that the network (whether your device is connected over cellular or Wi-Fi) can support an interactive performance that uses this software. To use this site, log into <a href="https://tonemotion-cue-manager.herokuapp.com/login" target="_blank">the test server</a> with username: test and password: test, then click the button to send a cue. Return to this page to verify that the cue was received. You can return to the server page to send more test cues, and return to this page to verify that everything is working. There are only three cues; the server will loop through them. Feel free to contact me at ryan (at) ryancarter (dot) org if you have questions.</p>
+  </div>
+  <div>
+    <h2>Compatibility</h2>
+    <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
+    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to iOS 13.5 fixes the issue.)</p>
+  </div>
+  <div>
+    <h2>Motion monitor</h2>
+    <input type="checkbox" id="motion_data_checkbox">
+    <label for="motion_data_checkbox">Show motion data</label>
+    <div id="motion_container" class="hidden">
+      <p id="motion_data_label"></p>
+    </div>
+  </div>
+  <div id="publicConsole">
+    <h2>Console</h2>
+    <input type="checkbox" id="console_checkbox">
+    <label for="console_checkbox">Show console messages</label>
+    <div id="console_container" class="hidden">
+    </div>
+  </div>
+  </section>
+
+<!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
+<!-- They make trivial changes to Tone.js that will break older code -->
+<script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
+<!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
+<script src="tonemotion-shared/js/NoSleep-v0-12-0.js"></script>
+<script src="tonemotion-shared/js/tonemotion-2.0.0.js"></script>
+
+<!-- Score for this piece -->
+<script src="tonemotion-shared/scores/test.js"></script>
+
+</body>
+</html>
