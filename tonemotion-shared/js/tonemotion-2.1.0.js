@@ -100,7 +100,10 @@ function ToneMotion() {
   this.accel = {
     rawX: undefined,
     rawY: undefined,
-    // TODO: add lastRawX, lastRawY for motion test
+    thisRawX: undefined,
+    thisRawY: undefined,
+    lastRawX: undefined,
+    lastRawY: undefined,
     x: undefined,
     y: undefined,
   }
@@ -184,14 +187,10 @@ ToneMotion.prototype.init = function(urlOfServer) {
   }
 
   this.setStatus('loading');
-  if (this.debug) {
-    this.publicLog('Audio buffers loading');
-  }
+  this.publicLog('Audio buffers loading');
   Tone.loaded().then(() => {
-    if (this.debug) {
-      this.publicLog('Audio buffers finished loading');
-      this.publicLog(`tonemotion v${VERSION} loaded`);
-    }
+    this.publicLog('Audio buffers finished loading');
+    this.publicLog(`tonemotion v${VERSION} loaded`);
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
   }).catch(() => {
@@ -319,10 +318,7 @@ ToneMotion.prototype.setStatus = function(status) {
       status_container.classList.remove('swell');
       body_element.classList.add('fade');
     }
-
-    if (this.debug) {
-      this.publicLog('Application status set to ' + this.status);
-    }
+    this.publicLog('Application status set to ' + this.status);
 };
 
 // Starts Transport, loops, motion handling, and network requests
@@ -349,25 +345,19 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   // Guard against reference errors by checking that DeviceMotionEvent is defined
   if (typeof DeviceMotionEvent !== 'undefined' &&
   typeof DeviceMotionEvent.requestPermission === 'function') {
-    if (this.debug) {
-      this.publicLog('Requesting permission for motion data');
-    }
+    this.publicLog('Requesting permission for motion data');
     // Device requests motion permission (e.g., iOS 13+)
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
         window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
         this.motionPermissionStatus = 'granted';
-        if (this.debug) {
-          this.publicLog('Permission for motion data granted');
-        }
+        this.publicLog('Permission for motion data granted');
         this.beginMotionUpdates();
       } else {
         // user has not give permission for motion. Simulate motion
         this.motionPermissionStatus = 'denied';
-        if (this.debug) {
-          this.publicLog('Permission for motion data denied');
-        }
+        this.publicLog('Permission for motion data denied');
         this.simulateMotion();
         this.beginMotionUpdates();
       }
@@ -376,9 +366,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   } else {
     // handle non iOS 13+ devices, which could still report motion
     this.motionPermissionStatus = 'unneeded';
-    if (this.debug) {
-      this.publicLog('Permission to access motion data not requested');
-    }
+    this.publicLog('Permission to access motion data not requested');
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
 
       // TODO: delete comment below after I remove immediate Android polling
@@ -392,9 +380,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
       this.beginMotionUpdates();
     } else {
-      if (this.debug) {
-        this.publicLog('This device does not report motion');
-      }
+      this.publicLog('This device does not report motion');
       this.simulateMotion();
       this.beginMotionUpdates();
     }
@@ -510,17 +496,13 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
-      if (this.debug) {
-        this.publicLog('Starting AudioContext and Transport');
-      }
+      this.publicLog('Starting AudioContext and Transport');
       Tone.start().then(() => {
         Tone.Transport.start();
       });
     } else if (Tone.Transport.state !== 'started') {
       // possible that audio context is running but Transport was stopped
-      if (this.debug) {
-        this.publicLog('Starting Transport');
-      }
+      this.publicLog('Starting Transport');
       Tone.Transport.start();
     } else {
       // Both audio context and Tone.Transport running. Nothing to do here.
@@ -775,18 +757,37 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
 ToneMotion.prototype.motionUpdateLoop = function() {
-  // Test successful access to motion data before using interval
+  // Test successful access to motion data before using values
+  // shouldTestMotion can be set to false (from score) when actual piece begins to optimize this loop
   if (this.shouldTestMotion) {
+    if (this.motionFailCount > this.motionFailThreshold) {
+      // TODO: replace with error instructions
+      this.publicMessage('fucked');
+    }
     if (this.accel.rawX === undefined) {
       // No motion data (yet). This could be desktop Chrome, which claims to report motion but does not, so accel values always remain undefined
       console.log('accel value is undefined');
       this.motionFailCount++;
-      if (this.motionFailCount > this.motionFailThreshold) {
-        // TODO: replace with error instructions
-        this.publicMessage('fucked');
-      }
+      // do not attempt to use undefined motion data values
       return;
     }
+    // test to make sure values are changing and are not frozen
+    // truncate values to avoid round-off errors in comparisons
+    this.accel.thisRawX = this.accel.rawX.toFixed(1);
+    this.accel.thisRawY = this.accel.rawY.toFixed(1);
+    console.log('raw x: ' + this.accel.thisRawX + ' raw y: ' + this.accel.thisRawY);
+    if (this.accel.thisRawX === this.accel.lastRawX &&
+      this.accel.thisRawY === this.accel.thisRawY) {
+        // values have not changed at all, which is a problem because even a perfectly motionless device (e.g., on a table) shows changing values
+        this.motionFailCount++;
+        console.log('motionFailCount: ' + this.motionFailCount);
+    } else {
+      // values have changed, so it's working (for now)
+      this.motionFailCount = 0;
+    }
+    // set temp values for comparison on next iteration
+    this.accel.lastRawX = this.accel.thisRawX;
+    this.accel.lastRawY = this.accel.thisRawY;
   }
 
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
@@ -915,9 +916,7 @@ ToneMotion.prototype.syncClocks = function() {
         var syncTime2 = response; // server-side timestamp
         var syncTime3 = Date.now(); // client-side timestamp on receipt
         var roundtrip = syncTime3 - syncTime1;
-        if (this.debug) {
-          this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
-        }
+        this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
         if (roundtrip < shortestRoundtrip) {
           // Safari caches response despite my very nice request not to
           // It releases cache after first iteration, but first result
