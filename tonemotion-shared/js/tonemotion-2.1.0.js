@@ -45,6 +45,9 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
  * @param {string} motionPermissionStatus - Shows status of permission request to access motion & orientation data
+ * @param {boolean} shouldTestMotion - True by default, turn off to optimize performance (e.g., when piece actually begins)
+ * @param {number} motionFailCount - Increments when motion access fails
+ * @param {number} motionFailThreshold - Posts error to user when reached
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
@@ -91,6 +94,9 @@ function ToneMotion() {
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
   this.motionPermissionStatus = 'unknown';
+  this.shouldTestMotion = true;
+  this.motionFailCount = 0;
+  this.motionFailThreshold = 40;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
@@ -347,9 +353,17 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     .then(permissionState => {
       if (permissionState === 'granted') {
         window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.motionPermissionStatus = 'granted';
+        if (this.debug) {
+          this.publicLog('Permission for motion data granted');
+        }
         this.beginMotionUpdates();
       } else {
         // user has not give permission for motion. Simulate motion
+        this.motionPermissionStatus = 'denied';
+        if (this.debug) {
+          this.publicLog('Permission for motion data denied');
+        }
         this.simulateMotion();
         this.beginMotionUpdates();
       }
@@ -357,14 +371,21 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     .catch(console.error);
   } else {
     // handle non iOS 13+ devices, which could still report motion
+    this.motionPermissionStatus = 'unneeded';
     if (this.debug) {
-      this.publicLog('Not an iOS 13+ device');
+      this.publicLog('Permission to access motion data not requested');
     }
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
+
+      // TODO: delete comment below after I remove immediate Android polling
       // If device is Android, handleMotionEvent is already running
+
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+
+      // TODO: delete code below
+      // this.testDeviceMotion();
       // But even if Android, still need to start motion updates *here*
-      this.testDeviceMotion();
+
       this.beginMotionUpdates();
     } else {
       if (this.debug) {
@@ -714,6 +735,7 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 };
 
 // Tests if device actually reports motion or is lying.
+// TODO: delete this method after replacing it in motionUpdateLoop test
 ToneMotion.prototype.testDeviceMotion = function() {
   if (this.debug) {
     this.publicLog('Device claims to report motion. Checking if this is true.');
@@ -749,8 +771,19 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
 ToneMotion.prototype.motionUpdateLoop = function() {
-
-  // TODO: put motion data access test here
+  // Test successful access to motion data before using interval
+  if (this.shouldTestMotion) {
+    if (this.accel.rawX === undefined) {
+      // No motion data (yet). This could be desktop Chrome, which claims to report motion but does not, so accel values always remain undefined
+      console.log('accel value is undefined');
+      this.motionFailCount++;
+      if (this.motionFailCount > this.motionFailThreshold) {
+        // TODO: replace with error instructions
+        this.publicMessage('fucked');
+      }
+      return;
+    }
+  }
 
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldSimulateMotion) {
@@ -779,12 +812,13 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
+  // TODO: delete unused code below
   // CORNER CASE: For 1 sec. desktop Chrome will be tested for motion data, which won't be available, and THEN shouldSimulateMotion is set to true. During that second, accel values are undefined and cause errors below
-  if (isNaN(this.accel.x)) {
-    console.log('Unable to poll or simulate motion data');
-    // for 1 sec., just fake values
-    this.accel.x = this.accel.y = 0.5;
-  }
+  // if (isNaN(this.accel.x)) {
+  //   console.log('Unable to poll or simulate motion data');
+  //   // for 1 sec., just fake values
+  //   this.accel.x = this.accel.y = 0.5;
+  // }
 
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise

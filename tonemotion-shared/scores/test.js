@@ -20,6 +20,7 @@ var meow = new Tone.Player(demo_sounds + 'meow.mp3').toDestination();
 tm.cue[0] = new TMCue('shake', -1);
 tm.cue[0].goCue = function() {
   tm.publicMessage('debug mode: ' + tm.debug);
+  // tm.shouldTestMotion = false;
 };
 tm.cue[0].triggerShakeSound = function() {
   meow.start();
@@ -28,4 +29,4 @@ tm.cue[0].stopCue = function() {
   // nothing to clean up
 };
 
-// TODO: copy cue 0 two more times, bc test server has cue 2 as max 
+// TODO: copy cue 0 two more times, bc test server has cue 2 as max
