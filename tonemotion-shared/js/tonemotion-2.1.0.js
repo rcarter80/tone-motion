@@ -757,12 +757,10 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
 ToneMotion.prototype.motionUpdateLoop = function() {
-  // Test successful access to motion data before using values
-  // shouldTestMotion can be set to false (from score) when actual piece begins to optimize this loop
-  if (this.shouldTestMotion) {
+  // Test successful access to motion data before using values. Optimize by setting shouldTestMotion to false (from score) when actual piece begins
+  if (this.shouldTestMotion && !(this.shouldSimulateMotion)) {
     if (this.motionFailCount > this.motionFailThreshold) {
-      // TODO: replace with error instructions
-      this.publicMessage('fucked');
+      this.postMotionErrorMessage();
     }
     if (this.accel.rawX === undefined) {
       // No motion data (yet). This could be desktop Chrome, which claims to report motion but does not, so accel values always remain undefined
@@ -773,17 +771,19 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
     // test to make sure values are changing and are not frozen
     // truncate values to avoid round-off errors in comparisons
+    // TODO: change toFixed(1) back to toFixed(8) when done testing
     this.accel.thisRawX = this.accel.rawX.toFixed(1);
     this.accel.thisRawY = this.accel.rawY.toFixed(1);
     console.log('raw x: ' + this.accel.thisRawX + ' raw y: ' + this.accel.thisRawY);
     if (this.accel.thisRawX === this.accel.lastRawX &&
-      this.accel.thisRawY === this.accel.thisRawY) {
+      this.accel.thisRawY === this.accel.lastRawY) {
         // values have not changed at all, which is a problem because even a perfectly motionless device (e.g., on a table) shows changing values
         this.motionFailCount++;
         console.log('motionFailCount: ' + this.motionFailCount);
     } else {
       // values have changed, so it's working (for now)
       this.motionFailCount = 0;
+      console.log('motionFailCount: ' + this.motionFailCount);
     }
     // set temp values for comparison on next iteration
     this.accel.lastRawX = this.accel.thisRawX;
@@ -805,7 +805,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
     }
-
     if (this.accel.rawY < -10) { // clamp
       this.accel.y = 0; // no need to normalize
     }
@@ -893,6 +892,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak level: ' +  this.meter.peak.toFixed(6));
     }
   }
+};
+
+// If access to motion fails, give instructions and option to reload or simulate
+ToneMotion.prototype.postMotionErrorMessage = function() {
+  // TODO: implement error instructions by creating new element with buttons. If user taps button to simulate motion, should dismiss error message
+  this.publicMessage('fucked');
 };
 
 /*********************************************************************
