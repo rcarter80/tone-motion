@@ -360,7 +360,8 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Simulate motion
         this.motionPermissionStatus = 'denied';
         this.publicLog('Permission for motion data denied');
-        this.simulateMotion();
+        // TODO: decide whether to immediately simulate motion or not
+        // this.simulateMotion();
         this.beginMotionUpdates();
       }
     })
@@ -911,11 +912,11 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
   let motionErrorMessage = document.createElement('p');
   motionErrorContainer.appendChild(motionErrorMessage);
 
-  if (this.accel.rawX === undefined) {
-    motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
-    this.addMotionSimulationButton();
-  } else if (this.motionPermissionStatus === 'denied') {
+  if (this.motionPermissionStatus === 'denied') {
     motionErrorMessage.innerHTML = "It looks like you denied access to your device's motion data, so you won't be able to control sounds by moving your device. If you'd like to see the permissions dialog again, you'll need to force quit your browser and reopen it. Or you can click the button below to simulate motion with sliders and a button.";
+    this.addMotionSimulationButton();
+  } else if (this.accel.rawX === undefined) {
+    motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
     this.addMotionSimulationButton();
   } else {
     // TODO: implement handling for motion that chokes
