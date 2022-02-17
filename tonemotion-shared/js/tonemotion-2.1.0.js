@@ -48,6 +48,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {boolean} shouldTestMotion - True by default, turn off to optimize performance (e.g., when piece actually begins)
  * @param {number} motionFailCount - Increments when motion access fails
  * @param {number} motionFailThreshold - Posts error to user when reached
+ * @param {boolean} motionFailMessageShown - tracks if error message is visible
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
@@ -97,6 +98,7 @@ function ToneMotion() {
   this.shouldTestMotion = true;
   this.motionFailCount = 0;
   this.motionFailThreshold = 40;
+  this.motionFailMessageShown = false;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
@@ -106,7 +108,7 @@ function ToneMotion() {
     lastRawY: undefined,
     x: undefined,
     y: undefined,
-  }
+  };
   this.gyroPeak = Number.NEGATIVE_INFINITY;
   this.xSig = xTilt;
   this.ySig = yTilt;
@@ -136,7 +138,7 @@ function ToneMotion() {
     rapid: false,
     level: 0,
     peak: Number.NEGATIVE_INFINITY,
-  }
+  };
 }
 
 // Registers event handlers to interface elements, confirms that buffers are loaded, starts Tone.js
@@ -760,7 +762,9 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   // Test successful access to motion data before using values. Optimize by setting shouldTestMotion to false (from score) when actual piece begins
   if (this.shouldTestMotion && !(this.shouldSimulateMotion)) {
     if (this.motionFailCount > this.motionFailThreshold) {
-      this.postMotionErrorMessage();
+      if (!(this.motionFailMessageShown)) {
+        this.postMotionErrorMessage();
+      }
     }
     if (this.accel.rawX === undefined) {
       // No motion data (yet). This could be desktop Chrome, which claims to report motion but does not, so accel values always remain undefined
@@ -895,9 +899,40 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 };
 
 // If access to motion fails, give instructions and option to reload or simulate
+let motionErrorContainer; // needs scope outside this method
 ToneMotion.prototype.postMotionErrorMessage = function() {
   // TODO: implement error instructions by creating new element with buttons. If user taps button to simulate motion, should dismiss error message
-  this.publicMessage('fucked');
+
+  // create container for error messages and buttons
+  this.motionFailMessageShown = true;
+  motionErrorContainer = document.createElement('div');
+  motionErrorContainer.id = 'motion_error_container';
+  start_stop_button.insertAdjacentElement('afterend', motionErrorContainer);
+  let motionErrorMessage = document.createElement('p');
+  motionErrorContainer.appendChild(motionErrorMessage);
+
+  if (this.accel.rawX === undefined) {
+    motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
+    this.addMotionSimulationButton();
+  } else if (this.motionPermissionStatus === 'denied') {
+    motionErrorMessage.innerHTML = "It looks like you denied access to your device's motion data, so you won't be able to control sounds by moving your device. If you'd like to see the permissions dialog again, you'll need to force quit your browser and reopen it. Or you can click the button below to simulate motion with sliders and a button.";
+    this.addMotionSimulationButton();
+  } else {
+    // TODO: implement handling for motion that chokes
+  }
+};
+
+ToneMotion.prototype.addMotionSimulationButton = function() {
+  let motionSimulationButton = document.createElement('button');
+  motionSimulationButton.id = 'simulateMotionButton';
+  motionSimulationButton.innerHTML = 'simulate motion';
+  motionErrorContainer.appendChild(motionSimulationButton);
+  simulateMotionButton.addEventListener("click", () => {
+    // remove error message and add motion simulation interface
+    motionErrorContainer.remove();
+    this.motionFailMessageShown = false;
+    this.simulateMotion();
+  });
 };
 
 /*********************************************************************

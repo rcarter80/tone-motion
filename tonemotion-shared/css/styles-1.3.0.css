@@ -278,8 +278,11 @@ main {
   padding: 20px;
 }
 
+/* TODO: replace ID with class names */
+/* yeah I should really style these as a btn class, not a bunch of IDs */
 #start_stop_button,
 #simulateShakeButton,
+#simulateMotionButton,
 button.fixed-media {
   display: block;
   margin-top: 25px;
@@ -318,8 +321,10 @@ button.fixed-media:hover {
   border-color: var(--theme-color-error-dark);
 }
 
+/* I should probably style containers by class, not id, but I would need to change how classes are set for message container */
 #message_container,
 #message_container.default,
+#motion_error_container,
 fieldset {
   display: flex;
   align-items: center;
