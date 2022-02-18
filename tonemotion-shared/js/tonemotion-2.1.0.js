@@ -199,6 +199,19 @@ ToneMotion.prototype.init = function(urlOfServer) {
     // BUG: Safari resolves promise even if files don't load
     this.publicError('Error loading the audio files');
   });
+
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    this.publicLog('This device appears to be an Android');
+  }
+  else {
+    this.deviceIsAndroid = false;
+    this.publicLog('This device does not appear to be an Android');
+  }
 };
 
 // Manages application status and interface updates
@@ -308,21 +321,8 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
   silent_buffer.play();
 
-  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
-  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
-  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
-  const userAgent = window.navigator.userAgent;
-  if (userAgent.match(/Android/i)) {
-    this.deviceIsAndroid = true;
-    this.publicLog('This device appears to be an Android');
-  }
-  else {
-    this.deviceIsAndroid = false;
-    this.publicLog('This device does not appear to be an Android');
-  }
-
   // testing iOS 13+ motion permission
-  // KNOWN ISSUE: iOS 12.2 - 12.4 requires motion access permission in settings (but I note this in compatibility message to user)
+  // KNOWN ISSUE: iOS 12.2-12.4 requires motion access permission in settings - I test for motion access and provide instructions if it fails
   // BUG: iOS 13.4 does NOT report gyroscope data and can't use SHAKE gesture
   // Guard against reference errors by checking that DeviceMotionEvent is defined
   if (typeof DeviceMotionEvent !== 'undefined' &&
@@ -340,7 +340,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Simulate motion
         this.motionPermissionStatus = 'denied';
         this.publicLog('Permission for motion data denied');
-        // this won't work, so immediately post motion acces error message
+        // this won't work, so immediately post motion access error message
         this.postMotionErrorMessage();
         // begin motion updates anyway, in case user simulates motion
         this.beginMotionUpdates();
@@ -353,6 +353,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     this.publicLog('Permission to access motion data not requested');
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      // Some browsers (e.g., desktop Chrome) lie about reporting motion, but I test for that in the motion update loop
       this.beginMotionUpdates();
     } else {
       this.publicLog('This device does not report motion');
@@ -364,7 +365,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
   // while waiting for cue
   this.setStartStopButton('disabled');
-  status_label.innerHTML = ''; // label will update with cue
+  this.setStatusLabel('loading', 'active'); // label will update with cue
 
   this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
@@ -843,12 +844,11 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 // If access to motion fails, give instructions and option to reload or simulate
 let motion_error_container; // needs scope outside this method
 ToneMotion.prototype.postMotionErrorMessage = function() {
-  // TODO: implement error instructions by creating new element with buttons. If user taps button to simulate motion, should dismiss error message
-
   // create container for error messages and buttons
   this.motionFailMessageShown = true;
   motion_error_container = document.createElement('div');
   motion_error_container.id = 'motion_error_container';
+  motion_error_container.classList.add('error');
   start_stop_button.insertAdjacentElement('afterend', motion_error_container);
   let motionErrorMessage = document.createElement('p');
   motion_error_container.appendChild(motionErrorMessage);
@@ -860,9 +860,10 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
     motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
     this.addMotionSimulationButton();
   } else {
-    motionErrorMessage.innerHTML = 'There seems to be an problem accessing the motion data on your device. Tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
+    motionErrorMessage.innerHTML = 'There seems to be a problem accessing the motion data on your device. Tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
     let reload_button = document.createElement('button');
     reload_button.id = 'reload_button';
+    reload_button.classList.add('error');
     reload_button.innerHTML = 'reload page';
     motion_error_container.appendChild(reload_button);
     reload_button.addEventListener("click", () => {
@@ -874,10 +875,11 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
 
 ToneMotion.prototype.addMotionSimulationButton = function() {
   let motion_simulation_button = document.createElement('button');
-  motion_simulation_button.id = 'simulateMotionButton';
+  motion_simulation_button.id = 'motion_simulation_button';
+  motion_simulation_button.classList.add('error');
   motion_simulation_button.innerHTML = 'simulate motion';
   motion_error_container.appendChild(motion_simulation_button);
-  simulateMotionButton.addEventListener("click", () => {
+  motion_simulation_button .addEventListener("click", () => {
     // remove error message and add motion simulation interface
     motion_error_container.remove();
     this.motionFailMessageShown = false;

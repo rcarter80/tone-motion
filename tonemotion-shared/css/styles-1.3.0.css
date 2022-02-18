@@ -316,7 +316,8 @@ button.fixed-media:hover {
   opacity: 0.5;
 }
 
-#start_stop_button.reload {
+#start_stop_button.reload,
+button.error {
   color: var(--theme-color-error-dark);
   border-color: var(--theme-color-error-dark);
 }
@@ -324,7 +325,6 @@ button.fixed-media:hover {
 /* I should probably style containers by class, not id, but I would need to change how classes are set for message container */
 #message_container,
 #message_container.default,
-#motion_error_container,
 fieldset {
   display: flex;
   align-items: center;
@@ -342,15 +342,28 @@ fieldset {
   color: var(--theme-color-warning);
   border-color: var(--theme-color-warning);
 }
-
 #message_container.error {
   color: var(--theme-color-error-dark);
   border-color: var(--theme-color-error-dark);
   background-color: var(--theme-color-error-light);
 }
-
 #message_container.hidden {
   opacity: 0;
+}
+
+#motion_error_container {
+  display: block; /* flex here causes button to float next to text */
+  align-items: center;
+  justify-content: center;
+  margin: 25px 50px;
+  padding: 20px;
+  border: 2px dashed;
+  border-color: var(--theme-color-error-dark);
+  border-radius: 10px;
+  background-color: var(--theme-color-error-light);
+  opacity: 1;
+  color: var(--theme-color-error-dark);
+  transition: all .2s linear;
 }
 
 #help_panel {
