@@ -719,26 +719,21 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
     if (this.accel.rawX === undefined) {
       // No motion data (yet). This could be desktop Chrome, which claims to report motion but does not, so accel values always remain undefined
-      console.log('accel value is undefined');
       this.motionFailCount++;
       // do not attempt to use undefined motion data values
       return;
     }
     // test to make sure values are changing and are not frozen
     // truncate values to avoid round-off errors in comparisons
-    // TODO: change toFixed(1) back to toFixed(8) when done testing
-    this.accel.thisRawX = this.accel.rawX.toFixed(1);
-    this.accel.thisRawY = this.accel.rawY.toFixed(1);
-    console.log('raw x: ' + this.accel.thisRawX + ' raw y: ' + this.accel.thisRawY);
+    this.accel.thisRawX = this.accel.rawX.toFixed(8);
+    this.accel.thisRawY = this.accel.rawY.toFixed(8);
     if (this.accel.thisRawX === this.accel.lastRawX &&
       this.accel.thisRawY === this.accel.lastRawY) {
         // values have not changed at all, which is a problem because even a perfectly motionless device (e.g., on a table) shows changing values
         this.motionFailCount++;
-        console.log('motionFailCount: ' + this.motionFailCount);
     } else {
       // values have changed, so it's working (for now)
       this.motionFailCount = 0;
-      console.log('motionFailCount: ' + this.motionFailCount);
     }
     // set temp values for comparison on next iteration
     this.accel.lastRawX = this.accel.thisRawX;
