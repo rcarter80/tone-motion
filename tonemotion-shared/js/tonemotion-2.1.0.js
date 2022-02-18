@@ -199,37 +199,6 @@ ToneMotion.prototype.init = function(urlOfServer) {
     // BUG: Safari resolves promise even if files don't load
     this.publicError('Error loading the audio files');
   });
-
-  // TODO: delete old code below
-  // this.beginMotionHandlingOnAndroid();
-};
-
-// Tests if device is Android, registers 'devicemotion' event listener. iOS devices require permission after user interaction, but Android devices can begin polling motion sensor data immediately. Waiting to get motion data on Android until same point as I ask for permission on iOS does NOT work on Android. Motion polling chokes.
-ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
-  if (this.debug) {
-    this.publicLog('Will begin motion handling if device is Android');
-  }
-
-  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
-  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
-  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
-  // Could also have user select checkbox to invert axes, but that requires more setup of device
-  // TODO: still need to test whether device is Android
-  const userAgent = window.navigator.userAgent;
-  if (userAgent.match(/Android/i)) {
-    this.deviceIsAndroid = true;
-    if (this.debug) {
-      this.publicLog('This device appears to be an Android');
-    }
-    // Immediately begin polling motion sensors ONLY on Android
-    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-  }
-  else {
-    this.deviceIsAndroid = false;
-    if (this.debug) {
-      this.publicLog('This device does not appear to be an Android');
-    }
-  }
 };
 
 // Manages application status and interface updates
@@ -324,7 +293,7 @@ ToneMotion.prototype.setStatus = function(status) {
 };
 
 // Starts Transport, loops, motion handling, and network requests
-var noSleep; // needs global scope
+let noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting motion updates and cue fetching');
 
@@ -339,7 +308,18 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   //  WITHOUT THIS, THERE MAY BE NO SOUND because phone should be silenced
   silent_buffer.play();
 
-  // TODO: put Android test here
+  // Android devices report motion in same range as iOS but with inverted axes. Check if device is Android
+  // UA sniffing is supposed to be really bad, but this is the only way to automatically invert axes on Android
+  // worse-case scenario: axes are inverted when they shouldn't, which is less bad than not inverting when they should
+  const userAgent = window.navigator.userAgent;
+  if (userAgent.match(/Android/i)) {
+    this.deviceIsAndroid = true;
+    this.publicLog('This device appears to be an Android');
+  }
+  else {
+    this.deviceIsAndroid = false;
+    this.publicLog('This device does not appear to be an Android');
+  }
 
   // testing iOS 13+ motion permission
   // KNOWN ISSUE: iOS 12.2 - 12.4 requires motion access permission in settings (but I note this in compatibility message to user)
@@ -372,20 +352,12 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     this.motionPermissionStatus = 'unneeded';
     this.publicLog('Permission to access motion data not requested');
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
-
-      // TODO: delete comment below after I remove immediate Android polling
-      // If device is Android, handleMotionEvent is already running
-
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
-
-      // TODO: delete code below
-      // this.testDeviceMotion();
-      // But even if Android, still need to start motion updates *here*
-
       this.beginMotionUpdates();
     } else {
       this.publicLog('This device does not report motion');
       this.simulateMotion();
+      // motion updates still used for motion simulation
       this.beginMotionUpdates();
     }
   }
@@ -448,7 +420,7 @@ ToneMotion.prototype.clearMessageLabel = function() {
 // Prints to console and to help panel if console_checkbox is checked
 ToneMotion.prototype.publicLog = function(message) {
   if (console_checkbox.checked) {
-    var logMessage = document.createElement('p');
+    let logMessage = document.createElement('p');
     logMessage.className = 'logMessage';
     logMessage.innerHTML = message;
     console_container.appendChild(logMessage);
@@ -459,7 +431,7 @@ ToneMotion.prototype.publicLog = function(message) {
 // Clears console in help panel
 ToneMotion.prototype.clearConsole = function() {
   console_container.className = 'hidden';
-  var logMessages = document.getElementsByClassName('logMessage');
+  let logMessages = document.getElementsByClassName('logMessage');
   while (logMessages[0]) {
     logMessages[0].parentNode.removeChild(logMessages[0]);
   }
@@ -724,30 +696,6 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
   }
 };
 
-// Tests if device actually reports motion or is lying.
-// TODO: delete this method after replacing it in motionUpdateLoop test
-ToneMotion.prototype.testDeviceMotion = function() {
-  if (this.debug) {
-    this.publicLog('Device claims to report motion. Checking if this is true.');
-  }
-  // Test if device actually reports motion. Chrome lies and claims that desktop browser handles device motion, but doesn't report it
-  // Another possibility is an iOS 12.2 - 12.4 device with motion access off
-  // Need to provide instructions for turning it on
-  // Automatically make sliders visible for desktop testing if needed
-  if (this.accel.rawX === undefined) {
-    var motionTestTimeoutID = setTimeout(() => {
-      if (this.accel.rawX === undefined) {
-        // still no motion reported. Probably either 1) device is desktop or 2) device is iOS 12.2-12.4 and has motion access permission off. Add sliders and message that device isn't reporting motion
-        this.simulateMotion();
-      }
-    }, 1000);
-  } else {
-    if (this.debug) {
-      this.publicLog('Device does report motion.');
-    }
-  }
-};
-
 // Starts motionUpdateLoop. Call this to restart motion updates.
 ToneMotion.prototype.beginMotionUpdates = function() {
   this.motionUpdateInSeconds = this.motionUpdateLoopInterval/1000;
@@ -822,14 +770,6 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
-  // TODO: delete unused code below
-  // CORNER CASE: For 1 sec. desktop Chrome will be tested for motion data, which won't be available, and THEN shouldSimulateMotion is set to true. During that second, accel values are undefined and cause errors below
-  // if (isNaN(this.accel.x)) {
-  //   console.log('Unable to poll or simulate motion data');
-  //   // for 1 sec., just fake values
-  //   this.accel.x = this.accel.y = 0.5;
-  // }
-
   // MAP ACCELEROMETER VALUES TO "TILT" SOUNDS
   // smooths signals to avoid zipper noise
   this.xSig.linearRampTo(this.accel.x, this.motionUpdateInSeconds);
@@ -851,7 +791,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.currentCue.triggerShakeSound();
 
       if (this.debug) {
-        var shakeTimestamp = new Date();
+        let shakeTimestamp = new Date();
         this.publicLog('There was a shake gesture at ' + shakeTimestamp);
       }
     }
@@ -954,18 +894,18 @@ const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/clock-sync
 ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
-    var syncClockCounter = 0;
-    var shortestRoundtrip = Number.POSITIVE_INFINITY;
+    let syncClockCounter = 0;
+    let shortestRoundtrip = Number.POSITIVE_INFINITY;
 
-    var syncClockID = setInterval( () => {
-      var syncTime1 = Date.now(); // client-side timestamp
+    let syncClockID = setInterval( () => {
+      let syncTime1 = Date.now(); // client-side timestamp
 
       fetch(urlForClockSync)
       .then(response => response.text())
       .then(response => {
-        var syncTime2 = response; // server-side timestamp
-        var syncTime3 = Date.now(); // client-side timestamp on receipt
-        var roundtrip = syncTime3 - syncTime1;
+        let syncTime2 = response; // server-side timestamp
+        let syncTime3 = Date.now(); // client-side timestamp on receipt
+        let roundtrip = syncTime3 - syncTime1;
         this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
         if (roundtrip < shortestRoundtrip) {
           // Safari caches response despite my very nice request not to
@@ -1024,7 +964,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
       if (this.status !== 'error') {
         this.triggerCue(this.cueOnClient, this.cueTimeFromServer);
         if (this.debug) {
-          var timestamp = Date.now() - this.clientServerOffset;
+          let timestamp = Date.now() - this.clientServerOffset;
           this.publicLog('New cue number ' + this.cueOnClient + ' fetched from server at ' + timestamp + ' after being set on server at ' + this.cueTimeFromServer + '. Total latency: ' + (timestamp - this.cueTimeFromServer) + ' milliseconds.');
         }
       }
@@ -1083,8 +1023,8 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   }
 
   // lower priority cue (may be deliberately delayed). check client time
-  var timestamp = Date.now() - this.clientServerOffset;
-  var delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
+  let timestamp = Date.now() - this.clientServerOffset;
+  let delay = Math.floor(serverTime - this.serverLatency + this.cue[cue].waitTime - timestamp);
   this.cue[cue].startedAt = this.cueTimeFromServer + this.cue[cue].waitTime;
 
   // trigger new cue (immediately or after wait time)
@@ -1115,7 +1055,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
 
 // Clears all cues that are currently sounding
 ToneMotion.prototype.clearActiveCues = function() {
-  for (var i = 0; i < this.cue.length; i++) {
+  for (let i = 0; i < this.cue.length; i++) {
     if (this.cue[i] && this.cue[i].isPlaying) {
       this.cue[i].stopCue();
       this.cue[i].isPlaying = false;
@@ -1171,11 +1111,11 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
     this.publicLog('Section breakpoint value requested for cue that has not started yet.');
     return 0;
   } else {
-    var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+    let elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
   }
 
   // Go through array of time/value pairs
-  for (var i = 0; i < breakpointArray.length; i = i + 2) {
+  for (let i = 0; i < breakpointArray.length; i = i + 2) {
     // Each time needs to be greater than previous
     if (breakpointArray[i] >= breakpointArray[i+2]) {
       this.publicLog('getSectionBreakpoints() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
@@ -1184,13 +1124,13 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
     // Find which segment current time is in
     if (elapsedTime <= breakpointArray[i]) {
       // time of previous breakpoint (if there was one)
-      var prevTime = breakpointArray[i-2] || 0;
+      let prevTime = breakpointArray[i-2] || 0;
       // duration of this segment
-      var segTime = breakpointArray[i] - prevTime;
+      let segTime = breakpointArray[i] - prevTime;
       // progress in this segment
-      var segProg = (elapsedTime - prevTime) / segTime;
+      let segProg = (elapsedTime - prevTime) / segTime;
       // previous value (or zero if none)
-      var prevVal = breakpointArray[i-1] || 0;
+      let prevVal = breakpointArray[i-1] || 0;
       // interpolated value for progress along this segment
       return prevVal + segProg * (breakpointArray[i+1] - prevVal);
     }
@@ -1213,13 +1153,13 @@ ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
     this.publicLog('Section breakpoint value requested for cue that has not started yet.');
     return 0;
   } else {
-    var elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+    let elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
     // time elapsed in this iteration of loop determined by final loop time
-    var elapsedTimeInLoop = elapsedTime % breakpointArray[breakpointArray.length - 2];
+    let elapsedTimeInLoop = elapsedTime % breakpointArray[breakpointArray.length - 2];
   }
 
   // Go through array of time/value pairs
-  for (var i = 0; i < breakpointArray.length; i = i + 2) {
+  for (let i = 0; i < breakpointArray.length; i = i + 2) {
     // Each time needs to be greater than previous (error check for above)
     if (breakpointArray[i] >= breakpointArray[i+2]) {
       this.publicLog('getSectionBreakpointLoop() requires an array of time/value pairs in which each time is greater than previous (e.g., [1000, 0.5, 2000, 1.0]).');
@@ -1228,13 +1168,13 @@ ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
     // Find which segment current time is in
     if (elapsedTimeInLoop <= breakpointArray[i]) {
       // time of previous breakpoint (if there was one)
-      var prevTime = breakpointArray[i-2] || 0;
+      let prevTime = breakpointArray[i-2] || 0;
       // duration of this segment
-      var segTime = breakpointArray[i] - prevTime;
+      let segTime = breakpointArray[i] - prevTime;
       // progress in this segment
-      var segProg = (elapsedTimeInLoop - prevTime) / segTime;
+      let segProg = (elapsedTimeInLoop - prevTime) / segTime;
       // previous value (or zero if none)
-      var prevVal = breakpointArray[i-1] || 0;
+      let prevVal = breakpointArray[i-1] || 0;
       // interpolated value for progress along this segment
       return prevVal + segProg * (breakpointArray[i+1] - prevVal);
     }
@@ -1243,7 +1183,7 @@ ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
 
 // Takes cue number and time elapsed since that cue began (or 0 if it hasn't)
 ToneMotion.prototype.getElapsedTimeInCue = function(cue) {
-  var elapsedTime;
+  let elapsedTime;
 
   // check that function is passed cue number
   if (arguments.length < 1) {
@@ -1269,7 +1209,7 @@ ToneMotion.prototype.getElapsedTimeInCue = function(cue) {
 // Fades out and stops all audio files. Takes three arguments: an array of Tone.Player objects, a delay time before fade starts, and a duration to fade out
 ToneMotion.prototype.fadeFilesOverCurve = function(audioFiles, delayTime, fadeTime) {
   // array of volume values to pass to setValueCurveAtTime()
-  var values = [0, -99];
+  let values = [0, -99];
   // error check value for delayTime
   if (isNaN(delayTime) || delayTime < 0) {
     this.publicError('Second argument to fadeFilesOverTime() is delayTime, which must be positive number or 0.');
@@ -1281,7 +1221,7 @@ ToneMotion.prototype.fadeFilesOverCurve = function(audioFiles, delayTime, fadeTi
     return;
   }
   // fade all files in array
-  for (var i = 0; i < audioFiles.length; i++) {
+  for (let i = 0; i < audioFiles.length; i++) {
     if (audioFiles[i].volume) {
       // reset start point of fade to current volume
       values[0] = audioFiles[i].volume.value;

@@ -19,8 +19,7 @@ var meow = new Tone.Player(demo_sounds + 'meow.mp3').toDestination();
 
 tm.cue[0] = new TMCue('shake', -1);
 tm.cue[0].goCue = function() {
-  tm.publicMessage('debug mode: ' + tm.debug);
-  // tm.shouldTestMotion = false;
+  // TODO: add "testing" countdown. Test against motionFailCount (if it's 0, everything is fine, and say so). if error, includes instructions: screenshot and send to me - include email address.
 };
 tm.cue[0].triggerShakeSound = function() {
   meow.start();
