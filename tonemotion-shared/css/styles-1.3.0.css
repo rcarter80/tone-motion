@@ -278,8 +278,7 @@ main {
   padding: 20px;
 }
 
-/* TODO: replace ID with class names */
-/* yeah I should really style these as a btn class, not a bunch of IDs */
+/* TODO: yeah I should really style these as a btn class, not a bunch of IDs */
 #start_stop_button,
 #simulateShakeButton,
 button.default,
