@@ -28,7 +28,7 @@ function testMotion() {
     if (tm.motionFailCount === 0) {
       tm.publicMessage('Everything seems to be working fine! Thanks for checking!');
     } else {
-      tm.publicMessage('Hmm, there seems to be a problem. Could you please take a screenshot of the following and email it to me? My email is ryan@ryancarter.org. Thanks so much! <br> user agent: ' + window.navigator.userAgent + '<br> motionFailCount: ' + tm.motionFailCount + '<br> accel x: ' + tm.accel.x + '<br> accel y: ' + tm.accel.y);
+      tm.publicMessage('Hmm, there seems to be a problem. Could you please take a screenshot of the following and email it to me? My email is ryan@ryancarter.org. Thanks so much! <br> user agent: ' + window.navigator.userAgent + '<br> motionFailCount: ' + tm.motionFailCount + '<br> motionPermissionStatus: ' + tm.motionPermissionStatus + '<br> accel x: ' + tm.accel.x + '<br> accel y: ' + tm.accel.y);
     }
   }, 10000);
 
