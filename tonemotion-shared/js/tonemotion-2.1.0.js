@@ -863,7 +863,7 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
     motionErrorMessage.innerHTML = 'There seems to be a problem accessing the motion data on your device. Tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
     let reload_button = document.createElement('button');
     reload_button.id = 'reload_button';
-    reload_button.classList.add('error');
+    reload_button.classList.add('default', 'error');
     reload_button.innerHTML = 'reload page';
     motion_error_container.appendChild(reload_button);
     reload_button.addEventListener("click", () => {
@@ -876,7 +876,7 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
 ToneMotion.prototype.addMotionSimulationButton = function() {
   let motion_simulation_button = document.createElement('button');
   motion_simulation_button.id = 'motion_simulation_button';
-  motion_simulation_button.classList.add('error');
+  motion_simulation_button.classList.add('default', 'error');
   motion_simulation_button.innerHTML = 'simulate motion';
   motion_error_container.appendChild(motion_simulation_button);
   motion_simulation_button .addEventListener("click", () => {
