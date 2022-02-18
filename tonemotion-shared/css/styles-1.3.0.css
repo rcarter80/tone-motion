@@ -282,7 +282,7 @@ main {
 /* yeah I should really style these as a btn class, not a bunch of IDs */
 #start_stop_button,
 #simulateShakeButton,
-#simulateMotionButton,
+#motion_simulation_button,
 button.fixed-media {
   display: block;
   margin-top: 25px;

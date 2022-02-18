@@ -360,8 +360,9 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
         // user has not give permission for motion. Simulate motion
         this.motionPermissionStatus = 'denied';
         this.publicLog('Permission for motion data denied');
-        // TODO: decide whether to immediately simulate motion or not
-        // this.simulateMotion();
+        // this won't work, so immediately post motion acces error message
+        this.postMotionErrorMessage();
+        // begin motion updates anyway, in case user simulates motion
         this.beginMotionUpdates();
       }
     })
@@ -900,37 +901,45 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 };
 
 // If access to motion fails, give instructions and option to reload or simulate
-let motionErrorContainer; // needs scope outside this method
+let motion_error_container; // needs scope outside this method
 ToneMotion.prototype.postMotionErrorMessage = function() {
   // TODO: implement error instructions by creating new element with buttons. If user taps button to simulate motion, should dismiss error message
 
   // create container for error messages and buttons
   this.motionFailMessageShown = true;
-  motionErrorContainer = document.createElement('div');
-  motionErrorContainer.id = 'motion_error_container';
-  start_stop_button.insertAdjacentElement('afterend', motionErrorContainer);
+  motion_error_container = document.createElement('div');
+  motion_error_container.id = 'motion_error_container';
+  start_stop_button.insertAdjacentElement('afterend', motion_error_container);
   let motionErrorMessage = document.createElement('p');
-  motionErrorContainer.appendChild(motionErrorMessage);
+  motion_error_container.appendChild(motionErrorMessage);
 
   if (this.motionPermissionStatus === 'denied') {
-    motionErrorMessage.innerHTML = "It looks like you denied access to your device's motion data, so you won't be able to control sounds by moving your device. If you'd like to see the permissions dialog again, you'll need to force quit your browser and reopen it. Or you can click the button below to simulate motion with sliders and a button.";
+    motionErrorMessage.innerHTML = "It looks like you denied access to your device's motion data, so you won't be able to control sounds by moving your device. If you'd like to see the permissions dialog again, you'll need to force quit your browser and reopen it. Or you can tap the button below to simulate motion with sliders and a button.";
     this.addMotionSimulationButton();
   } else if (this.accel.rawX === undefined) {
     motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
     this.addMotionSimulationButton();
   } else {
-    // TODO: implement handling for motion that chokes
+    motionErrorMessage.innerHTML = 'There seems to be an problem accessing the motion data on your device. Tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
+    let reload_button = document.createElement('button');
+    reload_button.id = 'reload_button';
+    reload_button.innerHTML = 'reload page';
+    motion_error_container.appendChild(reload_button);
+    reload_button.addEventListener("click", () => {
+      // Reload the current page, without using the cache
+      window.location.reload(true);
+    });
   }
 };
 
 ToneMotion.prototype.addMotionSimulationButton = function() {
-  let motionSimulationButton = document.createElement('button');
-  motionSimulationButton.id = 'simulateMotionButton';
-  motionSimulationButton.innerHTML = 'simulate motion';
-  motionErrorContainer.appendChild(motionSimulationButton);
+  let motion_simulation_button = document.createElement('button');
+  motion_simulation_button.id = 'simulateMotionButton';
+  motion_simulation_button.innerHTML = 'simulate motion';
+  motion_error_container.appendChild(motion_simulation_button);
   simulateMotionButton.addEventListener("click", () => {
     // remove error message and add motion simulation interface
-    motionErrorContainer.remove();
+    motion_error_container.remove();
     this.motionFailMessageShown = false;
     this.simulateMotion();
   });
