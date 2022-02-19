@@ -97,7 +97,7 @@ function ToneMotion() {
   this.motionPermissionStatus = 'unknown';
   this.shouldTestMotion = true;
   this.motionFailCount = 0;
-  this.motionFailThreshold = 40;
+  this.motionFailThreshold = 200;
   this.motionFailMessageShown = false;
   this.accel = {
     rawX: undefined,
@@ -855,7 +855,7 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
     motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
     this.addMotionSimulationButton();
   } else {
-    motionErrorMessage.innerHTML = 'There seems to be a problem accessing the motion data on your device. Tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
+    motionErrorMessage.innerHTML = 'There seems to be a problem accessing the motion data on your device, unless you have scrolled continuously for more than ' + (this.motionFailThreshold/(1000/this.motionUpdateLoopInterval)) + ' seconds, which would interrupt access to your motion data. If you do not hear any sound, you can tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
     let reload_button = document.createElement('button');
     reload_button.id = 'reload_button';
     reload_button.classList.add('default', 'error');

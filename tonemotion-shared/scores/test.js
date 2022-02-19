@@ -25,7 +25,7 @@ function testMotion() {
   setTimeout(() => { tm.publicMessage('Testing: 1'); }, 9000);
 
   setTimeout(() => {
-    if (tm.motionFailCount === 0) {
+    if (tm.motionFailCount < tm.motionFailThreshold) {
       tm.publicMessage("Everything seems to be working fine! <br><br> If you don't hear any sound when you shake your phone, could you please take a screenshot of the following and email it to me? My email is ryan@ryancarter.org. Thanks so much! <br> user agent: " + window.navigator.userAgent + '<br> motionFailCount: ' + tm.motionFailCount + '<br> motionPermissionStatus: ' + tm.motionPermissionStatus + '<br> accel x: ' + tm.accel.x + '<br> accel y: ' + tm.accel.y + '<br> status: ' + tm.status);
     } else {
       tm.publicMessage('Hmm, there seems to be a problem. Could you please take a screenshot of the following and email it to me? My email is ryan@ryancarter.org. Thanks so much! <br> user agent: ' + window.navigator.userAgent + '<br> motionFailCount: ' + tm.motionFailCount + '<br> motionPermissionStatus: ' + tm.motionPermissionStatus + '<br> accel x: ' + tm.accel.x + '<br> accel y: ' + tm.accel.y + '<br> status: ' + tm.status);
