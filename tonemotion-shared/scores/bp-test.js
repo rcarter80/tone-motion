@@ -14,10 +14,13 @@ window.onload = function() {
 // Shortcuts to audio file paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
+const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
+const bell_sounds = 'tonemotion-shared/audio/bells/';
+const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
-// 1 sec attack and 3 sec attack means up to 16 vox may be allocated with SHAKE
+// 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
     type: 'sine',
@@ -46,18 +49,41 @@ let count0 = 0;
 
 const vibeSampler = new Tone.Sampler({
   urls: {
+    F3: 'vibe-bell-test.mp3',
+    F4: 'real_vibes-F4.mp3',
     F5: 'real_vibes-F5.mp3',
   },
   baseUrl: vibes_sounds,
 }).toDestination();
 
+const bellSampler = new Tone.Sampler({
+  urls: {
+    F6: 'handbell-F6.mp3',
+  },
+  baseUrl: bell_sounds,
+}).toDestination();
+
+const glassSampler = new Tone.Sampler({
+  urls: {
+    F5: 'glassRealF5.mp3',
+  },
+  baseUrl: glass_sounds,
+}).toDestination();
+
+const glockSparkle = new Tone.Player(glock_sounds + 'test-sparkle.mp3').toDestination();
+
 tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
   count0 = 0;
+  if (tm.getElapsedTimeInCue(0) < 1000) {
+    // only trigger opening sound if it's actually beginning of cue
+    // otherwise if someone stops and restarts, this sound is trigger again
+    glockSparkle.start();
+  }
 };
 tm.cue[0].triggerShakeSound = function() {
 
-  vibeSampler.triggerAttackRelease('F5', 3);
+  vibeSampler.triggerAttackRelease('F4', 3);
 
   let time0 = tm.getElapsedTimeInCue(0);
   // TODO: adjust timing for tempo (if not quarter=60)
