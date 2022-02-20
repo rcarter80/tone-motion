@@ -3,6 +3,7 @@ tm.debug = true; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
+  // TODO: create server for ryancarter.org/bp
   if (tm.localTest) {
     tm.init('http://localhost:3000/shared-server/current-cue');
   } else {
@@ -12,7 +13,7 @@ window.onload = function() {
 
 // Shortcuts to audio file paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
-const chime_sounds = 'tonemotion-shared/audio/chimes/';
+const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
@@ -43,11 +44,11 @@ const pitchArr2 = ['B4', 'A5', 'B4', 'A5', 'B4', Aqb5, 'B4', Aqb5, 'B4', 'G#5', 
 const pitchArr3 = ['F4', 'F5', 'F6', 'F5'];
 let count0 = 0;
 
-const testSampler = new Tone.Sampler({
+const vibeSampler = new Tone.Sampler({
   urls: {
-    A6: '2sec-chime-A6.mp3',
+    F5: 'real_vibes-F5.mp3',
   },
-  baseUrl: chime_sounds,
+  baseUrl: vibes_sounds,
 }).toDestination();
 
 tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
@@ -55,22 +56,26 @@ tm.cue[0].goCue = function() {
   count0 = 0;
 };
 tm.cue[0].triggerShakeSound = function() {
+
+  vibeSampler.triggerAttackRelease('F5', 3);
+
   let time0 = tm.getElapsedTimeInCue(0);
   // TODO: adjust timing for tempo (if not quarter=60)
-  if (time0 < 24000) {
-    // first notes are coordinated by time so everyone is playing same note
-    testSampler.triggerAttackRelease(pitchArr1[Math.floor(time0 / 1000)], 4);
-  } else if (count0 < pitchArr2.length) {
-    // then notes go through array, creating an independent canon
-    sineTails.triggerAttackRelease(pitchArr2[count0], 1);
-    testSampler.triggerAttackRelease(pitchArr2[count0], 4);
-    count0++;
-  } else {
-    // final loop of pitches
-    sineTails.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 1);
-    testSampler.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 4);
-    count0++;
-  }
+  // if (time0 < 24000) {
+  //   // first notes are coordinated by time so everyone is playing same note
+  //   vibeSampler.triggerAttackRelease(pitchArr1[Math.floor(time0 / 1000)], 4);
+  // } else if (count0 < pitchArr2.length) {
+  //   // then notes go through array, creating an independent canon
+  //   sineTails.triggerAttackRelease(pitchArr2[count0], 1);
+  //   vibeSampler.triggerAttackRelease(pitchArr2[count0], 4);
+  //   count0++;
+  // } else {
+  //   // final loop of pitches
+  //   sineTails.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 1);
+  //   vibeSampler.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 4);
+  //   count0++;
+  // }
+
 };
 tm.cue[0].stopCue = function() {
   sineTails.releaseAll();
