@@ -5,9 +5,9 @@ window.onload = function() {
   // fetch cues from localhost if tm.localTest is true
   // TODO: create server for ryancarter.org/bp
   if (tm.localTest) {
-    tm.init('http://localhost:3000/shared-server/current-cue');
+    tm.init('http://localhost:3000/snm-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/shared-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/snm-server/current-cue');
   }
 };
 
@@ -139,7 +139,7 @@ tm.cue[5].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 6: Audience enters with metallic SHAKE sounds outlining main theme
+// CUE 6: [B] Audience enters with metallic SHAKE sounds outlining main theme
 const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
 const AqS3 = 220 * (2**(1/24)); // A quarter-sharp 3
 const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
@@ -195,7 +195,7 @@ tm.cue[6].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 7: hidden cue to fade out final SHAKE sounds from last cue
+// CUE 7: [D] - hidden cue to fade out final SHAKE sounds from last cue
 tm.cue[7] = new TMCue('hidden', -1);
 tm.cue[7].goCue = function() {
   // TODO: maybe add reversed swoosh sound somewhere in here?
@@ -203,5 +203,15 @@ tm.cue[7].goCue = function() {
   sineTails.volume.rampTo(-60, 6);
 }
 tm.cue[7].stopCue = function() {
+  // nothing to clean up
+}
+
+// *******************************************************************
+// CUE 8: [E] - tacet transition
+tm.cue[8] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[8].goCue = function() {
+  // nothing to play
+}
+tm.cue[8].stopCue = function() {
   // nothing to clean up
 }
