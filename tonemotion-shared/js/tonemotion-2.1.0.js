@@ -876,10 +876,14 @@ ToneMotion.prototype.addMotionSimulationButton = function() {
   motion_error_container.appendChild(motion_simulation_button);
   motion_simulation_button .addEventListener("click", () => {
     // remove error message and add motion simulation interface
-    motion_error_container.remove();
-    this.motionFailMessageShown = false;
+    this.clearMotionErrorMessage();
     this.simulateMotion();
   });
+};
+
+ToneMotion.prototype.clearMotionErrorMessage = function() {
+  motion_error_container.remove();
+  this.motionFailMessageShown = false;
 };
 
 /*********************************************************************

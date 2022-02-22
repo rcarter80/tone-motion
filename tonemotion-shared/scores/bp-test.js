@@ -132,7 +132,9 @@ tm.cue[4].stopCue = function() {
 // CUE 5: actual beginning of piece (audience is tacet)
 tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // nothing to play
+  // optimize motion update loop by turning off motion testing when piece starts
+  tm.shouldTestMotion = false;
+  tm.clearMotionErrorMessage();
 }
 tm.cue[5].stopCue = function() {
   // nothing to clean up
@@ -208,7 +210,7 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8: [E] - tacet transition
-tm.cue[8] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[8] = new TMCue('tacet', -1);
 tm.cue[8].goCue = function() {
   // nothing to play
 }
