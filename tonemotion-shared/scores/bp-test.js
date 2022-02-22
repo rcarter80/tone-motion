@@ -52,59 +52,17 @@ const vibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).toDestination();
 
-
 // *******************************************************************
-// CUE 0:
-
-const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
-const AqS3 = 220 * (2**(1/24)); // A quarter-sharp 3
-const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
-const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
-
-const pitchArr1_0 = ['F4', 'F5', 'F5', 'F4', 'Eb5', 'Eb5', 'F4', 'D5', 'D5', 'F4', 'C5', 'C5', 'Eb4', 'C5', 'Eb4', DqS4, DqS4, 'C5', 'D4', 'C5', 'D4', 'C4', 'C5', 'C5'];
-const pitchArr2 = ['C4', 'Bb4', 'C5', 'Bb5', 'C4', 'Bb5', 'C4', AqS4, 'C5', AqS5, 'C4', AqS5, 'C4', 'A4', 'C5', 'A5', 'C4', 'A5', 'C4', 'G4', 'C5', 'G5', 'C4', 'G5', 'Bb3', 'G4', 'Bb4', 'G5', 'Bb3', 'G5', AqS3, 'G4', AqS4, 'G5', AqS3, 'G5', 'A3', 'G4', 'A4', 'G5', 'A3', 'G5', 'G3', 'G4', 'G5', 'G4', 'G3', 'G5', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4'];
-const pitchArr3 = ['E4', 'E5', 'E6', 'E5'];
-let count_0 = 0;
-
-// uses two handbell sounds from freesound.org/people/radwoc/ (CC0 license)
-const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDestination();
-
-tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
+// CUE 0: piece is in "waiting" state by default
+tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  count_0 = 0;
-  if (tm.getElapsedTimeInCue(0) < 1000) {
-    // only trigger opening sound if it's actually beginning of cue
-    // otherwise if someone stops and restarts, this sound is triggered again
-    bellSparkle.start();
-  }
-};
-tm.cue[0].triggerShakeSound = function() {
-  let time_0 = tm.getElapsedTimeInCue(0);
-  // prevent shakes at same time as bellSparkle (455ms = 1 beat @ 132 bpm)
-  if (time_0 > 455) {
-    // 21815 ms ~ 24 beats @ 66 bpm (this is first 8 measures of section)
-    if (time_0 < 21815) {
-      // first notes are coordinated by time so everyone is playing same note
-      // 909 ms = 1 beat @ 66 bpm (each note in above array is one beat)
-      vibeSampler.triggerAttackRelease(pitchArr1[Math.floor(time_0 / 909)], 3);
-      sineTails.triggerAttackRelease(pitchArr1[Math.floor(time_0 / 909)], 1);
-    } else if (count_0 < pitchArr2.length) {
-      // then notes go through array, creating an independent canon
-      vibeSampler.triggerAttackRelease(pitchArr2[count_0], 3);
-      sineTails.triggerAttackRelease(pitchArr2[count_0], 1);
-      count_0++;
-    } else {
-      // final loop of pitches
-      vibeSampler.triggerAttackRelease(pitchArr3[(count_0 - pitchArr2.length) % pitchArr3.length], 3);
-      sineTails.triggerAttackRelease(pitchArr3[(count_0 - pitchArr2.length) % pitchArr3.length], 1);
-      count_0++;
-    }
-  }
+  tm.publicLog('Waiting for piece to start');
 };
 tm.cue[0].stopCue = function() {
-  sineTails.releaseAll();
+  // nothing to clean up
 };
 
+// TODO: change order of tutorial so that SHAKE is first
 // *******************************************************************
 // CUE 1: tilt tutorial
 // Test tone for "tilt" tutorial
@@ -168,4 +126,66 @@ tm.cue[4].goCue = function() {
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 5: actual beginning of piece (audience is tacet)
+tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[5].goCue = function() {
+  // nothing to play
+}
+tm.cue[5].stopCue = function() {
+  // nothing to clean up
+}
+
+// *******************************************************************
+// CUE 6:
+const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
+const AqS3 = 220 * (2**(1/24)); // A quarter-sharp 3
+const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
+const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
+
+const pitchArr1_6 = ['F4', 'F5', 'F5', 'F4', 'Eb5', 'Eb5', 'F4', 'D5', 'D5', 'F4', 'C5', 'C5', 'Eb4', 'C5', 'Eb4', DqS4, DqS4, 'C5', 'D4', 'C5', 'D4', 'C4', 'C5', 'C5'];
+const pitchArr2_6 = ['C4', 'Bb4', 'C5', 'Bb5', 'C4', 'Bb5', 'C4', AqS4, 'C5', AqS5, 'C4', AqS5, 'C4', 'A4', 'C5', 'A5', 'C4', 'A5', 'C4', 'G4', 'C5', 'G5', 'C4', 'G5', 'Bb3', 'G4', 'Bb4', 'G5', 'Bb3', 'G5', AqS3, 'G4', AqS4, 'G5', AqS3, 'G5', 'A3', 'G4', 'A4', 'G5', 'A3', 'G5', 'G3', 'G4', 'G5', 'G4', 'G3', 'G5', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4'];
+const pitchArr3_6 = ['E4', 'E5', 'E6', 'E5'];
+let count_6 = 0;
+
+// uses two handbell sounds from freesound.org/people/radwoc/ (CC0 license)
+const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDestination();
+
+// wait window of 22 seconds prevents people from stopping and starting
+tm.cue[6] = new TMCue('shake', 1818, 22000); // 4 beats @ 132 bpm
+tm.cue[6].goCue = function() {
+  count_6 = 0;
+  if (tm.getElapsedTimeInCue(6) < 1000) {
+    // only trigger opening sound if it's actually beginning of cue
+    // otherwise if someone stops and restarts, this sound is triggered again
+    bellSparkle.start();
+  }
+};
+tm.cue[6].triggerShakeSound = function() {
+  let time_6 = tm.getElapsedTimeInCue(6);
+  // prevent shakes at same time as bellSparkle (455ms = 1 beat @ 132 bpm)
+  if (time_6 > 455) {
+    // 21815 ms ~ 24 beats @ 66 bpm (this is first 8 measures of section)
+    if (time_6 < 21815) {
+      // first notes are coordinated by time so everyone is playing same note
+      // 909 ms = 1 beat @ 66 bpm (each note in above array is one beat)
+      vibeSampler.triggerAttackRelease(pitchArr1_6[Math.floor(time_6/909)], 3);
+      sineTails.triggerAttackRelease(pitchArr1_6[Math.floor(time_6/909)], 1);
+    } else if (count_6 < pitchArr2_6.length) {
+      // then notes go through array, creating an independent canon
+      vibeSampler.triggerAttackRelease(pitchArr2_6[count_6], 3);
+      sineTails.triggerAttackRelease(pitchArr2_6[count_6], 1);
+      count_6++;
+    } else {
+      // final loop of pitches
+      vibeSampler.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 3);
+      sineTails.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 1);
+      count_6++;
+    }
+  }
+};
+tm.cue[6].stopCue = function() {
+  sineTails.releaseAll();
 };
