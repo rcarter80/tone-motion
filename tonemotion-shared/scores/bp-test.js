@@ -34,19 +34,10 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     release: 3,
     releaseCurve: "linear",
   },
-  volume: -24,
+  volume: -28,
 }).toDestination();
 
-// *******************************************************************
-// CUE 0:
-const Aqb4 = 220 * ((2**(1/24))**23); // A quarter-flat 4
-const Dqb5 = 440 * ((2**(1/24))**9); // D quarter-flat 5
-const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
-const pitchArr1 = ['E5', 'E6', 'E6', 'E5', 'D6', 'D6', 'E5', 'C#6', 'C#6', 'E5', 'B5', 'B5', 'D5', 'B5', 'B5', Dqb5, 'B5', 'B5', 'C#5', 'B5', 'B5', 'B4', 'B5', 'B5'];
-const pitchArr2 = ['B4', 'A5', 'B4', 'A5', 'B4', Aqb5, 'B4', Aqb5, 'B4', 'G#5', 'B4', 'G#5', 'B4', 'F#5', 'B4', 'F#5', 'A4', 'F#5', 'A4', 'F#5', Aqb4, 'F#5', Aqb4, 'F#5', 'G#4', 'F#5', 'G#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'C7', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'F4', 'F5', 'Eb6', 'A5'];
-const pitchArr3 = ['F4', 'F5', 'F6', 'F5'];
-let count0 = 0;
-
+// sampler using vibes (with rattan sticks) and struck glass "bell" sounds
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -59,50 +50,56 @@ const vibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).toDestination();
 
-const bellSampler = new Tone.Sampler({
-  urls: {
-    F6: 'handbell-F6.mp3',
-  },
-  baseUrl: bell_sounds,
-}).toDestination();
 
-const glassSampler = new Tone.Sampler({
-  urls: {
-    F5: 'glassRealF5.mp3',
-  },
-  baseUrl: glass_sounds,
-}).toDestination();
+// *******************************************************************
+// CUE 0:
 
-const glockSparkle = new Tone.Player(glock_sounds + 'test-sparkle.mp3').toDestination();
+const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
+
+const Aqb4 = 440 * ((2**(1/24))**23); // A quarter-flat 5 NOT
+const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
+
+const pitchArr1_0 = ['F4', 'F5', 'F5', 'F4', 'Eb5', 'Eb5', 'F4', 'D5', 'D5', 'F4', 'C5', 'C5', 'Eb4', 'C5', 'Eb4', DqS4, DqS4, 'C5', 'D4', 'C5', 'D4', 'C4', 'C5', 'C5'];
+const pitchArr2 = ['B4', 'A5', 'B4', 'A5', 'B4', Aqb5, 'B4', Aqb5, 'B4', 'G#5', 'B4', 'G#5', 'B4', 'F#5', 'B4', 'F#5', 'A4', 'F#5', 'A4', 'F#5', Aqb4, 'F#5', Aqb4, 'F#5', 'G#4', 'F#5', 'G#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'C7', 'F4', 'F5', 'Eb6', 'A5', 'G6', 'F4', 'F5', 'Eb6', 'A5'];
+const pitchArr3 = ['F4', 'F5', 'F6', 'F5'];
+let count_0 = 0;
+
+// uses two handbell sounds from freesound.org/people/radwoc/ (CC0 license)
+const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDestination();
 
 tm.cue[0] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  count0 = 0;
-  if (tm.getElapsedTimeInCue(0) < 1000) {
+  count_0 = 0;
+
+  // TODO: remove "true ||" so that this isn't always triggered
+  if (true || tm.getElapsedTimeInCue(0) < 1000) {
     // only trigger opening sound if it's actually beginning of cue
-    // otherwise if someone stops and restarts, this sound is trigger again
-    glockSparkle.start();
+    // otherwise if someone stops and restarts, this sound is triggered again
+    bellSparkle.start();
   }
 };
 tm.cue[0].triggerShakeSound = function() {
 
-  vibeSampler.triggerAttackRelease('F4', 3);
+  // test for first pitch series
+  vibeSampler.triggerAttackRelease(pitchArr1_0[count_0], 3);
+  sineTails.triggerAttackRelease(pitchArr1_0[count_0], 1);
+  count_0++;
 
   let time0 = tm.getElapsedTimeInCue(0);
   // TODO: adjust timing for tempo (if not quarter=60)
   // if (time0 < 24000) {
   //   // first notes are coordinated by time so everyone is playing same note
   //   vibeSampler.triggerAttackRelease(pitchArr1[Math.floor(time0 / 1000)], 4);
-  // } else if (count0 < pitchArr2.length) {
+  // } else if (count_0 < pitchArr2.length) {
   //   // then notes go through array, creating an independent canon
-  //   sineTails.triggerAttackRelease(pitchArr2[count0], 1);
-  //   vibeSampler.triggerAttackRelease(pitchArr2[count0], 4);
-  //   count0++;
+  //   sineTails.triggerAttackRelease(pitchArr2[count_0], 1);
+  //   vibeSampler.triggerAttackRelease(pitchArr2[count_0], 4);
+  //   count_0++;
   // } else {
   //   // final loop of pitches
-  //   sineTails.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 1);
-  //   vibeSampler.triggerAttackRelease(pitchArr3[(count0 - pitchArr2.length) % pitchArr3.length], 4);
-  //   count0++;
+  //   sineTails.triggerAttackRelease(pitchArr3[(count_0 - pitchArr2.length) % pitchArr3.length], 1);
+  //   vibeSampler.triggerAttackRelease(pitchArr3[(count_0 - pitchArr2.length) % pitchArr3.length], 4);
+  //   count_0++;
   // }
 
 };
@@ -113,8 +110,8 @@ tm.cue[0].stopCue = function() {
 // *******************************************************************
 // CUE 1: tilt tutorial
 // Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
-var testTone = new Tone.Synth({
+let testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
+let testTone = new Tone.Synth({
   oscillator: {
     type: "sawtooth"
   },
@@ -126,8 +123,8 @@ var testTone = new Tone.Synth({
   }
 }).connect(testToneFilter);
 testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
+let testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
+let testToneFilterScale = new Tone.Scale(440, 10000);
 xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
 yTilt.chain(testToneFilterScale, testToneFilter.frequency);
 tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
@@ -153,7 +150,7 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
+let cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
 tm.cue[3] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
   // nothing to do until shake gestures
