@@ -882,7 +882,10 @@ ToneMotion.prototype.addMotionSimulationButton = function() {
 };
 
 ToneMotion.prototype.clearMotionErrorMessage = function() {
-  motion_error_container.remove();
+  // only remove motion error message if it exists
+  if (typeof motion_error_container !== 'undefined') {
+    motion_error_container.remove();
+  }
   this.motionFailMessageShown = false;
 };
 
