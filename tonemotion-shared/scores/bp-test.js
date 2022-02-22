@@ -49,9 +49,12 @@ let count0 = 0;
 
 const vibeSampler = new Tone.Sampler({
   urls: {
-    F3: 'vibe-bell-test.mp3',
-    F4: 'real_vibes-F4.mp3',
-    F5: 'real_vibes-F5.mp3',
+    'F3': 'vibe_bell-F3.mp3',
+    'A3': 'vibe_bell-A3.mp3',
+    'Db4': 'vibe_bell-Db4.mp3',
+    'F4': 'vibe_bell-F4.mp3',
+    'A4': 'vibe_bell-A4.mp3',
+    'Db5': 'vibe_bell-Db5.mp3',
   },
   baseUrl: vibes_sounds,
 }).toDestination();
