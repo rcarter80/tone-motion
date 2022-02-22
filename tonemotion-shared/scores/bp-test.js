@@ -139,7 +139,7 @@ tm.cue[5].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 6:
+// CUE 6: Audience enters with metallic SHAKE sounds outlining main theme
 const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
 const AqS3 = 220 * (2**(1/24)); // A quarter-sharp 3
 const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
@@ -156,7 +156,11 @@ const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDest
 // wait window of 22 seconds prevents people from stopping and starting
 tm.cue[6] = new TMCue('shake', 1818, 22000); // 4 beats @ 132 bpm
 tm.cue[6].goCue = function() {
+  // reset volume from possible previous change
+  vibeSampler.volume.value = 0;
+  sineTails.volume.value = -28;
   count_6 = 0;
+
   if (tm.getElapsedTimeInCue(6) < 1000) {
     // only trigger opening sound if it's actually beginning of cue
     // otherwise if someone stops and restarts, this sound is triggered again
@@ -189,3 +193,15 @@ tm.cue[6].triggerShakeSound = function() {
 tm.cue[6].stopCue = function() {
   sineTails.releaseAll();
 };
+
+// *******************************************************************
+// CUE 7: hidden cue to fade out final SHAKE sounds from last cue
+tm.cue[7] = new TMCue('hidden', -1);
+tm.cue[7].goCue = function() {
+  // TODO: maybe add reversed swoosh sound somewhere in here?
+  vibeSampler.volume.rampTo(-60, 6);
+  sineTails.volume.rampTo(-60, 6);
+}
+tm.cue[7].stopCue = function() {
+  // nothing to clean up
+}
