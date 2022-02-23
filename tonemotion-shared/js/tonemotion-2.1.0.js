@@ -71,6 +71,8 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} motionUpdateInSeconds - (seconds) Same value as above but in seconds (to minimize calculations for Tone.js objects that take seconds)
  * @param {number} cuePollingInterval - (ms.) How often server is polled
  * @param {array} intervalIDArray - used to store all interval IDs to clear
+ * @param {number} motionUpdateCounter - used to check that motion is updating
+ * @param {number} lastMotionUpdateCounter - used with above for motion checks
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
  * @param {number} cueTimeFromServer - Time when last cue was set on the
@@ -121,6 +123,8 @@ function ToneMotion() {
   this.motionUpdateInSeconds = 0.05;
   this.cuePollingInterval = 500;
   this.intervalIDArray = [];
+  this.motionUpdateCounter = 0;
+  this.lastMotionUpdateCounter = 0;
   // when server restarts, both cue number and time revert to 0
   // init with -1 for both so cue 0 is still triggered when server restarts
   this.cueOnClient = -1;
@@ -678,6 +682,7 @@ ToneMotion.prototype.setBackgroundBlue = function() {
 // Sets ToneMotion object accel properties and sets shake flag
 // Bound to 'devicemotion' event listener, so this is called very often
 // but the polling interval is read-only
+let motionTestCounterTM = 1; // starting at 1 prevents fail check on 1st loop
 ToneMotion.prototype.handleMotionEvent = function(event) {
   // Axes on Android on inverted relative to iOS
   if (this.deviceIsAndroid) {
@@ -695,12 +700,38 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
     }
   }
 
+  // sometimes (inexplicably) the cue fetching and motion updates freeze. This event handler keeps running, so I can use it to check for problems
+  // At standard polling interval f 60 times/sec., this happens every 5 sec.
+  if (motionTestCounterTM % 300 == 0) {
+    this.checkForFailure();
+  }
+  motionTestCounterTM++;
+
   // For debugging, add properties to read DeviceMotionEvent interval and display acceleration (not including gravity), used for shake gesture
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
   if (this.debug) {
     this.motionPollingInterval = event.interval;
     this.gyro_y = event.acceleration.y;
   }
+};
+
+// Uses the devicemotion handler to periodically check if everything is ok
+ToneMotion.prototype.checkForFailure = function() {
+  console.log('test');
+  if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
+    // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode
+    if (this.status === 'playing_tacet' ||
+    this.status === 'playing_tilt' ||
+    this.status === 'playing_shake' ||
+    this.status === 'playing_tiltAndShake' ||
+    this.status === 'playing_listen') {
+      // start everything up again
+      this.cueTimeFromServer = 0;
+      // note that noSleep throws error (bc .enable() called w/o user input?)
+      this.startMotionUpdatesAndCueFetching();
+    }
+  }
+  this.lastMotionUpdateCounter = this.motionUpdateCounter;
 };
 
 // Starts motionUpdateLoop. Call this to restart motion updates.
@@ -735,9 +766,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
-  // test to make sure values are changing and are not frozen
-  // truncate values to avoid round-off errors in comparisons
-  // TODO: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
+  // BUG: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
   // I then went to decrement cue counter on server (from 6 to 5) and got error that negative numbers are not allowed, and cue was 0, so it appears server restarted. That may have caused issue? When I set cue counter to 5, the site did NOT update. It remained on cue 6. (I checked and yes the server restarted at 6:20pm)
   // NEXT I called tm.syncClocks() to make sure there was still a connection to the server. It worked, and so it reset status to readyToPlay and changed button to "start"
   // NEXT I called tm.beginMotionUpdates() from console, and motion monitor showed changing values again.
@@ -837,6 +866,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'peak level: ' +  this.meter.peak.toFixed(6));
     }
   }
+  // this counter is used by handleMotionEvent to test that this loop is running
+  this.motionUpdateCounter++;
 };
 
 // If access to motion fails, give instructions and option to reload or simulate
