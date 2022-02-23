@@ -97,15 +97,11 @@ function ToneMotion() {
   this.motionPermissionStatus = 'unknown';
   this.shouldTestMotion = true;
   this.motionFailCount = 0;
-  this.motionFailThreshold = 200;
+  this.motionFailThreshold = 20;
   this.motionFailMessageShown = false;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
-    thisRawX: undefined,
-    thisRawY: undefined,
-    lastRawX: undefined,
-    lastRawY: undefined,
     x: undefined,
     y: undefined,
   };
@@ -709,7 +705,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ** Other properties must be set within repeated function calls, e.g., this.currentCue.updateTiltSounds();
 */
 ToneMotion.prototype.motionUpdateLoop = function() {
-  // Test successful access to motion data before using values. Optimize by setting shouldTestMotion to false (from score) when actual piece begins
+  // Test successful access to motion data before using values. Can optimize by setting shouldTestMotion to false (from score) when actual piece begins
   if (this.shouldTestMotion && !(this.shouldSimulateMotion)) {
     if (this.motionFailCount > this.motionFailThreshold) {
       if (!(this.motionFailMessageShown)) {
@@ -721,35 +717,18 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.motionFailCount++;
       // do not attempt to use undefined motion data values
       return;
-    }
-    // test to make sure values are changing and are not frozen
-    // truncate values to avoid round-off errors in comparisons
-    // TODO: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
-    // I then went to decrement cue counter on server (from 6 to 5) and got error that negative numbers are not allowed, and cue was 0, so it appears server restarted. That may have caused issue? When I set cue counter to 5, the site did NOT update. It remained on cue 6. (I checked and yes the server restarted at 6:20pm)
-    // NEXT I called tm.syncClocks() to make sure there was still a connection to the server. It worked, and so it reset status to readyToPlay and changed button to "start"
-    // NEXT I called tm.beginMotionUpdates() from console, and motion monitor showed changing values again.
-    // NEXT I called tm.getCuesFromServer() and it started fetching cues again BUT only first shake gesture worked. After that I got:
-    // Error: No available buffers for note: -Infinity.
-    // I repeated changing cue on server and returned to cue 6 with same result (first SHAKE worked and subsequent threw above error). Each SHAKE gesture is identified, but throws that error.
-    // NEXT I went back to cue 0 and went through tutorial cues, which all worked, include SHAKE tutorial, so it looks like there's an issue with cue 6 but other restarting motion updates and cue fetching worked. I manually triggered the SHAKE gesture that SHOULD happen and it worked, but the code from the last else branch of the SHAKE 6 cue threw same error, so it seems it's trying to play SHAKE gesture from last pitch loop, not middle loop. Everything else working.
-    // NEXT I tested on multiple devices and had exactly same issue on every device, even though that all worked fine last night and earlier today. So there's an issue with the cue 6 code that is unrelated to above cue fetching and motion issue.
-    // solution FUUUUUCK: my bad: when I coded cue 7, I forgot to increment cue number for SHAKE method - it was still [6]
-
-    // AT LEAST need to change every .thisRawX to thisX, etc. because raw values DO in fact update and test won't fail
-    this.accel.thisRawX = this.accel.rawX.toFixed(8);
-    this.accel.thisRawY = this.accel.rawY.toFixed(8);
-    if (this.accel.thisRawX === this.accel.lastRawX &&
-      this.accel.thisRawY === this.accel.lastRawY) {
-        // values have not changed at all, which is a problem because even a perfectly motionless device (e.g., on a table) shows changing values
-        this.motionFailCount++;
     } else {
-      // values have changed, so it's working (for now)
       this.motionFailCount = 0;
     }
-    // set temp values for comparison on next iteration
-    this.accel.lastRawX = this.accel.thisRawX;
-    this.accel.lastRawY = this.accel.thisRawY;
   }
+
+  // test to make sure values are changing and are not frozen
+  // truncate values to avoid round-off errors in comparisons
+  // TODO: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
+  // I then went to decrement cue counter on server (from 6 to 5) and got error that negative numbers are not allowed, and cue was 0, so it appears server restarted. That may have caused issue? When I set cue counter to 5, the site did NOT update. It remained on cue 6. (I checked and yes the server restarted at 6:20pm)
+  // NEXT I called tm.syncClocks() to make sure there was still a connection to the server. It worked, and so it reset status to readyToPlay and changed button to "start"
+  // NEXT I called tm.beginMotionUpdates() from console, and motion monitor showed changing values again.
+  // NEXT I called tm.getCuesFromServer() and it started fetching cues again
 
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldSimulateMotion) {
@@ -861,22 +840,10 @@ ToneMotion.prototype.postMotionErrorMessage = function() {
 
   if (this.motionPermissionStatus === 'denied') {
     motionErrorMessage.innerHTML = "It looks like you denied access to your device's motion data, so you won't be able to control sounds by moving your device. If you'd like to see the permissions dialog again, you'll need to force quit your browser and reopen it. Or you can tap the button below to simulate motion with sliders and a button.";
-    this.addMotionSimulationButton();
-  } else if (this.accel.rawX === undefined) {
-    motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
-    this.addMotionSimulationButton();
   } else {
-    motionErrorMessage.innerHTML = 'There seems to be a problem accessing the motion data on your device, unless you have scrolled continuously for more than ' + (this.motionFailThreshold/(1000/this.motionUpdateLoopInterval)) + ' seconds, which would interrupt access to your motion data. If you do not hear any sound, you can tap the button below to reload the page. If the problem persists, you can try closing this browser tab and creating a new one.';
-    let reload_button = document.createElement('button');
-    reload_button.id = 'reload_button';
-    reload_button.classList.add('default', 'error');
-    reload_button.innerHTML = 'reload page';
-    motion_error_container.appendChild(reload_button);
-    reload_button.addEventListener("click", () => {
-      // Reload the current page, without using the cache
-      window.location.reload(true);
-    });
+    motionErrorMessage.innerHTML = 'Your device is not reporting motion. You may be on a laptop or desktop, or your device settings may be blocking access to motion data. Please check your device settings and reload this page, or you can click the button below to simulate motion with sliders and a button.';
   }
+  this.addMotionSimulationButton();
 };
 
 ToneMotion.prototype.addMotionSimulationButton = function() {
