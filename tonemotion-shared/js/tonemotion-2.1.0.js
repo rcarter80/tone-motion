@@ -334,6 +334,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
+        // BUG: oops, this registers a NEW event listener each time. should probably check if it's already there?
         window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
         this.motionPermissionStatus = 'granted';
         this.publicLog('Permission for motion data granted');
@@ -354,6 +355,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     this.motionPermissionStatus = 'unneeded';
     this.publicLog('Permission to access motion data not requested');
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
+      // BUG: oops, this registers a NEW event listener each time. should probably check if it's already there?
       window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
       // Some browsers (e.g., desktop Chrome) lie about reporting motion, but I test for that in the motion update loop
       this.beginMotionUpdates();
