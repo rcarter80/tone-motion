@@ -725,6 +725,18 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
     // test to make sure values are changing and are not frozen
     // truncate values to avoid round-off errors in comparisons
+    // TODO: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
+    // I then went to decrement cue counter on server (from 6 to 5) and got error that negative numbers are not allowed, and cue was 0, so it appears server restarted. That may have caused issue? When I set cue counter to 5, the site did NOT update. It remained on cue 6.
+    // NEXT I called tm.syncClocks() to make sure there was still a connection to the server. It worked, and so it reset status to readyToPlay and changed button to "start"
+    // NEXT I called tm.beginMotionUpdates() from console, and motion monitor showed changing values again.
+    // NEXT I called tm.getCuesFromServer() and it started fetching cues again BUT only first shake gesture worked. After that I got:
+    // Error: No available buffers for note: -Infinity.
+    // I repeated changing cue on server and returned to cue 6 with same result (first SHAKE worked and subsequent threw above error). Each SHAKE gesture is identified, but throws that error.
+    // NEXT I went back to cue 0 and went through tutorial cues, which all worked, include SHAKE tutorial, so it looks like there's an issue with cue 6 but other restarting motion updates and cue fetching worked. I manually triggered the SHAKE gesture that SHOULD happen and it worked, but the code from the last else branch of the SHAKE 6 cue threw same error, so it seems it's trying to play SHAKE gesture from last pitch loop, not middle loop. Everything else working.
+    // NEXT I tested on multiple devices and had exactly same issue on every device, even though that all worked fine last night and earlier today. So there's an issue with the cue 6 code that is unrelated to above cue fetching and motion issue.
+    // solution FUUUUUCK: my bad: when I coded cue 7, I forgot to increment cue number for SHAKE method - it was still [6]
+
+    // AT LEAST need to change every .thisRawX to thisX, etc. because raw values DO in fact update and test won't fail
     this.accel.thisRawX = this.accel.rawX.toFixed(8);
     this.accel.thisRawY = this.accel.rawY.toFixed(8);
     if (this.accel.thisRawX === this.accel.lastRawX &&
