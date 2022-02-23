@@ -198,17 +198,19 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7: [D] - cue to fade out final SHAKE sounds from last cue
+let count_7 = 0;
+
 tm.cue[7] = new TMCue('shake', -1);
 tm.cue[7].goCue = function() {
-  vibeSampler.volume.rampTo(-60, 6);
-  sineTails.volume.rampTo(-60, 6);
+  vibeSampler.volume.rampTo(-36, 6);
+  sineTails.volume.rampTo(-36, 6);
 }
 tm.cue[7].triggerShakeSound = function() {
   // TODO: maybe add reversed swoosh sound somewhere in here?
   // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
-  vibeSampler.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 3);
-  sineTails.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 1);
-  count_6++;
+  vibeSampler.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 3);
+  sineTails.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 1);
+  count_7++;
 };
 tm.cue[7].stopCue = function() {
   // nothing to clean up
