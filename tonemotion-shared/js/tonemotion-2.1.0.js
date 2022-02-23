@@ -70,6 +70,7 @@ const yTilt = new Tone.Signal(0.5);
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} motionUpdateInSeconds - (seconds) Same value as above but in seconds (to minimize calculations for Tone.js objects that take seconds)
  * @param {number} cuePollingInterval - (ms.) How often server is polled
+ * @param {array} intervalIDArray - used to store all interval IDs to clear
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
  * @param {number} cueTimeFromServer - Time when last cue was set on the
@@ -119,6 +120,7 @@ function ToneMotion() {
   this.motionUpdateLoopInterval = 50;
   this.motionUpdateInSeconds = 0.05;
   this.cuePollingInterval = 500;
+  this.intervalIDArray = [];
   // when server restarts, both cue number and time revert to 0
   // init with -1 for both so cue 0 is still triggered when server restarts
   this.cueOnClient = -1;
@@ -364,12 +366,20 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.setStatusLabel('loading', 'active'); // label will update with new cue
   // starts interval that fetches cues from server
   this.cueFetchIntervalID = setInterval(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+  // push ID to array so that I can clear everything later
+  this.intervalIDArray.push(this.cueFetchIntervalID);
 };
 
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
-  clearInterval(this.motionUpdateLoopID);
-  clearInterval(this.cueFetchIntervalID);
+  // previously used clearInterval() for each ID below, but sometimes when I started and stopped repeatedly very fast, it didn't work. Testing showed that I could only stop these loops by clearing an OLDER interval ID, which I didn't understand, but clearing every ID should fix that.
+  // clearInterval(this.motionUpdateLoopID);
+  // clearInterval(this.cueFetchIntervalID);
+  for (let i of this.intervalIDArray) {
+    // clear both motionUpdateLoopID and cueFetchIntervalID (stored in array)
+    clearInterval(i);
+  }
+
   this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
   this.clearActiveCues();
   Tone.Transport.stop();
@@ -697,6 +707,8 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 ToneMotion.prototype.beginMotionUpdates = function() {
   this.motionUpdateInSeconds = this.motionUpdateLoopInterval/1000;
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  // push ID to array so that I can clear everything later
+  this.intervalIDArray.push(this.motionUpdateLoopID);
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
