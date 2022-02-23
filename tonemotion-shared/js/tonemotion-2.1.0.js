@@ -49,6 +49,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} motionFailCount - Increments when motion access fails
  * @param {number} motionFailThreshold - Posts error to user when reached
  * @param {boolean} motionFailMessageShown - tracks if error message is visible
+ * @param {boolean} motionEventListenerAdded - tracks devicemotion handlers
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
@@ -102,6 +103,7 @@ function ToneMotion() {
   this.motionFailCount = 0;
   this.motionFailThreshold = 20;
   this.motionFailMessageShown = false;
+  this.motionEventListenerAdded = false;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
@@ -334,8 +336,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        // BUG: oops, this registers a NEW event listener each time. should probably check if it's already there?
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.addMotionEventListener();
         this.motionPermissionStatus = 'granted';
         this.publicLog('Permission for motion data granted');
         this.beginMotionUpdates();
@@ -355,8 +356,7 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     this.motionPermissionStatus = 'unneeded';
     this.publicLog('Permission to access motion data not requested');
     if ('DeviceMotionEvent' in window && !(this.shouldSimulateMotion)) {
-      // BUG: oops, this registers a NEW event listener each time. should probably check if it's already there?
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      this.addMotionEventListener();
       // Some browsers (e.g., desktop Chrome) lie about reporting motion, but I test for that in the motion update loop
       this.beginMotionUpdates();
     } else {
@@ -374,6 +374,14 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.cueFetchIntervalID = setInterval(this.getCuesFromServer.bind(this), this.cuePollingInterval);
   // push ID to array so that I can clear everything later
   this.intervalIDArray.push(this.cueFetchIntervalID);
+};
+
+// registers event handler for devicemotion, but only once
+ToneMotion.prototype.addMotionEventListener = function() {
+  if (!this.motionEventListenerAdded) {
+    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    this.motionEventListenerAdded = true;
+  }
 };
 
 // Clears all sound, loops, motion handling, and network requests
@@ -481,7 +489,7 @@ ToneMotion.prototype.setStartStopButton = function(className, text) {
 
 // Handles click events from primary button (startStopButton)
 ToneMotion.prototype.bindButtonFunctions = function() {
-  start_stop_button.addEventListener("click", () => {
+  start_stop_button.addEventListener('click', () => {
     // Audio context can't start without user action
     // Chrome throws warnings that AudioContext was not allowed to start, but that's fine. It's created in suspended state and the first tap here resumes the AudioContext (https://goo.gl/7K7WLu)
     if (Tone.context.state !== 'running') {
@@ -585,7 +593,7 @@ ToneMotion.prototype.simulateMotion = function() {
     this.sliderY = document.querySelector('#y_slider');
     this.shakeButton = document.querySelector('#simulateShakeButton');
 
-    this.shakeButton.addEventListener("click", () => {
+    this.shakeButton.addEventListener('click', () => {
       this.currentCue.triggerShakeSound();
     });
   }
@@ -719,6 +727,7 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 
 // Uses the devicemotion handler to periodically check if everything is ok
 ToneMotion.prototype.checkForFailure = function() {
+  // TODO: delete console message when done debugging
   console.log('test');
   if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
     // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode
@@ -898,7 +907,7 @@ ToneMotion.prototype.addMotionSimulationButton = function() {
   motion_simulation_button.classList.add('default', 'error');
   motion_simulation_button.innerHTML = 'simulate motion';
   motion_error_container.appendChild(motion_simulation_button);
-  motion_simulation_button .addEventListener("click", () => {
+  motion_simulation_button .addEventListener('click', () => {
     // remove error message and add motion simulation interface
     this.clearMotionErrorMessage();
     this.simulateMotion();
