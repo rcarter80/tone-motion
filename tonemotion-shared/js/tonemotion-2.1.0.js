@@ -361,14 +361,15 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
 
   // while waiting for cue
   this.setStartStopButton('disabled');
-  // first cue fetched immediately, subsequently wait for cuePollingInterval
-  this.getCuesFromServer();
+  this.setStatusLabel('loading', 'active'); // label will update with new cue
+  // starts interval that fetches cues from server
+  this.cueFetchIntervalID = setInterval(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
 
 // Clears all sound, loops, motion handling, and network requests
 ToneMotion.prototype.shutEverythingDown = function() {
-  clearTimeout(this.cueFetchTimeout);
   clearInterval(this.motionUpdateLoopID);
+  clearInterval(this.cueFetchIntervalID);
   this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
   this.clearActiveCues();
   Tone.Transport.stop();
@@ -953,8 +954,6 @@ ToneMotion.prototype.getCuesFromServer = function() {
     } // else no new cue and control falls through, on to next loop
   })
   .catch(error => this.publicError(error));
-
-  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
 
 // Called when server has new cue
