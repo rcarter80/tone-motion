@@ -239,3 +239,20 @@ tm.cue[8].goCue = function() {
 tm.cue[8].stopCue = function() {
   // nothing to clean up
 }
+
+// *******************************************************************
+// CUE 9: // TODO: update timing for cue below and write description here
+const fmSynth = new Tone.FMSynth().toDestination();
+
+let pitchArr_9 = ['G2', 'G3', 'G4'];
+
+tm.cue[9] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[9].goCue = function() {
+  fmSynth.triggerAttack('G2');
+}
+tm.cue[9].updateTiltSounds = function() {
+  // set pitch here
+}
+tm.cue[9].stopCue = function() {
+  fmSynth.triggerRelease();
+}
