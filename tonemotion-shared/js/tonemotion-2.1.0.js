@@ -727,8 +727,6 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 
 // Uses the devicemotion handler to periodically check if everything is ok
 ToneMotion.prototype.checkForFailure = function() {
-  // TODO: delete console message when done debugging
-  console.log('test');
   if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
     // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode
     if (this.status === 'playing_tacet' ||
@@ -777,11 +775,12 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     }
   }
 
-  // BUG: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
+  // BUG log: I replicated the motion access bug on Tue Feb 22 at 6:20pm. The following happened: I had reloaded the page and the site successfully fetched the SHAKE cue (cue 6) and successfully set status to "playing_shake" BUT there is no sound and the motion monitor does not update values. I DID check tm.accel.rawX and .rawY and those values DID update BUT tm.accel.x and .y did NOT update; they were frozen even when the raw values updated. SO .handleMotionEvent() is definitely being called. this.accel.lastRawX DID have a value and it was the same as .thisRawX so I know this loop was called at least once. tm.motionFailCount was 0, so it appears this loop was called exactly once. tm.shouldSimulateMotion is false. tm.shouldTestMotion is true because I skipped the cue that turns it off. I called tm.motionUpdateLoop() from console and the values DID update, but just once (and shake sound happened once). So .motionUpdateLoop() works BUT clearly the loop is not being called repeatedly.
   // I then went to decrement cue counter on server (from 6 to 5) and got error that negative numbers are not allowed, and cue was 0, so it appears server restarted. That may have caused issue? When I set cue counter to 5, the site did NOT update. It remained on cue 6. (I checked and yes the server restarted at 6:20pm)
   // NEXT I called tm.syncClocks() to make sure there was still a connection to the server. It worked, and so it reset status to readyToPlay and changed button to "start"
   // NEXT I called tm.beginMotionUpdates() from console, and motion monitor showed changing values again.
   // NEXT I called tm.getCuesFromServer() and it started fetching cues again
+  // I made changes to fix issue, but I'm keeping this record of what happened
 
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldSimulateMotion) {
