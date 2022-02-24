@@ -52,6 +52,9 @@ const vibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).toDestination();
 
+// reversed cymbal sound to use at ends of some sections
+const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
+
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
@@ -199,21 +202,32 @@ tm.cue[6].stopCue = function() {
 // *******************************************************************
 // CUE 7: [D] - cue to fade out final SHAKE sounds from last cue
 let count_7 = 0;
+let revCymTriggered = false;
 
 tm.cue[7] = new TMCue('shake', -1);
 tm.cue[7].goCue = function() {
+  // reset flag in case section was previously triggered
+  revCymTriggered = false;
+  count_7 = 0;
   vibeSampler.volume.rampTo(-36, 6);
   sineTails.volume.rampTo(-36, 6);
 }
 tm.cue[7].triggerShakeSound = function() {
-  // TODO: maybe add reversed swoosh sound somewhere in here?
   // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
   vibeSampler.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 3);
   sineTails.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 1);
   count_7++;
+  // first shake between the 500ms and 1500ms point also triggers revCym, creating whooshing sound mostly around downbeat of m. 60
+  let time_7 = tm.getElapsedTimeInCue(7);
+  if (time_7 > 500 && time_7 < 1500) {
+    if (!revCymTriggered) {
+      revCym.start();
+      revCymTriggered = true;
+    }
+  }
 };
 tm.cue[7].stopCue = function() {
-  // nothing to clean up
+  sineTails.releaseAll();
 }
 
 // *******************************************************************
