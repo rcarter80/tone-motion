@@ -17,6 +17,7 @@ const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
+const harp_sounds = 'tonemotion-shared/audio/harp/';
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
@@ -245,17 +246,58 @@ tm.cue[8].stopCue = function() {
 // *******************************************************************
 // CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
 const fmSynth = new Tone.FMSynth().toDestination();
+// TODO: could put these in FMSynth declaration. Make attack longer and gentler. Also need to define long release so that 1 before [G] is fadeout and [G] is new attack, with pitch bend. And need to update score to put cue 10 trigger one measure EARLIER
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+fmSynth.harmonicity.value = 0.125;
 
-let pitchArr_9 = ['G2', 'G3', 'A3', 'Bb3', 'C4', 'E4', 'F4', 'G4', 'G5'];
+const harpSampler = new Tone.Sampler({
+  urls: {
+    'G3': 'harpG3.mp3',
+    'B3': 'harpB3.mp3',
+    'D4': 'harpD4.mp3',
+    'G4': 'harpG4.mp3',
+    'B4': 'harpB4.mp3',
+    'D5': 'harpD5.mp3',
+    'G5': 'harpG5.mp3',
+  },
+  baseUrl: harp_sounds,
+}).toDestination();
 
-tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT);
+const loop_9 = new Tone.Loop((time) => {
+	// triggered every eighth note.
+	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
+  harpSampler.triggerAttackRelease(pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1, '+8n');
+}, "4n");
+
+let pitchArr_9 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
+let pitchArr8ba_9 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
+
+tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
-  fmSynth.triggerAttack('G2');
+  Tone.Transport.bpm.value = 156;
+  fmSynth.triggerAttack('G4');
+  loop_9.start();
 }
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
   fmSynth.frequency.value = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
+  fmSynth.modulationIndex.value = 1 + tm.accel.y * 19;
+  if (tm.accel.y < 0.4) {
+    // with phone mostly upright, synth is muted and only harp is heard
+    harpSampler.volume.value = 0;
+    fmSynth.volume.value = -99;
+  } else if (tm.accel.y <= 0.7) {
+    // with phone mostly flat, harp and synth crossfade
+    harpSampler.volume.value = -99 + (0.7 - tm.accel.y) * 330; // 0 to -99 dB
+    fmSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
+  } else {
+    // with phone mostly upside down, harp is muted and only synth is heard
+    harpSampler.volume.value = -99;
+    fmSynth.volume.value = 0;
+  }
 }
 tm.cue[9].stopCue = function() {
   fmSynth.triggerRelease();
+  // TODO: figure out a way to fade this out? but stopping loop in future could cause issues unless I define a second loop_10
+  loop_9.stop();
 }
