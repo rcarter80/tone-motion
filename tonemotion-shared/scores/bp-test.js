@@ -287,10 +287,12 @@ tm.cue[9].updateTiltSounds = function() {
     harpSampler.volume.value = 0;
     fmSynth.volume.value = -99;
   } else if (tm.accel.y <= 0.7) {
+    // TODO: maybe revise to keep harp here but fading and then ...
     // with phone mostly flat, harp and synth crossfade
     harpSampler.volume.value = -99 + (0.7 - tm.accel.y) * 330; // 0 to -99 dB
     fmSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
   } else {
+    // TODO: ... and then fade out harp here. could also add hint of synth at top
     // with phone mostly upside down, harp is muted and only synth is heard
     harpSampler.volume.value = -99;
     fmSynth.volume.value = 0;
