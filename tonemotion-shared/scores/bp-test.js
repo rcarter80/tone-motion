@@ -243,17 +243,18 @@ tm.cue[8].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 9: // TODO: update timing for cue below and write description here
+// CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
 const fmSynth = new Tone.FMSynth().toDestination();
 
-let pitchArr_9 = ['G2', 'G3', 'G4'];
+let pitchArr_9 = ['G2', 'G3', 'A3', 'Bb3', 'C4', 'E4', 'F4', 'G4', 'G5'];
 
-tm.cue[9] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT);
 tm.cue[9].goCue = function() {
   fmSynth.triggerAttack('G2');
 }
 tm.cue[9].updateTiltSounds = function() {
-  // set pitch here
+  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
+  fmSynth.frequency.value = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
 }
 tm.cue[9].stopCue = function() {
   fmSynth.triggerRelease();
