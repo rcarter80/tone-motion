@@ -46,8 +46,8 @@ const vibeSampler = new Tone.Sampler({
     'F4': 'vibe_bell-F4.mp3',
     'A4': 'vibe_bell-A4.mp3',
     'Db5': 'vibe_bell-Db5.mp3',
-    // TODO: could add an A5 (I didn't like the F5 we recorded, but A was ok)
-    // and should add Db6 (for E6 below)
+    'A5': 'vibe_bell-A5.mp3',
+    'Db6': 'vibe_bell-Db6.mp3',
   },
   baseUrl: vibes_sounds,
 }).toDestination();
@@ -209,6 +209,8 @@ tm.cue[7].goCue = function() {
   // reset flag in case section was previously triggered
   revCymTriggered = false;
   count_7 = 0;
+  vibeSampler.volume.value = 0;
+  sineTails.volume.value = -28;
   vibeSampler.volume.rampTo(-36, 6);
   sineTails.volume.rampTo(-36, 6);
 }
