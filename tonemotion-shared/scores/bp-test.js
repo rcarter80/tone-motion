@@ -245,10 +245,22 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
-const fmSynth = new Tone.FMSynth().toDestination();
-// TODO: could put these in FMSynth declaration. Make attack longer and gentler. Also need to define long release so that 1 before [G] is fadeout and [G] is new attack, with pitch bend. And need to update score to put cue 10 trigger one measure EARLIER
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toDestination();
 fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-fmSynth.harmonicity.value = 0.125;
 
 const harpSampler = new Tone.Sampler({
   urls: {
@@ -264,7 +276,6 @@ const harpSampler = new Tone.Sampler({
 }).toDestination();
 
 const harpLoop_9 = new Tone.Loop((time) => {
-	// triggered every eighth note.
 	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
   harpSampler.triggerAttackRelease(pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1, '+8n');
 }, '4n');
@@ -276,30 +287,58 @@ tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
   Tone.Transport.bpm.value = 156;
   harpLoop_9.start();
-  // fmSynth.triggerAttack('G4');
+  fmSynth.triggerAttack('G4');
 }
+
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
-  fmSynth.frequency.value = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
-  fmSynth.modulationIndex.value = 1 + tm.accel.y * 19;
-  // if (tm.accel.y < 0.4) {
-  //   // with phone mostly upright, synth is muted and only harp is heard
-  //   harpSampler.volume.value = 0;
-  //   fmSynth.volume.value = -99;
-  // } else if (tm.accel.y <= 0.7) {
-  //   // TODO: maybe revise to keep harp here but fading and then ...
-  //   // with phone mostly flat, harp and synth crossfade
-  //   harpSampler.volume.value = -99 + (0.7 - tm.accel.y) * 330; // 0 to -99 dB
-  //   fmSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
-  // } else {
-  //   // TODO: ... and then fade out harp here. could also add hint of synth at top
-  //   // with phone mostly upside down, harp is muted and only synth is heard
-  //   harpSampler.volume.value = -99;
-  //   fmSynth.volume.value = 0;
-  // }
+  fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
+  if (tm.accel.y < 0.4) {
+    // with phone mostly upright, synth is soft and mostly only harp is heard
+    harpSampler.volume.value = -12;
+    fmSynth.modulationIndex.value = 1;
+    fmSynth.volume.value = -48 - (0.4 - tm.accel.y) * 127.5; // -99 to -48 dB
+  } else if (tm.accel.y < 0.7) {
+    // with phone in mid position, synth and harp cross fade, synth gets bright
+    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+    fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
+    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 60; // -48 to -30 dB
+  } else {
+    // with phone mostly upside down, harp is soft and bright synth is heard
+    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
+    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
+  }
+}
+tm.cue[9].cueTransition = function() {
+  harpSampler.triggerAttackRelease('G3', 1, '+4n');
+  harpSampler.triggerAttackRelease('G4', 1, '+4n.');
+  harpSampler.triggerAttackRelease('G5', 1, '+4n.');
+  vibeSampler.triggerAttackRelease('G5', 3, '+2n');
+  // transition sounds called before stop cue below, so stop loop now
+  harpLoop_9.stop();
 }
 tm.cue[9].stopCue = function() {
   fmSynth.triggerRelease();
-  // TODO: figure out a way to fade this out? but stopping loop in future could cause issues unless I define a second loop_10
+  // stop loop here too so that if someone taps stop button, the sound stops
   harpLoop_9.stop();
+}
+
+// *******************************************************************
+// CUE 10: [G] - continuation of previous section with pitches sliding up
+
+tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[10].goCue = function() {
+  Tone.Transport.bpm.value = 156;
+
+}
+
+tm.cue[10].updateTiltSounds = function() {
+
+}
+tm.cue[10].cueTransition = function() {
+
+}
+tm.cue[10].stopCue = function() {
+
 }
