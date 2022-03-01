@@ -1134,6 +1134,7 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
 
 // Takes cue number and breakpoint array of time/value pairs. Returns interpolated values reflecting elapsed time in current segment of requested cue. Requires cue number since gradual process may overlap with next cue called. Can't use current cue number because that may be next cue.
 ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
+  let elapsedTime; // needs function scope
   // check that function is passed cue number AND array of breakpoints
   // Each time needs a corresponding value (need even # of elements in array)
   if (arguments.length < 2 || breakpointArray.length % 2 !== 0) {
@@ -1146,7 +1147,7 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
     this.publicLog('Section breakpoint value requested for cue that has not started yet.');
     return 0;
   } else {
-    let elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
+    elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
   }
 
   // Go through array of time/value pairs
@@ -1176,6 +1177,7 @@ ToneMotion.prototype.getSectionBreakpoints = function(cue, breakpointArray) {
 
 // Same as getSectionBreakpoints(), but loops pattern continuously
 ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
+  let elapsedTimeInLoop; // needs function scope
   // check that function is passed cue number AND array of breakpoints
   // Each time needs a corresponding value (need even # of elements in array)
   if (arguments.length < 2 || breakpointArray.length % 2 !== 0) {
@@ -1190,7 +1192,7 @@ ToneMotion.prototype.getSectionBreakpointLoop = function(cue, breakpointArray) {
   } else {
     let elapsedTime = Date.now() - this.clientServerOffset - this.cue[cue].startedAt;
     // time elapsed in this iteration of loop determined by final loop time
-    let elapsedTimeInLoop = elapsedTime % breakpointArray[breakpointArray.length - 2];
+    elapsedTimeInLoop = elapsedTime % breakpointArray[breakpointArray.length - 2];
   }
 
   // Go through array of time/value pairs

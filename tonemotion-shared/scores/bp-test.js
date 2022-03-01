@@ -289,6 +289,7 @@ const harpLoop_9 = new Tone.Loop((time) => {
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
   harpLoop_9.start();
+  fmSynth.detune.value = 0;
   fmSynth.triggerAttack('E4');
 }
 
@@ -337,7 +338,9 @@ tm.cue[9].stopCue = function() {
 
 tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[10].goCue = function() {
+  fmSynth.detune.value = 0;
   fmSynth.triggerAttack('E4');
+  // TODO: replace testBellE with sampler
   testBellE.start();
 }
 tm.cue[10].updateTiltSounds = function() {
@@ -359,6 +362,8 @@ tm.cue[10].updateTiltSounds = function() {
     fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
+  // pitch gradually rises perfect 4th through first half of section
+  fmSynth.detune.value = tm.getSectionBreakpoints(10, [0, 0, 12307, 500]);
 }
 tm.cue[10].cueTransition = function() {
 
