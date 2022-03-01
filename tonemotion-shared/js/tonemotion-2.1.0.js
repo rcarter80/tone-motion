@@ -728,8 +728,9 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
 // Uses the devicemotion handler to periodically check if everything is ok
 ToneMotion.prototype.checkForFailure = function() {
   if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
-    // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode
-    if (this.status === 'playing_tacet' ||
+    // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode, or waiting to play
+    if (this.status === 'waitingForPieceToStart' ||
+    this.status === 'playing_tacet' ||
     this.status === 'playing_tilt' ||
     this.status === 'playing_shake' ||
     this.status === 'playing_tiltAndShake' ||

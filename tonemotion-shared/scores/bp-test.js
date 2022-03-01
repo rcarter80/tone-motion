@@ -263,11 +263,11 @@ const harpSampler = new Tone.Sampler({
   baseUrl: harp_sounds,
 }).toDestination();
 
-const loop_9 = new Tone.Loop((time) => {
+const harpLoop_9 = new Tone.Loop((time) => {
 	// triggered every eighth note.
 	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
   harpSampler.triggerAttackRelease(pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1, '+8n');
-}, "4n");
+}, '4n');
 
 let pitchArr_9 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
 let pitchArr8ba_9 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
@@ -275,31 +275,31 @@ let pitchArr8ba_9 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
   Tone.Transport.bpm.value = 156;
-  fmSynth.triggerAttack('G4');
-  loop_9.start();
+  harpLoop_9.start();
+  // fmSynth.triggerAttack('G4');
 }
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
   fmSynth.frequency.value = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
   fmSynth.modulationIndex.value = 1 + tm.accel.y * 19;
-  if (tm.accel.y < 0.4) {
-    // with phone mostly upright, synth is muted and only harp is heard
-    harpSampler.volume.value = 0;
-    fmSynth.volume.value = -99;
-  } else if (tm.accel.y <= 0.7) {
-    // TODO: maybe revise to keep harp here but fading and then ...
-    // with phone mostly flat, harp and synth crossfade
-    harpSampler.volume.value = -99 + (0.7 - tm.accel.y) * 330; // 0 to -99 dB
-    fmSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
-  } else {
-    // TODO: ... and then fade out harp here. could also add hint of synth at top
-    // with phone mostly upside down, harp is muted and only synth is heard
-    harpSampler.volume.value = -99;
-    fmSynth.volume.value = 0;
-  }
+  // if (tm.accel.y < 0.4) {
+  //   // with phone mostly upright, synth is muted and only harp is heard
+  //   harpSampler.volume.value = 0;
+  //   fmSynth.volume.value = -99;
+  // } else if (tm.accel.y <= 0.7) {
+  //   // TODO: maybe revise to keep harp here but fading and then ...
+  //   // with phone mostly flat, harp and synth crossfade
+  //   harpSampler.volume.value = -99 + (0.7 - tm.accel.y) * 330; // 0 to -99 dB
+  //   fmSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
+  // } else {
+  //   // TODO: ... and then fade out harp here. could also add hint of synth at top
+  //   // with phone mostly upside down, harp is muted and only synth is heard
+  //   harpSampler.volume.value = -99;
+  //   fmSynth.volume.value = 0;
+  // }
 }
 tm.cue[9].stopCue = function() {
   fmSynth.triggerRelease();
   // TODO: figure out a way to fade this out? but stopping loop in future could cause issues unless I define a second loop_10
-  loop_9.stop();
+  harpLoop_9.stop();
 }
