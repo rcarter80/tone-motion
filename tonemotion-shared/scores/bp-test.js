@@ -19,6 +19,9 @@ const bell_sounds = 'tonemotion-shared/audio/bells/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 
+// 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
+Tone.Transport.bpm.value = 156;
+
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
 // 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
@@ -275,34 +278,37 @@ const harpSampler = new Tone.Sampler({
   baseUrl: harp_sounds,
 }).toDestination();
 
+let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A6', 'C#6', 'D6', 'E6', 'E6'];
+let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A5', 'C#5', 'D5', 'E5', 'E5'];
+
 const harpLoop_9 = new Tone.Loop((time) => {
 	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
   harpSampler.triggerAttackRelease(pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1, '+8n');
 }, '4n');
 
-let pitchArr_9 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
-let pitchArr8ba_9 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
-
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
-  Tone.Transport.bpm.value = 156;
   harpLoop_9.start();
-  fmSynth.triggerAttack('G4');
+  fmSynth.triggerAttack('E4');
 }
+
+// TODO: make this into sampler. This is just a test
+const testBellE = new Tone.Player(bell_sounds + 'handbell-F6.mp3').toDestination();
+testBellE.playbackRate = 1 / (2 ** (1/12));
 
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
   fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
   if (tm.accel.y < 0.4) {
-    // with phone mostly upright, synth is soft and mostly only harp is heard
-    harpSampler.volume.value = -12;
+    // with phone mostly upright, synth is mostly silent and harp is soft
+    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
     fmSynth.modulationIndex.value = 1;
-    fmSynth.volume.value = -48 - (0.4 - tm.accel.y) * 127.5; // -99 to -48 dB
+    fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
   } else if (tm.accel.y < 0.7) {
     // with phone in mid position, synth and harp cross fade, synth gets bright
     harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
     fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
-    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 60; // -48 to -30 dB
+    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
   } else {
     // with phone mostly upside down, harp is soft and bright synth is heard
     harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
@@ -310,14 +316,16 @@ tm.cue[9].updateTiltSounds = function() {
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
 }
+// called ONLY if next cue is triggered, NOT if user taps 'stop' button
 tm.cue[9].cueTransition = function() {
-  harpSampler.triggerAttackRelease('G3', 1, '+4n');
+  harpSampler.triggerAttackRelease('F#4', 1, '+4n');
   harpSampler.triggerAttackRelease('G4', 1, '+4n.');
-  harpSampler.triggerAttackRelease('G5', 1, '+4n.');
-  vibeSampler.triggerAttackRelease('G5', 3, '+2n');
+  harpSampler.triggerAttackRelease('A4', 1, '+2n');
+  vibeSampler.triggerAttackRelease('A5', 3, '+2n');
   // transition sounds called before stop cue below, so stop loop now
   harpLoop_9.stop();
 }
+// called BOTH when new cue is triggered OR if user taps 'stop' button
 tm.cue[9].stopCue = function() {
   fmSynth.triggerRelease();
   // stop loop here too so that if someone taps stop button, the sound stops
@@ -329,16 +337,86 @@ tm.cue[9].stopCue = function() {
 
 tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[10].goCue = function() {
-  Tone.Transport.bpm.value = 156;
-
+  fmSynth.triggerAttack('E4');
+  testBellE.start();
 }
-
 tm.cue[10].updateTiltSounds = function() {
-
+  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
+  fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
+  if (tm.accel.y < 0.4) {
+    // with phone mostly upright, synth is mostly silent and harp is soft
+    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
+    fmSynth.modulationIndex.value = 1;
+    fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
+  } else if (tm.accel.y < 0.7) {
+    // with phone in mid position, synth and harp cross fade, synth gets bright
+    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+    fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
+    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
+  } else {
+    // with phone mostly upside down, harp is soft and bright synth is heard
+    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
+    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
+  }
 }
 tm.cue[10].cueTransition = function() {
 
 }
 tm.cue[10].stopCue = function() {
+  fmSynth.triggerRelease();
+}
 
+// *******************************************************************
+// CUE 22: [S] - TILT synth like cue 9 [F]
+
+let pitchArr_22 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
+let pitchArr8ba_22 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
+
+const harpLoop_22 = new Tone.Loop((time) => {
+	harpSampler.triggerAttackRelease(pitchArr_22[Math.floor(tm.accel.x * 0.99 * pitchArr_22.length)], 1);
+  harpSampler.triggerAttackRelease(pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)], 1, '+8n');
+}, '4n');
+
+tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[22].goCue = function() {
+  harpLoop_22.start();
+  // TODO: if using .detune for pitch bend, need to reset at start of cue
+  fmSynth.triggerAttack('G4');
+}
+
+tm.cue[22].updateTiltSounds = function() {
+  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
+  fmSynth.frequency.value = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)];
+  if (tm.accel.y < 0.4) {
+    // with phone mostly upright, synth is mostly silent and harp is soft
+    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
+    fmSynth.modulationIndex.value = 1;
+    fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
+  } else if (tm.accel.y < 0.7) {
+    // with phone in mid position, synth and harp cross fade, synth gets bright
+    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+    fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
+    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
+  } else {
+    // with phone mostly upside down, harp is soft and bright synth is heard
+    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
+    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
+  }
+}
+// called ONLY if next cue is triggered, NOT if user taps 'stop' button
+tm.cue[22].cueTransition = function() {
+  // harpSampler.triggerAttackRelease('G3', 1, '+4n');
+  // harpSampler.triggerAttackRelease('G4', 1, '+4n.');
+  // harpSampler.triggerAttackRelease('G5', 1, '+4n.');
+  // vibeSampler.triggerAttackRelease('G5', 3, '+2n');
+  // // transition sounds called before stop cue below, so stop loop now
+  // harpLoop_9.stop();
+}
+// called BOTH when new cue is triggered OR if user taps 'stop' button
+tm.cue[22].stopCue = function() {
+  fmSynth.triggerRelease();
+  // stop loop here too so that if someone taps stop button, the sound stops
+  harpLoop_22.stop();
 }
