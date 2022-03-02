@@ -290,7 +290,9 @@ const harpSampler = new Tone.Sampler({
     'G5': 'harpG5.mp3',
   },
   baseUrl: harp_sounds,
-}).toDestination();
+});
+const harpSamplerVol = new Tone.Volume(0);
+harpSampler.chain(harpSamplerVol, Tone.Destination);
 
 let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'D6', 'E6', 'E6'];
 let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'D5', 'E5', 'E5'];
@@ -302,6 +304,8 @@ const harpLoop_9 = new Tone.Loop((time) => {
 
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
+  // additional volume control used during cue 11 - reset it here if needed
+  harpSamplerVol.volume.value = 0;
   harpLoop_9.start();
   triangle.start();
   fmSynth.detune.value = 0;
@@ -376,6 +380,8 @@ const harpLoop_10 = new Tone.Loop((time) => {
 
 tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[10].goCue = function() {
+  // additional volume control used during cue 11 - reset it here if needed
+  harpSamplerVol.volume.value = 0;
   harpLoop_10.start();
   // fmSynth.detune set by getSectionBreakpoints() below, so don't reset here
   fmSynth.triggerAttack('E4');
@@ -433,6 +439,8 @@ tm.cue[11].goCue = function() {
   bellSampler.triggerAttackRelease('C#6', 5);
 }
 tm.cue[11].updateTiltSounds = function() {
+  // final harp sounds fade out (breakpoints at each downbeat)
+  harpSamplerVol.volume.value = tm.getSectionBreakpoints(11, [0, 0, 1730, 0, 3460, -6, 5190, -15, 6923, -40]);
   if (tm.accel.y < 0.4) {
     harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
   } else if (tm.accel.y < 0.7) {
@@ -443,6 +451,16 @@ tm.cue[11].updateTiltSounds = function() {
 }
 tm.cue[11].stopCue = function() {
   harpLoop_11.stop();
+}
+
+// *******************************************************************
+// CUE 12: four after [H]
+tm.cue[12] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[12].goCue = function() {
+  // nothing to play
+}
+tm.cue[12].stopCue = function() {
+  // nothing to clean up
 }
 
 // *******************************************************************
