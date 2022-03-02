@@ -106,23 +106,23 @@ yTilt.chain(testToneFilterScale, testToneFilter.frequency);
 tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
   testTone.triggerAttack(440);
-}
+};
 tm.cue[1].updateTiltSounds = function() {
   // interactivity handled through tm.xTilt and yTilt signals
-}
+};
 tm.cue[1].stopCue = function() {
   testTone.triggerRelease();
-}
+};
 
 // *******************************************************************
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
   // nothing to play
-}
+};
 tm.cue[2].stopCue = function() {
   // nothing to clean up
-}
+};
 
 // *******************************************************************
 // CUE 3: shake tutorial
@@ -155,10 +155,10 @@ tm.cue[5].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
   tm.clearMotionErrorMessage();
-}
+};
 tm.cue[5].stopCue = function() {
   // nothing to clean up
-}
+};
 
 // *******************************************************************
 // CUE 6: [B] Audience enters with metallic SHAKE sounds outlining main theme
@@ -230,7 +230,7 @@ tm.cue[7].goCue = function() {
   sineTails.volume.value = -28;
   vibeSampler.volume.rampTo(-36, 6);
   sineTails.volume.rampTo(-36, 6);
-}
+};
 tm.cue[7].triggerShakeSound = function() {
   // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
   vibeSampler.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 3);
@@ -247,17 +247,17 @@ tm.cue[7].triggerShakeSound = function() {
 };
 tm.cue[7].stopCue = function() {
   sineTails.releaseAll();
-}
+};
 
 // *******************************************************************
 // CUE 8: [E] - tacet transition
 tm.cue[8] = new TMCue('tacet', -1);
 tm.cue[8].goCue = function() {
   // nothing to play
-}
+};
 tm.cue[8].stopCue = function() {
   // nothing to clean up
-}
+};
 
 // *******************************************************************
 // CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
@@ -310,7 +310,7 @@ tm.cue[9].goCue = function() {
   triangle.start();
   fmSynth.detune.value = 0;
   fmSynth.triggerAttack('E4');
-}
+};
 
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
@@ -331,7 +331,7 @@ tm.cue[9].updateTiltSounds = function() {
     fmSynth.modulationIndex.value = 10 - (1.0 - tm.accel.y) * 16.66; // 5 to 10
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
-}
+};
 // called ONLY if next cue is triggered, NOT if user taps 'stop' button
 tm.cue[9].cueTransition = function() {
   harpSampler.triggerAttackRelease('F#4', 1, '+8n');
@@ -340,13 +340,13 @@ tm.cue[9].cueTransition = function() {
   vibeSampler.triggerAttackRelease('A5', 3, '+4n.');
   // transition sounds called before stop cue below, so stop loop now
   harpLoop_9.stop();
-}
+};
 // called BOTH when new cue is triggered OR if user taps 'stop' button
 tm.cue[9].stopCue = function() {
   // stop loop here too so that if someone taps stop button, the sound stops
   harpLoop_9.stop();
   fmSynth.triggerRelease();
-}
+};
 
 // *******************************************************************
 // CUE 10: [G] - continuation of previous section with pitches sliding up
@@ -386,7 +386,7 @@ tm.cue[10].goCue = function() {
   // fmSynth.detune set by getSectionBreakpoints() below, so don't reset here
   fmSynth.triggerAttack('E4');
   bellSampler.triggerAttackRelease('E6', 5);
-}
+};
 tm.cue[10].updateTiltSounds = function() {
   // pitches start same as last section, using .detune to bend up perfect 4th
   fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
@@ -408,7 +408,7 @@ tm.cue[10].updateTiltSounds = function() {
   }
   // pitch gradually rises perfect 4th through first half of section
   fmSynth.detune.value = tm.getSectionBreakpoints(10, [0, 0, 12307, 500]);
-}
+};
 tm.cue[10].cueTransition = function() {
   harpSampler.triggerAttackRelease('B4', 1, '+8n');
   harpSampler.triggerAttackRelease('C#5', 1, '+4n');
@@ -416,11 +416,11 @@ tm.cue[10].cueTransition = function() {
   vibeSampler.triggerAttackRelease('D6', 3, '+4n.');
   // transition sounds called before stop cue below, so stop loop now
   harpLoop_10.stop();
-}
+};
 tm.cue[10].stopCue = function() {
   harpLoop_10.stop();
   fmSynth.triggerRelease();
-}
+};
 
 // *******************************************************************
 // CUE 11: [H] - harp only dimin (still TILT)
@@ -437,7 +437,7 @@ tm.cue[11] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[11].goCue = function() {
   harpLoop_11.start();
   bellSampler.triggerAttackRelease('C#6', 5);
-}
+};
 tm.cue[11].updateTiltSounds = function() {
   // final harp sounds fade out (breakpoints at each downbeat)
   harpSamplerVol.volume.value = tm.getSectionBreakpoints(11, [0, 0, 1730, 0, 3460, -6, 5190, -15, 6923, -40]);
@@ -448,24 +448,91 @@ tm.cue[11].updateTiltSounds = function() {
   } else {
     harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
   }
-}
+};
 tm.cue[11].stopCue = function() {
   harpLoop_11.stop();
-}
+};
 
 // *******************************************************************
 // CUE 12: four after [H]
 tm.cue[12] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[12].goCue = function() {
   // nothing to play
-}
+};
 tm.cue[12].stopCue = function() {
   // nothing to clean up
-}
+};
+
+// *******************************************************************
+// CUE 13: [I] metallic SHAKE canon over flowing woodwinds
+const Gqb4 = 220 * ((2**(1/24))**19); // G quarter-flat 4
+const Gqb5 = 440 * ((2**(1/24))**19); // G quarter-flat 5
+const Dqb5 = 440 * ((2**(1/24))**9); // D quarter-flat 5
+const Dqb6 = 880 * ((2**(1/24))**9); // D quarter-flat 6
+const Aqb4 = 220 * ((2**(1/24))**23); // A quarter-flat 4
+const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
+
+const pitchArr1_13 = ['A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'G4', 'G5', Gqb4, Gqb5, 'F#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'E4', 'E5', 'E4', 'E5', 'E4', 'E5', 'A4', 'D5', 'A5', 'D6', 'A4', 'D5', 'A4', Dqb5, 'A5', Dqb6, 'A4', Dqb5, 'A4', 'C#5', 'A5', 'C#6', 'A4', 'C#5', 'A4', 'B4', 'A5', 'B5', 'A4', 'B4', 'A4', 'B4', 'A5', 'B4', 'A4', 'B4', Aqb4, 'B4', Aqb5, 'B4', Aqb4, 'B4', 'G#4', 'B4', 'G#5', 'B4', 'G#4', 'B4', 'F#4', 'B4', 'F#5', 'B4', 'F#4', 'B4', 'F4', 'B4', 'F5', 'B4', 'F4', 'B4', 'F4', 'B4', 'F5', 'B4', 'F4', 'B4'];
+const pitchArr2_13 = ['F4', 'F5', 'F6', 'F5', 'F4', 'F5'];
+let count_13 = 0;
+
+tm.cue[13] = new TMCue('shake', 1730, NO_LIMIT); // 3 beats @ 104 bpm
+tm.cue[13].goCue = function() {
+  // reset volume from possible previous change
+  vibeSampler.volume.value = 0;
+  sineTails.volume.value = -28;
+  count_13 = 0;
+};
+tm.cue[13].triggerShakeSound = function() {
+  if (count_13 < pitchArr1_13.length) {
+    // long array of first pitches for independent canon
+    vibeSampler.triggerAttackRelease(pitchArr1_13[count_13], 3);
+    sineTails.triggerAttackRelease(pitchArr1_13[count_13], 1);
+  } else {
+    // final loop of pitches that everyone arrives at
+    vibeSampler.triggerAttackRelease(pitchArr2_13[(count_13 - pitchArr1_13.length) % pitchArr2_13.length], 3);
+    sineTails.triggerAttackRelease(pitchArr2_13[(count_13 - pitchArr1_13.length) % pitchArr2_13.length], 1);
+  }
+  count_13++;
+};
+tm.cue[13].stopCue = function() {
+  sineTails.releaseAll();
+};
+
+// *******************************************************************
+// CUE 14: [K] - cue to fade out final SHAKE sounds from last cue
+let count_14 = 0;
+
+tm.cue[14] = new TMCue('shake', -1);
+tm.cue[14].goCue = function() {
+  count_14 = 0;
+  vibeSampler.volume.value = 0;
+  sineTails.volume.value = -28;
+  vibeSampler.volume.rampTo(-36, 6);
+  sineTails.volume.rampTo(-36, 6);
+};
+tm.cue[14].triggerShakeSound = function() {
+  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
+  vibeSampler.triggerAttackRelease(pitchArr2_13[count_14 % pitchArr2_13.length], 3);
+  sineTails.triggerAttackRelease(pitchArr2_13[count_14 % pitchArr2_13.length], 1);
+  count_14++;
+};
+tm.cue[14].stopCue = function() {
+  sineTails.releaseAll();
+};
+
+// *******************************************************************
+// CUE 15: four after [K] - tacet end to the first third of the piece
+tm.cue[15] = new TMCue('tacet', -1);
+tm.cue[15].goCue = function() {
+  // nothing to play
+};
+tm.cue[15].stopCue = function() {
+  // nothing to clean up
+};
 
 // *******************************************************************
 // CUE 22: [S] - TILT synth like cue 9 [F]
-
 let pitchArr_22 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
 let pitchArr8ba_22 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
 
