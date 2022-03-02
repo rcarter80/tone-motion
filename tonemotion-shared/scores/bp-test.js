@@ -295,11 +295,20 @@ harpSampler.chain(harpSamplerVol, Tone.Destination);
 
 let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'D6', 'E6', 'E6'];
 let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'D5', 'E5', 'E5'];
+let pitchLo_9, pitchHi_9;
 let cue10WasTriggered = false;
 
 const harpLoop_9 = new Tone.Loop((time) => {
-	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
-  harpSampler.triggerAttackRelease(pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1, '+8n');
+  pitchLo_9 = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
+  pitchHi_9 = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)]
+  if (cue10WasTriggered) {
+    // pitch bend up perfect 4 in second half of section
+    let trans = tm.getSectionBreakpoints(10, [0, 0, 12307, 5]);
+    pitchLo_9 = Tone.Frequency(pitchLo_9).transpose(trans);
+    pitchHi_9 = Tone.Frequency(pitchHi_9).transpose(trans);
+  }
+	harpSampler.triggerAttackRelease(pitchLo_9, 1);
+  harpSampler.triggerAttackRelease(pitchHi_9, 1, '+8n');
 }, '4n');
 
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
@@ -337,19 +346,12 @@ tm.cue[9].updateTiltSounds = function() {
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
 };
-// called ONLY if next cue is triggered, NOT if user taps 'stop' button
-tm.cue[9].cueTransition = function() {
-  harpSampler.triggerAttackRelease('F#4', 1, '+8n');
-  harpSampler.triggerAttackRelease('G4', 1, '+4n');
-  harpSampler.triggerAttackRelease('A4', 1, '+4n.');
-  vibeSampler.triggerAttackRelease('A5', 3, '+4n.');
-  // transition sounds called before stop cue below, so stop loop now
-  harpLoop_9.stop();
-};
-// called BOTH when new cue is triggered OR if user taps 'stop' button
 tm.cue[9].stopCue = function() {
-  // stop loop here too so that if someone taps stop button, the sound stops
+  // vibes sounds can't be triggered by cueTransition because that is only called when triggered cue is NEXT cue (i.e., cue 10) but 10 is hidden cue
   harpLoop_9.stop();
+  vibeSampler.triggerAttackRelease('B5', 3);
+  vibeSampler.triggerAttackRelease('C#6', 3, '+8n');
+  vibeSampler.triggerAttackRelease('D6', 3, '+4n');
   fmSynth.triggerRelease();
 };
 
@@ -357,7 +359,6 @@ tm.cue[9].stopCue = function() {
 // CUE 10: [G] - hidden cue to bend pitches up
 tm.cue[10] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[10].goCue = function() {
-  console.log('cue 10 gocue called');
   // once this flag is set to true, pitch bend in cue 9 are triggered
   cue10WasTriggered = true;
 };
@@ -375,7 +376,7 @@ const harpLoop_11 = new Tone.Loop((time) => {
 tm.cue[11] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[11].goCue = function() {
   harpLoop_11.start();
-  bellSampler.triggerAttackRelease('C#6', 5);
+  bellSampler.triggerAttackRelease('C#5', 5);
 };
 tm.cue[11].updateTiltSounds = function() {
   // final harp sounds fade out (breakpoints at each downbeat)
