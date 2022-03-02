@@ -70,6 +70,8 @@ const bellSampler = new Tone.Sampler({
 // reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
+const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
+
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
@@ -290,8 +292,8 @@ const harpSampler = new Tone.Sampler({
   baseUrl: harp_sounds,
 }).toDestination();
 
-let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A6', 'C#6', 'D6', 'E6', 'E6'];
-let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A5', 'C#5', 'D5', 'E5', 'E5'];
+let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'D6', 'E6', 'E6'];
+let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'D5', 'E5', 'E5'];
 
 const harpLoop_9 = new Tone.Loop((time) => {
 	harpSampler.triggerAttackRelease(pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)], 1);
@@ -301,6 +303,7 @@ const harpLoop_9 = new Tone.Loop((time) => {
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
   harpLoop_9.start();
+  triangle.start();
   fmSynth.detune.value = 0;
   fmSynth.triggerAttack('E4');
 }
@@ -321,38 +324,65 @@ tm.cue[9].updateTiltSounds = function() {
   } else {
     // with phone mostly upside down, harp is soft and bright synth is heard
     harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
-    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
+    fmSynth.modulationIndex.value = 10 - (1.0 - tm.accel.y) * 16.66; // 5 to 10
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
 }
 // called ONLY if next cue is triggered, NOT if user taps 'stop' button
 tm.cue[9].cueTransition = function() {
-  // TODO: move these back one 8th note. they happen too late
-  harpSampler.triggerAttackRelease('F#4', 1, '+4n');
-  harpSampler.triggerAttackRelease('G4', 1, '+4n.');
-  harpSampler.triggerAttackRelease('A4', 1, '+2n');
-  vibeSampler.triggerAttackRelease('A5', 3, '+2n');
+  harpSampler.triggerAttackRelease('F#4', 1, '+8n');
+  harpSampler.triggerAttackRelease('G4', 1, '+4n');
+  harpSampler.triggerAttackRelease('A4', 1, '+4n.');
+  vibeSampler.triggerAttackRelease('A5', 3, '+4n.');
   // transition sounds called before stop cue below, so stop loop now
   harpLoop_9.stop();
 }
 // called BOTH when new cue is triggered OR if user taps 'stop' button
 tm.cue[9].stopCue = function() {
-  fmSynth.triggerRelease();
   // stop loop here too so that if someone taps stop button, the sound stops
   harpLoop_9.stop();
+  fmSynth.triggerRelease();
 }
 
 // *******************************************************************
 // CUE 10: [G] - continuation of previous section with pitches sliding up
+let pitchArr1_10 = ['F3', 'F3', 'F4', 'G4', 'G#4', 'A#4', 'D5', 'D#5', 'F5', 'F5'];
+let pitchArr2_10 = ['F#3', 'F#3', 'F#4', 'G#4', 'A4', 'B4', 'D#5', 'E5', 'F#5', 'F#5'];
+let pitchArr3_10 = ['G3', 'G3', 'G4', 'A4', 'A#4', 'C5', 'E5', 'F5', 'G5', 'G5'];
+let pitchArr4_10 = ['G#3', 'G#3', 'G#4', 'A#4', 'B4', 'C#5', 'F5', 'F#5', 'G#5', 'G#5'];
+let pitchArr5_10 = ['A3', 'A3', 'A4', 'B4', 'C5', 'D5', 'F#5', 'G5', 'A5', 'A5'];
+let thisPitchArr_10, thisPitch_10, thisPitch8va_10;
+
+const harpLoop_10 = new Tone.Loop((time) => {
+  let time_10 = tm.getElapsedTimeInCue(10);
+  if (time_10 < 2051) {
+    thisPitchArr_10 = pitchArr_9;
+  } else if (time_10 < 4102) {
+    thisPitchArr_10 = pitchArr1_10;
+  } else if (time_10 < 6153) {
+    thisPitchArr_10 = pitchArr2_10;
+  } else if (time_10 < 8204) {
+    thisPitchArr_10 = pitchArr3_10;
+  } else if (time_10 < 10255) {
+    thisPitchArr_10 = pitchArr4_10;
+  } else {
+    thisPitchArr_10 = pitchArr5_10;
+  }
+  thisPitch_10 = thisPitchArr_10[Math.floor(tm.accel.x * 0.99 * thisPitchArr_10.length)];
+	harpSampler.triggerAttackRelease(thisPitch_10, 1);
+  thisPitch8va_10 = Tone.Frequency(thisPitch_10).transpose(12);
+  harpSampler.triggerAttackRelease(thisPitch8va_10, 1, '+8n');
+}, '4n');
 
 tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[10].goCue = function() {
+  harpLoop_10.start();
   // fmSynth.detune set by getSectionBreakpoints() below, so don't reset here
   fmSynth.triggerAttack('E4');
   bellSampler.triggerAttackRelease('E6', 5);
 }
 tm.cue[10].updateTiltSounds = function() {
-  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
+  // pitches start same as last section, using .detune to bend up perfect 4th
   fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
   if (tm.accel.y < 0.4) {
     // with phone mostly upright, synth is mostly silent and harp is soft
@@ -367,17 +397,52 @@ tm.cue[10].updateTiltSounds = function() {
   } else {
     // with phone mostly upside down, harp is soft and bright synth is heard
     harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
-    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
+    fmSynth.modulationIndex.value = 10 - (1.0 - tm.accel.y) * 16.66; // 5 to 10
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
   // pitch gradually rises perfect 4th through first half of section
   fmSynth.detune.value = tm.getSectionBreakpoints(10, [0, 0, 12307, 500]);
 }
 tm.cue[10].cueTransition = function() {
-
+  harpSampler.triggerAttackRelease('B4', 1, '+8n');
+  harpSampler.triggerAttackRelease('C#5', 1, '+4n');
+  harpSampler.triggerAttackRelease('D5', 1, '+4n.');
+  vibeSampler.triggerAttackRelease('D6', 3, '+4n.');
+  // transition sounds called before stop cue below, so stop loop now
+  harpLoop_10.stop();
 }
 tm.cue[10].stopCue = function() {
+  harpLoop_10.stop();
   fmSynth.triggerRelease();
+}
+
+// *******************************************************************
+// CUE 11: [H] - harp only dimin (still TILT)
+
+let pitchArr_11 = ['C#4', 'C#4', 'C#5', 'D5', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'C#6'];
+let pitchArr8ba_11 = ['C#3', 'C#3', 'C#4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'C#5'];
+
+const harpLoop_11 = new Tone.Loop((time) => {
+  harpSampler.triggerAttackRelease(pitchArr8ba_11[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_11.length)], 1, '+8n');
+  harpSampler.triggerAttackRelease(pitchArr_11[Math.floor(tm.accel.x * 0.99 * pitchArr_11.length)], 1);
+}, '4n');
+
+tm.cue[11] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[11].goCue = function() {
+  harpLoop_11.start();
+  bellSampler.triggerAttackRelease('C#6', 5);
+}
+tm.cue[11].updateTiltSounds = function() {
+  if (tm.accel.y < 0.4) {
+    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
+  } else if (tm.accel.y < 0.7) {
+    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+  } else {
+    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+  }
+}
+tm.cue[11].stopCue = function() {
+  harpLoop_11.stop();
 }
 
 // *******************************************************************
