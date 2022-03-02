@@ -56,6 +56,17 @@ const vibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).toDestination();
 
+// handbell sampler from freesound.org/people/radwoc/ (CC0 license)
+const bellSampler = new Tone.Sampler({
+  urls: {
+    'C6': 'handbell-C6.mp3',
+    'E6': 'handbell-E6.mp3',
+    'Ab6': 'handbell-Ab6.mp3',
+    'B6': 'handbell-B6.mp3',
+  },
+  baseUrl: bell_sounds,
+}).toDestination();
+
 // reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
@@ -293,10 +304,6 @@ tm.cue[9].goCue = function() {
   fmSynth.triggerAttack('E4');
 }
 
-// TODO: make this into sampler. This is just a test
-const testBellE = new Tone.Player(bell_sounds + 'handbell-F6.mp3').toDestination();
-testBellE.playbackRate = 1 / (2 ** (1/12));
-
 tm.cue[9].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
   fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
@@ -338,10 +345,9 @@ tm.cue[9].stopCue = function() {
 
 tm.cue[10] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[10].goCue = function() {
-  fmSynth.detune.value = 0;
+  // fmSynth.detune set by getSectionBreakpoints() below, so don't reset here
   fmSynth.triggerAttack('E4');
-  // TODO: replace testBellE with sampler
-  testBellE.start();
+  bellSampler.triggerAttackRelease('E6', 5);
 }
 tm.cue[10].updateTiltSounds = function() {
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
@@ -386,7 +392,7 @@ const harpLoop_22 = new Tone.Loop((time) => {
 tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[22].goCue = function() {
   harpLoop_22.start();
-  // TODO: if using .detune for pitch bend, need to reset at start of cue
+  fmSynth.detune.value = 0;
   fmSynth.triggerAttack('G4');
 }
 
