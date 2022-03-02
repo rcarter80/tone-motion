@@ -424,7 +424,6 @@ tm.cue[10].stopCue = function() {
 
 // *******************************************************************
 // CUE 11: [H] - harp only dimin (still TILT)
-
 let pitchArr_11 = ['C#4', 'C#4', 'C#5', 'D5', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'C#6'];
 let pitchArr8ba_11 = ['C#3', 'C#3', 'C#4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'C#5'];
 
@@ -529,6 +528,30 @@ tm.cue[15].goCue = function() {
 };
 tm.cue[15].stopCue = function() {
   // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 16: [L] granular TILT texture during beginning of second part of piece
+let playGongFlag_16 = true;
+
+tm.cue[16] = new TMCue('tilt', 0, NO_LIMIT); // immediate trigger, faded in
+tm.cue[16].goCue = function() {
+  // gong sounds triggered when phone is upside down, but that sets flag that can only be reset when phone tilted back up, so gong only plays once per downward tipping gesture
+  playGongFlag_16 = true;
+};
+tm.cue[16].updateTiltSounds = function() {
+  if (tm.accel.y > 0.7) {
+    if (playGongFlag_16) {
+      console.log('gong');
+      playGongFlag_16 = false; // flag is false until phone tipped back up
+    }
+  } else if (tm.accel.y < 0.3) {
+    if (!playGongFlag_16) {
+      playGongFlag_16 = true; // tipping phone upright resets flag
+    }
+  }
+};
+tm.cue[16].stopCue = function() {
 };
 
 // *******************************************************************
