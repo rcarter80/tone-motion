@@ -276,6 +276,7 @@ const fmSynth = new Tone.FMSynth({
 }).toDestination();
 fmSynth.oscillator.partials = [1, 0, 0, 0.25];
 
+// TODO: connect harpSampler to volume node for cue 11 dimin.
 const harpSampler = new Tone.Sampler({
   urls: {
     'G3': 'harpG3.mp3',
@@ -326,6 +327,7 @@ tm.cue[9].updateTiltSounds = function() {
 }
 // called ONLY if next cue is triggered, NOT if user taps 'stop' button
 tm.cue[9].cueTransition = function() {
+  // TODO: move these back one 8th note. they happen too late
   harpSampler.triggerAttackRelease('F#4', 1, '+4n');
   harpSampler.triggerAttackRelease('G4', 1, '+4n.');
   harpSampler.triggerAttackRelease('A4', 1, '+2n');
