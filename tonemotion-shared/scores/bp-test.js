@@ -71,6 +71,7 @@ const bellSampler = new Tone.Sampler({
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
 const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
+triangle.volume.value = -12;
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
