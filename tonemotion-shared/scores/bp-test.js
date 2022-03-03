@@ -57,15 +57,6 @@ const vibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).toDestination();
 
-// sampler using "vibes" sounds like I synthesized in Logic?
-const synVibSampler = new Tone.Sampler({
-  urls: {
-    'A3': 'vibe-A3.mp3',
-    'E4': 'vibe-E4.mp3',
-  },
-  baseUrl: vibes_sounds,
-}).toDestination();
-
 // handbell sampler from freesound.org/people/radwoc/ (CC0 license)
 const bellSampler = new Tone.Sampler({
   urls: {
@@ -484,7 +475,7 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16: [L] granular TILT texture during beginning of second part of piece
-// TODO: could replace clave loop with something else (bongos?)
+// TODO: could replace clave loop with something else (bongos?). and could add sound to right side of TILT (like a ping pong ball click loop)
 const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
 claveLoop.loop = true;
 // used to control clave loop gain on x-axis
@@ -500,6 +491,17 @@ crunchyIce.loop = true;
 // I use a regular Tone.Player to granulate sound because GrainPlayer doesn't have .seek() or .scrub() anymore
 let grLen_16 = 0.25;
 
+// sampler using "vibes" sounds like I synthesized in Logic?
+const synVibSampler = new Tone.Sampler({
+  urls: {
+    'A3': 'vibe-A3.mp3',
+    'E4': 'vibe-E4.mp3',
+  },
+  baseUrl: vibes_sounds,
+});
+const synVibFade = new Tone.Volume(0);
+synVibSampler.chain(synVibFade, Tone.Destination);
+
 const pitchArr_16 = ['G4', 'F#4', 'D4', 'C#4', 'A3'];
 let count_16 = 0;
 let len_16 = 2; // first len_16 notes from pitchArr_16 are used, value goes up
@@ -510,11 +512,14 @@ tm.cue[16] = new TMCue('tilt', 0, NO_LIMIT); // immediate trigger, faded in
 tm.cue[16].goCue = function() {
   // gong sounds triggered when phone is upside down, but that sets flag that can only be reset when phone tilted back up, so gong only plays once per downward tipping gesture
   playGongFlag_16 = true;
-  claveLoopFade.volume.value = 0;
+  claveLoopFade.volume.value = -99;
+  claveLoopFade.volume.rampTo(0, 5);
   claveLoop.volume.value = -99; // start muted and only play with phone tipped
   claveLoop.start();
-  crunchyIceFade.volume.value = 0;
+  crunchyIceFade.volume.value = -99;
+  crunchyIceFade.volume.rampTo(0, 5);
   crunchyIce.start();
+  synVibFade.volume.value = 0;
 };
 tm.cue[16].updateTiltSounds = function() {
   let time_16 = tm.getElapsedTimeInCue(16);
@@ -577,9 +582,11 @@ tm.cue[17] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[17].goCue = function() {
   // fade out clave and ice sounds (which also have gain controlled by TILT)
   claveLoopFade.volume.value = 0;
-  claveLoopFade.volume.rampTo(-99, 16)
+  claveLoopFade.volume.rampTo(-99, 16);
   crunchyIceFade.volume.value = 0;
-  crunchyIceFade.volume.rampTo(-99, 16)
+  crunchyIceFade.volume.rampTo(-99, 16);
+  synVibFade.volume.value = 0;
+  synVibFade.volume.rampTo(-24, 16);
 };
 
 // *******************************************************************
