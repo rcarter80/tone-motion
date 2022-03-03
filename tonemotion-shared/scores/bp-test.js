@@ -18,6 +18,7 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
+const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 
 // 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
 Tone.Transport.bpm.value = 156;
@@ -52,6 +53,15 @@ const vibeSampler = new Tone.Sampler({
     'Db5': 'vibe_bell-Db5.mp3',
     'A5': 'vibe_bell-A5.mp3',
     'Db6': 'vibe_bell-Db6.mp3',
+  },
+  baseUrl: vibes_sounds,
+}).toDestination();
+
+// sampler using "vibes" sounds like I synthesized in Logic?
+const synVibSampler = new Tone.Sampler({
+  urls: {
+    'A3': 'vibe-A3.mp3',
+    'E4': 'vibe-E4.mp3',
   },
   baseUrl: vibes_sounds,
 }).toDestination();
@@ -474,26 +484,112 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16: [L] granular TILT texture during beginning of second part of piece
+// TODO: could replace clave loop with something else (bongos?)
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
+claveLoop.loop = true;
+// used to control clave loop gain on x-axis
+const claveLoopVol = new Tone.Volume(0);
+// used to fade out clave loop during next (hidden) cue (17)
+const claveLoopFade = new Tone.Volume(0);
+claveLoop.chain(claveLoopVol, claveLoopFade, Tone.Destination);
+
+const crunchyIce = new Tone.Player(granulated_sounds + 'iceInWineGlass.mp3');
+const crunchyIceFade = new Tone.Volume(0);
+crunchyIce.chain(crunchyIceFade, Tone.Destination);
+crunchyIce.loop = true;
+// I use a regular Tone.Player to granulate sound because GrainPlayer doesn't have .seek() or .scrub() anymore
+let grLen_16 = 0.25;
+
+const pitchArr_16 = ['G4', 'F#4', 'D4', 'C#4', 'A3'];
+let count_16 = 0;
+let len_16 = 2; // first len_16 notes from pitchArr_16 are used, value goes up
+
 let playGongFlag_16 = true;
 
 tm.cue[16] = new TMCue('tilt', 0, NO_LIMIT); // immediate trigger, faded in
 tm.cue[16].goCue = function() {
   // gong sounds triggered when phone is upside down, but that sets flag that can only be reset when phone tilted back up, so gong only plays once per downward tipping gesture
   playGongFlag_16 = true;
+  claveLoopFade.volume.value = 0;
+  claveLoop.volume.value = -99; // start muted and only play with phone tipped
+  claveLoop.start();
+  crunchyIceFade.volume.value = 0;
+  crunchyIce.start();
 };
 tm.cue[16].updateTiltSounds = function() {
-  if (tm.accel.y > 0.7) {
-    if (playGongFlag_16) {
-      console.log('gong');
-      playGongFlag_16 = false; // flag is false until phone tipped back up
-    }
-  } else if (tm.accel.y < 0.3) {
-    if (!playGongFlag_16) {
-      playGongFlag_16 = true; // tipping phone upright resets flag
-    }
+  let time_16 = tm.getElapsedTimeInCue(16);
+  // at first, only 2 notes from gong pitch array played, but then more added
+  if (time_16 < 40000) {
+    // only G and F# until [M]
+    len_16 = 2;
+  } else if (time_16 < 48000) {
+    // then add D after two measures
+    len_16 = 3;
+  } else if (time_16 < 56000) {
+    len_16 = 4;
+  } else {
+    len_16 = 5;
   }
+  if (tm.accel.y < 0.4) {
+    // phone silent when upright, crunchy and clicky sounds fade in when tipped
+    // tipping phone upright resets flag so that gong can be triggered again
+    if (!playGongFlag_16) {
+      playGongFlag_16 = true;
+    }
+    crunchyIce.volume.value = -20 - (0.4 - tm.accel.y) * 197.5; // -99 to -20 dB
+    crunchyIce.playbackRate = 0.8;
+    claveLoop.playbackRate = 0.75;
+    claveLoop.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
+  } else if (tm.accel.y < 0.7) {
+    // crunchy ice sounds fade in, with varying seek points and pitch/speed
+    crunchyIce.playbackRate = 1.1 - (0.7 - tm.accel.y); // 0.8 to 1.1
+    crunchyIce.volume.value = 0 - (0.7 - tm.accel.y) * 66.66; // -20 to 0 dB
+    // clicking clave sounds accessible when phone tipped to left
+    claveLoop.volume.value = 0 - (0.7 - tm.accel.y) * 120; // -36 to 0 dB
+    claveLoop.playbackRate = 2 - (0.7 - tm.accel.y) * 4.166 // 0.75 to 2
+  } else {
+    // crunchy ice fades out again when phone upside down
+    // tipping phone upside down triggers gong, but only ONCE until flag resets
+    if (playGongFlag_16) {
+      synVibSampler.triggerAttackRelease(pitchArr_16[count_16 % len_16], 5);
+      playGongFlag_16 = false; // flag is false until phone tipped back up
+      count_16++;
+    }
+    crunchyIce.volume.value = -36 + (1 - tm.accel.y) * 120; // 0 to -36 dB
+    crunchyIce.playbackRate = 1.1;
+    claveLoop.volume.value = 0;
+    claveLoop.playbackRate = 2.75 - (1 - tm.accel.y) * 2.5 // 2 to 2.75
+  }
+  // clave loop only audible when phone tilted to left
+  claveLoopVol.volume.value = -99 + (1.0 - tm.accel.x) * 99;
+  // granulate crunchyIce and set seek point on x-axis
+  crunchyIce.loopStart = tm.accel.x * 13;
+  crunchyIce.loopEnd = crunchyIce.loopStart + grLen_16;
 };
 tm.cue[16].stopCue = function() {
+  crunchyIce.stop();
+  claveLoop.stop();
+};
+
+// *******************************************************************
+// CUE 17: hidden cue to fade out cue 16
+tm.cue[17] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[17].goCue = function() {
+  // fade out clave and ice sounds (which also have gain controlled by TILT)
+  claveLoopFade.volume.value = 0;
+  claveLoopFade.volume.rampTo(-99, 16)
+  crunchyIceFade.volume.value = 0;
+  crunchyIceFade.volume.rampTo(-99, 16)
+};
+
+// *******************************************************************
+// CUE 18: silence just before [N]
+tm.cue[18] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[18].goCue = function() {
+  // nothing to play
+};
+tm.cue[18].stopCue = function() {
+  // nothing to clean up
 };
 
 // *******************************************************************
