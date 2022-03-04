@@ -600,6 +600,18 @@ tm.cue[18].stopCue = function() {
 };
 
 // *******************************************************************
+// CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
+tm.cue[19] = new TMCue('playing_tiltAndShake', 0, NO_LIMIT);
+tm.cue[19].goCue = function() {
+};
+tm.cue[19].updateTiltSounds = function() {
+};
+tm.cue[19].triggerShakeSound = function() {
+};
+tm.cue[19].stopCue = function() {
+};
+
+// *******************************************************************
 // CUE 22: [S] - TILT synth like cue 9 [F]
 let pitchArr_22 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
 let pitchArr8ba_22 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];

@@ -1334,9 +1334,9 @@ TMCue.prototype.stopCue = function() {
 TMCue.prototype.updateTiltSounds = function() {
   // This will get real annoying unless this method is overridden
   status_label.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
-}
+};
 
 // Override this method in score to make "shake" interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
   // Override if section uses shake
-}
+};
