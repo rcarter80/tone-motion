@@ -656,12 +656,14 @@ tm.cue[19].triggerShakeSound = function() {
   } else {
     shakerArr[count_19 % shakerArr.length].start();
     // TODO: use .tranpose() to bend pitch later
+    // also need to work out way to add bells progressively and bend them down
     sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
     count_19++;
   }
 };
 tm.cue[19].stopCue = function() {
   ziplockClickLoop.stop();
+  sineTails.triggerRelease();
 };
 
 // *******************************************************************
