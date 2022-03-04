@@ -293,8 +293,10 @@ ToneMotion.prototype.setStatus = function(status) {
           this.setBackgroundGreen();
           break;
         case 'playing_shake':
-        case 'playing_tiltAndShake':
           this.setBackgroundGray();
+          break;
+        case 'playing_tiltAndShake':
+          this.setBackgroundPurple();
           break;
         default:
           this.setBackgroundBlue();

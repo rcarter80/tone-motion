@@ -5,18 +5,17 @@ window.onload = function() {
   // fetch cues from localhost if tm.localTest is true
   // TODO: create server for ryancarter.org/bp
   if (tm.localTest) {
-    tm.init('http://localhost:3000/snm-server/current-cue');
+    tm.init('http://localhost:3000/jack-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/snm-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
   }
 };
 
 // Shortcuts to audio file paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
-const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
+const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
-const glass_sounds = 'tonemotion-shared/audio/glass/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 
@@ -25,7 +24,9 @@ Tone.Transport.bpm.value = 156;
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
+// can add tremolo by increasing depth of sinTremolo
 // 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
+const sinTremolo = new Tone.Tremolo(4, 0.0).toDestination().start();
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
     type: 'sine',
@@ -40,7 +41,7 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     releaseCurve: "linear",
   },
   volume: -28,
-}).toDestination();
+}).connect(sinTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
 const vibeSampler = new Tone.Sampler({
@@ -601,14 +602,69 @@ tm.cue[18].stopCue = function() {
 
 // *******************************************************************
 // CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
-tm.cue[19] = new TMCue('playing_tiltAndShake', 0, NO_LIMIT);
+const shaker = new Tone.Player(perc_sounds + 'shaker.mp3').toDestination();
+
+const chimeA7 = new Tone.Player(chime_sounds + 'chimeA7.mp3').toDestination();
+const chimeC8 = new Tone.Player(chime_sounds + '2sec-chime-C8.mp3').toDestination();
+// randomly select one chime for sparkly interjection
+let chime_19 = tm.pickRand([chimeA7, chimeC8]);
+// randomly select one bell pitch at 16th - 31st partial of F2
+let randBell_19 = 55 * ((2**(1/12))**8) * tm.pickRand([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]);
+
+let pitchArr_19 = ['Eb7', 'F6', 'G5', 'A4', 'A7', 'D7', 'E6', 'F5', 'G4'];
+let count_19 = 0;
+let triggerSparkles_19 = true;
+
+tm.cue[19] = new TMCue('tiltAndShake', 0, NO_LIMIT);
 tm.cue[19].goCue = function() {
+  count_19 = 0;
+  sineTails.volume.value = -24;
+  triggerSparkles_19 = true;
 };
 tm.cue[19].updateTiltSounds = function() {
+  // sine tails bend down (up to 1/4 tone) with phone tipped upside down
+  if (tm.accel.y < 0.5) {
+    sineTails.set({ detune: 0 });
+  } else {
+    sineTails.set({ detune: -((tm.accel.y - 0.5) * 100) });
+  }
+  // sineTails tremolo parameters NOT set by yTilt because I don't normally allow TILT changes to sound, and I don't hear zipper noise here
+  sinTremolo.depth.value = tm.accel.y;
+  sinTremolo.frequency.value = 1 + tm.accel.y * 11;
 };
 tm.cue[19].triggerShakeSound = function() {
+  let time_19 = tm.getElapsedTimeInCue(19);
+  // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
+  if (triggerSparkles_19 || time_19 > 16000 && time_19 < 19000) {
+    bellSampler.triggerAttackRelease('F5', 5);
+    bellSampler.triggerAttackRelease(randBell_19, 5, '+16n');
+    console.log(randBell_19);
+    chime_19.start('+8n');
+    triggerSparkles_19 = false; // you only get one set of sparkles
+  } else {
+    shaker.start();
+    // TODO: use .tranpose() to bend pitch later
+    sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
+    count_19++;
+  }
 };
 tm.cue[19].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 20: [Q] - orchestra enters after cadenza, phones fade out
+tm.cue[20] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[20].goCue = function() {
+}
+
+// *******************************************************************
+// CUE 21: tacet after cadenza
+tm.cue[21] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[21].goCue = function() {
+  // nothing to play
+};
+tm.cue[21].stopCue = function() {
+  // nothing to clean up
 };
 
 // *******************************************************************
