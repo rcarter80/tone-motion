@@ -648,7 +648,7 @@ tm.cue[19].updateTiltSounds = function() {
 tm.cue[19].triggerShakeSound = function() {
   let time_19 = tm.getElapsedTimeInCue(19);
   // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
-  if (triggerSparkles_19 || time_19 > 16000 && time_19 < 19000) {
+  if (triggerSparkles_19 && time_19 > 16000 && time_19 < 19000) {
     bellSampler.triggerAttackRelease('F5', 5);
     bellSampler.triggerAttackRelease(randBellLo_19, 5, '+16n');
     bellSampler.triggerAttackRelease(randBellHi_19, 5, '+8n');
