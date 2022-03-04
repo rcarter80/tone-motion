@@ -602,14 +602,20 @@ tm.cue[18].stopCue = function() {
 
 // *******************************************************************
 // CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
-const shaker = new Tone.Player(perc_sounds + 'shaker.mp3').toDestination();
+const shaker1 = new Tone.Player(perc_sounds + 'shaker1.mp3').toDestination();
+const shaker2 = new Tone.Player(perc_sounds + 'shaker2.mp3').toDestination();
+const shaker3 = new Tone.Player(perc_sounds + 'shaker3.mp3').toDestination();
+let shakerArr = [shaker1, shaker2, shaker3];
+const ziplockClickLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
+ziplockClickLoop.loop = true;
 
 const chimeA7 = new Tone.Player(chime_sounds + 'chimeA7.mp3').toDestination();
 const chimeC8 = new Tone.Player(chime_sounds + '2sec-chime-C8.mp3').toDestination();
 // randomly select one chime for sparkly interjection
 let chime_19 = tm.pickRand([chimeA7, chimeC8]);
-// randomly select one bell pitch at 16th - 31st partial of F2
-let randBell_19 = 55 * ((2**(1/12))**8) * tm.pickRand([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]);
+// randomly select two bell pitches at upper partials of F2
+let randBellLo_19 = 55 * ((2**(1/12))**8) * tm.pickRand([10, 14, 17, 20]);
+let randBellHi_19 = 55 * ((2**(1/12))**8) * tm.pickRand([23, 28, 36]);
 
 let pitchArr_19 = ['Eb7', 'F6', 'G5', 'A4', 'A7', 'D7', 'E6', 'F5', 'G4'];
 let count_19 = 0;
@@ -620,13 +626,20 @@ tm.cue[19].goCue = function() {
   count_19 = 0;
   sineTails.volume.value = -24;
   triggerSparkles_19 = true;
+  ziplockClickLoop.volume.value = -99;
+  ziplockClickLoop.start();
 };
 tm.cue[19].updateTiltSounds = function() {
-  // sine tails bend down (up to 1/4 tone) with phone tipped upside down
+  // fast clicking sounds accessible with phone tipped upside down
   if (tm.accel.y < 0.5) {
     sineTails.set({ detune: 0 });
+    ziplockClickLoop.volume.value = -99;
+    ziplockClickLoop.playbackRate = 1;
   } else {
     sineTails.set({ detune: -((tm.accel.y - 0.5) * 100) });
+    // sine tails bend down (up to 1/4 tone) with phone tipped upside down
+    ziplockClickLoop.volume.value = -99 + (tm.accel.y - 0.5) * 198; // -99 to 0
+    ziplockClickLoop.playbackRate = 1 + (tm.accel.y - 0.5) * 4; // 1 to 3
   }
   // sineTails tremolo parameters NOT set by yTilt because I don't normally allow TILT changes to sound, and I don't hear zipper noise here
   sinTremolo.depth.value = tm.accel.y;
@@ -637,18 +650,18 @@ tm.cue[19].triggerShakeSound = function() {
   // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
   if (triggerSparkles_19 || time_19 > 16000 && time_19 < 19000) {
     bellSampler.triggerAttackRelease('F5', 5);
-    bellSampler.triggerAttackRelease(randBell_19, 5, '+16n');
-    console.log(randBell_19);
-    chime_19.start('+8n');
+    bellSampler.triggerAttackRelease(randBellLo_19, 5, '+16n');
+    bellSampler.triggerAttackRelease(randBellHi_19, 5, '+8n');
     triggerSparkles_19 = false; // you only get one set of sparkles
   } else {
-    shaker.start();
+    shakerArr[count_19 % shakerArr.length].start();
     // TODO: use .tranpose() to bend pitch later
     sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
     count_19++;
   }
 };
 tm.cue[19].stopCue = function() {
+  ziplockClickLoop.stop();
 };
 
 // *******************************************************************
