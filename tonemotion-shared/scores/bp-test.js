@@ -872,3 +872,56 @@ tm.cue[25].triggerShakeSound = function() {
 };
 tm.cue[25].stopCue = function() {
 };
+
+// *******************************************************************
+// CUE 26: m. 286 - SHAKE sounds of piano samples fading out
+tm.cue[26] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[26].goCue = function() {
+};
+tm.cue[26].triggerShakeSound = function() {
+};
+tm.cue[26].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 27: [W] - TACET
+tm.cue[27] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[27].goCue = function() {
+  // nothing to play
+};
+tm.cue[27].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 28: [X] - TILT droning and warping synths
+tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[28].goCue = function() {
+};
+tm.cue[28].updateTiltSounds = function() {
+};
+tm.cue[28].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 29: m. 330 - hidden cue to fade out synths
+tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[29].goCue = function() {
+};
+
+// *******************************************************************
+// CUE 30: [Z] - TACET (audience is done playing)
+tm.cue[30] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[30].goCue = function() {
+  // nothing to play
+};
+tm.cue[30].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 31: finished
+tm.cue[31] = new TMCue('finished', 0, NO_LIMIT);
+tm.cue[31].goCue = function() {
+  // nothing to play
+};
