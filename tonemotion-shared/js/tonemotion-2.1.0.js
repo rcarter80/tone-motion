@@ -1037,9 +1037,10 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     status_container.classList.add('swell');
     body_element.classList.remove('fade');
   }
+
   // new with v1.5.0, this method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients, but also won't be triggered if user taps "stop"
-  // only play transition sound if cues are triggered consecutively
-  if (this.currentCue === this.cue[cue-1]) {
+  // These sounds will play even if skipping cues, so in a rehearsal going straight to one cue will trigger the previous cue's transition if it exists
+  if (cue > 0) {
     try {
       // cue transition is from PREVIOUS cue number
       this.cue[cue-1].cueTransition();

@@ -332,10 +332,10 @@ tm.cue[9].goCue = function() {
   harpLoop_9.start();
   triangle.start();
   fmSynthDefaults();
+  fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
   fmSynth.triggerAttack('E4');
   cue10WasTriggered = false;
 };
-
 tm.cue[9].updateTiltSounds = function() {
   // after HIDDEN cue 10 is triggered, pitches bend up perfect 4
   if (cue10WasTriggered) {
@@ -361,11 +361,8 @@ tm.cue[9].updateTiltSounds = function() {
   }
 };
 tm.cue[9].stopCue = function() {
-  // vibes sounds can't be triggered by cueTransition because that is only called when triggered cue is NEXT cue (i.e., cue 10) but 10 is hidden cue
+  // both are stopped in cue 10 transition, but stop here too in case user stops
   harpLoop_9.stop();
-  vibeSampler.triggerAttackRelease('B5', 3);
-  vibeSampler.triggerAttackRelease('C#6', 3, '+8n');
-  vibeSampler.triggerAttackRelease('D6', 3, '+4n');
   fmSynth.triggerRelease();
 };
 
@@ -376,6 +373,14 @@ tm.cue[10].goCue = function() {
   // once this flag is set to true, pitch bend in cue 9 are triggered
   cue10WasTriggered = true;
 };
+tm.cue[10].cueTransition = function() {
+  // this is called BEFORE tm.cue[9].stopCue
+  harpLoop_9.stop();
+  vibeSampler.triggerAttackRelease('B5', 3);
+  vibeSampler.triggerAttackRelease('C#6', 3, '+8n');
+  vibeSampler.triggerAttackRelease('D6', 3, '+4n');
+  fmSynth.triggerRelease();
+}
 
 // *******************************************************************
 // CUE 11: [H] - harp only dimin (still TILT)
@@ -487,7 +492,7 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16: [L] granular TILT texture during beginning of second part of piece
-// TODO: could replace clave loop with something else (bongos?). and could add sound to right side of TILT (like a ping pong ball click loop)
+// REVISION: could replace clave loop with something else (bongos?). and could add sound to right side of TILT (like a ping pong ball click loop)
 const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
 claveLoop.loop = true;
 // used to control clave loop gain on x-axis
@@ -774,20 +779,41 @@ tm.cue[21].stopCue = function() {
 // CUE 22: [S] - TILT synth like cue 9 [F]
 let pitchArr_22 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
 let pitchArr8ba_22 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
+let pitchLo_22, pitchHi_22;
+let cue23WasTriggered = cue24WasTriggered = false;
 
 const harpLoop_22 = new Tone.Loop((time) => {
-	harpSampler.triggerAttackRelease(pitchArr_22[Math.floor(tm.accel.x * 0.99 * pitchArr_22.length)], 1);
-  harpSampler.triggerAttackRelease(pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)], 1, '+8n');
+  pitchLo_22 = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
+  pitchHi_22 = pitchArr_22[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)]
+  if (cue23WasTriggered) {
+    // pitch bend up whole step in second half of section
+    let trans = tm.getSectionBreakpoints(23, [0, 0, 12307, 2]);
+    pitchLo_22 = Tone.Frequency(pitchLo_22).transpose(trans);
+    pitchHi_22 = Tone.Frequency(pitchHi_22).transpose(trans);
+  }
+  harpSampler.triggerAttackRelease(pitchLo_22, 1);
+  harpSampler.triggerAttackRelease(pitchHi_22, 1, '+8n');
 }, '4n');
 
 tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[22].goCue = function() {
+  harpSamplerVol.volume.value = 0;
   harpLoop_22.start();
+  triangle.start();
   fmSynthDefaults();
+  fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
   fmSynth.triggerAttack('G4');
-}
-
+  cue23WasTriggered = cue24WasTriggered = false;
+};
 tm.cue[22].updateTiltSounds = function() {
+  // after HIDDEN cue 23 is triggered, pitches bend up whole step
+  if (cue23WasTriggered) {
+    fmSynth.detune.value = tm.getSectionBreakpoints(23, [0, 0, 12307, 200]);
+  }
+  if (cue24WasTriggered) {
+    // final harp sounds fade out (breakpoints at each downbeat)
+    harpSamplerVol.volume.value = tm.getSectionBreakpoints(24, [0, 0, 1538, 0, 3076, -9, 4614, -18, 6152, -40]);
+  }
   // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
   fmSynth.frequency.value = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)];
   if (tm.accel.y < 0.4) {
@@ -806,19 +832,43 @@ tm.cue[22].updateTiltSounds = function() {
     fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
     fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
   }
-}
-// called ONLY if next cue is triggered, NOT if user taps 'stop' button
-tm.cue[22].cueTransition = function() {
-  // harpSampler.triggerAttackRelease('G3', 1, '+4n');
-  // harpSampler.triggerAttackRelease('G4', 1, '+4n.');
-  // harpSampler.triggerAttackRelease('G5', 1, '+4n.');
-  // vibeSampler.triggerAttackRelease('G5', 3, '+2n');
-  // // transition sounds called before stop cue below, so stop loop now
-  // harpLoop_9.stop();
-}
-// called BOTH when new cue is triggered OR if user taps 'stop' button
+};
 tm.cue[22].stopCue = function() {
-  fmSynth.triggerRelease();
-  // stop loop here too so that if someone taps stop button, the sound stops
+  // stopped by cue 24 transition, but stop here too in case user stops
   harpLoop_22.stop();
+  fmSynth.triggerRelease();
+};
+
+// *******************************************************************
+// CUE 23: m. 250 - hidden cue to bend pitches up
+tm.cue[23] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[23].goCue = function() {
+  // once this flag is set to true, pitch bend in cue 22 are triggered
+  cue23WasTriggered = true;
+};
+
+// *******************************************************************
+// CUE 24: m. 254 - hidden cue to fade out harp sounds
+tm.cue[24] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[24].goCue = function() {
+  cue24WasTriggered = true;
+};
+tm.cue[24].cueTransition = function() {
+  // called BEFORE tm.cue[22].stopCue()
+  harpLoop_22.stop();
+  vibeSampler.triggerAttackRelease('B4', 3);
+  vibeSampler.triggerAttackRelease('C5', 3, '+8n');
+  vibeSampler.triggerAttackRelease('D5', 3, '+4n');
+  fmSynth.triggerRelease();
 }
+
+// *******************************************************************
+// CUE 25: [U] - SHAKE sounds of piano samples playing same notes as piano
+tm.cue[25] = new TMCue('shake', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[25].goCue = function() {
+  bellSampler.triggerAttackRelease('C#6', 5);
+};
+tm.cue[25].triggerShakeSound = function() {
+};
+tm.cue[25].stopCue = function() {
+};
