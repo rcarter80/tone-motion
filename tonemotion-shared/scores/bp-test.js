@@ -280,6 +280,17 @@ const fmSynth = new Tone.FMSynth({
   harmonicity: 0.125,
 }).toDestination();
 fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+function fmSynthDefaults() {
+  fmSynth.envelope.attack = 1;
+  fmSynth.envelope.attackCurve = 'exponential';
+  fmSynth.envelope.release = 2;
+  fmSynth.envelope.releaseCurve = 'exponential';
+  fmSynth.modulationEnvelope.attack = 1;
+  fmSynth.modulationEnvelope.attackCurve = 'exponential';
+  fmSynth.modulationEnvelope.release = 10;
+  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
+  fmSynth.detune.value = 0;
+}
 
 const harpSampler = new Tone.Sampler({
   urls: {
@@ -320,7 +331,7 @@ tm.cue[9].goCue = function() {
   harpSamplerVol.volume.value = 0;
   harpLoop_9.start();
   triangle.start();
-  fmSynth.detune.value = 0;
+  fmSynthDefaults();
   fmSynth.triggerAttack('E4');
   cue10WasTriggered = false;
 };
@@ -620,11 +631,17 @@ let randBellHi_19 = 55 * ((2**(1/12))**8) * tm.pickRand([23, 28, 36]);
 let pitchArr_19 = ['Eb7', 'F6', 'G5', 'A4', 'A7', 'D7', 'E6', 'F5', 'G4'];
 let count_19 = 0;
 let triggerSparkles_19 = true;
+let countdown_19 = 7; // initial number of shakers between bells after ~m.188
+let bellCountdown = countdown_19; // actual # of shakers between bells goes down
 
 // randomly select one of two pitch trajectories for second half (F/A or Eb/Eb)
 const metalPitchArr_19 = tm.pickRand([['F5', 'A6'], ['Eb5', 'Eb6']]);
 // players assigned F/A have 1 oct transposition. Ebs have mi7 trans
 let transRange_19 = metalPitchArr_19[0] === 'F5' ? -12 : -10;
+
+// randomly select one of three time spans for single revCym trigger
+let revCymRange = tm.pickRand([[58000, 60000], [59000, 61000], [60000, 62000]]);
+let triggerCymRev = true;
 
 tm.cue[19] = new TMCue('tiltAndShake', 0, NO_LIMIT);
 tm.cue[19].goCue = function() {
@@ -633,6 +650,8 @@ tm.cue[19].goCue = function() {
   triggerSparkles_19 = true;
   ziplockClickLoop.volume.value = -99;
   ziplockClickLoop.start();
+  vibeSampler.volume.value = 0;
+  bellSampler.volume.value = 0;
 };
 tm.cue[19].updateTiltSounds = function() {
   // fast clicking sounds accessible with phone tipped upside down
@@ -663,22 +682,39 @@ tm.cue[19].triggerShakeSound = function() {
     bellSampler.triggerAttackRelease(randBellHi_19, 5, '+8n');
     triggerSparkles_19 = false; // you only get one set of sparkles
   } else {
-    // after sparkly interjection, shakers gradually replaced by falling metals
-    // gradual transposition from around m. 191 to m. 201
-    let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, transRange_19]);
-    if (count_19 % 2) {
-      // alternate between low note in vibes/glass and high note in handbells
-      let pitch = Tone.Frequency(metalPitchArr_19[0]).transpose(trans);
-      vibeSampler.triggerAttackRelease(pitch, 3);
+    // after sparkly burst, shakers gradually replaced by falling metals
+    if (bellCountdown > 0) {
+      shakerArr[count_19 % shakerArr.length].start();
+      // gradual transposition from around m. 191 to m. 201
+      let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, 12]);
+      let pitch = Tone.Frequency(pitchArr_19[count_19 % pitchArr_19.length]).transpose(trans);
+      sineTails.triggerAttackRelease(pitch, 3);
+      bellCountdown--;
     } else {
-      let pitch = Tone.Frequency(metalPitchArr_19[1]).transpose(trans);
-      bellSampler.triggerAttackRelease(pitch, 5);
+      // F/A line falls octave lower while Eb/Eb falls only minor 7 lower
+      let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, transRange_19]);
+      if (count_19 % 2) {
+        // alternate between low note in vibes/glass and high note in handbells
+        let pitch = Tone.Frequency(metalPitchArr_19[0]).transpose(trans);
+        vibeSampler.triggerAttackRelease(pitch, 3);
+      } else {
+        let pitch = Tone.Frequency(metalPitchArr_19[1]).transpose(trans);
+        bellSampler.triggerAttackRelease(pitch, 5);
+      }
+      if (countdown_19 > 0) {
+        // at first there are 7 shakers between bells, then 7, 6, etc down to 0
+        bellCountdown = countdown_19--;
+      } else {
+        bellCountdown = 0;
+      }
     }
-    // TODO: use .tranpose() to bend pitch later
-    // also need to work out way to add bells progressively and bend them down
-    sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
   }
   count_19++;
+  // first shake gesture in randomly assigned time span triggers reversed cymbal
+  if (triggerCymRev && time_19 > revCymRange[0] && time_19 < revCymRange[1]) {
+    revCym.start();
+    triggerCymRev = false; // revCym only happens once per phone
+  }
 };
 tm.cue[19].stopCue = function() {
   ziplockClickLoop.stop();
@@ -687,10 +723,42 @@ tm.cue[19].stopCue = function() {
 
 // *******************************************************************
 // CUE 20: [Q] - orchestra enters after cadenza, phones fade out
-// TODO: may need to make this a SHAKE cue. put phones on E4 (vib) / G5 (bell)
-tm.cue[20] = new TMCue('hidden', 0, NO_LIMIT);
+let count_20 = 0;
+let fmPitch_20 = tm.pickRand(['E4', 'G4', 'E5']);
+
+// 4 beats @ 156 so audience may arrive a tiny bit earlier than orchestra at Q
+tm.cue[20] = new TMCue('shake', 1538, 1000);
 tm.cue[20].goCue = function() {
-}
+  count_20 = 0;
+  vibeSampler.volume.value = 0;
+  bellSampler.volume.value = 0;
+  vibeSampler.volume.rampTo(-18, 6);
+  bellSampler.volume.rampTo(-18, 6);
+  fmSynth.envelope.attack = 3;
+  fmSynth.envelope.attackCurve = 'linear';
+  fmSynth.envelope.release = 3;
+  fmSynth.envelope.releaseCurve = 'linear';
+  fmSynth.modulationEnvelope.attack = 3;
+  fmSynth.modulationEnvelope.attackCurve = 'linear';
+  fmSynth.modulationEnvelope.release = 3;
+  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  fmSynth.volume.value = -6;
+  fmSynth.triggerAttackRelease(fmPitch_20, 3.1);
+  sineTails.triggerAttackRelease(fmPitch_20, 5);
+};
+tm.cue[20].triggerShakeSound = function() {
+  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
+  if (count_20 % 2) {
+    bellSampler.triggerAttackRelease('G5', 5);
+  } else {
+    vibeSampler.triggerAttackRelease('E4', 3);
+  }
+  count_20++;
+};
+tm.cue[20].stopCue = function() {
+  fmSynth.triggerRelease();
+  sineTails.triggerRelease();
+};
 
 // *******************************************************************
 // CUE 21: tacet after cadenza
@@ -715,7 +783,7 @@ const harpLoop_22 = new Tone.Loop((time) => {
 tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[22].goCue = function() {
   harpLoop_22.start();
-  fmSynth.detune.value = 0;
+  fmSynthDefaults();
   fmSynth.triggerAttack('G4');
 }
 
