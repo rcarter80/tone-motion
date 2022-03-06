@@ -621,6 +621,11 @@ let pitchArr_19 = ['Eb7', 'F6', 'G5', 'A4', 'A7', 'D7', 'E6', 'F5', 'G4'];
 let count_19 = 0;
 let triggerSparkles_19 = true;
 
+// randomly select one of two pitch trajectories for second half (F/A or Eb/Eb)
+const metalPitchArr_19 = tm.pickRand([['F5', 'A6'], ['Eb5', 'Eb6']]);
+// players assigned F/A have 1 oct transposition. Ebs have mi7 trans
+let transRange_19 = metalPitchArr_19[0] === 'F5' ? -12 : -10;
+
 tm.cue[19] = new TMCue('tiltAndShake', 0, NO_LIMIT);
 tm.cue[19].goCue = function() {
   count_19 = 0;
@@ -647,19 +652,33 @@ tm.cue[19].updateTiltSounds = function() {
 };
 tm.cue[19].triggerShakeSound = function() {
   let time_19 = tm.getElapsedTimeInCue(19);
-  // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
-  if (triggerSparkles_19 && time_19 > 16000 && time_19 < 19000) {
+  if (time_19 < 16000) {
+    // from [O] to around m. 188 is just shakers and bendable sine tails
+    shakerArr[count_19 % shakerArr.length].start();
+    sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
+  } else if (triggerSparkles_19 && time_19 < 19000) {
+    // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
     bellSampler.triggerAttackRelease('F5', 5);
     bellSampler.triggerAttackRelease(randBellLo_19, 5, '+16n');
     bellSampler.triggerAttackRelease(randBellHi_19, 5, '+8n');
     triggerSparkles_19 = false; // you only get one set of sparkles
   } else {
-    shakerArr[count_19 % shakerArr.length].start();
+    // after sparkly interjection, shakers gradually replaced by falling metals
+    // gradual transposition from around m. 191 to m. 201
+    let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, transRange_19]);
+    if (count_19 % 2) {
+      // alternate between low note in vibes/glass and high note in handbells
+      let pitch = Tone.Frequency(metalPitchArr_19[0]).transpose(trans);
+      vibeSampler.triggerAttackRelease(pitch, 3);
+    } else {
+      let pitch = Tone.Frequency(metalPitchArr_19[1]).transpose(trans);
+      bellSampler.triggerAttackRelease(pitch, 5);
+    }
     // TODO: use .tranpose() to bend pitch later
     // also need to work out way to add bells progressively and bend them down
     sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
-    count_19++;
   }
+  count_19++;
 };
 tm.cue[19].stopCue = function() {
   ziplockClickLoop.stop();
@@ -668,6 +687,7 @@ tm.cue[19].stopCue = function() {
 
 // *******************************************************************
 // CUE 20: [Q] - orchestra enters after cadenza, phones fade out
+// TODO: may need to make this a SHAKE cue. put phones on E4 (vib) / G5 (bell)
 tm.cue[20] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[20].goCue = function() {
 }
