@@ -19,9 +19,11 @@ const bell_sounds = 'tonemotion-shared/audio/bells/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
+const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 // 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
 Tone.Transport.bpm.value = 156;
+const halfStep = 2 ** (1 / 12);
 
 // INSTRUMENTS USED IN MULTIPLE CUES
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
@@ -936,7 +938,7 @@ tm.cue[26].goCue = function() {
 tm.cue[26].triggerShakeSound = function() {
   if (count2_25 % 3 === 0) {
     // both upper As stay put, but E4 moves toward F4 while fading out
-    let trans = tm.getSectionBreakpoints(26, [0, 0, 6000, 1]);
+    let trans = tm.getSectionBreakpoints(26, [0, 0, 4000, 0, 6000, 1]);
     let pitch = Tone.Frequency('E4').transpose(trans);
     pianoSampler.triggerAttackRelease(pitch, 3);
   } else if (count2_25 % 3 === 1) {
@@ -964,12 +966,36 @@ tm.cue[27].stopCue = function() {
 
 // *******************************************************************
 // CUE 28: [X] - TILT droning and warping synths
+const glassRimD5 = new Tone.Player(glass_sounds + 'glassRim-D5.mp3').toDestination();
+glassRimD5.loop = true;
+
 tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[28].goCue = function() {
+  glassRimD5.volume.value = -99;
+  glassRimD5.start();
 };
 tm.cue[28].updateTiltSounds = function() {
+  if (tm.accel.x < 0.33) {
+    // glass plays continuously: D5 if device to left, at Eb5 if device to right
+    glassRimD5.playbackRate = 1;
+  } else if (tm.accel.x < 0.67) {
+    // half step bend from D5 to Eb5
+    glassRimD5.playbackRate = 1 + (tm.accel.x - 0.33) * 0.17489;
+  } else {
+    glassRimD5.playbackRate = halfStep;
+  }
+  if (tm.accel.y < 0.25) {
+    glassRimD5.volume.value = -99;
+  } else if (tm.accel.y < 0.5) {
+    glassRimD5.volume.value = -99;
+  } else if (tm.accel.y < 0.75) {
+    glassRimD5.volume.value = -18;
+  } else {
+    glassRimD5.volume.value = -99;
+  }
 };
 tm.cue[28].stopCue = function() {
+  glassRimD5.stop();
 };
 
 // *******************************************************************
