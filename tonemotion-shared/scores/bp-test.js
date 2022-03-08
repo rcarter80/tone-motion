@@ -726,7 +726,7 @@ tm.cue[19].triggerShakeSound = function() {
 };
 tm.cue[19].stopCue = function() {
   ziplockClickLoop.stop();
-  sineTails.triggerRelease();
+  sineTails.releaseAll()
 };
 
 // *******************************************************************
@@ -765,7 +765,7 @@ tm.cue[20].triggerShakeSound = function() {
 };
 tm.cue[20].stopCue = function() {
   fmSynth.triggerRelease();
-  sineTails.triggerRelease();
+  sineTails.releaseAll()
 };
 
 // *******************************************************************
@@ -916,7 +916,7 @@ tm.cue[25].triggerShakeSound = function() {
   }
 };
 tm.cue[25].stopCue = function() {
-  sineTails.triggerRelease();
+  sineTails.releaseAll()
 };
 
 // *******************************************************************
@@ -951,7 +951,7 @@ tm.cue[26].triggerShakeSound = function() {
   count2_25++;
 };
 tm.cue[26].stopCue = function() {
-  sineTails.triggerRelease();
+  sineTails.releaseAll()
 };
 
 // *******************************************************************
@@ -966,36 +966,51 @@ tm.cue[27].stopCue = function() {
 
 // *******************************************************************
 // CUE 28: [X] - TILT droning and warping synths
-const glassRimD5 = new Tone.Player(glass_sounds + 'glassRim-D5.mp3').toDestination();
+// glass played on rim with pitch bending from D5 to Eb5, filtered on y-axis
+const glassFilter = new Tone.Filter(650, "lowpass").toDestination();
+const glassRimD5 = new Tone.Player(glass_sounds + 'glassRim-D5.mp3').connect(glassFilter);
+const glassFilterScale = new Tone.ScaleExp(20, 14000);
+glassFilterScale.exponent = 5;
+yTilt.chain(glassFilterScale, glassFilter.frequency);
 glassRimD5.loop = true;
 
 tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[28].goCue = function() {
-  glassRimD5.volume.value = -99;
+  glassRimD5.volume.value = -30;
   glassRimD5.start();
+  sineTails.volume.value = -99;
+  sineTails.triggerAttack('A6');
+  // TODO: add drone on F
 };
 tm.cue[28].updateTiltSounds = function() {
+  // TODO: could add sparkles to left AND right sides when fully tipped
   if (tm.accel.x < 0.33) {
     // glass plays continuously: D5 if device to left, at Eb5 if device to right
     glassRimD5.playbackRate = 1;
+    // sinusoid sweeping from A6 to A7 (A6 here)
+    sineTails.set({ detune: 0 });
   } else if (tm.accel.x < 0.67) {
     // half step bend from D5 to Eb5
     glassRimD5.playbackRate = 1 + (tm.accel.x - 0.33) * 0.17489;
+    sineTails.set({ detune: (tm.accel.x - 0.33) * 3529 }); // up to octave up
   } else {
     glassRimD5.playbackRate = halfStep;
+    // sinusoid sweeping from A6 to A7 (A7 here)
+    sineTails.set({ detune: 1200 });
   }
   if (tm.accel.y < 0.25) {
-    glassRimD5.volume.value = -99;
+    sineTails.volume.value = -99;
   } else if (tm.accel.y < 0.5) {
-    glassRimD5.volume.value = -99;
+    sineTails.volume.value = -99;
   } else if (tm.accel.y < 0.75) {
-    glassRimD5.volume.value = -18;
+    sineTails.volume.value = -30 - (0.75 - tm.accel.y) * 276; // -99 to -30 dB
   } else {
-    glassRimD5.volume.value = -99;
+    sineTails.volume.value = -30;
   }
 };
 tm.cue[28].stopCue = function() {
   glassRimD5.stop();
+  sineTails.releaseAll()
 };
 
 // *******************************************************************
