@@ -974,30 +974,49 @@ glassFilterScale.exponent = 5;
 yTilt.chain(glassFilterScale, glassFilter.frequency);
 glassRimD5.loop = true;
 
+const chimesAndSugar = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3');
+const chimeSugarFade = new Tone.Volume(0);
+chimesAndSugar.chain(chimeSugarFade, Tone.Destination);
+chimesAndSugar.loop = true;
+
 tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[28].goCue = function() {
   glassRimD5.volume.value = -30;
   glassRimD5.start();
   sineTails.volume.value = -99;
   sineTails.triggerAttack('A6');
-  // TODO: add drone on F
+  chimesAndSugar.volume.value = -99;
+  chimesAndSugar.start();
+  claveLoopVol.volume.value = 0;
+  claveLoop.volume.value = -99;
+  claveLoop.start();
+  // TODO: add drone on F. fmSynth doesn't allow pitch bend? so may need to rearticulate at different pitch levels. is it poly? could overlap attacks in different octaves to cover seams. would need to change a bunch of parameters (envelop attack, release) and should then add those to the fmSynthDefaults()
 };
 tm.cue[28].updateTiltSounds = function() {
-  // TODO: could add sparkles to left AND right sides when fully tipped
   if (tm.accel.x < 0.33) {
     // glass plays continuously: D5 if device to left, at Eb5 if device to right
     glassRimD5.playbackRate = 1;
     // sinusoid sweeping from A6 to A7 (A6 here)
     sineTails.set({ detune: 0 });
+    // sparkly sounds accessible with device tipped to left
+    chimesAndSugar.volume.value = -99 + (0.33 - tm.accel.x) * 300; // 0 to -99
+    claveLoop.volume.value = -99;
   } else if (tm.accel.x < 0.67) {
     // half step bend from D5 to Eb5
     glassRimD5.playbackRate = 1 + (tm.accel.x - 0.33) * 0.17489;
     sineTails.set({ detune: (tm.accel.x - 0.33) * 3529 }); // up to octave up
+    chimesAndSugar.volume.value = -99;
+    claveLoop.volume.value = -99;
   } else {
     glassRimD5.playbackRate = halfStep;
     // sinusoid sweeping from A6 to A7 (A7 here)
     sineTails.set({ detune: 1200 });
+    chimesAndSugar.volume.value = -99;
+    claveLoop.volume.value = -99 + (tm.accel.x - 0.67) * 300; // -99 to 0dB
   }
+  // speed and pitch of sparkly and clicky sounds controlled by y-axis
+  chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
+  claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
   } else if (tm.accel.y < 0.5) {
@@ -1010,11 +1029,13 @@ tm.cue[28].updateTiltSounds = function() {
 };
 tm.cue[28].stopCue = function() {
   glassRimD5.stop();
-  sineTails.releaseAll()
+  sineTails.releaseAll();
+  chimesAndSugar.stop();
+  claveLoop.stop();
 };
 
 // *******************************************************************
-// CUE 29: m. 330 - hidden cue to fade out synths
+// CUE 29: m. 330 - hidden cue to fade out synths and audio file players
 tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[29].goCue = function() {
 };
