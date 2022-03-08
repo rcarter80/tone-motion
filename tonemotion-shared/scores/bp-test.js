@@ -294,6 +294,17 @@ function fmSynthDefaults() {
   fmSynth.modulationEnvelope.releaseCurve = 'exponential';
   fmSynth.detune.value = 0;
 }
+function fmSynthPreset2() {
+  fmSynth.envelope.attack = 3;
+  fmSynth.envelope.attackCurve = 'linear';
+  fmSynth.envelope.release = 3;
+  fmSynth.envelope.releaseCurve = 'linear';
+  fmSynth.modulationEnvelope.attack = 3;
+  fmSynth.modulationEnvelope.attackCurve = 'linear';
+  fmSynth.modulationEnvelope.release = 3;
+  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  // keep volume out because I want to set it independently by cue
+}
 
 const harpSampler = new Tone.Sampler({
   urls: {
@@ -742,14 +753,7 @@ tm.cue[20].goCue = function() {
   bellSampler.volume.value = 0;
   vibeSampler.volume.rampTo(-18, 6);
   bellSampler.volume.rampTo(-18, 6);
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  fmSynthPreset2();
   fmSynth.volume.value = -6;
   fmSynth.triggerAttackRelease(fmPitch_20, 3.1);
   sineTails.triggerAttackRelease(fmPitch_20, 5);
@@ -990,7 +994,9 @@ tm.cue[28].goCue = function() {
   claveLoopVol.volume.value = 0;
   claveLoop.volume.value = -99;
   claveLoop.start();
-  // TODO: add drone on F. fmSynth doesn't allow pitch bend? so may need to rearticulate at different pitch levels. is it poly? could overlap attacks in different octaves to cover seams. would need to change a bunch of parameters (envelop attack, release) and should then add those to the fmSynthDefaults()
+  fmSynthPreset2();
+  fmSynth.volume.value = -99;
+  fmSynth.triggerAttack('F4');
 };
 tm.cue[28].updateTiltSounds = function() {
   if (tm.accel.x < 0.33) {
@@ -1012,19 +1018,28 @@ tm.cue[28].updateTiltSounds = function() {
     // sinusoid sweeping from A6 to A7 (A7 here)
     sineTails.set({ detune: 1200 });
     chimesAndSugar.volume.value = -99;
-    claveLoop.volume.value = -99 + (tm.accel.x - 0.67) * 300; // -99 to 0dB
+    claveLoop.volume.value = -99 + (tm.accel.x - 0.67) * 300; // -99 to 0 dB
   }
   // speed and pitch of sparkly and clicky sounds controlled by y-axis
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
+  // TODO: add drone pitch bend with .detune and .getSectionBreakpoints()
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
+    fmSynth.volume.value = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
+    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
   } else if (tm.accel.y < 0.5) {
     sineTails.volume.value = -99;
+    fmSynth.volume.value = -20;
+    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
   } else if (tm.accel.y < 0.75) {
     sineTails.volume.value = -30 - (0.75 - tm.accel.y) * 276; // -99 to -30 dB
+    fmSynth.volume.value = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
+    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
   } else {
     sineTails.volume.value = -30;
+    fmSynth.volume.value = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
+    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
   }
 };
 tm.cue[28].stopCue = function() {
@@ -1032,6 +1047,7 @@ tm.cue[28].stopCue = function() {
   sineTails.releaseAll();
   chimesAndSugar.stop();
   claveLoop.stop();
+  fmSynth.triggerRelease();
 };
 
 // *******************************************************************
