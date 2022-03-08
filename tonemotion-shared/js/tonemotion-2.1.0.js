@@ -1325,7 +1325,9 @@ TMCue.prototype.goCue = function() {
 
 // Override this method in score to code the music for this section
 TMCue.prototype.cueTransition = function() {
-  console.log('No transition sound coded for this cue.');
+  if (this.debug) {
+    console.log('No transition sound coded for this cue.');
+  }
 };
 
 // Override this method in score to code the cleanup for this section
