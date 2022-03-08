@@ -18,6 +18,7 @@ const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
 const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
+const piano_sounds = 'tonemotion-shared/audio/piano/';
 
 // 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
 Tone.Transport.bpm.value = 156;
@@ -864,23 +865,91 @@ tm.cue[24].cueTransition = function() {
 
 // *******************************************************************
 // CUE 25: [U] - SHAKE sounds of piano samples playing same notes as piano
+// piano sampler with samples from Logic
+const pianoSampler = new Tone.Sampler({
+  urls: {
+    'F4': 'piano-3s-F4.mp3',
+    'A4': 'piano-3s-A4.mp3',
+    'Db5': 'piano-3s-Db5.mp3',
+    'F5': 'piano-3s-F5.mp3',
+    'A5': 'piano-3s-A5.mp3',
+    'Db6': 'piano-3s-Db6.mp3',
+  },
+  baseUrl: piano_sounds,
+}).toDestination();
+
+let pitchArr1_25 = ['A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'B4', 'A5', 'A5', 'B4', 'A5', 'C#5', 'B5', 'B5', 'B5', 'D5', 'C#6', 'D5', 'C#6', 'D5', 'D6', 'D5', 'D6', 'D6', 'D5', 'D6', 'D6', 'A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'A4', 'G5', 'G5', 'A4', 'G5', 'G4', 'F#5', 'F#5', 'F#5', 'G4', 'F#5', 'F#4', 'E5', 'F#4', 'E5', 'E4', 'E5', 'E5', 'E4', 'E5', 'E5', 'E4', 'E6', 'E5'];
+let count1_25 = count2_25 = 0;
+
 tm.cue[25] = new TMCue('shake', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[25].goCue = function() {
   bellSampler.triggerAttackRelease('C#6', 5);
+  count1_25 = count2_25 = 0;
+  pianoSampler.volume.value = 0;
 };
 tm.cue[25].triggerShakeSound = function() {
+  if (count1_25 < pitchArr1_25.length) {
+    pianoSampler.triggerAttackRelease(pitchArr1_25[count1_25], 3);
+    count1_25++;
+  } else {
+    // both upper sounds gradually slide up, lower E4 stays at pitch for now
+    let trans;
+    if (count2_25 > 30) {
+      trans = 5; // max transposition P4 to As
+    } else {
+      trans = (count2_25 / 30) * 5.0; // gradually slide up perfect 4
+    }
+    if (count2_25 % 3 === 0) {
+      pianoSampler.triggerAttackRelease('E4', 3);
+    } else if (count2_25 % 3 === 1) {
+      let pitch = Tone.Frequency('E6').transpose(trans);
+      bellSampler.triggerAttackRelease(pitch, 5);
+      sineTails.triggerAttackRelease(pitch, 1);
+    } else {
+      let pitch = Tone.Frequency('E5').transpose(trans);
+      vibeSampler.triggerAttackRelease(pitch, 3);
+      sineTails.triggerAttackRelease(pitch, 1);
+    }
+    count2_25++;
+  }
 };
 tm.cue[25].stopCue = function() {
+  sineTails.triggerRelease();
 };
 
 // *******************************************************************
-// CUE 26: m. 286 - SHAKE sounds of piano samples fading out
+// CUE 26: m. 286 - SHAKE sounds of piano/metal samples fading out
+let count_26 = 0;
+
 tm.cue[26] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[26].goCue = function() {
+  count_26 = 0;
+  pianoSampler.volume.value = 0;
+  vibeSampler.volume.value = 0;
+  bellSampler.volume.value = 0;
+  sineTails.volume.value = -24;
+  pianoSampler.volume.rampTo(-36, 6);
+  vibeSampler.volume.rampTo(-36, 6);
+  bellSampler.volume.rampTo(-36, 6);
+  sineTails.volume.rampTo(-40, 6);
 };
 tm.cue[26].triggerShakeSound = function() {
+  if (count2_25 % 3 === 0) {
+    // both upper As stay put, but E4 moves toward F4 while fading out
+    let trans = tm.getSectionBreakpoints(26, [0, 0, 6000, 1]);
+    let pitch = Tone.Frequency('E4').transpose(trans);
+    pianoSampler.triggerAttackRelease(pitch, 3);
+  } else if (count2_25 % 3 === 1) {
+    bellSampler.triggerAttackRelease('A6', 5);
+    sineTails.triggerAttackRelease('A6', 1);
+  } else {
+    vibeSampler.triggerAttackRelease('A5', 3);
+    sineTails.triggerAttackRelease('A5', 1);
+  }
+  count2_25++;
 };
 tm.cue[26].stopCue = function() {
+  sineTails.triggerRelease();
 };
 
 // *******************************************************************
