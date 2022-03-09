@@ -983,20 +983,44 @@ const chimeSugarFade = new Tone.Volume(0);
 chimesAndSugar.chain(chimeSugarFade, Tone.Destination);
 chimesAndSugar.loop = true;
 
+const fmSynth2 = new Tone.FMSynth({
+  envelope: {
+    attack: 5,
+    attackCurve: 'linear',
+    decay: 0.1,
+    sustain: 1,
+    release: 5,
+    releaseCurve: 'linear',
+  },
+  modulationEnvelope: {
+    attack: 5,
+    attackCurve: 'linear',
+    decay: 0.1,
+    sustain: 1,
+    release: 5,
+    releaseCurve: 'linear',
+  },
+  harmonicity: 0.25,
+}).toDestination();
+fmSynth2.oscillator.partials = [1, 0, 0, 0.25];
+
 tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[28].goCue = function() {
   glassRimD5.volume.value = -30;
   glassRimD5.start();
   sineTails.volume.value = -99;
   sineTails.triggerAttack('A6');
+  chimeSugarFade.volume.value = 0;
   chimesAndSugar.volume.value = -99;
   chimesAndSugar.start();
-  claveLoopVol.volume.value = 0;
+  claveLoopFade.volume.value = 0;
   claveLoop.volume.value = -99;
   claveLoop.start();
   fmSynthPreset2();
   fmSynth.volume.value = -99;
   fmSynth.triggerAttack('F4');
+  fmSynth2.volume.value = -99;
+  fmSynth2.triggerAttack('F4');
 };
 tm.cue[28].updateTiltSounds = function() {
   if (tm.accel.x < 0.33) {
@@ -1023,23 +1047,33 @@ tm.cue[28].updateTiltSounds = function() {
   // speed and pitch of sparkly and clicky sounds controlled by y-axis
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
-  // TODO: add drone pitch bend with .detune and .getSectionBreakpoints()
+  fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
+  // TODO: decide whether both fm synths have same pitch bend curve. If so, refactor code to only call .getSectionBreakpoints() once. Also decide on how to use two fm synths. Consider removing second if it doesn't sound great; if so delete all references
+  fmSynth2.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
     fmSynth.volume.value = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
     fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
+    fmSynth2.volume.value = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
+    fmSynth2.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
   } else if (tm.accel.y < 0.5) {
     sineTails.volume.value = -99;
     fmSynth.volume.value = -20;
     fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
+    fmSynth2.volume.value = -20;
+    fmSynth2.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
   } else if (tm.accel.y < 0.75) {
     sineTails.volume.value = -30 - (0.75 - tm.accel.y) * 276; // -99 to -30 dB
     fmSynth.volume.value = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
     fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
+    fmSynth2.volume.value = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
+    fmSynth2.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
   } else {
     sineTails.volume.value = -30;
     fmSynth.volume.value = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
     fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
+    fmSynth2.volume.value = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
+    fmSynth2.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
   }
 };
 tm.cue[28].stopCue = function() {
@@ -1048,12 +1082,19 @@ tm.cue[28].stopCue = function() {
   chimesAndSugar.stop();
   claveLoop.stop();
   fmSynth.triggerRelease();
+  fmSynth2.triggerRelease();
 };
 
 // *******************************************************************
 // CUE 29: m. 330 - hidden cue to fade out synths and audio file players
 tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[29].goCue = function() {
+  glassRimD5.volume.rampTo(-48, 12);
+  sineTails.releaseAll();
+  chimeSugarFade.volume.rampTo(-48, 12);
+  claveLoopFade.volume.rampTo(-48, 12);
+  fmSynth.triggerRelease();
+  fmSynth2.triggerRelease();
 };
 
 // *******************************************************************
