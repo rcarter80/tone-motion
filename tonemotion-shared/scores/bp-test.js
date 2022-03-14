@@ -1048,7 +1048,7 @@ tm.cue[28].updateTiltSounds = function() {
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
   fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
-  // TODO: decide whether both fm synths have same pitch bend curve. If so, refactor code to only call .getSectionBreakpoints() once. Also decide on how to use two fm synths. Consider removing second if it doesn't sound great; if so delete all references
+  // TODO: decide whether both fm synths have same pitch bend curve. If so, refactor code to only call .getSectionBreakpoints() once. Also decide on how to use two fm synths. Consider removing second if it doesn't sound great; if so delete all references. Also come up with some way to introduce gradual change throughout last section?
   fmSynth2.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
