@@ -1026,7 +1026,7 @@ tm.cue[28].updateTiltSounds = function() {
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
   fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
-  // TODO: come up with way to introduce gradual change throughout last section?
+  // TODO: come up with way to introduce gradual change throughout last section? and maybe bring fmSynth level down a bit for better balance
   let fmSynVol;
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
@@ -1062,6 +1062,7 @@ tm.cue[28].stopCue = function() {
 // CUE 29: m. 330 - hidden cue to fade out synths and audio file players
 tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[29].goCue = function() {
+  // TODO: need better fade out for audio files. try fade all the way to -99
   glassRimD5.volume.rampTo(-48, 12);
   sineTails.releaseAll();
   chimeSugarFade.volume.rampTo(-48, 12);
