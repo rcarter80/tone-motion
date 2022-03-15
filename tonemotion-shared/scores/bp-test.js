@@ -983,30 +983,9 @@ const chimeSugarFade = new Tone.Volume(0);
 chimesAndSugar.chain(chimeSugarFade, Tone.Destination);
 chimesAndSugar.loop = true;
 
-const fmSynth2 = new Tone.FMSynth({
-  envelope: {
-    attack: 5,
-    attackCurve: 'linear',
-    decay: 0.1,
-    sustain: 1,
-    release: 5,
-    releaseCurve: 'linear',
-  },
-  modulationEnvelope: {
-    attack: 5,
-    attackCurve: 'linear',
-    decay: 0.1,
-    sustain: 1,
-    release: 5,
-    releaseCurve: 'linear',
-  },
-  harmonicity: 0.25,
-}).toDestination();
-fmSynth2.oscillator.partials = [1, 0, 0, 0.25];
-
 tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[28].goCue = function() {
-  glassRimD5.volume.value = -30;
+  glassRimD5.volume.value = -24;
   glassRimD5.start();
   sineTails.volume.value = -99;
   sineTails.triggerAttack('A6');
@@ -1018,9 +997,8 @@ tm.cue[28].goCue = function() {
   claveLoop.start();
   fmSynthPreset2();
   fmSynth.volume.value = -99;
-  fmSynth.triggerAttack('F4');
-  fmSynth2.volume.value = -99;
-  fmSynth2.triggerAttack('F4');
+  let fmSynPitch = tm.pickRand(['F4', 'F5', 'A5']);
+  fmSynth.triggerAttack(fmSynPitch);
 };
 tm.cue[28].updateTiltSounds = function() {
   if (tm.accel.x < 0.33) {
@@ -1048,32 +1026,28 @@ tm.cue[28].updateTiltSounds = function() {
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
   fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
-  // TODO: decide whether both fm synths have same pitch bend curve. If so, refactor code to only call .getSectionBreakpoints() once. Also decide on how to use two fm synths. Consider removing second if it doesn't sound great; if so delete all references. Also come up with some way to introduce gradual change throughout last section? For creating thicker drone, could randomize pitch (just a couple octaves, or very consonants options) and assign just one to a phone, so combination is thick but clear?
-  fmSynth2.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
+  // TODO: come up with way to introduce gradual change throughout last section?
+  let fmSynVol;
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
-    fmSynth.volume.value = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
+    // set volume with rampTo to avoid zipper noise
+    fmSynVol = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
-    fmSynth2.volume.value = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
-    fmSynth2.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
   } else if (tm.accel.y < 0.5) {
     sineTails.volume.value = -99;
-    fmSynth.volume.value = -20;
+    fmSynth.volume.rampTo(-20, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
-    fmSynth2.volume.value = -20;
-    fmSynth2.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
   } else if (tm.accel.y < 0.75) {
-    sineTails.volume.value = -30 - (0.75 - tm.accel.y) * 276; // -99 to -30 dB
-    fmSynth.volume.value = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
+    sineTails.volume.value = -24 - (0.75 - tm.accel.y) * 300; // -99 to -24 dB
+    fmSynVol = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
-    fmSynth2.volume.value = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
-    fmSynth2.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
   } else {
-    sineTails.volume.value = -30;
-    fmSynth.volume.value = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
+    sineTails.volume.value = -24;
+    fmSynVol = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
-    fmSynth2.volume.value = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
-    fmSynth2.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
   }
 };
 tm.cue[28].stopCue = function() {
@@ -1082,7 +1056,6 @@ tm.cue[28].stopCue = function() {
   chimesAndSugar.stop();
   claveLoop.stop();
   fmSynth.triggerRelease();
-  fmSynth2.triggerRelease();
 };
 
 // *******************************************************************
@@ -1094,7 +1067,6 @@ tm.cue[29].goCue = function() {
   chimeSugarFade.volume.rampTo(-48, 12);
   claveLoopFade.volume.rampTo(-48, 12);
   fmSynth.triggerRelease();
-  fmSynth2.triggerRelease();
 };
 
 // *******************************************************************
