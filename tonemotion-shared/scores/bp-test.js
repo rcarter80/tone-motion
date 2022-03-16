@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -147,6 +147,8 @@ const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
 triangle.volume.value = -12;
 
+const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
+
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
@@ -164,7 +166,7 @@ tm.cue[1].goCue = function() {
   // nothing to do until shake gestures
 };
 tm.cue[1].triggerShakeSound = function() {
-  bellSampler.triggerAttackRelease('E6', 5);
+  clave.start();
 };
 tm.cue[1].stopCue = function() {
   // nothing to clean up
@@ -257,6 +259,7 @@ tm.cue[6].goCue = function() {
   // reset volume from possible previous change
   vibeSampler.volume.value = 0;
   sineTails.volume.value = -28;
+  sinTremolo.depth.value = 0;
   count_6 = 0;
 
   if (tm.getElapsedTimeInCue(6) < 1000) {
@@ -304,6 +307,7 @@ tm.cue[7].goCue = function() {
   count_7 = 0;
   vibeSampler.volume.value = 0;
   sineTails.volume.value = -28;
+  sinTremolo.depth.value = 0;
   vibeSampler.volume.rampTo(-36, 6);
   sineTails.volume.rampTo(-36, 6);
 };
@@ -471,6 +475,7 @@ tm.cue[13].goCue = function() {
   // reset volume from possible previous change
   vibeSampler.volume.value = 0;
   sineTails.volume.value = -28;
+  sinTremolo.depth.value = 0;
   count_13 = 0;
 };
 tm.cue[13].triggerShakeSound = function() {
@@ -498,6 +503,7 @@ tm.cue[14].goCue = function() {
   count_14 = 0;
   vibeSampler.volume.value = 0;
   sineTails.volume.value = -28;
+  sinTremolo.depth.value = 0;
   vibeSampler.volume.rampTo(-36, 6);
   sineTails.volume.rampTo(-36, 6);
 };
@@ -634,7 +640,7 @@ tm.cue[17].goCue = function() {
   crunchyIceFade.volume.value = 0;
   crunchyIceFade.volume.rampTo(-99, 16);
   synVibFade.volume.value = 0;
-  synVibFade.volume.rampTo(-24, 16);
+  synVibFade.volume.rampTo(-36, 16);
 };
 
 // *******************************************************************
@@ -651,11 +657,14 @@ tm.cue[18].stopCue = function() {
 // CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
 // TODO: maybe make tilt part more obvious (louder sine and click?) and maybe make fmSynth note in cue 20 louder?
 const shaker1 = new Tone.Player(perc_sounds + 'shaker1.mp3').toDestination();
+shaker1.volume.value  = -12;
 const shaker2 = new Tone.Player(perc_sounds + 'shaker2.mp3').toDestination();
+shaker2.volume.value  = -12;
 const shaker3 = new Tone.Player(perc_sounds + 'shaker3.mp3').toDestination();
+shaker3.volume.value  = -12;
 let shakerArr = [shaker1, shaker2, shaker3];
-const ziplockClickLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
-ziplockClickLoop.loop = true;
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
 
 const chimeA7 = new Tone.Player(chime_sounds + 'chimeA7.mp3').toDestination();
 const chimeC8 = new Tone.Player(chime_sounds + '2sec-chime-C8.mp3').toDestination();
@@ -684,9 +693,10 @@ tm.cue[19] = new TMCue('tiltAndShake', 0, NO_LIMIT);
 tm.cue[19].goCue = function() {
   count_19 = 0;
   sineTails.volume.value = -24;
+  sinTremolo.depth.value = 1;
   triggerSparkles_19 = true;
-  ziplockClickLoop.volume.value = -99;
-  ziplockClickLoop.start();
+  pingpongClickLoop.volume.value = -99;
+  pingpongClickLoop.start();
   vibeSampler.volume.value = 0;
   bellSampler.volume.value = 0;
 };
@@ -694,16 +704,13 @@ tm.cue[19].updateTiltSounds = function() {
   // fast clicking sounds accessible with phone tipped upside down
   if (tm.accel.y < 0.5) {
     sineTails.set({ detune: 0 });
-    ziplockClickLoop.volume.value = -99;
-    ziplockClickLoop.playbackRate = 1;
   } else {
-    sineTails.set({ detune: -((tm.accel.y - 0.5) * 100) });
     // sine tails bend down (up to 1/4 tone) with phone tipped upside down
-    ziplockClickLoop.volume.value = -99 + (tm.accel.y - 0.5) * 198; // -99 to 0
-    ziplockClickLoop.playbackRate = 1 + (tm.accel.y - 0.5) * 4; // 1 to 3
+    sineTails.set({ detune: -((tm.accel.y - 0.5) * 100) });
   }
+  pingpongClickLoop.volume.value = -99 + tm.accel.y * 99; // -99 to 0
+  pingpongClickLoop.playbackRate = 0.5 + tm.accel.y * 2; // 0.5 to 2.5
   // sineTails tremolo parameters NOT set by yTilt because I don't normally allow TILT changes to sound, and I don't hear zipper noise here
-  sinTremolo.depth.value = tm.accel.y;
   sinTremolo.frequency.value = 1 + tm.accel.y * 11;
 };
 tm.cue[19].triggerShakeSound = function() {
@@ -754,7 +761,7 @@ tm.cue[19].triggerShakeSound = function() {
   }
 };
 tm.cue[19].stopCue = function() {
-  ziplockClickLoop.stop();
+  pingpongClickLoop.stop();
   sineTails.releaseAll()
 };
 
@@ -899,6 +906,7 @@ tm.cue[25].goCue = function() {
   vibeSampler.volume.value = 0;
   bellSampler.volume.value = 0;
   sineTails.volume.value = -20;
+  sinTremolo.depth.value = 0;
   bellSampler.triggerAttackRelease('C#6', 5);
 };
 tm.cue[25].triggerShakeSound = function() {
@@ -943,6 +951,7 @@ tm.cue[26].goCue = function() {
   vibeSampler.volume.value = 0;
   bellSampler.volume.value = 0;
   sineTails.volume.value = -20;
+  sinTremolo.depth.value = 0;
   pianoSampler.volume.rampTo(-36, 6);
   vibeSampler.volume.rampTo(-36, 6);
   bellSampler.volume.rampTo(-36, 6);
@@ -997,6 +1006,7 @@ tm.cue[28].goCue = function() {
   glassRimD5.volume.value = -24;
   glassRimD5.start();
   sineTails.volume.value = -99;
+  sinTremolo.depth.value = 0;
   sineTails.triggerAttack('A6');
   chimeSugarFade.volume.value = 0;
   chimesAndSugar.volume.value = -99;
@@ -1071,7 +1081,7 @@ tm.cue[28].stopCue = function() {
 // randomly select two bell pitches at upper partials of E2
 let randBellLo_29 = 55 * ((2**(1/12))**7) * tm.pickRand([10, 14, 17, 20]);
 let randBellHi_29 = 55 * ((2**(1/12))**7) * tm.pickRand([23, 28, 36]);
-tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[29] = new TMCue('hidden', 2308, 0); // 3 beats @ 78 bpm
 tm.cue[29].goCue = function() {
   bellSampler.volume.value = 0;
   bellSampler.triggerAttackRelease('E5', 5);
