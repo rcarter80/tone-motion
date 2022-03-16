@@ -72,6 +72,60 @@ const bellSampler = new Tone.Sampler({
   baseUrl: bell_sounds,
 }).toDestination();
 
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toDestination();
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+function fmSynthDefaults() {
+  fmSynth.envelope.attack = 1;
+  fmSynth.envelope.attackCurve = 'exponential';
+  fmSynth.envelope.release = 2;
+  fmSynth.envelope.releaseCurve = 'exponential';
+  fmSynth.modulationEnvelope.attack = 1;
+  fmSynth.modulationEnvelope.attackCurve = 'exponential';
+  fmSynth.modulationEnvelope.release = 10;
+  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
+  fmSynth.detune.value = 0;
+}
+function fmSynthPreset2() {
+  fmSynth.envelope.attack = 3;
+  fmSynth.envelope.attackCurve = 'linear';
+  fmSynth.envelope.release = 3;
+  fmSynth.envelope.releaseCurve = 'linear';
+  fmSynth.modulationEnvelope.attack = 3;
+  fmSynth.modulationEnvelope.attackCurve = 'linear';
+  fmSynth.modulationEnvelope.release = 3;
+  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  // keep volume out because I want to set it independently by cue
+}
+
+const harpSampler = new Tone.Sampler({
+  urls: {
+    'G3': 'harpG3.mp3',
+    'B3': 'harpB3.mp3',
+    'D4': 'harpD4.mp3',
+    'G4': 'harpG4.mp3',
+    'B4': 'harpB4.mp3',
+    'D5': 'harpD5.mp3',
+    'G5': 'harpG5.mp3',
+  },
+  baseUrl: harp_sounds,
+});
+const harpSamplerVol = new Tone.Volume(0);
+harpSampler.chain(harpSamplerVol, Tone.Destination);
+
 // reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
@@ -88,36 +142,17 @@ tm.cue[0].stopCue = function() {
   // nothing to clean up
 };
 
-// TODO: change order of tutorial so that SHAKE is first
 // *******************************************************************
-// CUE 1: tilt tutorial
-// Test tone for "tilt" tutorial
-let testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
-let testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-let testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-let testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
+// CUE 1: SHAKE tutorial
+tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  testTone.triggerAttack(440);
+  // nothing to do until shake gestures
 };
-tm.cue[1].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
+tm.cue[1].triggerShakeSound = function() {
+  bellSampler.triggerAttackRelease('e6', 5);
 };
 tm.cue[1].stopCue = function() {
-  testTone.triggerRelease();
+  // nothing to clean up
 };
 
 // *******************************************************************
@@ -131,17 +166,37 @@ tm.cue[2].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 3: shake tutorial
-let cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
-tm.cue[3] = new TMCue('shake', 0, NO_LIMIT);
+// CUE 3: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
+let tiltPitchArr_3 = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
+let len_3 = tiltPitchArr_3.length;
+tm.cue[3] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
-  // nothing to do until shake gestures
+  fmSynth.volume.value = -99;
+  fmSynthDefaults();
+  fmSynth.triggerAttack('E4');
 };
-tm.cue[3].triggerShakeSound = function() {
-  cowbell.start();
+tm.cue[3].updateTiltSounds = function() {
+  fmSynth.frequency.value = tiltPitchArr_3[Math.floor(tm.accel.x * 0.99 * len_3)];
+  let fmSynVol;
+  if (tm.accel.y < 0.25) {
+    // set volume with rampTo to avoid zipper noise
+    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
+  } else if (tm.accel.y < 0.5) {
+    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
+  } else if (tm.accel.y < 0.75) {
+    fmSynVol = -12 - (0.75 - tm.accel.y) * 64; // -28 to -12 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
+  } else {
+    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
+  }
 };
 tm.cue[3].stopCue = function() {
-  // nothing to clean up
+  fmSynth.triggerRelease();
 };
 
 // *******************************************************************
@@ -267,59 +322,6 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
-const fmSynth = new Tone.FMSynth({
-  envelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 2,
-  },
-  modulationEnvelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 10,
-  },
-  harmonicity: 0.125,
-}).toDestination();
-fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-function fmSynthDefaults() {
-  fmSynth.envelope.attack = 1;
-  fmSynth.envelope.attackCurve = 'exponential';
-  fmSynth.envelope.release = 2;
-  fmSynth.envelope.releaseCurve = 'exponential';
-  fmSynth.modulationEnvelope.attack = 1;
-  fmSynth.modulationEnvelope.attackCurve = 'exponential';
-  fmSynth.modulationEnvelope.release = 10;
-  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
-  fmSynth.detune.value = 0;
-}
-function fmSynthPreset2() {
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
-  // keep volume out because I want to set it independently by cue
-}
-
-const harpSampler = new Tone.Sampler({
-  urls: {
-    'G3': 'harpG3.mp3',
-    'B3': 'harpB3.mp3',
-    'D4': 'harpD4.mp3',
-    'G4': 'harpG4.mp3',
-    'B4': 'harpB4.mp3',
-    'D5': 'harpD5.mp3',
-    'G5': 'harpG5.mp3',
-  },
-  baseUrl: harp_sounds,
-});
-const harpSamplerVol = new Tone.Volume(0);
-harpSampler.chain(harpSamplerVol, Tone.Destination);
 
 let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'D6', 'E6', 'E6'];
 let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'D5', 'E5', 'E5'];
