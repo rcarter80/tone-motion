@@ -1058,10 +1058,6 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     this.clearActiveCues();
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
-
-    // TODO:  WHY DO I CALL THIS? I commented out the following line because I don't think it does anything. Uncomment if I broke stuff.
-    // this.getSectionBreakpoints(cue);
-
     //  use this timestamp to facilitate gradual process during a section
     this.cue[cue].startedAt = this.cueTimeFromServer;
     return;
@@ -1084,10 +1080,6 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     // shorter delay than 20ms is definitely not aurally perceptible
     try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
-
-    // TODO:  WHY DO I CALL THIS? I commented out the following line because I don't think it does anything. Uncomment if I broke stuff.
-    // this.getSectionBreakpoints(cue);
-
   } else {
     if (delay > this.MAX_DELAY) {
       this.publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + this.MAX_DELAY + ' milliseconds.');

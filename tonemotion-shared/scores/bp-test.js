@@ -25,7 +25,7 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
 
-// INSTRUMENTS USED IN MULTIPLE CUES
+// INSTRUMENTS
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
 // can add tremolo by increasing depth of sinTremolo
 // 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
@@ -72,45 +72,6 @@ const bellSampler = new Tone.Sampler({
   baseUrl: bell_sounds,
 }).toDestination();
 
-const fmSynth = new Tone.FMSynth({
-  envelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 2,
-  },
-  modulationEnvelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 10,
-  },
-  harmonicity: 0.125,
-}).toDestination();
-fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-function fmSynthDefaults() {
-  fmSynth.envelope.attack = 1;
-  fmSynth.envelope.attackCurve = 'exponential';
-  fmSynth.envelope.release = 2;
-  fmSynth.envelope.releaseCurve = 'exponential';
-  fmSynth.modulationEnvelope.attack = 1;
-  fmSynth.modulationEnvelope.attackCurve = 'exponential';
-  fmSynth.modulationEnvelope.release = 10;
-  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
-  fmSynth.detune.value = 0;
-}
-function fmSynthPreset2() {
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
-  // keep volume out because I want to set it independently by cue
-}
-
 const harpSampler = new Tone.Sampler({
   urls: {
     'G3': 'harpG3.mp3',
@@ -139,6 +100,47 @@ const pianoSampler = new Tone.Sampler({
   baseUrl: piano_sounds,
 }).toDestination();
 
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toDestination();
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+function fmSynthDefaults() {
+  fmSynth.envelope.attack = 1;
+  fmSynth.envelope.attackCurve = 'exponential';
+  fmSynth.envelope.release = 2;
+  fmSynth.envelope.releaseCurve = 'exponential';
+  fmSynth.modulationEnvelope.attack = 1;
+  fmSynth.modulationEnvelope.attackCurve = 'exponential';
+  fmSynth.modulationEnvelope.release = 10;
+  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
+  fmSynth.detune.value = 0;
+  // keep volume out because I want to set it independently by cue
+}
+function fmSynthPreset2() {
+  fmSynth.envelope.attack = 3;
+  fmSynth.envelope.attackCurve = 'linear';
+  fmSynth.envelope.release = 3;
+  fmSynth.envelope.releaseCurve = 'linear';
+  fmSynth.modulationEnvelope.attack = 3;
+  fmSynth.modulationEnvelope.attackCurve = 'linear';
+  fmSynth.modulationEnvelope.release = 3;
+  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  fmSynth.detune.value = 0;
+  // keep volume out because I want to set it independently by cue
+}
+
 // reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
@@ -162,7 +164,7 @@ tm.cue[1].goCue = function() {
   // nothing to do until shake gestures
 };
 tm.cue[1].triggerShakeSound = function() {
-  bellSampler.triggerAttackRelease('e6', 5);
+  bellSampler.triggerAttackRelease('E6', 5);
 };
 tm.cue[1].stopCue = function() {
   // nothing to clean up
