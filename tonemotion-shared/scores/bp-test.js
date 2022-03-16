@@ -529,7 +529,6 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16: [L] granular TILT texture during beginning of second part of piece
-// REVISION: could replace clave loop with something else (bongos?). and could add sound to right side of TILT (like a ping pong ball click loop)
 const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
 claveLoop.loop = true;
 // used to control clave loop gain on x-axis
@@ -655,7 +654,6 @@ tm.cue[18].stopCue = function() {
 
 // *******************************************************************
 // CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
-// TODO: maybe make tilt part more obvious (louder sine and click?) and maybe make fmSynth note in cue 20 louder?
 const shaker1 = new Tone.Player(perc_sounds + 'shaker1.mp3').toDestination();
 shaker1.volume.value  = -12;
 const shaker2 = new Tone.Player(perc_sounds + 'shaker2.mp3').toDestination();
