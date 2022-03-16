@@ -126,6 +126,19 @@ const harpSampler = new Tone.Sampler({
 const harpSamplerVol = new Tone.Volume(0);
 harpSampler.chain(harpSamplerVol, Tone.Destination);
 
+// piano sampler with samples from Logic
+const pianoSampler = new Tone.Sampler({
+  urls: {
+    'F4': 'piano-3s-F4.mp3',
+    'A4': 'piano-3s-A4.mp3',
+    'Db5': 'piano-3s-Db5.mp3',
+    'F5': 'piano-3s-F5.mp3',
+    'A5': 'piano-3s-A5.mp3',
+    'Db6': 'piano-3s-Db6.mp3',
+  },
+  baseUrl: piano_sounds,
+}).toDestination();
+
 // reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
@@ -873,27 +886,17 @@ tm.cue[24].cueTransition = function() {
 
 // *******************************************************************
 // CUE 25: [U] - SHAKE sounds of piano samples playing same notes as piano
-// piano sampler with samples from Logic
-const pianoSampler = new Tone.Sampler({
-  urls: {
-    'F4': 'piano-3s-F4.mp3',
-    'A4': 'piano-3s-A4.mp3',
-    'Db5': 'piano-3s-Db5.mp3',
-    'F5': 'piano-3s-F5.mp3',
-    'A5': 'piano-3s-A5.mp3',
-    'Db6': 'piano-3s-Db6.mp3',
-  },
-  baseUrl: piano_sounds,
-}).toDestination();
-
 let pitchArr1_25 = ['A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'B4', 'A5', 'A5', 'B4', 'A5', 'C#5', 'B5', 'B5', 'B5', 'D5', 'C#6', 'D5', 'C#6', 'D5', 'D6', 'D5', 'D6', 'D6', 'D5', 'D6', 'D6', 'A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'A4', 'G5', 'G5', 'A4', 'G5', 'G4', 'F#5', 'F#5', 'F#5', 'G4', 'F#5', 'F#4', 'E5', 'F#4', 'E5', 'E4', 'E5', 'E5', 'E4', 'E5', 'E5', 'E4', 'E6', 'E5'];
 let count1_25 = count2_25 = 0;
 
 tm.cue[25] = new TMCue('shake', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[25].goCue = function() {
-  bellSampler.triggerAttackRelease('C#6', 5);
   count1_25 = count2_25 = 0;
   pianoSampler.volume.value = 0;
+  vibeSampler.volume.value = 0;
+  bellSampler.volume.value = 0;
+  sineTails.volume.value = -20;
+  bellSampler.triggerAttackRelease('C#6', 5);
 };
 tm.cue[25].triggerShakeSound = function() {
   if (count1_25 < pitchArr1_25.length) {
@@ -908,6 +911,7 @@ tm.cue[25].triggerShakeSound = function() {
       trans = (count2_25 / 30) * 5.0; // gradually slide up perfect 4
     }
     if (count2_25 % 3 === 0) {
+      pianoSampler.volume.value = tm.getSectionBreakpoints(25, [0, 0, 24615, 0, 43077, -18]);
       pianoSampler.triggerAttackRelease('E4', 3);
     } else if (count2_25 % 3 === 1) {
       let pitch = Tone.Frequency('E6').transpose(trans);
@@ -932,10 +936,10 @@ let count_26 = 0;
 tm.cue[26] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[26].goCue = function() {
   count_26 = 0;
-  pianoSampler.volume.value = 0;
+  pianoSampler.volume.value = -18;
   vibeSampler.volume.value = 0;
   bellSampler.volume.value = 0;
-  sineTails.volume.value = -24;
+  sineTails.volume.value = -20;
   pianoSampler.volume.rampTo(-36, 6);
   vibeSampler.volume.rampTo(-36, 6);
   bellSampler.volume.rampTo(-36, 6);
@@ -944,7 +948,7 @@ tm.cue[26].goCue = function() {
 tm.cue[26].triggerShakeSound = function() {
   if (count2_25 % 3 === 0) {
     // both upper As stay put, but E4 moves toward F4 while fading out
-    let trans = tm.getSectionBreakpoints(26, [0, 0, 4000, 0, 6000, 1]);
+    let trans = tm.getSectionBreakpoints(26, [0, 0, 3000, 0, 6000, 0.5]);
     let pitch = Tone.Frequency('E4').transpose(trans);
     pianoSampler.triggerAttackRelease(pitch, 3);
   } else if (count2_25 % 3 === 1) {
