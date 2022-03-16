@@ -997,7 +997,7 @@ tm.cue[28].goCue = function() {
   claveLoop.start();
   fmSynthPreset2();
   fmSynth.volume.value = -99;
-  let fmSynPitch = tm.pickRand(['F4', 'F5', 'A5']);
+  let fmSynPitch = tm.pickRand(['F4', 'F4', 'F5', 'A5']);
   fmSynth.triggerAttack(fmSynPitch);
 };
 tm.cue[28].updateTiltSounds = function() {
@@ -1026,21 +1026,20 @@ tm.cue[28].updateTiltSounds = function() {
   chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
   claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
   fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
-  // TODO: come up with way to introduce gradual change throughout last section? and maybe bring fmSynth level down a bit for better balance
   let fmSynVol;
   if (tm.accel.y < 0.25) {
     sineTails.volume.value = -99;
     // set volume with rampTo to avoid zipper noise
-    fmSynVol = -20 - (0.25 - tm.accel.y) * 316; // -99 to -20 dB
+    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
     fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
   } else if (tm.accel.y < 0.5) {
     sineTails.volume.value = -99;
-    fmSynth.volume.rampTo(-20, tm.motionUpdateInSeconds);
+    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
   } else if (tm.accel.y < 0.75) {
     sineTails.volume.value = -24 - (0.75 - tm.accel.y) * 300; // -99 to -24 dB
-    fmSynVol = -20 - (tm.accel.y - 0.5) * 80; // -20 to -40 dB
+    fmSynVol = -28 - (tm.accel.y - 0.5) * 48; // -28 to -40 dB
     fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
     fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
   } else {
@@ -1059,30 +1058,42 @@ tm.cue[28].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 29: m. 330 - hidden cue to fade out synths and audio file players
+// CUE 29: m. 317 - hidden cue to play synchronized bells at [Y]
+// randomly select two bell pitches at upper partials of E2
+let randBellLo_29 = 55 * ((2**(1/12))**7) * tm.pickRand([10, 14, 17, 20]);
+let randBellHi_29 = 55 * ((2**(1/12))**7) * tm.pickRand([23, 28, 36]);
 tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[29].goCue = function() {
-  // TODO: need better fade out for audio files. try fade all the way to -99
-  glassRimD5.volume.rampTo(-48, 12);
+  bellSampler.volume.value = 0;
+  bellSampler.triggerAttackRelease('E5', 5);
+  bellSampler.triggerAttackRelease(randBellLo_29, 5, '+16n');
+  bellSampler.triggerAttackRelease(randBellHi_29, 5, '+8n');
+};
+
+// *******************************************************************
+// CUE 30: m. 330 - hidden cue to fade out synths and audio file players
+tm.cue[30] = new TMCue('hidden', 0, NO_LIMIT);
+tm.cue[30].goCue = function() {
+  glassRimD5.volume.rampTo(-99, 15);
   sineTails.releaseAll();
-  chimeSugarFade.volume.rampTo(-48, 12);
-  claveLoopFade.volume.rampTo(-48, 12);
+  chimeSugarFade.volume.rampTo(-99, 15);
+  claveLoopFade.volume.rampTo(-99, 15);
   fmSynth.triggerRelease();
 };
 
 // *******************************************************************
-// CUE 30: [Z] - TACET (audience is done playing)
-tm.cue[30] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[30].goCue = function() {
+// CUE 31: [Z] - TACET (audience is done playing)
+tm.cue[31] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[31].goCue = function() {
   // nothing to play
 };
-tm.cue[30].stopCue = function() {
+tm.cue[31].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 31: finished
-tm.cue[31] = new TMCue('finished', 0, NO_LIMIT);
-tm.cue[31].goCue = function() {
+// CUE 32: finished
+tm.cue[32] = new TMCue('finished', 0, NO_LIMIT);
+tm.cue[32].goCue = function() {
   // nothing to play
 };
