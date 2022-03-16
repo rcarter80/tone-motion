@@ -649,6 +649,7 @@ tm.cue[18].stopCue = function() {
 
 // *******************************************************************
 // CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
+// TODO: maybe make tilt part more obvious (louder sine and click?) and maybe make fmSynth note in cue 20 louder?
 const shaker1 = new Tone.Player(perc_sounds + 'shaker1.mp3').toDestination();
 const shaker2 = new Tone.Player(perc_sounds + 'shaker2.mp3').toDestination();
 const shaker3 = new Tone.Player(perc_sounds + 'shaker3.mp3').toDestination();
