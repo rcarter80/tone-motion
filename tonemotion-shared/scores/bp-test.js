@@ -3,11 +3,10 @@ tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
-  // TODO: create server for ryancarter.org/bp
   if (tm.localTest) {
-    tm.init('http://localhost:3000/jack-server/current-cue');
+    tm.init('http://localhost:3000/bp-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/bp-server/current-cue');
   }
 };
 
@@ -148,6 +147,7 @@ const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
 triangle.volume.value = -12;
 
 const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
+clave.volume.value = -18;
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
@@ -254,7 +254,7 @@ let count_6 = 0;
 const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDestination();
 
 // wait window of 22 seconds prevents people from stopping and starting
-tm.cue[6] = new TMCue('shake', 1818, 22000); // 4 beats @ 132 bpm
+tm.cue[6] = new TMCue('shake', 1363, 22000); // 3 beats @ 132 bpm
 tm.cue[6].goCue = function() {
   // reset volume from possible previous change
   vibeSampler.volume.value = 0;
@@ -1010,6 +1010,7 @@ tm.cue[28].goCue = function() {
   chimesAndSugar.volume.value = -99;
   chimesAndSugar.start();
   claveLoopFade.volume.value = 0;
+  claveLoopVol.volume.value = 0;
   claveLoop.volume.value = -99;
   claveLoop.start();
   fmSynthPreset2();
