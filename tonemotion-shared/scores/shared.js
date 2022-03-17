@@ -26,17 +26,104 @@ Tone.Transport.bpm.value = 60;
 // TODO: update cue numbers, adding negative cues for tutorials. This is what I listed in the score: The following cue numbers can be used as a tutorial for the audience: Cue -4: "waiting" (The piece has not begun.) Cue -3: "shake" (This demonstrates the "shake" mode of interactivity.) Cue -2: "tacet" (Phones are silenced.) Cue -1: "tilt" (This demonstrates the "tilt" mode of interactivity.) Cue 0: "waiting" (Set to this cue before beginning the actual piece.) Also need to update user messages (e.g., "Section 0: Shake...")
 
 // *******************************************************************
-// CUE -1: ONLY used in performance to keep everything silent until start
-tm.cue[-1] = new TMCue('waiting', -1);
-tm.cue[-1].goCue = function() {
-  // nothing to do here
+// CUE -4: piece is in "waiting" state by default
+tm.cue[-4] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[-4].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
 };
-tm.cue[-1].stopCue = function() {
+tm.cue[-4].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 0: First section (struck glass sounds)
+// CUE -3: SHAKE tutorial
+const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
+clave.volume.value = -18;
+
+tm.cue[-3] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[-3].goCue = function() {
+  // nothing to do until shake gestures
+};
+tm.cue[-3].triggerShakeSound = function() {
+  clave.start();
+};
+tm.cue[-3].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE -2: tacet tutorial
+tm.cue[-2] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[-2].goCue = function() {
+  // nothing to play
+};
+tm.cue[-2].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE -1: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toDestination();
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+
+let tiltPitchArr_tut = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
+let len_tut = tiltPitchArr_tut.length;
+tm.cue[-1] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[-1].goCue = function() {
+  fmSynth.volume.value = -99;
+  fmSynthDefaults();
+  fmSynth.triggerAttack('E4');
+};
+tm.cue[-1].updateTiltSounds = function() {
+  fmSynth.frequency.value = tiltPitchArr_tut[Math.floor(tm.accel.x * 0.99 * len_tut)];
+  let fmSynVol;
+  if (tm.accel.y < 0.25) {
+    // set volume with rampTo to avoid zipper noise
+    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
+  } else if (tm.accel.y < 0.5) {
+    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
+  } else if (tm.accel.y < 0.75) {
+    fmSynVol = -12 - (0.75 - tm.accel.y) * 64; // -28 to -12 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
+  } else {
+    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
+  }
+};
+tm.cue[-1].stopCue = function() {
+  fmSynth.triggerRelease();
+};
+
+// *******************************************************************
+// CUE 0: sets status to 'waitingForPieceToStart'
+tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[0].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
+};
+tm.cue[0].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 1: First section (struck glass sounds)
 var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toDestination();
 var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
 var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
@@ -63,40 +150,38 @@ var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toDestination();
 
 var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
-var c0_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
+var c1_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 
-var c0_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
+var c1_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
 
-var c0_counter;
+var c1_counter;
 
-tm.cue[0] = new TMCue('shake', 3000, NO_LIMIT);
+tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 
-tm.cue[0].goCue = function() {
-  c0_counter = 0;
-  tm.publicMessage('Section 0: Shake your phone to play a sound.');
+tm.cue[1].goCue = function() {
+  c1_counter = 0;
+  tm.publicMessage('Section 1: Shake your phone to play a sound.');
 };
 
-tm.cue[0].triggerShakeSound = function() {
-  c0_glassArray[c0_counter % c0_glassArray.length].start();
-  c0_counter++;
+tm.cue[1].triggerShakeSound = function() {
+  c1_glassArray[c1_counter % c1_glassArray.length].start();
+  c1_counter++;
 };
 
-tm.cue[0].cueTransition = function() {
+tm.cue[1].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 4 possible pitches for reversed glass sound
-  revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
+  revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // TODO: decide whether to prevent more shake sounds during transition?
-
-  tm.publicMessage('cueTransition() for cue 0 called');
+  // TODO: decide whether to prevent more shake sounds during transition? Or could just fade them out
 };
 
-tm.cue[0].stopCue = function() {
+tm.cue[1].stopCue = function() {
   // nothing to do here
 };
 
 // *******************************************************************
-// CUE 1: tilt sparkly sounds that can be muted when phone is upright
+// CUE 2: tilt sparkly sounds that can be muted when phone is upright
 var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toDestination();
 pingPongLoop.loop = true;
 
@@ -104,18 +189,18 @@ var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toDes
 popRocksLoop.loop = true;
 
 // randomized playbackRate yields D5, D6
-var c1_revGlassPitchArray = [1.122, 2.244];
+var c2_revGlassPitchArray = [1.122, 2.244];
 
-tm.cue[1] = new TMCue('tilt', 3000, NO_LIMIT);
-tm.cue[1].goCue = function() {
+tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
+tm.cue[2].goCue = function() {
   // mute both loops by default - unmute below
   pingPongLoop.volume.value = -99;
   popRocksLoop.volume.value = -99;
   pingPongLoop.start();
   popRocksLoop.start();
-  tm.publicMessage('Section 1: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
+  tm.publicMessage('Section 2: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
 };
-tm.cue[1].updateTiltSounds = function() {
+tm.cue[2].updateTiltSounds = function() {
   // playback rate can range from quarter speed to four times speed
   pingPongLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
   popRocksLoop.playbackRate = 0.25 + tm.accel.y * 3.75;
@@ -140,61 +225,62 @@ tm.cue[1].updateTiltSounds = function() {
     }
   }
 };
-tm.cue[1].cueTransition = function() {
+tm.cue[2].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 2 possible pitches for reversed glass sound
-  revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
+  revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
   // TODO: could fade out loop to make smoother transition
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
-tm.cue[1].stopCue = function() {
+tm.cue[2].stopCue = function() {
   // NEED to include loop stopping here so that sound stops when people tap "stop" - otherwise they don't stop because cueTransition() isn't called
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
 
 // *******************************************************************
-// CUE 2: shake-triggered chimes with octaves selected by device position
+// CUE 3: shake-triggered chimes with octaves selected by device position
+// TODO: make upside-down sound much more obvious. Couldn't tell difference at all at JUMP venue test (because other people were playing same sounds)
 var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toDestination();
 var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toDestination();
 
 // randomized playbackRate yields D5, Ab5, Ab6
-var c2_revGlassPitchArray = [1.122, 1.587, 3.175];
+var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
 
-tm.cue[2] = new TMCue('shake', 3000, NO_LIMIT);
+tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 
-tm.cue[2].goCue = function() {
+tm.cue[3].goCue = function() {
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
-  tm.publicMessage('Section 2: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
+  tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
 };
 
-tm.cue[2].triggerShakeSound = function() {
+tm.cue[3].triggerShakeSound = function() {
   if (tm.accel.y < 0.5) {
     // device is shaken while mostly upright
     // pitch bends down half step over 20s and then goes back up
-    chimeA7.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.944, 40000,1]);
+    chimeA7.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
     chimeA7.start();
   } else {
     // device is mostly upside down
-    chimeA6.playbackRate = tm.getSectionBreakpointLoop(2, [0,1, 20000,0.97, 40000,1]);
+    chimeA6.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.97, 40000,1]);
     chimeA6.start();
   }
 };
-tm.cue[2].cueTransition = function() {
+tm.cue[3].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 3 possible pitches for reversed glass sound
-  revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
+  revGlassC5_7s.playbackRate = c3_revGlassPitchArray[Math.floor(Math.random() * c3_revGlassPitchArray.length)];
   revGlassC5_7s.start();
 };
-tm.cue[2].stopCue = function() {
+tm.cue[3].stopCue = function() {
   // nothing to do here?
 };
 
 // *******************************************************************
-// CUE 3: tilt octaves on D, F, E, A, Bb
+// CUE 4: tilt octaves on D, F, E, A, Bb
 var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toDestination();
 var octaveBellsA3b = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toDestination();
 var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toDestination();
@@ -218,191 +304,191 @@ var octaveBellsF5b = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toDesti
 // transition sound
 var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toDestination();
 // sparkly sound loop (with bandpass filter on y-axis)
-var c3_filter = new Tone.Filter(1500, "bandpass").toDestination();
-var sugarChimeLoop = new Tone.Player(granulated_sounds + "chimesAndSugarLoop.mp3").connect(c3_filter);
+var c4_filter = new Tone.Filter(1500, "bandpass").toDestination();
+var sugarChimeLoop = new Tone.Player(granulated_sounds + "chimesAndSugarLoop.mp3").connect(c4_filter);
 sugarChimeLoop.loop = true;
 
-var c3_hiBellArray = [octaveBellsD5, octaveBellsF5, octaveBellsE5, octaveBellsA5, octaveBellsBb5];
-var c3_hiBellArrayb = [octaveBellsD5b, octaveBellsF5b, octaveBellsE5b, octaveBellsA5b, octaveBellsBb5b];
-var c3_loBellArray = [octaveBellsD3, octaveBellsF3, octaveBellsE3, octaveBellsA3, octaveBellsBb3];
-var c3_loBellArrayb = [octaveBellsD3b, octaveBellsF3b, octaveBellsE3b, octaveBellsA3b, octaveBellsBb3b];
+var c4_hiBellArray = [octaveBellsD5, octaveBellsF5, octaveBellsE5, octaveBellsA5, octaveBellsBb5];
+var c4_hiBellArrayb = [octaveBellsD5b, octaveBellsF5b, octaveBellsE5b, octaveBellsA5b, octaveBellsBb5b];
+var c4_loBellArray = [octaveBellsD3, octaveBellsF3, octaveBellsE3, octaveBellsA3, octaveBellsBb3];
+var c4_loBellArrayb = [octaveBellsD3b, octaveBellsF3b, octaveBellsE3b, octaveBellsA3b, octaveBellsBb3b];
 
-var c3_counter, c3_i, c3_thisBellArray, c3_fadeLock;
+var c4_counter, c4_i, c4_thisBellArray, c4_fadeLock;
 // set maximum volume of crunchy sounds here
-const c3_sugarChimePeakVol = -9;
+const c4_sugarChimePeakVol = -9;
 // amount to adjust volume with y-axis roll-off
-const c3_volFader = (c3_sugarChimePeakVol + 99) * 4;
+const c4_volFader = (c4_sugarChimePeakVol + 99) * 4;
 // cache value of bell array length to avoid computing on each note
-const c3_arrLength = c3_hiBellArray.length;
+const c4_arrLength = c4_hiBellArray.length;
 
-var c3_bellLoop = new Tone.Loop(function(time) {
+var c4_bellLoop = new Tone.Loop(function(time) {
   // find pitch index from x-axis (tm.accel.x CAN be 1.0, so need to scale)
-  c3_i = Math.floor((tm.accel.x * 0.99) * c3_arrLength);
+  c4_i = Math.floor((tm.accel.x * 0.99) * c4_arrLength);
   if (tm.accel.y > 0.5) {
     // high bells when phone flat or upside down
     // alternate buffer to avoid retrigger artifacts
-    c3_thisBellArray = (c3_counter % 2) ? c3_hiBellArray : c3_hiBellArrayb;
-    c3_thisBellArray[c3_i].start();
+    c4_thisBellArray = (c4_counter % 2) ? c4_hiBellArray : c4_hiBellArrayb;
+    c4_thisBellArray[c4_i].start();
   } else if (tm.accel.y > 0.25) {
     // low bells when phone flat or upside down
-    c3_thisBellArray = (c3_counter % 2) ? c3_loBellArray : c3_loBellArrayb;
-    c3_thisBellArray[c3_i].start();
+    c4_thisBellArray = (c4_counter % 2) ? c4_loBellArray : c4_loBellArrayb;
+    c4_thisBellArray[c4_i].start();
   } else {
     // no sound when phone mostly upright
   }
-  c3_counter++;
+  c4_counter++;
 }, '16n');
 
-tm.cue[3] = new TMCue('tilt', 3000, NO_LIMIT);
-tm.cue[3].goCue = function() {
-  c3_counter = 0;
-  c3_bellLoop.start();
+tm.cue[4] = new TMCue('tilt', 3000, NO_LIMIT);
+tm.cue[4].goCue = function() {
+  c4_counter = 0;
+  c4_bellLoop.start();
   // sugar chimes have volume control on y-axis, but not during transition fade
-  c3_fadeLock = false;
-  sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
+  c4_fadeLock = false;
+  sugarChimeLoop.volume.value = c4_sugarChimePeakVol;
   sugarChimeLoop.start();
-  tm.publicMessage('Section 3: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
+  tm.publicMessage('Section 4: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
 };
-tm.cue[3].updateTiltSounds = function() {
-  c3_filter.frequency.value = 50 + tm.accel.y * 12000;
-  if (!c3_fadeLock && tm.accel.y < 0.25) {
+tm.cue[4].updateTiltSounds = function() {
+  c4_filter.frequency.value = 50 + tm.accel.y * 12000;
+  if (!c4_fadeLock && tm.accel.y < 0.25) {
     // roll of volume only if phone mostly upright. full mute if upright
     sugarChimeLoop.volume.value = -99 + (tm.accel.y * 396);
-  } else if (!c3_fadeLock) {
+  } else if (!c4_fadeLock) {
     // full volume if phone not upright AS LONG AS transition is not started
-    sugarChimeLoop.volume.value = c3_sugarChimePeakVol;
+    sugarChimeLoop.volume.value = c4_sugarChimePeakVol;
   }
 };
-tm.cue[3].cueTransition = function() {
+tm.cue[4].cueTransition = function() {
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
-  c3_bellLoop.stop();
-  c3_fadeLock = true;
+  c4_bellLoop.stop();
+  c4_fadeLock = true;
   sugarChimeLoop.volume.rampTo(-60, 3);
   sugarChimeLoop.stop('+3');
 };
-tm.cue[3].stopCue = function() {
+tm.cue[4].stopCue = function() {
   // cueTransition() is not called if user taps "stop"
   // redundant stop methods are for that case
-  c3_bellLoop.stop();
+  c4_bellLoop.stop();
   sugarChimeLoop.stop();
 };
 
 // *******************************************************************
-// CUE 4: shake glass through array
+// CUE 5: shake glass through array
 var glassBb5 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toDestination();
 
-var c4_glassArray = [glassE5, glassG4, glassBb5, glassG6, glassD3, glassD6, glassE5, glassG4, glassBb5, glassG6, glassE4, glassE6, glassE4, glassE6];
+var c5_glassArray = [glassE5, glassG4, glassBb5, glassG6, glassD3, glassD6, glassE5, glassG4, glassBb5, glassG6, glassE4, glassE6, glassE4, glassE6];
 
-var c4_counter, c4_thisGlass;
+var c5_counter, c5_thisGlass;
 
-tm.cue[4] = new TMCue('shake', 3000, NO_LIMIT);
-tm.cue[4].goCue = function() {
-  c4_counter = 0;
-  tm.publicMessage('Section 4: Shake your phone to play a sound.');
+tm.cue[5] = new TMCue('shake', 3000, NO_LIMIT);
+tm.cue[5].goCue = function() {
+  c5_counter = 0;
+  tm.publicMessage('Section 5: Shake your phone to play a sound.');
 };
-tm.cue[4].triggerShakeSound = function() {
+tm.cue[5].triggerShakeSound = function() {
   // find next sound in array
-  c4_thisGlass = c4_glassArray[c4_counter % c4_glassArray.length];
+  c5_thisGlass = c5_glassArray[c5_counter % c5_glassArray.length];
   // start transposed up major 2nd, bend down over 2.5 minutes
-  c4_thisGlass.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 150000,1]);
-  c4_thisGlass.start();
-  c4_counter++;
+  c5_thisGlass.playbackRate = tm.getSectionBreakpoints(5, [0,1.12246, 30000,1.12246, 150000,1]);
+  c5_thisGlass.start();
+  c5_counter++;
 };
-tm.cue[4].stopCue = function() {
+tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5: struck glass with variable delay on y-axis and pitch in 12 zones
-var c5_delay = new Tone.FeedbackDelay({
+// CUE 6: struck glass with variable delay on y-axis and pitch in 12 zones
+var c6_delay = new Tone.FeedbackDelay({
   // delay time creates triplet effect
   delayTime: 0.5,
   feedback: 0.0
 }).toDestination();
 // control feedback with yTilt
-var c5_delayFeedbackScale = new Tone.Scale(0.0, 0.5);
-yTilt.chain(c5_delayFeedbackScale, c5_delay.feedback);
+var c6_delayFeedbackScale = new Tone.Scale(0.0, 0.5);
+yTilt.chain(c6_delayFeedbackScale, c6_delay.feedback);
 
 // multiple buffers needed to prevent retrigger artifacts
-var glassB3a = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3b = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3c = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3d = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3e = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3f = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3g = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
-var glassB3h = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_delay);
+var glassB3a = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3b = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3c = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3d = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3e = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3f = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3g = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
+var glassB3h = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c6_delay);
 var arrGlassB3 = [glassB3a, glassB3b, glassB3c, glassB3d, glassB3e, glassB3f, glassB3g, glassB3h];
 
-var glassB4a = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c5_delay);
-var glassB4b = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c5_delay);
-var glassB4c = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c5_delay);
-var glassB4d = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c5_delay);
+var glassB4a = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c6_delay);
+var glassB4b = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c6_delay);
+var glassB4c = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c6_delay);
+var glassB4d = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c6_delay);
 var arrGlassB4 = [glassB4a, glassB4b, glassB4c, glassB4d];
 
-var glassFsharp5a = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
-var glassFsharp5b = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
-var glassFsharp5c = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
-var glassFsharp5d = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
-var glassFsharp5e = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
-var glassFsharp5f = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
+var glassFsharp5a = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
+var glassFsharp5b = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
+var glassFsharp5c = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
+var glassFsharp5d = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
+var glassFsharp5e = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
+var glassFsharp5f = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c6_delay);
 var arrGlassFsharp5 = [glassFsharp5a, glassFsharp5b, glassFsharp5c, glassFsharp5d, glassFsharp5e, glassFsharp5f];
 
 var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toDestination();
 ziplockClickLoop.loop = true;
 
 // array of playbackRates to create pitches: C, D, B, E
-var c5_pitchArr = [1.05946, 1.1892, 1, 1.3348];
-var c5_thisGlass, c5_counter;
+var c6_pitchArr = [1.05946, 1.1892, 1, 1.3348];
+var c6_thisGlass, c6_counter;
 
 // array of pitches for final transition sound (wrapping back to beginning)
-c5_revGlassPitchArray = [0.94387, 1.8877, 3.7755];
+c6_revGlassPitchArray = [0.94387, 1.8877, 3.7755];
 
-var c5_glassLoop = new Tone.Loop(function(time) {
+var c6_glassLoop = new Tone.Loop(function(time) {
   if (tm.accel.y < 0.25) {
     // no sound trigger if phone upright (still controls delay time)
     return;
   } else if (tm.accel.y < 0.5) {
     // trigger lowest glass sound
-    c5_thisGlass = arrGlassB3[c5_counter % arrGlassB3.length];
+    c6_thisGlass = arrGlassB3[c6_counter % arrGlassB3.length];
   } else if (tm.accel.y < 0.75) {
     // trigger mid glass sound
-    c5_thisGlass = arrGlassB4[c5_counter % arrGlassB4.length];
+    c6_thisGlass = arrGlassB4[c6_counter % arrGlassB4.length];
   } else {
     // trigger highest glass sound
-    c5_thisGlass = arrGlassFsharp5[c5_counter % arrGlassFsharp5.length];
+    c6_thisGlass = arrGlassFsharp5[c6_counter % arrGlassFsharp5.length];
   }
   // select pitch on y-axis by referencing pitch array (scale tm.accel.x first)
-  c5_thisGlass.playbackRate = c5_pitchArr[Math.floor((tm.accel.x * 0.99) * c5_pitchArr.length)];
-  c5_thisGlass.start();
-  c5_counter++;
+  c6_thisGlass.playbackRate = c6_pitchArr[Math.floor((tm.accel.x * 0.99) * c6_pitchArr.length)];
+  c6_thisGlass.start();
+  c6_counter++;
 }, 0.375);
 
-tm.cue[5] = new TMCue('tilt', 3000, NO_LIMIT);
-tm.cue[5].goCue = function() {
-  c5_counter = 0;
+tm.cue[6] = new TMCue('tilt', 3000, NO_LIMIT);
+tm.cue[6].goCue = function() {
+  c6_counter = 0;
   // if I need to reset volume because it was changed, there are LOTS to reset
-  c5_glassLoop.start();
+  c6_glassLoop.start();
   ziplockClickLoop.start();
-  tm.publicMessage('Section 5: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
+  tm.publicMessage('Section 6: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
 };
-tm.cue[5].updateTiltSounds = function() {
+tm.cue[6].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
   ziplockClickLoop.volume.value = -65 + (tm.accel.y * 65);
 };
-// NOTE: cueTransition() won't be called when this returns to beginning because cues are not consecutive (from cue 5 back to cue 0). Only way around this is to change how library handles cueTransition()
-tm.cue[5].stopCue = function() {
-  c5_glassLoop.stop();
+// NOTE: cueTransition() won't be called when this returns to beginning because cues are not consecutive (from cue 6 back to cue 1). Only way around this is to change how library handles cueTransition()
+tm.cue[6].stopCue = function() {
+  c6_glassLoop.stop();
   ziplockClickLoop.stop();
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 3 possible octaves for reversed glass sound
-  revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
+  revGlassC5_7s.playbackRate = c6_revGlassPitchArray[Math.floor(Math.random() * c6_revGlassPitchArray.length)];
   revGlassC5_7s.start();
 };
 
 // *******************************************************************
-// CUE 6: CODA only accessible through private server - play at end of perf.
+// CUE 7: CODA only accessible through private server - play at end of perf.
 // chime tuned to 4th partial above A (220Hz)
 var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
 var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
@@ -438,21 +524,21 @@ chLoP13b.fadeOut = 5;
 var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
 chLoP14.fadeOut = 5;
 
-var c6_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
+var c7_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
 // array of playback rates that represent targets of pitch bends
-var c6_chBendArr = [1.031786, 1.020448, 1.07714, 0.9921, 1.03789, 1.05824, 0.9921, 1.05824, 1.031786, 1.03789, 1.020448];
-var c6_chLoArr = [chLoP7, chLoP14, chLoP4, chLoP13, chLoP6, chLoP4b, chLoP6b, chLoP10b, chLoP13b];
+var c7_chBendArr = [1.031786, 1.020448, 1.07714, 0.9921, 1.03789, 1.05824, 0.9921, 1.05824, 1.031786, 1.03789, 1.020448];
+var c7_chLoArr = [chLoP7, chLoP14, chLoP4, chLoP13, chLoP6, chLoP4b, chLoP6b, chLoP10b, chLoP13b];
 // low chimes start 2 oct lower but bend up to 1 oct lower than high chimes
-var c6_chLoBendArr = [0.510224, 0.53857, 0.49605, 0.518945, 0.52912, 0.49605, 0.52912, 0.515893, 0.518945];
+var c7_chLoBendArr = [0.510224, 0.53857, 0.49605, 0.518945, 0.52912, 0.49605, 0.52912, 0.515893, 0.518945];
 
-var c6_chCount, c6_chIndex, c6_thisCh, c6_chLoIndex, c6_thisLoCh;
-var c6_chArrLen = c6_chimeArr.length;
-var c6_chLoArrLen = c6_chLoArr.length;
+var c7_chCount, c7_chIndex, c7_thisCh, c7_chLoIndex, c7_thisLoCh;
+var c7_chArrLen = c7_chimeArr.length;
+var c7_chLoArrLen = c7_chLoArr.length;
 
-tm.cue[6] = new TMCue('shake', 3000, NO_LIMIT);
-tm.cue[6].goCue = function() {
-  c6_chCount = 0;
-  c6_chLoCount = 0;
+tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
+tm.cue[7].goCue = function() {
+  c7_chCount = 0;
+  c7_chLoCount = 0;
   // OPTIMIZE: there might be a better way to schedule timed messages
   Tone.Draw.schedule(function() {
     tm.publicMessage('3');
@@ -464,104 +550,39 @@ tm.cue[6].goCue = function() {
     tm.publicMessage('1');
   }, '+2');
   Tone.Draw.schedule(function() {
-    tm.publicMessage('Section 6: Shake your phone to play a sound.');
+    tm.publicMessage('Section 7: Shake your phone to play a sound.');
   }, '+3');
 };
-tm.cue[6].triggerShakeSound = function() {
+tm.cue[7].triggerShakeSound = function() {
   // no sound until final "drop" sound 3.25 seconds into cue
   if (tm.getElapsedTimeInCue(6) > 3250) {
     // set pitch and properties of lower chime
-    c6_chLoIndex = c6_chCount % c6_chLoArrLen;
-    c6_thisLoCh = c6_chLoArr[c6_chLoIndex];
+    c7_chLoIndex = c7_chCount % c7_chLoArrLen;
+    c7_thisLoCh = c7_chLoArr[c7_chLoIndex];
     // TODO: decide on exact durations of pitch bend breakpoints
-    c6_thisLoCh.playbackRate = tm.getSectionBreakpoints(6, [0,0.25, 15000,0.25, 45000,c6_chLoBendArr[c6_chLoIndex]]);
-    c6_thisLoCh.volume.value = -1;
-    c6_thisLoCh.start();
+    c7_thisLoCh.playbackRate = tm.getSectionBreakpoints(7, [0,0.25, 15000,0.25, 45000,c7_chLoBendArr[c7_chLoIndex]]);
+    c7_thisLoCh.volume.value = -1;
+    c7_thisLoCh.start();
     // set pitch and properties of higher chime triggered just after low
-    c6_chIndex = c6_chCount % c6_chArrLen;
-    c6_thisCh = c6_chimeArr[c6_chIndex];
-    c6_thisCh.playbackRate = tm.getSectionBreakpoints(6, [0,1, 15000,1, 45000,c6_chBendArr[c6_chIndex]]);
-    c6_thisCh.volume.value = -6;
-    c6_thisCh.start('+0.05');
+    c7_chIndex = c7_chCount % c7_chArrLen;
+    c7_thisCh = c7_chimeArr[c7_chIndex];
+    c7_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c7_chBendArr[c7_chIndex]]);
+    c7_thisCh.volume.value = -6;
+    c7_thisCh.start('+0.05');
     // increment counter used by BOTH chime layers
-    c6_chCount++;
+    c7_chCount++;
   }
-};
-tm.cue[6].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 7: turn off all sound (only accessible through private server)
-tm.cue[7] = new TMCue('finished', -1);
-tm.cue[7].goCue = function() {
-  // nothing to do here
 };
 tm.cue[7].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 8: tilt tutorial (available to use in performance)
-// Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
-var testTone = new Tone.Synth({
-  oscillator: {
-    type: "sawtooth"
-  },
-  envelope: {
-    attack: 0.005,
-    decay: 0.1,
-    sustain: 0.9,
-    release: 0.1
-  }
-}).connect(testToneFilter);
-testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
-var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
-var testToneFilterScale = new Tone.Scale(440, 10000);
-xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
-yTilt.chain(testToneFilterScale, testToneFilter.frequency);
-tm.cue[8] = new TMCue('tilt', -1);
+// CUE 8: turn off all sound (only accessible through private server)
+tm.cue[8] = new TMCue('finished', -1);
 tm.cue[8].goCue = function() {
-  testTone.triggerAttack(440);
-};
-tm.cue[8].updateTiltSounds = function() {
-  // interactivity handled through tm.xTilt and yTilt signals
+  // nothing to do here
 };
 tm.cue[8].stopCue = function() {
-  testTone.triggerRelease();
-};
-
-// *******************************************************************
-// CUE 9: tacet tutorial
-tm.cue[9] = new TMCue('tacet', -1);
-tm.cue[9].goCue = function() {
-  // nothing to play
-};
-tm.cue[9].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 10: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
-tm.cue[10] = new TMCue('shake', -1);
-tm.cue[10].goCue = function() {
-  // nothing to do until shake gestures
-};
-tm.cue[10].triggerShakeSound = function() {
-  cowbell.start();
-};
-tm.cue[10].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 11: tacet cue (use to end tutorial - can then trigger cue -1 to wait)
-tm.cue[11] = new TMCue('tacet', -1);
-tm.cue[11].goCue = function() {
-  // nothing to play
-};
-tm.cue[11].stopCue = function() {
   // nothing to clean up
 };
