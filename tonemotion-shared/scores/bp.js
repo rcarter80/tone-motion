@@ -1076,11 +1076,11 @@ tm.cue[28].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 29: m. 317 - hidden cue to play synchronized bells at [Y]
+// CUE 29: flurry of bells after downbeat of [Y]
 // randomly select two bell pitches at upper partials of E2
 let randBellLo_29 = 55 * ((2**(1/12))**7) * tm.pickRand([10, 14, 17, 20]);
 let randBellHi_29 = 55 * ((2**(1/12))**7) * tm.pickRand([23, 28, 36]);
-tm.cue[29] = new TMCue('hidden', 2308, 0); // 3 beats @ 78 bpm
+tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[29].goCue = function() {
   bellSampler.volume.value = 0;
   bellSampler.triggerAttackRelease('E5', 5);
