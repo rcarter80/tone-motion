@@ -1,4 +1,5 @@
 const tm = new ToneMotion();
+// TODO: decide on possible longer cue fetch interval. Should tolerate even once per second. Check tone-motion code to make sure changing cue fetch interval doesn't have unintended consequences. Also 'hidden' cues are always triggered immediately and don't use waitTime or openWindow so I could get rid of those
 tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -262,7 +263,7 @@ tm.cue[6].goCue = function() {
   sinTremolo.depth.value = 0;
   count_6 = 0;
 
-  if (tm.getElapsedTimeInCue(6) < 1000) {
+  if (tm.getElapsedTimeInCue(6) < 500) {
     // only trigger opening sound if it's actually beginning of cue
     // otherwise if someone stops and restarts, this sound is triggered again
     bellSparkle.start();
