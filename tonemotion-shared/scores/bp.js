@@ -544,7 +544,7 @@ crunchyIce.loop = true;
 // I use a regular Tone.Player to granulate sound because GrainPlayer doesn't have .seek() or .scrub() anymore
 let grLen_16 = 0.25;
 
-// sampler using "vibes" sounds like I synthesized in Logic?
+// sampler using "vibes" sounds that I synthesized in Logic?
 const synVibSampler = new Tone.Sampler({
   urls: {
     'A3': 'vibe-A3.mp3',
@@ -570,7 +570,7 @@ tm.cue[16].goCue = function() {
   claveLoop.volume.value = -99; // start muted and only play with phone tipped
   claveLoop.start();
   crunchyIceFade.volume.value = -99;
-  crunchyIceFade.volume.rampTo(0, 5);
+  crunchyIceFade.volume.rampTo(0, 3);
   crunchyIce.start();
   synVibFade.volume.value = 0;
 };
@@ -777,7 +777,7 @@ tm.cue[20].goCue = function() {
   vibeSampler.volume.rampTo(-18, 6);
   bellSampler.volume.rampTo(-18, 6);
   fmSynthPreset2();
-  fmSynth.volume.value = -6;
+  fmSynth.volume.value = -3;
   fmSynth.triggerAttackRelease(fmPitch_20, 3.1);
   sineTails.triggerAttackRelease(fmPitch_20, 5);
 };
