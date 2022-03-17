@@ -411,6 +411,7 @@ tm.cue[10].goCue = function() {
 tm.cue[10].cueTransition = function() {
   // this is called BEFORE tm.cue[9].stopCue
   harpLoop_9.stop();
+  vibeSampler.volume.value = 0;
   vibeSampler.triggerAttackRelease('B5', 3);
   vibeSampler.triggerAttackRelease('C#6', 3, '+8n');
   vibeSampler.triggerAttackRelease('D6', 3, '+4n');
@@ -430,6 +431,7 @@ const harpLoop_11 = new Tone.Loop((time) => {
 tm.cue[11] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[11].goCue = function() {
   harpLoop_11.start();
+  bellSampler.volume.value = 0;
   bellSampler.triggerAttackRelease('C#5', 5);
 };
 tm.cue[11].updateTiltSounds = function() {
