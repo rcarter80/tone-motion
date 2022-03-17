@@ -888,6 +888,7 @@ tm.cue[24].goCue = function() {
 tm.cue[24].cueTransition = function() {
   // called BEFORE tm.cue[22].stopCue()
   harpLoop_22.stop();
+  vibeSampler.volume.value = 0;
   vibeSampler.triggerAttackRelease('B4', 3);
   vibeSampler.triggerAttackRelease('C5', 3, '+8n');
   vibeSampler.triggerAttackRelease('D5', 3, '+4n');
