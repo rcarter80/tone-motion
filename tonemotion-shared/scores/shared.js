@@ -18,9 +18,12 @@ const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 
 Tone.Transport.bpm.value = 60;
+// TODO: decide if I need a limiter. If so, is it Tone.Destination? not .Master
 // send everything through a limiter to be safe
-var masterLimiter = new Tone.Limiter(-1);
-Tone.Master.chain(masterLimiter);
+// var masterLimiter = new Tone.Limiter(-1);
+// Tone.Master.chain(masterLimiter);
+
+// TODO: update cue numbers, adding negative cues for tutorials. This is what I listed in the score: The following cue numbers can be used as a tutorial for the audience: Cue -4: "waiting" (The piece has not begun.) Cue -3: "shake" (This demonstrates the "shake" mode of interactivity.) Cue -2: "tacet" (Phones are silenced.) Cue -1: "tilt" (This demonstrates the "tilt" mode of interactivity.) Cue 0: "waiting" (Set to this cue before beginning the actual piece.) Also need to update user messages (e.g., "Section 0: Shake...")
 
 // *******************************************************************
 // CUE -1: ONLY used in performance to keep everything silent until start
@@ -34,31 +37,31 @@ tm.cue[-1].stopCue = function() {
 
 // *******************************************************************
 // CUE 0: First section (struck glass sounds)
-var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
-var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
-var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
-var glassG6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toMaster();
-var glassD3 = new Tone.Player(glass_sounds + "glassRealD3.mp3").toMaster();
-var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toMaster();
-var glassD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
-var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
-var glassC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
-var glassC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
-var glassC5_thirdFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
+var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toDestination();
+var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
+var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
+var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toDestination();
+var glassG6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toDestination();
+var glassD3 = new Tone.Player(glass_sounds + "glassRealD3.mp3").toDestination();
+var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toDestination();
+var glassD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toDestination();
+var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toDestination();
+var glassC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toDestination();
+var glassC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toDestination();
+var glassC5_thirdFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toDestination();
 // plays a third tone flat
 glassC5_thirdFlat.playbackRate = 0.9809;
-var glassC6_thirdFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
+var glassC6_thirdFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toDestination();
 glassC6_thirdFlat.playbackRate = 0.9809;
-var glassC5_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
+var glassC5_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC5.mp3").toDestination();
 // plays 2/3 tone flat
 glassC5_twoThirdsFlat.playbackRate = 0.962;
-var glassC6_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
+var glassC6_twoThirdsFlat = new Tone.Player(glass_sounds + "glassRealC6.mp3").toDestination();
 glassC6_twoThirdsFlat.playbackRate = 0.962;
-var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
-var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
+var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toDestination();
+var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toDestination();
 
-var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toMaster();
+var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
 var c0_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 
@@ -94,10 +97,10 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: tilt sparkly sounds that can be muted when phone is upright
-var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toMaster();
+var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toDestination();
 pingPongLoop.loop = true;
 
-var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toMaster();
+var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toDestination();
 popRocksLoop.loop = true;
 
 // randomized playbackRate yields D5, D6
@@ -142,7 +145,7 @@ tm.cue[1].cueTransition = function() {
   // randomly select 1 of 2 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // TODO: could fade out loop to make smoother transition 
+  // TODO: could fade out loop to make smoother transition
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
@@ -154,8 +157,8 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: shake-triggered chimes with octaves selected by device position
-var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toMaster();
-var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toMaster();
+var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toDestination();
+var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toDestination();
 
 // randomized playbackRate yields D5, Ab5, Ab6
 var c2_revGlassPitchArray = [1.122, 1.587, 3.175];
@@ -192,30 +195,30 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: tilt octaves on D, F, E, A, Bb
-var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toMaster();
-var octaveBellsA3b = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toMaster();
-var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toMaster();
-var octaveBellsA5b = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toMaster();
-var octaveBellsBb3 = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toMaster();
-var octaveBellsBb3b = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toMaster();
-var octaveBellsBb5 = new Tone.Player(glock_sounds + "octaveBellsBb5.mp3").toMaster();
-var octaveBellsBb5b = new Tone.Player(glock_sounds + "octaveBellsBb5.mp3").toMaster();
-var octaveBellsD3 = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toMaster();
-var octaveBellsD3b = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toMaster();
-var octaveBellsD5 = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toMaster();
-var octaveBellsD5b = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toMaster();
-var octaveBellsE3 = new Tone.Player(glock_sounds + "octaveBellsE3.mp3").toMaster();
-var octaveBellsE3b = new Tone.Player(glock_sounds + "octaveBellsE3.mp3").toMaster();
-var octaveBellsE5 = new Tone.Player(glock_sounds + "octaveBellsE5.mp3").toMaster();
-var octaveBellsE5b = new Tone.Player(glock_sounds + "octaveBellsE5.mp3").toMaster();
-var octaveBellsF3 = new Tone.Player(glock_sounds + "octaveBellsF3.mp3").toMaster();
-var octaveBellsF3b = new Tone.Player(glock_sounds + "octaveBellsF3.mp3").toMaster();
-var octaveBellsF5 = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toMaster();
-var octaveBellsF5b = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toMaster();
+var octaveBellsA3 = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toDestination();
+var octaveBellsA3b = new Tone.Player(glock_sounds + "octaveBellsA3.mp3").toDestination();
+var octaveBellsA5 = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toDestination();
+var octaveBellsA5b = new Tone.Player(glock_sounds + "octaveBellsA5.mp3").toDestination();
+var octaveBellsBb3 = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toDestination();
+var octaveBellsBb3b = new Tone.Player(glock_sounds + "octaveBellsBb3.mp3").toDestination();
+var octaveBellsBb5 = new Tone.Player(glock_sounds + "octaveBellsBb5.mp3").toDestination();
+var octaveBellsBb5b = new Tone.Player(glock_sounds + "octaveBellsBb5.mp3").toDestination();
+var octaveBellsD3 = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toDestination();
+var octaveBellsD3b = new Tone.Player(glock_sounds + "octaveBellsD3.mp3").toDestination();
+var octaveBellsD5 = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toDestination();
+var octaveBellsD5b = new Tone.Player(glock_sounds + "octaveBellsD5.mp3").toDestination();
+var octaveBellsE3 = new Tone.Player(glock_sounds + "octaveBellsE3.mp3").toDestination();
+var octaveBellsE3b = new Tone.Player(glock_sounds + "octaveBellsE3.mp3").toDestination();
+var octaveBellsE5 = new Tone.Player(glock_sounds + "octaveBellsE5.mp3").toDestination();
+var octaveBellsE5b = new Tone.Player(glock_sounds + "octaveBellsE5.mp3").toDestination();
+var octaveBellsF3 = new Tone.Player(glock_sounds + "octaveBellsF3.mp3").toDestination();
+var octaveBellsF3b = new Tone.Player(glock_sounds + "octaveBellsF3.mp3").toDestination();
+var octaveBellsF5 = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toDestination();
+var octaveBellsF5b = new Tone.Player(glock_sounds + "octaveBellsF5.mp3").toDestination();
 // transition sound
-var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toMaster();
+var glassRimD3 = new Tone.Player(glass_sounds + "glassRimRealD3_10s.mp3").toDestination();
 // sparkly sound loop (with bandpass filter on y-axis)
-var c3_filter = new Tone.Filter(1500, "bandpass").toMaster();
+var c3_filter = new Tone.Filter(1500, "bandpass").toDestination();
 var sugarChimeLoop = new Tone.Player(granulated_sounds + "chimesAndSugarLoop.mp3").connect(c3_filter);
 sugarChimeLoop.loop = true;
 
@@ -287,7 +290,7 @@ tm.cue[3].stopCue = function() {
 
 // *******************************************************************
 // CUE 4: shake glass through array
-var glassBb5 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toMaster();
+var glassBb5 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toDestination();
 
 var c4_glassArray = [glassE5, glassG4, glassBb5, glassG6, glassD3, glassD6, glassE5, glassG4, glassBb5, glassG6, glassE4, glassE6, glassE4, glassE6];
 
@@ -315,7 +318,7 @@ var c5_delay = new Tone.FeedbackDelay({
   // delay time creates triplet effect
   delayTime: 0.5,
   feedback: 0.0
-}).toMaster();
+}).toDestination();
 // control feedback with yTilt
 var c5_delayFeedbackScale = new Tone.Scale(0.0, 0.5);
 yTilt.chain(c5_delayFeedbackScale, c5_delay.feedback);
@@ -345,7 +348,7 @@ var glassFsharp5e = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3")
 var glassFsharp5f = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_delay);
 var arrGlassFsharp5 = [glassFsharp5a, glassFsharp5b, glassFsharp5c, glassFsharp5d, glassFsharp5e, glassFsharp5f];
 
-var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toMaster();
+var ziplockClickLoop = new Tone.Player(granulated_sounds + "ziplockClickLoop.mp3").toDestination();
 ziplockClickLoop.loop = true;
 
 // array of playbackRates to create pitches: C, D, B, E
@@ -401,38 +404,38 @@ tm.cue[5].stopCue = function() {
 // *******************************************************************
 // CUE 6: CODA only accessible through private server - play at end of perf.
 // chime tuned to 4th partial above A (220Hz)
-var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
-var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
-var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
-var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
-var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
-var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
-var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
-var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
-var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
-var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
-var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
 // same chime sounds starting at 2 oct lower playback rate and bending up
-var chLoP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chLoP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
 // use fade out to prevent clicking at end of sound
 chLoP4.fadeOut = 5;
-var chLoP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
+var chLoP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
 chLoP4b.fadeOut = 5;
-var chLoP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chLoP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
 chLoP6.fadeOut = 5;
-var chLoP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
+var chLoP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
 chLoP6b.fadeOut = 5;
-var chLoP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chLoP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
 chLoP7.fadeOut = 5;
-var chLoP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
+var chLoP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
 chLoP7b.fadeOut = 5;
-var chLoP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
+var chLoP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
 chLoP10b.fadeOut = 5;
-var chLoP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chLoP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
 chLoP13.fadeOut = 5;
-var chLoP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
+var chLoP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
 chLoP13b.fadeOut = 5;
-var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
+var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
 chLoP14.fadeOut = 5;
 
 var c6_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
@@ -501,7 +504,7 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8: tilt tutorial (available to use in performance)
 // Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
+var testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
 var testTone = new Tone.Synth({
   oscillator: {
     type: "sawtooth"
@@ -541,7 +544,7 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
+var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
 tm.cue[10] = new TMCue('shake', -1);
 tm.cue[10].goCue = function() {
   // nothing to do until shake gestures
