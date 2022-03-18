@@ -16,6 +16,7 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
+const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 
 Tone.Transport.bpm.value = 60;
 // TODO: decide if I need a limiter. If so, is it Tone.Destination? not .Master
@@ -40,7 +41,8 @@ var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
 var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
 var glassG4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toDestination();
 var glassG6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toDestination();
-var glassD3 = new Tone.Player(glass_sounds + "glassRealD3.mp3").toDestination();
+var glassD3 = new Tone.Player(vibes_sounds + "vibe_bell-F3.mp3").toDestination();
+glassD3.playbackRate = 0.84088; // transpose from F to D
 var glassFsharp6 = new Tone.Player(glass_sounds + "glassRealFsharp6.mp3").toDestination();
 var glassD5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toDestination();
 var glassD6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toDestination();
@@ -65,17 +67,30 @@ var c1_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 
 var c1_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
 
-var c1_counter;
+var c1_counter, c1_fadeCounter;
+let c1_fade = false;
 
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[1].goCue = function() {
-  c1_counter = 0;
+  c1_counter = c1_fadeCounter = 0;
+  c1_fade = true; // TODO: set back to false after testing
   tm.publicMessage('Section 1: Shake your phone to play a sound.');
 };
 
 tm.cue[1].triggerShakeSound = function() {
-  c1_glassArray[c1_counter % c1_glassArray.length].start();
+  var thisGlass = c1_glassArray[c1_counter % c1_glassArray.length];
+  if (c1_fade) {
+    // transition to next cue triggers fade for shake glass sounds, but I can't use .getSectionBreakpoints() because it relies on cue having begun
+    if (c1_fadeCounter++ < 7) {
+      thisGlass.volume.value = -(c1_fadeCounter * 5);
+    } else {
+      thisGlass.volume.value = -30
+    }
+  } else {
+    thisGlass.volume.value = 0;
+  }
+  thisGlass.start();
   c1_counter++;
 };
 
@@ -84,7 +99,7 @@ tm.cue[1].cueTransition = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // TODO: decide whether to prevent more shake sounds during transition? Or could just fade them out
+  c1_fade = true; // triggers fade of shake sounds during transition
 };
 
 tm.cue[1].stopCue = function() {
@@ -598,7 +613,7 @@ tm.cue[13].stopCue = function() {
 
 // *******************************************************************
 // CUE 14: sets status to 'waitingForPieceToStart'
-// In performance, after tutorials, we'll arrive here, and then should go directly to cue 0 so that incrementing cue (e.g., with pedal) will start piece
+// In performance, after tutorials, we'll arrive here, and then should go directly to cue 0 so that incrementing cue (e.g., with pedal) will start piece. OR I can set counter directly to 1 to begin piece. (Going from 14 - 'waiting' - to 0 - 'waiting' - is fine except that it clears the message that the piece will begin soon).
 tm.cue[14] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[14].goCue = function() {
   tm.publicLog('Waiting for piece to start');
