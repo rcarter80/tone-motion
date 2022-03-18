@@ -23,8 +23,6 @@ Tone.Transport.bpm.value = 60;
 // var masterLimiter = new Tone.Limiter(-1);
 // Tone.Master.chain(masterLimiter);
 
-// TODO: update cue numbers, adding negative cues for tutorials. This is what I listed in the score: The following cue numbers can be used as a tutorial for the audience: Cue -4: "waiting" (The piece has not begun.) Cue -3: "shake" (This demonstrates the "shake" mode of interactivity.) Cue -2: "tacet" (Phones are silenced.) Cue -1: "tilt" (This demonstrates the "tilt" mode of interactivity.) Cue 0: "waiting" (Set to this cue before beginning the actual piece.) Also need to update user messages (e.g., "Section 0: Shake...")
-
 // *******************************************************************
 // CUE -4: piece is in "waiting" state by default
 tm.cue[-4] = new TMCue('waiting', 0, NO_LIMIT);

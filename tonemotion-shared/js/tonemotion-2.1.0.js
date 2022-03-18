@@ -39,7 +39,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
  * @param {boolean} localTest - Set to 'true' in score.js to test locally
- * @param {boolean} showConsoleOnLaunch - Shows console log by default
+ * @param {boolean} showConsoleOnLaunch - Set to 'true' to show console
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
@@ -93,8 +93,7 @@ function ToneMotion() {
   this.status = '';
   this.debug = false;
   this.localTest = false;
-  // console was hidden by default, but showing it fixes scroll bug in iOS
-  this.showConsoleOnLaunch = true;
+  this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
