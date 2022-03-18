@@ -17,12 +17,25 @@ const glock_sounds = 'tonemotion-shared/audio/glockenspiel/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
+const bell_sounds = 'tonemotion-shared/audio/bells/';
 
 Tone.Transport.bpm.value = 60;
 // TODO: decide if I need a limiter. If so, is it Tone.Destination? not .Master
 // send everything through a limiter to be safe
 // var masterLimiter = new Tone.Limiter(-1);
 // Tone.Master.chain(masterLimiter);
+
+// INSTRUMENTS
+// handbell sampler from freesound.org/people/radwoc/ (CC0 license)
+const bellSampler = new Tone.Sampler({
+  urls: {
+    'C6': 'handbell-C6.mp3',
+    'E6': 'handbell-E6.mp3',
+    'Ab6': 'handbell-Ab6.mp3',
+    'B6': 'handbell-B6.mp3',
+  },
+  baseUrl: bell_sounds,
+}).toDestination();
 
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
@@ -36,6 +49,7 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: First section (struck glass sounds)
+// This should really be done with a Sampler but I did it this way first
 var glassE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toDestination();
 var glassE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
 var glassE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
@@ -62,7 +76,7 @@ var glassB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toDestination();
 var glassB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toDestination();
 
 var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
-// randomized playbackRate yields F#4, C5, D5, A5
+// randomized playbackRate yields C5, D5, A5, F#6
 var c1_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 
 var c1_glassArray = [glassE4, glassE5, glassE6, glassE4, glassE5, glassE6, glassG4, glassE5, glassG6, glassD3, glassE5, glassFsharp6, glassD5, glassD6, glassD3, glassD5, glassFsharp6, glassG4, glassC5, glassC6, glassC5_thirdFlat, glassC6_thirdFlat, glassC5_twoThirdsFlat, glassC6_twoThirdsFlat, glassB4, glassB5];
@@ -71,21 +85,19 @@ var c1_counter, c1_fadeCounter;
 let c1_fade = false;
 
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
-
 tm.cue[1].goCue = function() {
   c1_counter = c1_fadeCounter = 0;
-  c1_fade = true; // TODO: set back to false after testing
+  c1_fade = false;
   tm.publicMessage('Section 1: Shake your phone to play a sound.');
 };
-
 tm.cue[1].triggerShakeSound = function() {
   var thisGlass = c1_glassArray[c1_counter % c1_glassArray.length];
   if (c1_fade) {
     // transition to next cue triggers fade for shake glass sounds, but I can't use .getSectionBreakpoints() because it relies on cue having begun
-    if (c1_fadeCounter++ < 7) {
-      thisGlass.volume.value = -(c1_fadeCounter * 5);
+    if (c1_fadeCounter++ < 6) {
+      thisGlass.volume.value = -(c1_fadeCounter * 4);
     } else {
-      thisGlass.volume.value = -30
+      thisGlass.volume.value = -24;
     }
   } else {
     thisGlass.volume.value = 0;
@@ -93,7 +105,6 @@ tm.cue[1].triggerShakeSound = function() {
   thisGlass.start();
   c1_counter++;
 };
-
 tm.cue[1].cueTransition = function() {
   revGlassC5_7s.volume.value = -9;
   // randomly select 1 of 4 possible pitches for reversed glass sound
@@ -108,22 +119,34 @@ tm.cue[1].stopCue = function() {
 
 // *******************************************************************
 // CUE 2: tilt sparkly sounds that can be muted when phone is upright
-var pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3').toDestination();
+const pingPongFade = new Tone.Volume(0);
+const pingPongLoop = new Tone.Player(granulated_sounds + 'pingPongLoop.mp3');
+pingPongLoop.chain(pingPongFade, Tone.Destination);
 pingPongLoop.loop = true;
 
-var popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3').toDestination();
+const popRocksFade = new Tone.Volume(0);
+const popRocksLoop = new Tone.Player(granulated_sounds + 'popRocksLoop.mp3');
+popRocksLoop.chain(popRocksFade, Tone.Destination);
 popRocksLoop.loop = true;
 
 // randomized playbackRate yields D5, D6
 var c2_revGlassPitchArray = [1.122, 2.244];
+// randomized pitch for opening bell
+let c2_bellPitch = tm.pickRand(['C6', 'C6', 'E6']);
 
 tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
+  bellSampler.triggerAttackRelease(c2_bellPitch, 5);
   // mute both loops by default - unmute below
   pingPongLoop.volume.value = -99;
   popRocksLoop.volume.value = -99;
+  // additional gain control for fade in, fade out
+  pingPongFade.volume.value = -99;
   pingPongLoop.start();
+  pingPongFade.volume.rampTo(0, 1.5);
+  popRocksFade.volume.value = -99;
   popRocksLoop.start();
+  popRocksFade.volume.rampTo(0, 1);
   tm.publicMessage('Section 2: Hold your phone in different positions to play different crunchy sounds. Hold your phone upright to mute it.');
 };
 tm.cue[2].updateTiltSounds = function() {
@@ -156,12 +179,11 @@ tm.cue[2].cueTransition = function() {
   // randomly select 1 of 2 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  // TODO: could fade out loop to make smoother transition
-  pingPongLoop.stop();
-  popRocksLoop.stop();
+  pingPongFade.volume.rampTo(-48, 3);
+  popRocksFade.volume.rampTo(-48, 3);
 };
 tm.cue[2].stopCue = function() {
-  // NEED to include loop stopping here so that sound stops when people tap "stop" - otherwise they don't stop because cueTransition() isn't called
+  // not called until cue 3 about to start, at which point these are faded out
   pingPongLoop.stop();
   popRocksLoop.stop();
 };
