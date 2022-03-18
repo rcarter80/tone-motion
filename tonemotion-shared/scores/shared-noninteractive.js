@@ -627,6 +627,9 @@ tm.cue[7].stopCue = function() {
   // nothing to clean up
 };
 
+// TODO: increment all cue numbers above by one, then consider adding "post-coda" cue for just the non-interactive sounds, so 'finished' cue -- which is now cue 8 -- is no longer 'finished', and 'finished' cue on this site is cue 9. Tutorial cues start at 10
+
+// TODO: increment all cue numbers below by TWO
 // *******************************************************************
 // CUE 8: used as a tutorial for phones
 tm.cue[8] = new TMCue('tacet', -1);

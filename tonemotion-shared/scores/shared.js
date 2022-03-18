@@ -24,93 +24,6 @@ Tone.Transport.bpm.value = 60;
 // Tone.Master.chain(masterLimiter);
 
 // *******************************************************************
-// CUE -4: piece is in "waiting" state by default
-tm.cue[-4] = new TMCue('waiting', 0, NO_LIMIT);
-tm.cue[-4].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
-};
-tm.cue[-4].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE -3: SHAKE tutorial
-const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
-clave.volume.value = -18;
-
-tm.cue[-3] = new TMCue('shake', 0, NO_LIMIT);
-tm.cue[-3].goCue = function() {
-  // nothing to do until shake gestures
-};
-tm.cue[-3].triggerShakeSound = function() {
-  clave.start();
-};
-tm.cue[-3].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE -2: tacet tutorial
-tm.cue[-2] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[-2].goCue = function() {
-  // nothing to play
-};
-tm.cue[-2].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE -1: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
-const fmSynth = new Tone.FMSynth({
-  envelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 2,
-  },
-  modulationEnvelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 10,
-  },
-  harmonicity: 0.125,
-}).toDestination();
-fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-
-let tiltPitchArr_tut = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
-let len_tut = tiltPitchArr_tut.length;
-tm.cue[-1] = new TMCue('tilt', 0, NO_LIMIT);
-tm.cue[-1].goCue = function() {
-  fmSynth.volume.value = -99;
-  fmSynthDefaults();
-  fmSynth.triggerAttack('E4');
-};
-tm.cue[-1].updateTiltSounds = function() {
-  fmSynth.frequency.value = tiltPitchArr_tut[Math.floor(tm.accel.x * 0.99 * len_tut)];
-  let fmSynVol;
-  if (tm.accel.y < 0.25) {
-    // set volume with rampTo to avoid zipper noise
-    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
-  } else if (tm.accel.y < 0.5) {
-    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
-  } else if (tm.accel.y < 0.75) {
-    fmSynVol = -12 - (0.75 - tm.accel.y) * 64; // -28 to -12 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
-  } else {
-    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
-  }
-};
-tm.cue[-1].stopCue = function() {
-  fmSynth.triggerRelease();
-};
-
-// *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
@@ -582,5 +495,114 @@ tm.cue[8].goCue = function() {
   // nothing to do here
 };
 tm.cue[8].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 9: tacet and shouldn't be used, but here to avoid errors
+tm.cue[9] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[9].goCue = function() {
+  // nothing to play
+};
+tm.cue[9].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// Tutorial cues are below. In concert, I need to cue server directly to cue 10, while cue 9 is used by non-interactive site for final sounds
+// *******************************************************************
+// CUE 10: piece is in "waiting" state by default
+tm.cue[10] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[10].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
+};
+tm.cue[10].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 11: SHAKE tutorial
+const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
+clave.volume.value = -18;
+
+tm.cue[11] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[11].goCue = function() {
+  // nothing to do until shake gestures
+};
+tm.cue[11].triggerShakeSound = function() {
+  clave.start();
+};
+tm.cue[11].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 12: tacet tutorial
+tm.cue[12] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[12].goCue = function() {
+  // nothing to play
+};
+tm.cue[12].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 13: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toDestination();
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
+
+let tiltPitchArr_tut = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
+let len_tut = tiltPitchArr_tut.length;
+tm.cue[13] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[13].goCue = function() {
+  fmSynth.volume.value = -99;
+  fmSynth.triggerAttack('E4');
+};
+tm.cue[13].updateTiltSounds = function() {
+  fmSynth.frequency.value = tiltPitchArr_tut[Math.floor(tm.accel.x * 0.99 * len_tut)];
+  let fmSynVol;
+  if (tm.accel.y < 0.25) {
+    // set volume with rampTo to avoid zipper noise
+    fmSynVol = -18 - (0.25 - tm.accel.y) * 324; // -99 to -18 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
+  } else if (tm.accel.y < 0.5) {
+    fmSynth.volume.rampTo(-18, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
+  } else if (tm.accel.y < 0.75) {
+    fmSynVol = -12 - (0.75 - tm.accel.y) * 24; // -18 to -12 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
+  } else {
+    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
+  }
+};
+tm.cue[13].stopCue = function() {
+  fmSynth.triggerRelease();
+};
+
+// *******************************************************************
+// CUE 14: sets status to 'waitingForPieceToStart'
+// In performance, after tutorials, we'll arrive here, and then should go directly to cue 0 so that incrementing cue (e.g., with pedal) will start piece
+tm.cue[14] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[14].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
+};
+tm.cue[14].stopCue = function() {
   // nothing to clean up
 };
