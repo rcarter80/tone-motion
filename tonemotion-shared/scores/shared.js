@@ -190,7 +190,7 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: shake-triggered chimes with octaves selected by device position
-// TODO: make upside-down sound much more obvious. Couldn't tell difference at all at JUMP venue test (because other people were playing same sounds)
+// TODO: make upside-down sound much more obvious. Couldn't tell difference at all at JUMP venue test (because other people were playing same sounds). Idea: rightside up sound is alternating chimes, upside down sound is lower piano sample (still A?, still bending?) with feedback delay
 var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toDestination();
 var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toDestination();
 
@@ -200,6 +200,7 @@ var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
 tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[3].goCue = function() {
+  // TODO: add bell on downbeat?
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
   tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
