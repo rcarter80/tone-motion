@@ -109,7 +109,7 @@ tm.cue[1].triggerShakeSound = function() {
       thisGlass.volume.value = -24;
     }
   } else {
-    thisGlass.volume.value = 0;
+    thisGlass.volume.value = -9;
   }
   thisGlass.start();
   c1_counter++;
@@ -121,7 +121,6 @@ tm.cue[1].cueTransition = function() {
   revGlassC5_7s.start();
   c1_fade = true; // triggers fade of shake sounds during transition
 };
-
 tm.cue[1].stopCue = function() {
   // nothing to do here
 };
@@ -359,10 +358,12 @@ var glassBb5 = new Tone.Player(glass_sounds + "glassRealBb5.mp3").toDestination(
 var c5_glassArray = [glassE5, glassG4, glassBb5, glassG6, glassD3, glassD6, glassE5, glassG4, glassBb5, glassG6, glassE4, glassE6, glassE4, glassE6];
 
 var c5_counter, c5_thisGlass;
+let c5_fade = false;
+let c5_fadeCounter = 0;
 
 tm.cue[5] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  c5_counter = 0;
+  c5_counter = c5_fadeCounter = 0;
   tm.publicMessage('Section 5: Shake your phone to play a sound.');
 };
 tm.cue[5].triggerShakeSound = function() {
@@ -370,8 +371,21 @@ tm.cue[5].triggerShakeSound = function() {
   c5_thisGlass = c5_glassArray[c5_counter % c5_glassArray.length];
   // start transposed up major 2nd, bend down over 2.5 minutes
   c5_thisGlass.playbackRate = tm.getSectionBreakpoints(5, [0,1.12246, 30000,1.12246, 150000,1]);
+  if (c5_fade) {
+    // sounds fade out during transition to next cue
+    if (c5_fadeCounter++ < 6) {
+      c5_thisGlass.volume.value = -(c5_fadeCounter * 4);
+    } else {
+      c5_thisGlass.volume.value = -24;
+    }
+  } else {
+    c5_thisGlass.volume.value = -9;
+  }
   c5_thisGlass.start();
   c5_counter++;
+};
+tm.cue[5].cueTransition = function() {
+  c5_fade = true; // triggers fade of shake sounds during transition
 };
 tm.cue[5].stopCue = function() {
 };
