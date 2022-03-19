@@ -89,6 +89,14 @@ tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   c1_counter = c1_fadeCounter = 0;
   c1_fade = false;
+  // reset playbackRate, which is changed in cue 5
+  glassD3.playbackRate = 0.84088;
+  glassE4.playbackRate = 1;
+  glassG4.playbackRate = 1;
+  glassE5.playbackRate = 1;
+  glassD6.playbackRate = 1;
+  glassE6.playbackRate = 1;
+  glassG6.playbackRate = 1;
   tm.publicMessage('Section 1: Shake your phone to play a sound.');
 };
 tm.cue[1].triggerShakeSound = function() {
@@ -315,14 +323,14 @@ tm.cue[4].goCue = function() {
   c4_bellLoop.start();
   // sugar chimes have volume control on y-axis, but not during transition fade
   c4_fadeLock = false;
-  sugarChimeLoop.volume.value = c4_sugarChimePeakVol;
+  sugarChimeLoop.volume.value = -99; // start muted or this sounds briefly
   sugarChimeLoop.start();
   tm.publicMessage('Section 4: Hold your phone in different positions to play different bell sounds. Select the note you play by tilting your phone left or right. Play higher bells by tipping your phone upside down. Hold your phone upright to mute it. (There are also sparkly sounds that change based on device position.)');
 };
 tm.cue[4].updateTiltSounds = function() {
   c4_filter.frequency.value = 50 + tm.accel.y * 12000;
   if (!c4_fadeLock && tm.accel.y < 0.25) {
-    // roll of volume only if phone mostly upright. full mute if upright
+    // roll off volume only if phone mostly upright. full mute if upright
     sugarChimeLoop.volume.value = -99 + (tm.accel.y * 396);
   } else if (!c4_fadeLock) {
     // full volume if phone not upright AS LONG AS transition is not started
