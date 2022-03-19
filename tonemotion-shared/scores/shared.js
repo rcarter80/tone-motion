@@ -18,6 +18,7 @@ const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
+const piano_sounds = 'tonemotion-shared/audio/piano/';
 
 Tone.Transport.bpm.value = 60;
 // TODO: decide if I need a limiter. If so, is it Tone.Destination? not .Master
@@ -190,9 +191,16 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: shake-triggered chimes with octaves selected by device position
-// TODO: make upside-down sound much more obvious. Couldn't tell difference at all at JUMP venue test (because other people were playing same sounds). Idea: rightside up sound is alternating chimes, upside down sound is lower piano sample (still A?, still bending?) with feedback delay
 var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toDestination();
 var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toDestination();
+
+const c3_delay = new Tone.FeedbackDelay({
+  delayTime: 0.25,
+  feedback: 0.5,
+}).toDestination();
+const pianoA4 = new Tone.Player(piano_sounds + "piano-3s-A4.mp3").connect(c3_delay);
+
+let c3_count = 0;
 
 // randomized playbackRate yields D5, Ab5, Ab6
 var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
@@ -200,22 +208,25 @@ var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
 tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[3].goCue = function() {
-  // TODO: add bell on downbeat?
+  c3_count = 0;
+  bellSampler.triggerAttackRelease('D6', 5);
   chimeA6.volume.value = -12;
   chimeA7.volume.value = -12;
-  tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a lower chime.');
+  tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a piano note with an echo.');
 };
 
 tm.cue[3].triggerShakeSound = function() {
   if (tm.accel.y < 0.5) {
     // device is shaken while mostly upright
     // pitch bends down half step over 20s and then goes back up
-    chimeA7.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
-    chimeA7.start();
+    let thisChime = (c3_count % 2) ? chimeA7 : chimeA6;
+    thisChime.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
+    thisChime.start();
+    c3_count++;
   } else {
     // device is mostly upside down
-    chimeA6.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.97, 40000,1]);
-    chimeA6.start();
+    pianoA4.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
+    pianoA4.start();
   }
 };
 tm.cue[3].cueTransition = function() {
@@ -225,7 +236,7 @@ tm.cue[3].cueTransition = function() {
   revGlassC5_7s.start();
 };
 tm.cue[3].stopCue = function() {
-  // nothing to do here?
+  // nothing to do here
 };
 
 // *******************************************************************
