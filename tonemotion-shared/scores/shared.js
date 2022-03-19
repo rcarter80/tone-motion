@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -195,12 +195,13 @@ var chimeA6 = new Tone.Player(chime_sounds + "chimeA6.mp3").toDestination();
 var chimeA7 = new Tone.Player(chime_sounds + "chimeA7.mp3").toDestination();
 
 const c3_delay = new Tone.FeedbackDelay({
-  delayTime: 0.25,
-  feedback: 0.5,
+  delayTime: 0.22,
+  feedback: 0.4,
 }).toDestination();
 const pianoA4 = new Tone.Player(piano_sounds + "piano-3s-A4.mp3").connect(c3_delay);
+const pianoA5 = new Tone.Player(piano_sounds + "piano-3s-A5.mp3").connect(c3_delay);
 
-let c3_count = 0;
+let c3_count = c3_count2 = 0;
 
 // randomized playbackRate yields D5, Ab5, Ab6
 var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
@@ -210,23 +211,27 @@ tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   c3_count = 0;
   bellSampler.triggerAttackRelease('D6', 5);
-  chimeA6.volume.value = -12;
-  chimeA7.volume.value = -12;
+  chimeA6.volume.value = -20;
+  chimeA7.volume.value = -20;
+  pianoA4.volume.value = -9;
+  pianoA5.volume.value = -9;
   tm.publicMessage('Section 3: Shake your phone to play a chime. Shake your phone upside down to play a piano note with an echo.');
 };
 
 tm.cue[3].triggerShakeSound = function() {
-  if (tm.accel.y < 0.5) {
-    // device is shaken while mostly upright
+  if (tm.accel.y < 0.75) {
+    // device is shaken while upright
     // pitch bends down half step over 20s and then goes back up
     let thisChime = (c3_count % 2) ? chimeA7 : chimeA6;
     thisChime.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
     thisChime.start();
     c3_count++;
   } else {
-    // device is mostly upside down
-    pianoA4.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
-    pianoA4.start();
+    // device is upside down
+    let thisPiano = (c3_count2 % 2) ? pianoA5 : pianoA4;
+    thisPiano.playbackRate = tm.getSectionBreakpointLoop(3, [0,1, 20000,0.944, 40000,1]);
+    thisPiano.start();
+    c3_count2++;
   }
 };
 tm.cue[3].cueTransition = function() {
@@ -234,6 +239,10 @@ tm.cue[3].cueTransition = function() {
   // randomly select 1 of 3 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c3_revGlassPitchArray[Math.floor(Math.random() * c3_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+  chimeA6.volume.rampTo(-60, 3);
+  chimeA7.volume.rampTo(-60, 3);
+  pianoA4.volume.rampTo(-60, 3);
+  pianoA5.volume.rampTo(-60, 3);
 };
 tm.cue[3].stopCue = function() {
   // nothing to do here
@@ -301,6 +310,7 @@ var c4_bellLoop = new Tone.Loop(function(time) {
 
 tm.cue[4] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
+  bellSampler.triggerAttackRelease('D6', 5);
   c4_counter = 0;
   c4_bellLoop.start();
   // sugar chimes have volume control on y-axis, but not during transition fade
