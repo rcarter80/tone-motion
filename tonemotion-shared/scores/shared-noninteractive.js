@@ -1,5 +1,4 @@
 const tm = new ToneMotion();
-// TODO: turn off debugging before deployment
 tm.debug = true; // if true, skips clock sync and shows console
 
 window.onload = function() {
@@ -18,31 +17,28 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 
-// send everything through a limiter to be safe
-var masterLimiter = new Tone.Limiter(-1);
-Tone.Master.chain(masterLimiter);
-
 // *******************************************************************
 // CUE -1: ONLY used in performance to keep everything silent until start
-tm.cue[-1] = new TMCue('waiting', -1);
-tm.cue[-1].goCue = function() {
+tm.cue[0] = new TMCue('waiting', -1);
+tm.cue[0].goCue = function() {
   // nothing to do here
 };
-tm.cue[-1].stopCue = function() {
+tm.cue[0].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 0: First section of piece. Looped long tones and shake sounds
-var glassRimD3 = new Tone.Player(glass_sounds + "glassRimLayeredD3.mp3").toMaster();
-var glassRimE3 = new Tone.Player(glass_sounds + "glassRimLayeredE3.mp3").toMaster();
-var glassRimG4 = new Tone.Player(glass_sounds + "glassRimLayeredG4.mp3").toMaster();
-var glassRimC4 = new Tone.Player(glass_sounds + "glassRimRealC4-B3.mp3").toMaster();
-var glassRimB4 = new Tone.Player(glass_sounds + "glassRimRealB4_10s.mp3").toMaster();
-var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toMaster();
+// CUE 1: First section of piece. Looped long tones and shake sounds
+var glassRimD3 = new Tone.Player(glass_sounds + "glassRimLayeredD3.mp3").toDestination();
+var glassRimE3 = new Tone.Player(glass_sounds + "glassRimLayeredE3.mp3").toDestination();
+var glassRimG4 = new Tone.Player(glass_sounds + "glassRimLayeredG4.mp3").toDestination();
+var glassRimC4 = new Tone.Player(glass_sounds + "glassRimRealC4-B3.mp3").toDestination();
+var glassRimB4 = new Tone.Player(glass_sounds + "glassRimRealB4_10s.mp3").toDestination();
+var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toDestination();
 
-var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toMaster();
+var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
+// NOTE: ALL cue prefixes (e.g., c0_) are off by one and I'm keeping it that way
 var c0_revGlassPitchArray = [1, 1.122, 1.682, 2.828];
 // put files in array to fade collectively at end of cue
 var c0_soundFileArray = [glassRimD3, glassRimE3, glassRimG4, glassRimC4, glassRimB4, glassSynthRimB4];
@@ -74,8 +70,12 @@ var c0_loopB4 = new Tone.Loop(function(time) {
 c0_loopB4.humanize = 3;
 
 // all sections start 3 seconds after cue
-tm.cue[0] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[0].goCue = function() {
+tm.cue[1] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[1].goCue = function() {
+  tm.publicMessage('Section 1');
+
+  // TODO: decide on volume levels, probably with everything lower to avoid distortion - it's ok to have to turn up volume level on speakers in venue
+
   // set levels, which may have been turned down at end of previous section
   glassRimE3.volume.value = -9;
   glassRimD3.volume.value = -9;
@@ -91,11 +91,15 @@ tm.cue[0].goCue = function() {
   c0_loopC4.start();
   c0_loopB4.start();
 };
-tm.cue[0].stopCue = function() {
+tm.cue[1].cueTransition = function() {
+  console.log('cue 1 transition called');
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c0_revGlassPitchArray[Math.floor(Math.random() * c0_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.fadeFilesOverCurve(c0_soundFileArray, 0, 5);
+  tm.fadeFilesOverCurve(c0_soundFileArray, 0, 4);
+}
+tm.cue[1].stopCue = function() {
+  console.log('cue 1 stop called');
   c0_loopE3.stop();
   c0_loopD3.stop();
   c0_loopG3.stop();
@@ -104,21 +108,20 @@ tm.cue[0].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: continued long tones with sporadic interjections of noisy layer
-var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimLayeredC3andB2.mp3").toMaster();
-var glassRimA3 = new Tone.Player(glass_sounds + "glassRimLayeredA3.mp3").toMaster();
-var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimRealE4-F4.mp3").toMaster();
-var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimRealF5-E5.mp3").toMaster();
-var glassSynthRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp_triEnv.mp3").toMaster();
-var glassSynthRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown_envTri.mp3").toMaster();
+// CUE 2: continued long tones with sporadic interjections of noisy layer
+var glassRimC3andB2 = new Tone.Player(glass_sounds + "glassRimLayeredC3andB2.mp3").toDestination();
+var glassRimA3 = new Tone.Player(glass_sounds + "glassRimLayeredA3.mp3").toDestination();
+var glassRimE4BendUp = new Tone.Player(glass_sounds + "glassRimRealE4-F4.mp3").toDestination();
+var glassRimF5BendDown = new Tone.Player(glass_sounds + "glassRimRealF5-E5.mp3").toDestination();
+var glassSynthRimE4BendUp = new Tone.Player(glass_sounds + "glassRimE4BendUp_triEnv.mp3").toDestination();
+var glassSynthRimF5BendDown = new Tone.Player(glass_sounds + "glassRimF5BendDown_envTri.mp3").toDestination();
 
-var iceCrunch = new Tone.Player(granulated_sounds + "iceInWineGlass.mp3").toMaster();
+var iceCrunch = new Tone.Player(granulated_sounds + "iceInWineGlass.mp3").toDestination();
 // gap between sounds is 30 - 60 seconds
 var c1_noiseDelay = 30 + (Math.random() * 30);
 
 // put files in array to fade collectively at end of cue
-// does NOT include the two files that continue in next section
-var c1_soundFileArray = [glassRimC3andB2, glassRimA3, iceCrunch, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
+var c1_soundFileArray = [glassRimC3andB2, glassRimA3, iceCrunch, glassRimE4BendUp, glassRimF5BendDown, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
 // randomized playbackRate yields D5, D6
 var c1_revGlassPitchArray = [1.122, 2.244];
@@ -153,8 +156,9 @@ var c1_noiseLoop = new Tone.Loop(function(time) {
 }, c1_noiseDelay);
 
 // all sections start 3 seconds after cue
-tm.cue[1] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[1].goCue = function() {
+tm.cue[2] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[2].goCue = function() {
+  tm.publicMessage('Section 2');
   // set levels - may have been turned down to -99 at end of section before
   glassRimC3andB2.volume.value = -9;
   glassRimA3.volume.value = -12;
@@ -170,25 +174,27 @@ tm.cue[1].goCue = function() {
   c1_loopF5.start();
   c1_noiseLoop.start('+' + c1_noiseDelay);
 };
-tm.cue[1].stopCue = function() {
+tm.cue[2].cueTransition = function() {
   // randomly select 1 of 2 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.fadeFilesOverCurve(c1_soundFileArray, 2, 5);
+  tm.fadeFilesOverCurve(c1_soundFileArray, 0, 4);
+}
+tm.cue[2].stopCue = function() {
   c1_loopC3B2.stop();
   c1_loopA3.stop();
-  c1_noiseLoop.stop();
   c1_loopE4.stop();
   c1_loopF5.stop();
+  c1_noiseLoop.stop();
 };
 
 // *******************************************************************
-// CUE 2: Bass line that phases between parts
-var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toMaster();
-var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toMaster();
-var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toMaster();
-var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toMaster();
-var glassRealC5_15s = new Tone.Player(glass_sounds + "glassRealC5_15s.mp3").toMaster();
+// CUE 3: Bass line that phases between parts
+var modeledGlassD3 = new Tone.Player(glass_sounds + "modeledGlassD3-12s.mp3").toDestination();
+var modeledGlassF3 = new Tone.Player(glass_sounds + "modeledGlassF3-12s.mp3").toDestination();
+var modeledGlassE3 = new Tone.Player(glass_sounds + "modeledGlassE3-12s.mp3").toDestination();
+var modeledGlassG3 = new Tone.Player(glass_sounds + "modeledGlassG3-12s.mp3").toDestination();
+var glassRealC5_15s = new Tone.Player(glass_sounds + "glassRealC5_15s.mp3").toDestination();
 
 var c2_soundFileArray = [modeledGlassD3, modeledGlassF3, modeledGlassE3, modeledGlassG3, glassRimE4BendUp, glassRimF5BendDown, glassSynthRimE4BendUp, glassSynthRimF5BendDown];
 
@@ -232,8 +238,9 @@ var c2_bassLoop = new Tone.Loop(function(time) {
   // notes will not phase within one part, but WILL phase among devices
 }, 20 + Math.random());
 
-tm.cue[2] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[2].goCue = function() {
+tm.cue[3] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[3].goCue = function() {
+  tm.publicMessage('Section 3');
   modeledGlassD3.volume.value = -12;
   modeledGlassF3.volume.value = -12;
   modeledGlassE3.volume.value = -12;
@@ -241,15 +248,14 @@ tm.cue[2].goCue = function() {
   glassRealC5_15s.volume.value= -6;
   revGlassC5_7s.volume.value = -3;
   c2_bassLoop.start();
-  // next two loops were already going in cue 1, but need to be retriggered here just in case client starts with this cue
   glassRimE4BendUp.volume.value = -22;
   glassSynthRimE4BendUp.volume.value = -22;
   glassRimF5BendDown.volume.value = -24;
   glassSynthRimF5BendDown.volume.value = -24;
-  c1_loopE4.start('+5');
-  c1_loopF5.start('+5');
+  c1_loopE4.start();
+  c1_loopF5.start();
 }
-tm.cue[2].stopCue = function() {
+tm.cue[3].cueTransition = function() {
   // play struck glass on Bb
   glassRealC5_15s.playbackRate = 0.89;
   glassRealC5_15s.start();
@@ -257,13 +263,15 @@ tm.cue[2].stopCue = function() {
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
   tm.fadeFilesOverCurve(c2_soundFileArray, 1, 5);
+}
+tm.cue[3].stopCue = function() {
   c2_bassLoop.stop();
   c1_loopE4.stop();
   c1_loopF5.stop();
 }
 
 // *******************************************************************
-// CUE 3: bass synthesized from glass waveform
+// CUE 4: bass synthesized from glass waveform
 // waveforms for synths to alternate between
 var waveHollow = [1, 0.1, 0, 0, 0.5, 0, 0.01];
 var waveGlass = [1.000000, 0.033102, 0.006012, 0.000684, 0.018704, 0, 0.000944, 0.003032, 0.002122, 0.000996, 0.002339, 0.002330, 0.001975, 0.000728, 0.001273, 0.001438, 0.003552, 0.001057, 0.001507, 0, 0, 0.002512,  0.001126, 0, 0.000658, 0.000624, 0, 0, 0.000615, 0, 0.000312];
@@ -275,7 +283,7 @@ var glassBassSynth = new Tone.Synth({
     sustain: 1,
     release: 1.9
   }
-}).toMaster();
+}).toDestination();
 glassBassSynth.envelope.attackCurve = [0, 0.05, 0.15, 0.3, 0.6, 1];
 
 // second voice
@@ -286,7 +294,7 @@ var glassBassSynth2 = new Tone.Synth({
     sustain: 1,
     release: 0.9
   }
-}).toMaster();
+}).toDestination();
 glassBassSynth2.envelope.attackCurve = [0, 0.1, 0.2, 0.4, 1.0];
 glassBassSynth2.oscillator.partials = waveHollow;
 // LFO to slightly detune upper voice
@@ -302,7 +310,7 @@ var c3_breakpointVal;
 // loop will slowly phase between devices
 var c3_bassLoop = new Tone.Loop(function(time) {
   // interpolated value in c3_switch breakpoint loop (updated once per Loop)
-  c3_breakpointVal = tm.getSectionBreakpointLoop(3, c3_switch);
+  c3_breakpointVal = tm.getSectionBreakpointLoop(4, c3_switch);
   // randomly select waveform for lower voice (same throughout Loop)
   glassBassSynth.oscillator.partials = (Math.random() < c3_breakpointVal) ? waveHollow : waveGlass;
 
@@ -333,37 +341,39 @@ var c3_bassLoop = new Tone.Loop(function(time) {
   }
 }, 16 + (Math.random() * 0.4));
 
-tm.cue[3] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[3].goCue = function() {
+tm.cue[4] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[4].goCue = function() {
+  tm.publicMessage('Section 4');
   glassBassSynth.volume.value = -3;
   glassBassSynth2.volume.value = -20;
   c3_detuneLFO.start();
   c3_bassLoop.start();
 };
-tm.cue[3].stopCue = function() {
+tm.cue[4].cueTransition = function() {
   glassRimD3.volume.value = -99;
   glassRimD3.volume.rampTo(0, 3);
   glassRimD3.playbackRate = (Math.random() > 0.5) ? 2 : 1;
   glassRimD3.start();
   glassBassSynth.volume.rampTo(-40, 8);
   glassBassSynth2.volume.rampTo(-40, 8);
-  // stop LFO that detune second synth right now? or after fade out?
+}
+tm.cue[4].stopCue = function() {
   c3_detuneLFO.stop();
   c3_bassLoop.stop();
 };
 
 // *******************************************************************
-// CUE 4: drone on D slowly fades in and slides down major 2nd
+// CUE 5: drone on D slowly fades in and slides down major 2nd
 // delay for drone
 var c4_delay = new Tone.FeedbackDelay({
   delayTime: 0.2,
   feedback: 0.8
-}).toMaster();
+}).toDestination();
 var c4_drone = new Tone.Player(glass_sounds + "glassRimC3_30s.mp3").connect(c4_delay);
 // second drone at staggered interval
 var c4_drone2 = new Tone.Player(glass_sounds + "glassRimC3_30s.mp3").connect(c4_delay);
 
-var c4_highSynthTremolo = new Tone.Tremolo(6, 1).toMaster().start();
+var c4_highSynthTremolo = new Tone.Tremolo(6, 1).toDestination().start();
 var c4_highSynthPan = new Tone.Panner(-1);
 var c4_highSynth = new Tone.Synth({
   oscillator: {
@@ -377,7 +387,7 @@ var c4_highSynth = new Tone.Synth({
     release: 2
   }
 }).chain(c4_highSynthPan, c4_highSynthTremolo);
-var c4_highSynthTremolo2 = new Tone.Tremolo(6, 1).toMaster().start();
+var c4_highSynthTremolo2 = new Tone.Tremolo(6, 1).toDestination().start();
 var c4_highSynthPan2 = new Tone.Panner(1);
 var c4_highSynth2 = new Tone.Synth({
   oscillator: {
@@ -397,7 +407,7 @@ var c4_highPitch, c4_highDur, c4_highPitch2, c4_highDur;
 // loops of very high wobbly shiny synths (will phase among devices)
 var c4_highSynthLoop = new Tone.Loop(function(time) {
   // high synth drops by a major 9th
-  c4_highSynth.detune.value = tm.getSectionBreakpoints(4, [0,0, 30000,0, 60000,-1400]);
+  c4_highSynth.detune.value = tm.getSectionBreakpoints(5, [0,0, 30000,0, 60000,-1400]);
   // randomly change tremolo speed
   c4_highSynthTremolo.frequency.value = 3 + (Math.random() * 4);
   // randomly select very high partials of D0 (18.354 in Hz)
@@ -407,7 +417,7 @@ var c4_highSynthLoop = new Tone.Loop(function(time) {
 }, 5 + (Math.random() * 10));
 var c4_highSynthLoop2 = new Tone.Loop(function(time) {
   // high synth drops by a major 9th
-  c4_highSynth2.detune.value = tm.getSectionBreakpoints(4, [0,0, 30000,0, 60000,-1400]);
+  c4_highSynth2.detune.value = tm.getSectionBreakpoints(5, [0,0, 30000,0, 60000,-1400]);
   // randomly change tremolo speed
   c4_highSynthTremolo2.frequency.value = 3 + (Math.random() * 4);
   // randomly select very high partials of D0 (18.354 in Hz)
@@ -418,31 +428,32 @@ var c4_highSynthLoop2 = new Tone.Loop(function(time) {
 
 var c4_droneLoop = new Tone.Loop(function(time) {
   // audio file is on C3 and slides down to D3 after 2 minutes (WAS 3 min.)
-  c4_drone.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 120000,1]);
+  c4_drone.playbackRate = tm.getSectionBreakpoints(5, [0,1.12246, 30000,1.12246, 120000,1]);
   c4_drone.start();
 }, 30);
 var c4_droneLoop2 = new Tone.Loop(function(time) {
   // audio file is on C3 and slides down to D3 after 2 minutes (WAS 3 min.)
-  c4_drone2.playbackRate = tm.getSectionBreakpoints(4, [0,1.12246, 30000,1.12246, 120000,1]);
+  c4_drone2.playbackRate = tm.getSectionBreakpoints(5, [0,1.12246, 30000,1.12246, 120000,1]);
   c4_drone2.start();
 }, 30);
 
 
-tm.cue[4] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[4].goCue = function() {
-  tm.publicMessage('Section 4');
-
+tm.cue[5] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[5].goCue = function() {
+  tm.publicMessage('Section 5');
   c4_drone.volume.value = -6;
   c4_droneLoop.start();
   c4_drone2.volume.value = -6;
   c4_droneLoop2.start('+10');
-
   c4_highSynth.volume.value = -28;
   c4_highSynthLoop.start();
   c4_highSynth2.volume.value = -28;
   c4_highSynthLoop2.start('+5');
 };
-tm.cue[4].stopCue = function() {
+tm.cue[5].cueTransition = function() {
+  // TODO: put fades here, and add fades for synth loops
+}
+tm.cue[5].stopCue = function() {
   // loops stop immediately but sound in current loop continues (with fadeout)
   c4_droneLoop.stop();
   c4_drone.volume.rampTo(-99, 5);
@@ -453,23 +464,23 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5: phasing struck glass in sparse texture
+// CUE 6: phasing struck glass in sparse texture
 var c5_loDelay = new Tone.FeedbackDelay({
   delayTime: 0.375,
   feedback: 0.65
-}).toMaster();
+}).toDestination();
 var glassB3 = new Tone.Player(glass_sounds + "glassRealB3_5s.mp3").connect(c5_loDelay);
 
 var c5_midDelay = new Tone.FeedbackDelay({
   delayTime: 0.375,
   feedback: 0.65
-}).toMaster();
+}).toDestination();
 var glassB4 = new Tone.Player(glass_sounds + "glassRealSmallB4_2s.mp3").connect(c5_midDelay);
 
 var c5_hiDelay = new Tone.FeedbackDelay({
   delayTime: 0.375,
   feedback: 0.65
-}).toMaster();
+}).toDestination();
 var glassFsharp5 = new Tone.Player(glass_sounds + "slushyBentGlassFsharp5.mp3").connect(c5_hiDelay);
 
 // array of playbackRates to create pitches: C, D, B, E
@@ -487,7 +498,7 @@ c5_revGlassPitchArray = [0.94387, 1.8877, 3.7755];
 // three layers of struck glass sounds with feedback delay
 var c5_hiGlassLoop = new Tone.Loop(function(time) {
   // delay times start synchronized and then phase within and across devices
-  c5_hiDelay.delayTime.value = tm.getSectionBreakpoints(5, [0,0.375, 48000,0.375, c5_hiDelayTargetTime,c5_hiDelayTarget]);
+  c5_hiDelay.delayTime.value = tm.getSectionBreakpoints(6, [0,0.375, 48000,0.375, c5_hiDelayTargetTime,c5_hiDelayTarget]);
   // set pitch from array of playback rates
   glassFsharp5.playbackRate = c5_pitchArr[c5_hiCounter % c5_pitchArr.length];
   glassFsharp5.start();
@@ -504,7 +515,7 @@ var c5_midGlassLoop = new Tone.Loop(function(time) {
 
 var c5_loGlassLoop = new Tone.Loop(function(time) {
   // delay times start synchronized and then phase within and across devices
-  c5_loDelay.delayTime.value = tm.getSectionBreakpoints(5, [0,0.375, 48000,0.375, c5_loDelayTargetTime,c5_loDelayTarget]);
+  c5_loDelay.delayTime.value = tm.getSectionBreakpoints(6, [0,0.375, 48000,0.375, c5_loDelayTargetTime,c5_loDelayTarget]);
   glassB3.playbackRate = c5_pitchArr[c5_loCounter % c5_pitchArr.length];
   glassB3.start();
   // trigger high loop after 4 iterations of this pitch loop
@@ -516,8 +527,9 @@ var c5_loGlassLoop = new Tone.Loop(function(time) {
   c5_loCounter++;
 }, c5_loDelay.delayTime.value * 16);
 
-tm.cue[5] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[5].goCue = function() {
+tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[6].goCue = function() {
+  tm.publicMessage('Section 6');
   c5_loCounter = c5_midCounter = c5_hiCounter = 0;
   glassB3.volume.value = -6;
   glassB4.volume.value = -9;
@@ -527,7 +539,7 @@ tm.cue[5].goCue = function() {
   var c5_hiGlassPreDelay = '+ ' + c5_loDelay.delayTime.value / 2;
   c5_midGlassLoop.start(c5_hiGlassPreDelay);
 };
-tm.cue[5].stopCue = function() {
+tm.cue[6].cueTransition = function() {
   // loops will gradually fade out with feedback delay
   c5_loGlassLoop.stop();
   c5_midGlassLoop.stop();
@@ -536,28 +548,34 @@ tm.cue[5].stopCue = function() {
   // randomly select 1 of 3 possible octaves for reversed glass sound
   revGlassC5_7s.playbackRate = c5_revGlassPitchArray[Math.floor(Math.random() * c5_revGlassPitchArray.length)];
   revGlassC5_7s.start();
+}
+tm.cue[6].stopCue = function() {
+  // also need to stop loops here in case user taps 'stop' button
+  c5_loGlassLoop.stop();
+  c5_midGlassLoop.stop();
+  c5_hiGlassLoop.stop();
 };
 
 // *******************************************************************
-// CUE 6: CODA only accessible through private server - play at end of perf.
-var c6_drop = new Tone.Player(misc_sounds + "finalDrop.mp3").toMaster();
+// CUE 7: CODA only accessible through private server - play at end of perf.
+var c6_drop = new Tone.Player(misc_sounds + "finalDrop.mp3").toDestination();
 // chime tuned to 4th partial above A (220Hz)
-var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
-var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toMaster();
-var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
-var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toMaster();
-var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
-var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toMaster();
-var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
-var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toMaster();
-var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
-var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toMaster();
-var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
-var chP14b = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toMaster();
-var chP18 = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toMaster();
-var chP18b = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toMaster();
-var chP19 = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toMaster();
-var chP19b = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toMaster();
+var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
+var chP14b = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
+var chP18 = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toDestination();
+var chP18b = new Tone.Player(chime_sounds + "chimeBeats3960Hz.mp3").toDestination();
+var chP19 = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toDestination();
+var chP19b = new Tone.Player(chime_sounds + "chimeBeats4180Hz.mp3").toDestination();
 
 var c6_chimeArr = [chP10, chP7, chP14, chP18, chP4, chP13, chP6, chP19, chP4b, chP14b, chP7, chP18b, chP6b, chP10b, chP13b, chP7b, chP19b];
 // chimes bend from partials over A220 to partials over F3 (174.61Hz)
@@ -573,7 +591,7 @@ var c6_chLoop = new Tone.Loop(function(time) {
     c6_thisCh = c6_chimeArr[c6_index];
     // bend chimes independently to morph into spectrum on F
     // TODO: decide on exact durations of pitch bend breakpoints
-    c6_thisCh.playbackRate = tm.getSectionBreakpoints(6, [0,1, 15000,1, 45000,c6_chBendArr[c6_index]]);
+    c6_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c6_chBendArr[c6_index]]);
     c6_thisCh.volume.value = -30;
     c6_thisCh.start();
     c6_chCount++;
@@ -582,7 +600,7 @@ var c6_chLoop = new Tone.Loop(function(time) {
 // loops of very high wobbly shiny synths (reuses cue 4 synths
 var c6_highSynthLoop = new Tone.Loop(function(time) {
   // high synth drops by a major 10th
-  c4_highSynth.detune.value = tm.getSectionBreakpoints(6, [0,0, 15000,0, 45000,-1600]);
+  c4_highSynth.detune.value = tm.getSectionBreakpoints(7, [0,0, 15000,0, 45000,-1600]);
   // randomly change tremolo speed
   c4_highSynthTremolo.frequency.value = 3 + (Math.random() * 4);
   // randomize same initial pitches as chime loop, but they detune differently
@@ -592,7 +610,7 @@ var c6_highSynthLoop = new Tone.Loop(function(time) {
 }, 5 + (Math.random() * 10));
 var c6_highSynthLoop2 = new Tone.Loop(function(time) {
   // high synth drops by a major 10th
-  c4_highSynth2.detune.value = tm.getSectionBreakpoints(6, [0,0, 15000,0, 45000,-1600]);
+  c4_highSynth2.detune.value = tm.getSectionBreakpoints(7, [0,0, 15000,0, 45000,-1600]);
   // randomly change tremolo speed
   c4_highSynthTremolo2.frequency.value = 3 + (Math.random() * 4);
   // same initial pitches as chime loop (8va), but they detune differently
@@ -601,8 +619,9 @@ var c6_highSynthLoop2 = new Tone.Loop(function(time) {
   c4_highSynth2.triggerAttackRelease(c4_highPitch2, c4_highDur2);
 }, 5 + (Math.random() * 10));
 
-tm.cue[6] = new TMCue('listen', 3000, NO_LIMIT);
-tm.cue[6].goCue = function() {
+tm.cue[7] = new TMCue('listen', 3000, NO_LIMIT);
+tm.cue[7].goCue = function() {
+  tm.publicMessage('Section 7');
   c6_chCount = 0;
   c6_drop.start();
   c6_chLoop.start('+3.25');
@@ -611,42 +630,32 @@ tm.cue[6].goCue = function() {
   c4_highSynth2.volume.value = -32;
   c6_highSynthLoop2.start('+8.25');
 };
-tm.cue[6].stopCue = function() {
+tm.cue[7].stopCue = function() {
+  // TODO: if creating post-coda, need to work out transition to it
   c6_chLoop.stop();
   c6_highSynthLoop.stop();
   c6_highSynthLoop2.stop();
 };
 
 // *******************************************************************
-// CUE 7: turn off all sound (only accessible through private server)
-tm.cue[7] = new TMCue('finished', -1);
-tm.cue[7].goCue = function() {
-  // nothing to do here
-};
-tm.cue[7].stopCue = function() {
-  // nothing to clean up
-};
-
-// TODO: increment all cue numbers above by one, then consider adding "post-coda" cue for just the non-interactive sounds, so 'finished' cue -- which is now cue 8 -- is no longer 'finished', and 'finished' cue on this site is cue 9. Tutorial cues start at 10
-
-// TODO: increment all cue numbers below by TWO
-// *******************************************************************
-// CUE 8: used as a tutorial for phones
-tm.cue[8] = new TMCue('tacet', -1);
+// CUE 8: turn off all sound (only accessible through private server)
+// TODO: change this to post-coda
+tm.cue[8] = new TMCue('finished', -1);
 tm.cue[8].goCue = function() {
-  // nothing to play
+  tm.publicMessage('Coda');
 };
 tm.cue[8].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 9: used as a tutorial for phones
+// CUE 9: Piece done, but just set status as 'tacet' to avoid shutting down
 tm.cue[9] = new TMCue('tacet', -1);
 tm.cue[9].goCue = function() {
   // nothing to play
 };
-tm.cue[9].stopCue = function() {
+tm.cue[9
+].stopCue = function() {
   // nothing to clean up
 };
 
@@ -667,5 +676,36 @@ tm.cue[11].goCue = function() {
   // nothing to play
 };
 tm.cue[11].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 12: used as a tutorial for phones
+tm.cue[12] = new TMCue('tacet', -1);
+tm.cue[12].goCue = function() {
+  // nothing to play
+};
+tm.cue[12].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 13: used as a tutorial for phones
+tm.cue[13] = new TMCue('tacet', -1);
+tm.cue[13].goCue = function() {
+  // nothing to play
+};
+tm.cue[13].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 14: sets status to 'waitingForPieceToStart'
+// In performance, after tutorials, we'll arrive here, and then should go directly to cue 0 so that incrementing cue (e.g., with pedal) will start piece. OR I can set counter directly to 1 to begin piece. (Going from 14 - 'waiting' - to 0 - 'waiting' - is fine except that it clears the message that the piece will begin soon).
+tm.cue[14] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[14].goCue = function() {
+  tm.publicLog('Waiting for piece to start');
+};
+tm.cue[14].stopCue = function() {
   // nothing to clean up
 };

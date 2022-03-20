@@ -21,10 +21,6 @@ const bell_sounds = 'tonemotion-shared/audio/bells/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 
 Tone.Transport.bpm.value = 60;
-// TODO: decide if I need a limiter. If so, is it Tone.Destination? not .Master
-// send everything through a limiter to be safe
-// var masterLimiter = new Tone.Limiter(-1);
-// Tone.Master.chain(masterLimiter);
 
 // INSTRUMENTS
 // handbell sampler from freesound.org/people/radwoc/ (CC0 license)
@@ -144,6 +140,7 @@ let c2_bellPitch = tm.pickRand(['C6', 'C6', 'E6']);
 
 tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
+  // TODO: add test against time elapsed in section to prevent retriggering downbeat sound -- if (tm.getElapsedTimeInCue(2) < 500) { make sound } and repeat for other cues with downbeat sounds
   bellSampler.triggerAttackRelease(c2_bellPitch, 5);
   // mute both loops by default - unmute below
   pingPongLoop.volume.value = -99;

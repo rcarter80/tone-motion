@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Shared Spaces</title>
+  <title>A Shared Space</title>
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Shared Spaces</h1>
+  <h1>A Shared Space</h1>
   <button id="help_button" type="button">?</button>
 </header>
 
@@ -72,11 +72,6 @@
     <p>I hope that the site I have designed is maximally accessible to all users. If you have thoughts on improving the accessibility of this site, please feel free to contact me at ryan (at) ryancarter (dot) org.</p>
   </div>
   <div>
-    <h2>Credits</h2>
-    <p>This project extends the <a href="https://github.com/Tonejs/Tone.js" target="_blank">Tone.js</a> framework for using Web Audio in supported browsers.</p>
-    <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic.</p>
-  </div>
-  <div>
     <h2>Motion monitor</h2>
     <input type="checkbox" id="motion_data_checkbox">
     <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
@@ -93,16 +88,15 @@
   </div>
   </section>
 
-<!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
-<!-- They make trivial changes to Tone.js that will break older code -->
-<!-- NOTE: I'm linking to v12 of Tone.js. On Feb 13, 2020, I looked at v13.8.25, which has major changes, like toMaster() is replaced with toDestination(), but nothing useful from what I can see. Keep using v12 unless a new version has useful change or this version breaks. -->
-<script src="tonemotion-shared/js/Tone-debug-test.js"></script>
-<!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
-<script src="tonemotion-shared/js/NoSleep-v0-11-0.js"></script>
-<script src="tonemotion-shared/js/tonemotion-1.4.2.js"></script>
+  <!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
+  <!-- They make trivial changes to Tone.js that will break older code -->
+  <script src="tonemotion-shared/js/tone-builds/build-v14-7-77/Tone.js"></script>
+  <!-- NoSleep.js prevents automatic screen lock, which chokes piece -->
+  <script src="tonemotion-shared/js/NoSleep-v0-12-0.js"></script>
+  <script src="tonemotion-shared/js/tonemotion-2.1.0.js"></script>
 
-<!-- Score for this piece -->
-<script src="tonemotion-shared/scores/shared-noninteractive.js"></script>
+  <!-- Score for this piece -->
+  <script src="tonemotion-shared/scores/shared-noninteractive.js"></script>
 
 </body>
 </html>
