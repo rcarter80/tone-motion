@@ -93,9 +93,6 @@ tm.cue[1].goCue = function() {
     bellE6.start();
     c0_transitionFlag = false;
   }
-
-  // TODO: decide on volume levels, probably with everything lower to avoid distortion - it's ok to have to turn up volume level on speakers in venue
-
   // set levels, which may have been turned down at end of previous section
   glassRimE3.volume.value = -9;
   glassRimD3.volume.value = -9;
@@ -466,9 +463,9 @@ var c5_droneLoop2 = new Tone.Loop(function(time) {
 tm.cue[5] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   tm.publicMessage('Section 5');
-  c5_drone.volume.value = -6;
+  c5_drone.volume.value = -12;
   c5_droneLoop.start();
-  c5_drone2.volume.value = -6;
+  c5_drone2.volume.value = -12;
   c5_droneLoop2.start('+10');
   c5_highSynth.volume.value = -28;
   c5_highSynthLoop.start();
@@ -610,13 +607,14 @@ var c7_arrLen = c7_chimeArr.length;
 
 var c7_chLoop = new Tone.Loop(function(time) {
   // chime loop with random holes (only trigger chimes on half of subdivisions)
-  if (Math.random() < 0.5) {
+  // chimes get more sparse after 45 seconds until they stop completely
+  let chimeGap = tm.getSectionBreakpoints(7, [0, 0.5, 45000, 0.5, 90000, 0.0]);
+  if (Math.random() < chimeGap) {
     c7_index = c7_chCount % c7_arrLen;
     c7_thisCh = c7_chimeArr[c7_index];
     // bend chimes independently to morph into spectrum on F
-    // TODO: decide on exact durations of pitch bend breakpoints
     c7_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c7_chBendArr[c7_index]]);
-    c7_thisCh.volume.value = -30;
+    c7_thisCh.volume.value = tm.getSectionBreakpoints(7, [0, -30, 75000, -30, 90000, -60]);
     c7_thisCh.start();
     c7_chCount++;
   }
@@ -630,6 +628,7 @@ var c7_highSynthLoop = new Tone.Loop(function(time) {
   // randomize same initial pitches as chime loop, but they detune differently
   c5_highPitch = tm.pickRand([1760, 2640, 3080, 4400, 5720, 6160, 7920, 8360]);
   c5_highDur = 2 + (Math.random() * 1);
+  c5_highSynth.volume.value = tm.getSectionBreakpoints(7, [0, -32, 45000, -32, 90000, -99]);
   c5_highSynth.triggerAttackRelease(c5_highPitch, c5_highDur);
 }, 5 + (Math.random() * 10));
 var c7_highSynthLoop2 = new Tone.Loop(function(time) {
@@ -640,6 +639,7 @@ var c7_highSynthLoop2 = new Tone.Loop(function(time) {
   // same initial pitches as chime loop (8va), but they detune differently
   c5_highPitch2 = tm.pickRand([1760, 2640, 3080, 4400, 5720, 6160, 7920, 8360]);
   c5_highDur2 = 2 + (Math.random() * 1);
+  c5_highSynth2.volume.value = tm.getSectionBreakpoints(7, [0, -32, 45000, -32, 90000, -99]);
   c5_highSynth2.triggerAttackRelease(c5_highPitch2, c5_highDur2);
 }, 5 + (Math.random() * 10));
 
@@ -648,14 +648,12 @@ tm.cue[7].goCue = function() {
   tm.publicMessage('Section 7');
   c7_chCount = 0;
   c7_drop.start();
+  // volumes for chimes and high synths set in loops above (includes fade out)
   c7_chLoop.start('+3.25');
-  c5_highSynth.volume.value = -32;
   c7_highSynthLoop.start('+3.25');
-  c5_highSynth2.volume.value = -32;
   c7_highSynthLoop2.start('+8.25');
 };
 tm.cue[7].stopCue = function() {
-  // TODO: if creating post-coda, need to work out transition to it
   c7_chLoop.stop();
   c7_highSynthLoop.stop();
   c7_highSynthLoop2.stop();
@@ -663,10 +661,10 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8: turn off all sound (only accessible through private server)
-// TODO: change this to post-coda
-tm.cue[8] = new TMCue('finished', -1);
+// using 'tacet' instead of 'finished' to avoid accidental shutdown
+tm.cue[8] = new TMCue('tacet', -1);
 tm.cue[8].goCue = function() {
-  tm.publicMessage('Coda');
+  // nothing to display
 };
 tm.cue[8].stopCue = function() {
   // nothing to clean up
