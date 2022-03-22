@@ -581,13 +581,13 @@ tm.cue[7].triggerShakeSound = function() {
     c7_chLoIndex = c7_chCount % c7_chLoArrLen;
     c7_thisLoCh = c7_chLoArr[c7_chLoIndex];
     c7_thisLoCh.playbackRate = tm.getSectionBreakpoints(7, [0,0.25, 15000,0.25, 45000,c7_chLoBendArr[c7_chLoIndex]]);
-    c7_thisLoCh.volume.value = tm.getSectionBreakpoints(7, [0, -9, 60000, -9, 90000, -99]);
+    c7_thisLoCh.volume.value = tm.getSectionBreakpoints(7, [0, -15, 60000, -15, 90000, -99]);
     c7_thisLoCh.start();
     // set pitch and properties of higher chime triggered just after low
     c7_chIndex = c7_chCount % c7_chArrLen;
     c7_thisCh = c7_chimeArr[c7_chIndex];
     c7_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c7_chBendArr[c7_chIndex]]);
-    c7_thisCh.volume.value = tm.getSectionBreakpoints(7, [0, -12, 60000, -12, 90000, -99]);
+    c7_thisCh.volume.value = tm.getSectionBreakpoints(7, [0, -18, 60000, -18, 90000, -99]);
     c7_thisCh.start('+0.05');
     // increment counter used by BOTH chime layers
     c7_chCount++;
