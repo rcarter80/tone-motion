@@ -40,6 +40,16 @@ tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
+// trigger transition from cue 6 back to cue 1 ONLY if coming from cue 6, so this flag is only set to true at cue 6 goCue(), set to false after cue 1 goCue
+let c0_transitionFlag = false;
+tm.cue[0].cueTransition = function() {
+  if (c0_transitionFlag) {
+    // If cue 6 loops back to cue 1, this transition from cue 0 will be triggered, which will stop the cue 6 loops
+    revGlassC5_7s.volume.value = -9;
+    revGlassC5_7s.playbackRate = 1.26; // major third, so E5
+    revGlassC5_7s.start();
+  }
+};
 tm.cue[0].stopCue = function() {
   // nothing to clean up
 };
@@ -83,6 +93,11 @@ let c1_fade = false;
 
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
+  if (c0_transitionFlag) {
+    // piece has looped back around from cue 6 to 1. PLay downbeat sound
+    bellSampler.triggerAttackRelease('E6', 5);
+    c0_transitionFlag = false;
+  }
   c1_counter = c1_fadeCounter = 0;
   c1_fade = false;
   // reset playbackRate, which is changed in cue 5
@@ -140,8 +155,10 @@ let c2_bellPitch = tm.pickRand(['C6', 'C6', 'E6']);
 
 tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  // TODO: add test against time elapsed in section to prevent retriggering downbeat sound -- if (tm.getElapsedTimeInCue(2) < 500) { make sound } and repeat for other cues with downbeat sounds
-  bellSampler.triggerAttackRelease(c2_bellPitch, 5);
+  // prevent people from triggering downbeat sound if they stop and start
+  if (tm.getElapsedTimeInCue(2) < 500) {
+    bellSampler.triggerAttackRelease(c2_bellPitch, 5);
+  }
   // mute both loops by default - unmute below
   pingPongLoop.volume.value = -99;
   popRocksLoop.volume.value = -99;
@@ -213,8 +230,11 @@ var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
 tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[3].goCue = function() {
+  // prevent people from triggering downbeat sound if they stop and start
+  if (tm.getElapsedTimeInCue(3) < 500) {
+    bellSampler.triggerAttackRelease('D6', 5);
+  }
   c3_count = 0;
-  bellSampler.triggerAttackRelease('D6', 5);
   chimeA6.volume.value = -20;
   chimeA7.volume.value = -20;
   pianoA4.volume.value = -9;
@@ -314,7 +334,10 @@ var c4_bellLoop = new Tone.Loop(function(time) {
 
 tm.cue[4] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
-  bellSampler.triggerAttackRelease('D6', 5);
+  // prevent people from triggering downbeat sound if they stop and start
+  if (tm.getElapsedTimeInCue(4) < 500) {
+    bellSampler.triggerAttackRelease('D6', 5);
+  }
   c4_counter = 0;
   c4_bellLoop.start();
   // sugar chimes have volume control on y-axis, but not during transition fade
@@ -449,6 +472,7 @@ var c6_glassLoop = new Tone.Loop(function(time) {
   }
   // select pitch on y-axis by referencing pitch array (scale tm.accel.x first)
   c6_thisGlass.playbackRate = c6_pitchArr[Math.floor((tm.accel.x * 0.99) * c6_pitchArr.length)];
+  c6_thisGlass.volume.value = -3;
   c6_thisGlass.start();
   c6_counter++;
 }, 0.375);
@@ -456,17 +480,18 @@ var c6_glassLoop = new Tone.Loop(function(time) {
 tm.cue[6] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
   c6_counter = 0;
-  // if I need to reset volume because it was changed, there are LOTS to reset
   c6_glassLoop.start();
+  ziplockClickLoop.volume.value = -99;
   ziplockClickLoop.start();
   tm.publicMessage('Section 6: Hold your phone in different positions to play different bouncing sounds. Select the note you play by tilting your phone left or right. Play higher sounds by tipping your phone upside down. Hold your phone upright to mute it. (There are also clicking sounds that change based on device position.)');
+  // set flag to enable transition sounds back to cue 1 after loop
+  c0_transitionFlag = true;
 };
 tm.cue[6].updateTiltSounds = function() {
   // soft clicking sound with speed and volume on y-axis
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
   ziplockClickLoop.volume.value = -65 + (tm.accel.y * 65);
 };
-// NOTE: cueTransition() won't be called when this returns to beginning because cues are not consecutive (from cue 6 back to cue 1). Only way around this is to change how library handles cueTransition()
 tm.cue[6].stopCue = function() {
   c6_glassLoop.stop();
   ziplockClickLoop.stop();
@@ -544,7 +569,7 @@ tm.cue[7].goCue = function() {
 };
 tm.cue[7].triggerShakeSound = function() {
   // no sound until final "drop" sound 3.25 seconds into cue
-  if (tm.getElapsedTimeInCue(6) > 3250) {
+  if (tm.getElapsedTimeInCue(7) > 3250) {
     // set pitch and properties of lower chime
     c7_chLoIndex = c7_chCount % c7_chLoArrLen;
     c7_thisLoCh = c7_chLoArr[c7_chLoIndex];

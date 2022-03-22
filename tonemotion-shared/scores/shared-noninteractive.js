@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -16,6 +16,7 @@ const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
+const bell_sounds = 'tonemotion-shared/audio/bells/';
 
 // *******************************************************************
 // CUE 0: ONLY used in performance to keep everything silent until start
@@ -23,11 +24,18 @@ tm.cue[0] = new TMCue('waiting', -1);
 tm.cue[0].goCue = function() {
   // nothing to do here
 };
+// trigger transition from cue 6 back to cue 1 ONLY if coming from cue 6, so this flag is only set to true at cue 6 goCue(), set to false after cue 1 goCue
+let c0_transitionFlag = false;
 tm.cue[0].cueTransition = function() {
-  // If cue 6 loops back to cue 1, this transition from cue 0 will be triggered, which will stop the cue 6 loops
-  c6_loGlassLoop.stop();
-  c6_midGlassLoop.stop();
-  c6_hiGlassLoop.stop();
+  if (c0_transitionFlag) {
+    // If cue 6 loops back to cue 1, this transition from cue 0 will be triggered, which will stop the cue 6 loops
+    c6_loGlassLoop.stop();
+    c6_midGlassLoop.stop();
+    c6_hiGlassLoop.stop();
+    revGlassC5_7s.volume.value = -9;
+    revGlassC5_7s.playbackRate = 1.26; // major third, so E5
+    revGlassC5_7s.start();
+  }
 }
 tm.cue[0].stopCue = function() {
   // nothing to clean up
@@ -41,6 +49,8 @@ var glassRimG4 = new Tone.Player(glass_sounds + "glassRimLayeredG4.mp3").toDesti
 var glassRimC4 = new Tone.Player(glass_sounds + "glassRimRealC4-B3.mp3").toDestination();
 var glassRimB4 = new Tone.Player(glass_sounds + "glassRimRealB4_10s.mp3").toDestination();
 var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toDestination();
+
+const bellE6 = new Tone.Player(bell_sounds + "handbell-E6.mp3").toDestination();
 
 var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
@@ -78,6 +88,11 @@ c1_loopB4.humanize = 3;
 tm.cue[1] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
   tm.publicMessage('Section 1');
+  if (c0_transitionFlag) {
+    // piece has looped back around from cue 6 to 1. PLay downbeat sound
+    bellE6.start();
+    c0_transitionFlag = false;
+  }
 
   // TODO: decide on volume levels, probably with everything lower to avoid distortion - it's ok to have to turn up volume level on speakers in venue
 
@@ -545,6 +560,8 @@ tm.cue[6].goCue = function() {
   // start middle loop offset from low loop
   var c6_hiGlassPreDelay = '+ ' + c6_loDelay.delayTime.value / 2;
   c6_midGlassLoop.start(c6_hiGlassPreDelay);
+  // set flag to enable transition sounds back to cue 1 after loop
+  c0_transitionFlag = true;
 };
 tm.cue[6].cueTransition = function() {
   // loops will gradually fade out with feedback delay
