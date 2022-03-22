@@ -495,6 +495,11 @@ tm.cue[6].updateTiltSounds = function() {
   ziplockClickLoop.playbackRate = 0.1 + tm.accel.y * 3.9;
   ziplockClickLoop.volume.value = -65 + (tm.accel.y * 65);
 };
+tm.cue[6].cueTransition = function() {
+  // This is only called when going to coda, not looping back to cue 1
+  c6_glassLoop.stop();
+  ziplockClickLoop.stop();
+};
 tm.cue[6].stopCue = function() {
   c6_glassLoop.stop();
   ziplockClickLoop.stop();
@@ -537,6 +542,8 @@ chLoP13b.fadeOut = 5;
 var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
 chLoP14.fadeOut = 5;
 
+var c7_drop = new Tone.Player(misc_sounds + "finalDrop.mp3").toDestination();
+
 var c7_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
 // array of playback rates that represent targets of pitch bends
 var c7_chBendArr = [1.031786, 1.020448, 1.07714, 0.9921, 1.03789, 1.05824, 0.9921, 1.05824, 1.031786, 1.03789, 1.020448];
@@ -550,9 +557,9 @@ var c7_chLoArrLen = c7_chLoArr.length;
 
 tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[7].goCue = function() {
+  c7_drop.start();
   c7_chCount = 0;
   c7_chLoCount = 0;
-  // OPTIMIZE: there might be a better way to schedule timed messages
   Tone.Draw.schedule(function() {
     tm.publicMessage('3');
   }, '+0');
@@ -574,13 +581,13 @@ tm.cue[7].triggerShakeSound = function() {
     c7_thisLoCh = c7_chLoArr[c7_chLoIndex];
     // TODO: decide on exact durations of pitch bend breakpoints
     c7_thisLoCh.playbackRate = tm.getSectionBreakpoints(7, [0,0.25, 15000,0.25, 45000,c7_chLoBendArr[c7_chLoIndex]]);
-    c7_thisLoCh.volume.value = -1;
+    c7_thisLoCh.volume.value = -9;
     c7_thisLoCh.start();
     // set pitch and properties of higher chime triggered just after low
     c7_chIndex = c7_chCount % c7_chArrLen;
     c7_thisCh = c7_chimeArr[c7_chIndex];
     c7_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c7_chBendArr[c7_chIndex]]);
-    c7_thisCh.volume.value = -6;
+    c7_thisCh.volume.value = -12;
     c7_thisCh.start('+0.05');
     // increment counter used by BOTH chime layers
     c7_chCount++;
