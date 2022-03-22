@@ -48,6 +48,8 @@ tm.cue[0].cueTransition = function() {
     revGlassC5_7s.volume.value = -9;
     revGlassC5_7s.playbackRate = 1.26; // major third, so E5
     revGlassC5_7s.start();
+    c6_glassLoop.stop();
+    ziplockClickLoop.stop();
   }
 };
 tm.cue[0].stopCue = function() {
@@ -96,6 +98,7 @@ tm.cue[1].goCue = function() {
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
     bellSampler.triggerAttackRelease('E6', 5);
+    bellSampler.triggerAttackRelease('E7', 5, '+0.2');
     c0_transitionFlag = false;
   }
   c1_counter = c1_fadeCounter = 0;
@@ -495,10 +498,6 @@ tm.cue[6].updateTiltSounds = function() {
 tm.cue[6].stopCue = function() {
   c6_glassLoop.stop();
   ziplockClickLoop.stop();
-  revGlassC5_7s.volume.value = -9;
-  // randomly select 1 of 3 possible octaves for reversed glass sound
-  revGlassC5_7s.playbackRate = c6_revGlassPitchArray[Math.floor(Math.random() * c6_revGlassPitchArray.length)];
-  revGlassC5_7s.start();
 };
 
 // *******************************************************************
