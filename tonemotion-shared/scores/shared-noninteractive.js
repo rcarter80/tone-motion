@@ -50,7 +50,17 @@ var glassRimC4 = new Tone.Player(glass_sounds + "glassRimRealC4-B3.mp3").toDesti
 var glassRimB4 = new Tone.Player(glass_sounds + "glassRimRealB4_10s.mp3").toDestination();
 var glassSynthRimB4 = new Tone.Player(glass_sounds + "glassRimB4_triEnv.mp3").toDestination();
 
-const bellE6 = new Tone.Player(bell_sounds + "handbell-E6.mp3").toDestination();
+// handbell sampler from freesound.org/people/radwoc/ (CC0 license)
+const bellSampler = new Tone.Sampler({
+  urls: {
+    'C6': 'handbell-C6.mp3',
+    'E6': 'handbell-E6.mp3',
+    'Ab6': 'handbell-Ab6.mp3',
+    'B6': 'handbell-B6.mp3',
+  },
+  baseUrl: bell_sounds,
+}).toDestination();
+bellSampler.volume.value = -6;
 
 var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
@@ -90,7 +100,7 @@ tm.cue[1].goCue = function() {
   tm.publicMessage('Section 1');
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
-    bellE6.start();
+    bellSampler.triggerAttackRelease('E6', 5);
     c0_transitionFlag = false;
   }
   // set levels, which may have been turned down at end of previous section
@@ -101,7 +111,7 @@ tm.cue[1].goCue = function() {
   glassRimC4.volume.value = -4;
   glassRimB4.volume.value = -15;
   glassSynthRimB4.volume.value = -12;
-  revGlassC5_7s.volume.value = -3;
+  revGlassC5_7s.volume.value = -9;
   c1_loopE3.start();
   c1_loopD3.start();
   c1_loopG3.start();
@@ -112,7 +122,7 @@ tm.cue[1].cueTransition = function() {
   // randomly select 1 of 4 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c1_revGlassPitchArray[Math.floor(Math.random() * c1_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.fadeFilesOverCurve(c1_soundFileArray, 0, 4);
+  tm.fadeFilesOverCurve(c1_soundFileArray, 0, 3);
 }
 tm.cue[1].stopCue = function() {
   c1_loopE3.stop();
@@ -174,6 +184,7 @@ var c2_noiseLoop = new Tone.Loop(function(time) {
 tm.cue[2] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   tm.publicMessage('Section 2');
+  bellSampler.triggerAttackRelease('C6', 5);
   // set levels - may have been turned down to -99 at end of section before
   glassRimC3andB2.volume.value = -9;
   glassRimA3.volume.value = -12;
@@ -182,7 +193,7 @@ tm.cue[2].goCue = function() {
   glassSynthRimE4BendUp.volume.value = -16;
   glassSynthRimF5BendDown.volume.value = -20;
   iceCrunch.volume.value = -3;
-  revGlassC5_7s.volume.value = -3;
+  revGlassC5_7s.volume.value = -9;
   c2_loopC3B2.start();
   c2_loopA3.start();
   c2_loopE4.start();
@@ -193,7 +204,7 @@ tm.cue[2].cueTransition = function() {
   // randomly select 1 of 2 possible pitches for reversed glass sound
   revGlassC5_7s.playbackRate = c2_revGlassPitchArray[Math.floor(Math.random() * c2_revGlassPitchArray.length)];
   revGlassC5_7s.start();
-  tm.fadeFilesOverCurve(c2_soundFileArray, 0, 4);
+  tm.fadeFilesOverCurve(c2_soundFileArray, 0, 3);
   // these audio files will play again in the next cue
   glassRimE4BendUp.volume.rampTo(-60, 3);
   glassRimF5BendDown.volume.rampTo(-60, 3);
@@ -263,12 +274,13 @@ var c3_bassLoop = new Tone.Loop(function(time) {
 tm.cue[3] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   tm.publicMessage('Section 3');
+  bellSampler.triggerAttackRelease('D6', 5);
   modeledGlassD3.volume.value = -12;
   modeledGlassF3.volume.value = -12;
   modeledGlassE3.volume.value = -12;
   modeledGlassG3.volume.value = -12;
   glassRealC5_15s.volume.value= -6;
-  revGlassC5_7s.volume.value = -3;
+  revGlassC5_7s.volume.value = -9;
   c3_bassLoop.start();
   glassRimE4BendUp.volume.rampTo(-22, 3);
   glassSynthRimE4BendUp.volume.rampTo(-22, 3);
@@ -607,8 +619,8 @@ var c7_arrLen = c7_chimeArr.length;
 
 var c7_chLoop = new Tone.Loop(function(time) {
   // chime loop with random holes (only trigger chimes on half of subdivisions)
-  // chimes get more sparse after 45 seconds until they stop completely
-  let chimeGap = tm.getSectionBreakpoints(7, [0, 0.5, 45000, 0.5, 90000, 0.0]);
+  // chimes get more sparse after 30 seconds until they stop completely
+  let chimeGap = tm.getSectionBreakpoints(7, [0, 0.5, 30000, 0.5, 90000, 0.0]);
   if (Math.random() < chimeGap) {
     c7_index = c7_chCount % c7_arrLen;
     c7_thisCh = c7_chimeArr[c7_index];
