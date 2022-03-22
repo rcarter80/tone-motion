@@ -19,6 +19,7 @@ const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 Tone.Transport.bpm.value = 60;
 
