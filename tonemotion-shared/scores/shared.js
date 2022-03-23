@@ -388,6 +388,7 @@ let c5_fadeCounter = 0;
 tm.cue[5] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   c5_counter = c5_fadeCounter = 0;
+  c5_fade = false;
   tm.publicMessage('Section 5: Shake your phone to play a sound.');
 };
 tm.cue[5].triggerShakeSound = function() {
