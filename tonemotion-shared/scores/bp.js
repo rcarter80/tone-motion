@@ -1,5 +1,4 @@
 const tm = new ToneMotion();
-// TODO: decide on possible longer cue fetch interval. Should tolerate even once per second. Check tone-motion code to make sure changing cue fetch interval doesn't have unintended consequences. Also 'hidden' cues are always triggered immediately and don't use waitTime or openWindow so I could get rid of those
 tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -404,6 +403,7 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10: [G] - hidden cue to bend pitches up
+// NOTE: 'hidden' cues are triggered immediately, so delayTime and openWindow don't do anything and could be left out. (not hurting anything though)
 tm.cue[10] = new TMCue('hidden', 0, NO_LIMIT);
 tm.cue[10].goCue = function() {
   // once this flag is set to true, pitch bend in cue 9 are triggered
