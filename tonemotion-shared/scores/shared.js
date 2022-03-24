@@ -562,21 +562,24 @@ var c7_chLoArrLen = c7_chLoArr.length;
 
 tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[7].goCue = function() {
-  c7_drop.start();
+  // prevent people from triggering downbeat sound if they stop and start
+  if (tm.getElapsedTimeInCue(7) < 500) {
+    c7_drop.start();
+    Tone.Draw.schedule(function() {
+      tm.publicMessage('3');
+    }, '+0');
+    Tone.Draw.schedule(function() {
+      tm.publicMessage('2');
+    }, '+1');
+    Tone.Draw.schedule(function() {
+      tm.publicMessage('1');
+    }, '+2');
+    Tone.Draw.schedule(function() {
+      tm.publicMessage('Section 7: Shake your phone to play a sound.');
+    }, '+3');
+  }
   c7_chCount = 0;
   c7_chLoCount = 0;
-  Tone.Draw.schedule(function() {
-    tm.publicMessage('3');
-  }, '+0');
-  Tone.Draw.schedule(function() {
-    tm.publicMessage('2');
-  }, '+1');
-  Tone.Draw.schedule(function() {
-    tm.publicMessage('1');
-  }, '+2');
-  Tone.Draw.schedule(function() {
-    tm.publicMessage('Section 7: Shake your phone to play a sound.');
-  }, '+3');
 };
 tm.cue[7].triggerShakeSound = function() {
   // no sound until final "drop" sound 3.25 seconds into cue
@@ -585,7 +588,7 @@ tm.cue[7].triggerShakeSound = function() {
     c7_chLoIndex = c7_chCount % c7_chLoArrLen;
     c7_thisLoCh = c7_chLoArr[c7_chLoIndex];
     c7_thisLoCh.playbackRate = tm.getSectionBreakpoints(7, [0,0.25, 15000,0.25, 45000,c7_chLoBendArr[c7_chLoIndex]]);
-    c7_thisLoCh.volume.value = tm.getSectionBreakpoints(7, [0, -15, 60000, -15, 90000, -99]);
+    c7_thisLoCh.volume.value = tm.getSectionBreakpoints(7, [0, -24, 60000, -24, 90000, -99]);
     c7_thisLoCh.start();
     // set pitch and properties of higher chime triggered just after low
     c7_chIndex = c7_chCount % c7_chArrLen;
