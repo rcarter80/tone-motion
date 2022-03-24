@@ -362,10 +362,14 @@ const harpLoop_9 = new Tone.Loop((time) => {
 
 tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[9].goCue = function() {
+  if (tm.getElapsedTimeInCue(9) < 500) {
+    // only trigger opening sound if it's actually beginning of cue
+    // otherwise if someone stops and restarts, this sound is triggered again
+    triangle.start();
+  }
   // additional volume control used during cue 11 - reset it here if needed
   harpSamplerVol.volume.value = 0;
   harpLoop_9.start();
-  triangle.start();
   fmSynthDefaults();
   fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
   fmSynth.triggerAttack('E4');
@@ -830,9 +834,13 @@ const harpLoop_22 = new Tone.Loop((time) => {
 
 tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[22].goCue = function() {
+  if (tm.getElapsedTimeInCue(22) < 500) {
+    // only trigger opening sound if it's actually beginning of cue
+    // otherwise if someone stops and restarts, this sound is triggered again
+    triangle.start();
+  }
   harpSamplerVol.volume.value = 0;
   harpLoop_22.start();
-  triangle.start();
   fmSynthDefaults();
   fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
   fmSynth.triggerAttack('G4');
@@ -903,13 +911,17 @@ let count1_25 = count2_25 = 0;
 
 tm.cue[25] = new TMCue('shake', 1538, NO_LIMIT); // 4 beats @ 156 bpm
 tm.cue[25].goCue = function() {
+  if (tm.getElapsedTimeInCue(25) < 500) {
+    // only trigger opening sound if it's actually beginning of cue
+    // otherwise if someone stops and restarts, this sound is triggered again
+    bellSampler.triggerAttackRelease('C#6', 5);
+  }
   count1_25 = count2_25 = 0;
   pianoSampler.volume.value = 0;
   vibeSampler.volume.value = 0;
   bellSampler.volume.value = 0;
   sineTails.volume.value = -20;
   sinTremolo.depth.value = 0;
-  bellSampler.triggerAttackRelease('C#6', 5);
 };
 tm.cue[25].triggerShakeSound = function() {
   if (count1_25 < pitchArr1_25.length) {

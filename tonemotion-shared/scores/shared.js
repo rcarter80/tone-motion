@@ -96,6 +96,9 @@ let c1_fade = false;
 
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
+  // optimize motion update loop by turning off motion testing when piece starts
+  tm.shouldTestMotion = false;
+  tm.clearMotionErrorMessage();
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
     bellSampler.triggerAttackRelease('E6', 5);

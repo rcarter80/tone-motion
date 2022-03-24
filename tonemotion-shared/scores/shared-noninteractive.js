@@ -97,6 +97,9 @@ c1_loopB4.humanize = 3;
 // all sections start 3 seconds after cue
 tm.cue[1] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
+  // optimize motion update loop by turning off motion testing when piece starts
+  tm.shouldTestMotion = false;
+  tm.clearMotionErrorMessage();
   tm.publicMessage('Section 1');
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
