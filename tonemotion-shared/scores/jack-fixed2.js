@@ -571,50 +571,50 @@ Tone.Transport.schedule((time) => {
 function scheduleAllCues() {
   tm.cue[6].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(6, 1579);
-  }, 49076);
+  }, 48658);
   tm.cue[7].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(7);
-  }, 95341);
+  }, 100784);
   tm.cue[8].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(8, 1579);
-  }, 99577);
+  }, 104573);
   tm.cue[9].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(9, 1579);
-  }, 124769);
+  }, 128873);
   tm.cue[10].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(10);
-  }, 147596);
+  }, 150582);
   tm.cue[11].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(11, 1579);
-  }, 150384);
+  }, 153374);
   tm.cue[12].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(12, 1579);
-  }, 175937);
+  }, 177765);
   tm.cue[13].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(13);
-  }, 198677);
+  }, 202337);
   tm.cue[14].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(14, 1579);
-  }, 279649);
+  }, 277401);
   tm.cue[15].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(15, 1579);
-  }, 307092);
+  }, 301757);
   tm.cue[16].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(16);
-  }, 353920);
+  }, 351907);
   tm.cue[17].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(17, 1579);
-  }, 357548);
+  }, 354869);
   tm.cue[18].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(18);
-  }, 407000);
+  }, 401827);
   tm.cue[19].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(19, 1579);
-  }, 411998);
+  }, 406642);
   tm.cue[20].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(20);
-  }, 520000);
+  }, 512881);
   tm.cue[21].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(21);
-  }, 581000);
+  }, 571922);
 }
