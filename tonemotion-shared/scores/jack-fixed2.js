@@ -586,6 +586,7 @@ function scheduleAllCues() {
   }, 150582);
   tm.cue[11].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(11, 1579);
+    // TODO: too early?
   }, 153374);
   tm.cue[12].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(12, 1579);
@@ -595,10 +596,10 @@ function scheduleAllCues() {
   }, 202337);
   tm.cue[14].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(14, 1579);
-  }, 277401);
+  }, 278898);
   tm.cue[15].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(15, 1579);
-  }, 301757);
+  }, 303433);
   tm.cue[16].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(16);
   }, 351907);
