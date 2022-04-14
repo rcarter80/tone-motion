@@ -13,14 +13,21 @@ window.onload = function() {
 // cue label is within message container, but separate from message label that could show error messages, etc. cue label has HUGE font for showing cue number
 const cue_label = document.querySelector('#cue_label');
 
+// simple way to display cue number. If I ever use this in another piece, I can fold this into the tonemotion source file
+function displayCueNumber(cue) {
+  tm.publicMessage('');
+  cue_label.innerHTML = cue;
+}
+
 // *******************************************************************
 // CUE 0: sets status to 'waitingForPieceToStart'
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
   tm.publicLog('Waiting for piece to start');
+  cue_label.innerHTML = '';
 };
 tm.cue[0].cueTransition = function() {
-  cue_label.innerHTML = '(1)';
+  displayCueNumber('(1)');
   tm.setBackgroundPurple();
 };
 tm.cue[0].stopCue = function() {
@@ -31,12 +38,13 @@ tm.cue[0].stopCue = function() {
 // CUE 1: First section (struck glass sounds)
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  cue_label.innerHTML = '1';
+  displayCueNumber('1');
 };
 tm.cue[1].triggerShakeSound = function() {
 };
 tm.cue[1].cueTransition = function() {
-  console.log('Cue 2 starting soon');
+  displayCueNumber('(2)');
+  tm.setBackgroundPurple();
 };
 tm.cue[1].stopCue = function() {
 };
@@ -45,12 +53,13 @@ tm.cue[1].stopCue = function() {
 // CUE 2: tilt sparkly sounds that can be muted when phone is upright
 tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  console.log('Current cue: 2');
+  displayCueNumber('2');
 };
 tm.cue[2].updateTiltSounds = function() {
 };
 tm.cue[2].cueTransition = function() {
-  console.log('Cue 3 starting soon');
+  displayCueNumber('(3)');
+  tm.setBackgroundPurple();
 };
 tm.cue[2].stopCue = function() {
 };
@@ -59,12 +68,13 @@ tm.cue[2].stopCue = function() {
 // CUE 3: shake-triggered chimes with octaves selected by device position
 tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[3].goCue = function() {
-  console.log('Current cue: 3');
+  displayCueNumber('3');
 };
 tm.cue[3].triggerShakeSound = function() {
 };
 tm.cue[3].cueTransition = function() {
-  console.log('Cue 4 starting soon');
+  displayCueNumber('(4)');
+  tm.setBackgroundPurple();
 };
 tm.cue[3].stopCue = function() {
 };
@@ -73,12 +83,13 @@ tm.cue[3].stopCue = function() {
 // CUE 4: tilt octaves on D, F, E, A, Bb
 tm.cue[4] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
-  console.log('Current cue: 4');
+  displayCueNumber('4');
 };
 tm.cue[4].updateTiltSounds = function() {
 };
 tm.cue[4].cueTransition = function() {
-  console.log('Cue 5 starting soon');
+  displayCueNumber('(5)');
+  tm.setBackgroundPurple();
 };
 tm.cue[4].stopCue = function() {
 };
@@ -87,12 +98,13 @@ tm.cue[4].stopCue = function() {
 // CUE 5: shake glass through array
 tm.cue[5] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  console.log('Current cue: 5');
+  displayCueNumber('5');
 };
 tm.cue[5].triggerShakeSound = function() {
 };
 tm.cue[5].cueTransition = function() {
-  console.log('Cue 6 starting soon');
+  displayCueNumber('(6)');
+  tm.setBackgroundPurple();
 };
 tm.cue[5].stopCue = function() {
 };
@@ -101,12 +113,13 @@ tm.cue[5].stopCue = function() {
 // CUE 6: struck glass with variable delay on y-axis and pitch in 12 zones
 tm.cue[6] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  console.log('Current cue: 6');
+  displayCueNumber('6');
 };
 tm.cue[6].updateTiltSounds = function() {
 };
 tm.cue[6].cueTransition = function() {
-  console.log('Cue 7 starting soon');
+  displayCueNumber('(7)');
+  tm.setBackgroundPurple();
 };
 tm.cue[6].stopCue = function() {
 };
@@ -115,7 +128,7 @@ tm.cue[6].stopCue = function() {
 // CUE 7: CODA only accessible through private server - play at end of perf.
 tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[7].goCue = function() {
-  console.log('Current cue: 7');
+  displayCueNumber('7');
 };
 tm.cue[7].triggerShakeSound = function() {
 };
@@ -126,7 +139,7 @@ tm.cue[7].stopCue = function() {
 // CUE 8: turn off all sound (only accessible through private server)
 tm.cue[8] = new TMCue('finished', -1);
 tm.cue[8].goCue = function() {
-  // nothing to do here
+  cue_label.innerHTML = '';
 };
 tm.cue[8].stopCue = function() {
   // nothing to clean up
@@ -136,7 +149,7 @@ tm.cue[8].stopCue = function() {
 // CUE 9: tacet and shouldn't be used, but here to avoid errors
 tm.cue[9] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  // nothing to play
+  cue_label.innerHTML = '';
 };
 tm.cue[9].stopCue = function() {
   // nothing to clean up
@@ -149,6 +162,7 @@ tm.cue[9].stopCue = function() {
 tm.cue[10] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[10].goCue = function() {
   tm.publicLog('Waiting for piece to start');
+  cue_label.innerHTML = '';
 };
 tm.cue[10].stopCue = function() {
   // nothing to clean up
@@ -158,6 +172,7 @@ tm.cue[10].stopCue = function() {
 // CUE 11: SHAKE tutorial
 tm.cue[11] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[11].goCue = function() {
+  cue_label.innerHTML = '';
 };
 tm.cue[11].triggerShakeSound = function() {
 };
@@ -169,7 +184,7 @@ tm.cue[11].stopCue = function() {
 // CUE 12: tacet tutorial
 tm.cue[12] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[12].goCue = function() {
-  // nothing to play
+  cue_label.innerHTML = '';
 };
 tm.cue[12].stopCue = function() {
   // nothing to clean up
@@ -179,6 +194,7 @@ tm.cue[12].stopCue = function() {
 // CUE 13: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
 tm.cue[13] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[13].goCue = function() {
+  cue_label.innerHTML = '';
 };
 tm.cue[13].updateTiltSounds = function() {
 };
@@ -191,6 +207,7 @@ tm.cue[13].stopCue = function() {
 tm.cue[14] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[14].goCue = function() {
   tm.publicLog('Waiting for piece to start');
+  cue_label.innerHTML = '';
 };
 tm.cue[14].stopCue = function() {
   // nothing to clean up
