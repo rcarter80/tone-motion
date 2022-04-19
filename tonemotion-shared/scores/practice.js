@@ -31,28 +31,54 @@ tm.cue[0].goCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: tilt practice
-var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
-claveLoop.loop = true;
+// CUE 1: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
+const fmSynth = new Tone.FMSynth({
+  envelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 2,
+  },
+  modulationEnvelope: {
+    attack: 1,
+    decay: 0.1,
+    sustain: 1,
+    release: 10,
+  },
+  harmonicity: 0.125,
+}).toMaster();
+fmSynth.oscillator.partials = [1, 0, 0, 0.25];
 
-tm.cue[1] = new TMCue('tilt', -1);
+let tiltPitchArr_tut = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5'];
+let len_tut = tiltPitchArr_tut.length;
+tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  claveLoop.start();
-  tm.publicMessage('During a section marked "tilt," your device will make sounds that respond to the position of your phone. In this case, you can mute your phone by holding it right-side up. The short, repeated sound gets louder, faster, and higher as you tip your phone upside down.');
+  fmSynth.volume.value = -99;
+  fmSynth.triggerAttack('E4');
+  tm.publicMessage('During a section marked "tilt," you can control sounds by holding your phone in different positions. In this case, the tone you hear will be muted when your phone is upright, but will get louder and brighter as you tip your phone upside down. Additionally, you can control the note that you play. When you tilt your phone to the left, it will play lower notes, and when you tilt your phone to the right, it will play higher notes.');
 };
 tm.cue[1].updateTiltSounds = function() {
-  // sound is full scale if phone is mostly upright. muted if upside down.
-  if (tm.accel.y < 0.15) {
-    // full-scale volume at y:0.15, roll off to silence if upright
-    claveLoop.volume.value = (tm.accel.y * 660 - 99);
+  fmSynth.frequency.value = tiltPitchArr_tut[Math.floor(tm.accel.x * 0.99 * len_tut)];
+  let fmSynVol;
+  if (tm.accel.y < 0.25) {
+    // set volume with rampTo to avoid zipper noise
+    fmSynVol = -18 - (0.25 - tm.accel.y) * 324; // -99 to -18 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
+  } else if (tm.accel.y < 0.5) {
+    fmSynth.volume.rampTo(-18, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
+  } else if (tm.accel.y < 0.75) {
+    fmSynVol = -12 - (0.75 - tm.accel.y) * 24; // -18 to -12 dB
+    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
   } else {
-    claveLoop.volume.value = 0;
+    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
+    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
   }
-  // pitch and speed go up on y-axis
-  claveLoop.playbackRate = 0.75 + tm.accel.y * 4.25;
 };
 tm.cue[1].stopCue = function() {
-  claveLoop.stop();
+  fmSynth.triggerRelease();
 };
 
 // *******************************************************************
@@ -69,20 +95,12 @@ tm.cue[2].stopCue = function() {
 // CUE 3: shake practice
 var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
 
-var glassC = new Tone.Player(glass_sounds + 'glassRealC6.mp3').toMaster();
-glassC.volume.value = -6;
-var glassE = new Tone.Player(glass_sounds + 'glassRealE6.mp3').toMaster();
-glassE.volume.value = -6;
-var shakeCueCounter = 0;
-
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
-  shakeCueCounter = 0;
-  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. If you hold your phone still, it will not make sound.');
+  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. Just flicking your wrist gently will play a sound, in this case just a short click. If you hold your phone still, it will not make sound.');
 };
 tm.cue[3].triggerShakeSound = function() {
-  shakeCueCounter % 2 ? glassE.start() : glassC.start();
-  shakeCueCounter++;
+  clave.start();
 };
 tm.cue[3].stopCue = function() {
   // nothing to clean up
