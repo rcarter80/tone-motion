@@ -780,7 +780,7 @@ ToneMotion.prototype.checkForFailure = function() {
       // start everything up again
       this.cueTimeFromServer = 0;
       // note that noSleep throws error (bc .enable() called w/o user input?)
-      this.startMotionUpdatesAndCueFetching();
+      this.resumeMotionUpdates();
     }
   }
   this.lastMotionUpdateCounter = this.motionUpdateCounter;
