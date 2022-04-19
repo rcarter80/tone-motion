@@ -65,6 +65,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} cuePollingInterval - (ms.) How often server is polled
+ * @param {array} intervalIDArray - used to store all interval IDs to clear
  * @param {number} motionUpdateCounter - used to check that motion is updating
  * @param {number} lastMotionUpdateCounter - used with above for motion checks
  * @param {number} cueOnClient - Current cue number client side.
@@ -109,6 +110,7 @@ function ToneMotion() {
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
+  this.intervalIDArray = [];
   this.motionUpdateCounter = 0;
   this.lastMotionUpdateCounter = 0;
   // when server restarts, both cue number and time revert to 0
@@ -421,7 +423,12 @@ ToneMotion.prototype.shutEverythingDown = function() {
     window.clearTimeout(this.cue[i].timeoutID);
   }
 
-  clearInterval(this.motionUpdateLoopID);
+  // previously used clearInterval() for each ID below, but sometimes when I started and stopped repeatedly very fast, it didn't work. Testing showed that I could only stop these loops by clearing an OLDER interval ID, which I didn't understand, but clearing every ID should fix that.
+  for (let i of this.intervalIDArray) {
+    // clear every motionUpdateLoopID (stored in array)
+    clearInterval(i);
+  }
+
   this.publicLog('Shutting down Transport, sound, and motion handling');
   this.clearActiveCues();
   Tone.Transport.stop();
@@ -824,6 +831,8 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  // push ID to array so that I can clear everything later
+  this.intervalIDArray.push(this.motionUpdateLoopID);
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
