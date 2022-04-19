@@ -64,6 +64,8 @@ var yTilt = new Tone.Signal(0.5);
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} cuePollingInterval - (ms.) How often server is polled
+ * @param {number} motionUpdateCounter - used to check that motion is updating
+ * @param {number} lastMotionUpdateCounter - used with above for motion checks
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
  * @param {number} cueTimeFromServer - Time when last cue was set on the
@@ -105,6 +107,8 @@ function ToneMotion() {
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
+  this.motionUpdateCounter = 0;
+  this.lastMotionUpdateCounter = 0;
   // when server restarts, both cue number and time revert to 0
   // init with -1 for both so cue 0 is still triggered when server restarts
   this.cueOnClient = -1;
@@ -730,6 +734,7 @@ ToneMotion.prototype.setBackgroundBlue = function() {
 // Sets ToneMotion object accel properties and sets shake flag
 // Bound to 'devicemotion' event listener, so this is called very often
 // but the polling interval is read-only
+let motionTestCounterTM = 1; // starting at 1 prevents fail check on 1st loop
 ToneMotion.prototype.handleMotionEvent = function(event) {
   // Axes on Android on inverted relative to iOS
   if (this.deviceIsAndroid) {
@@ -747,12 +752,38 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
     }
   }
 
+  // sometimes (inexplicably) the cue fetching and motion updates freeze. This event handler keeps running, so I can use it to check for problems
+  // At standard polling interval of 60 times/sec., this happens every 5 sec.
+  if (motionTestCounterTM % 300 == 0) {
+    this.checkForFailure();
+  }
+  motionTestCounterTM++;
+
   // For debugging, add properties to read DeviceMotionEvent interval and display acceleration (not including gravity), used for shake gesture
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
   if (this.debug) {
     this.motionPollingInterval = event.interval;
     this.gyro_y = event.acceleration.y;
   }
+};
+
+// Uses the devicemotion handler to periodically check if everything is ok
+ToneMotion.prototype.checkForFailure = function() {
+  if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
+    // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode, or waiting to play
+    if (this.status === 'waitingForPieceToStart' ||
+    this.status === 'playing_tacet' ||
+    this.status === 'playing_tilt' ||
+    this.status === 'playing_shake' ||
+    this.status === 'playing_tiltAndShake' ||
+    this.status === 'playing_listen') {
+      // start everything up again
+      this.cueTimeFromServer = 0;
+      // note that noSleep throws error (bc .enable() called w/o user input?)
+      this.startMotionUpdatesAndCueFetching();
+    }
+  }
+  this.lastMotionUpdateCounter = this.motionUpdateCounter;
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
