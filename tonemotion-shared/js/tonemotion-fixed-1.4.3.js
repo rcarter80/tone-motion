@@ -44,6 +44,7 @@ var yTilt = new Tone.Signal(0.5);
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
+ * @param {boolean} motionEventListenerAdded - tracks devicemotion handlers
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
@@ -88,6 +89,7 @@ function ToneMotion() {
   this.shouldSyncToServer = false;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
+  this.motionEventListenerAdded = false;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
@@ -189,7 +191,7 @@ ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
       this.publicLog('This device appears to be an Android');
     }
     // Immediately begin polling motion sensors ONLY on Android
-    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    this.addMotionEventListener();
   }
   else {
     this.deviceIsAndroid = false;
@@ -303,6 +305,14 @@ ToneMotion.prototype.setStatus = function(status) {
     }
 };
 
+// registers event handler for devicemotion, but only once
+ToneMotion.prototype.addMotionEventListener = function() {
+  if (!this.motionEventListenerAdded) {
+    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    this.motionEventListenerAdded = true;
+  }
+};
+
 // Starts motion handling, but NOT cue fetching because there is none here
 var noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdates = function() {
@@ -330,7 +340,7 @@ ToneMotion.prototype.startMotionUpdates = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.addMotionEventListener();
       } else {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
@@ -345,7 +355,7 @@ ToneMotion.prototype.startMotionUpdates = function() {
     }
     if ('DeviceMotionEvent' in window) {
       // If device is Android, handleMotionEvent is already running
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      this.addMotionEventListener();
     } else {
       this.testWithoutMotion();
     }
@@ -381,7 +391,7 @@ ToneMotion.prototype.resumeMotionUpdates = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.addMotionEventListener();
       } else {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
@@ -396,7 +406,7 @@ ToneMotion.prototype.resumeMotionUpdates = function() {
     }
     if ('DeviceMotionEvent' in window) {
       // If device is Android, handleMotionEvent is already running
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      this.addMotionEventListener();
     } else {
       this.testWithoutMotion();
     }
@@ -902,6 +912,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  (this.gyro_y || 'n/a'));
     }
   }
+  // this counter is used by handleMotionEvent to test that this loop is running
+  this.motionUpdateCounter++;
 };
 
 /*********************************************************************
