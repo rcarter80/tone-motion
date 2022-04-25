@@ -1,0 +1,1 @@
+I have two different .htacess files, one for ryancarter.org and the other for ryancarter.us. I don't want to accidentally upload the wrong file to the wrong server, so I keep them separate here.
