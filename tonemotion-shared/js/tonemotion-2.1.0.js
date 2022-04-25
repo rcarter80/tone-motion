@@ -42,6 +42,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {boolean} showConsoleOnLaunch - Set to 'true' to show console
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
+ * @param {number} shortestRoundtrip - shortest server ping (for time offset)
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
  * @param {string} motionPermissionStatus - Shows status of permission request to access motion & orientation data
@@ -96,6 +97,7 @@ function ToneMotion() {
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
+  this.shortestRoundtrip = Number.POSITIVE_INFINITY;
   this.deviceIsAndroid = false;
   this.motionPermissionStatus = 'unknown';
   this.shouldTestMotion = true;
@@ -933,7 +935,6 @@ ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
     let syncClockCounter = 0;
-    let shortestRoundtrip = Number.POSITIVE_INFINITY;
 
     let syncClockID = setInterval( () => {
       let syncTime1 = Date.now(); // client-side timestamp
@@ -945,12 +946,12 @@ ToneMotion.prototype.syncClocks = function() {
         let syncTime3 = Date.now(); // client-side timestamp on receipt
         let roundtrip = syncTime3 - syncTime1;
         this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
-        if (roundtrip < shortestRoundtrip) {
+        if (roundtrip < this.shortestRoundtrip) {
           // Safari caches response despite my very nice request not to
           // It releases cache after first iteration, but first result
           // can't really be trusted
           if (syncClockCounter > 1) {
-            shortestRoundtrip = roundtrip;
+            this.shortestRoundtrip = roundtrip;
             // shortest roundtrip considered most accurate
             // subtract this.clientServerOffset from client time to sync
             this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
@@ -961,11 +962,11 @@ ToneMotion.prototype.syncClocks = function() {
           }
         }
         if (syncClockCounter === 6) { // last check
-          if (shortestRoundtrip > 2000) {
+          if (this.shortestRoundtrip > 2000) {
             ;
-            this.publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
+            this.publicWarning('There seems to be a lot of latency in your connection to the server (' + this.shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
           } else {
-            this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+            this.publicLog('Shortest roundtrip latency was ' + this.shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
           }
           this.setStatus('readyToPlay');
         }
