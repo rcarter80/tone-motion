@@ -69,6 +69,3 @@ typings/
 
 # should not modify Tone.js
 /tonemotion-shared/js/Tone.js
-
-# ryancarter.org and ryancarter.us do NOT use the same .htaccess file
-.htaccess
