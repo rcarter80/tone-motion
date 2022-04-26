@@ -1010,6 +1010,28 @@ ToneMotion.prototype.getCuesFromServer = function() {
     } // else no new cue and control falls through, on to next loop
   })
   .catch(error => this.publicError(error));
+
+  // This is also an opportunity to perform another synchronization test between the client and the server if the latency was high during the inital page load. Threshold currently set to 400 ms. roundtrip latency.
+  if (this.shortestRoundtrip > 400) {
+    if (this.shouldSyncToServer) {
+      this.publicLog('High latency was previously detected. Attempting again to synchronize with server.');
+      let syncTime1 = Date.now(); // client-side timestamp
+      fetch(urlForClockSync)
+      .then(response => response.text())
+      .then(response => {
+        let syncTime2 = response; // server-side timestamp
+        let syncTime3 = Date.now(); // client-side timestamp on receipt
+        let roundtrip = syncTime3 - syncTime1;
+        if (roundtrip < this.shortestRoundtrip) {
+          // there was less latency this time, so update clientServerOffset
+          this.shortestRoundtrip = roundtrip;
+          this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+          this.publicLog('New shortest roundtrip latency was ' + this.shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+        }
+      })
+      .catch(error => this.publicError(error));
+    }
+  }
 };
 
 // Called when server has new cue
