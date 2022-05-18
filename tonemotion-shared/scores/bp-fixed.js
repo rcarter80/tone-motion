@@ -1126,8 +1126,8 @@ Tone.Transport.schedule((time) => {
 function scheduleAllCues() {
   tm.cue[6].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(6);
-  }, 1000);
+  }, 46036);
   tm.cue[7].timeoutID = window.setTimeout( () => {
     tm.triggerFixedCue(7);
-  }, 5000);
+  }, 116432);
 }
