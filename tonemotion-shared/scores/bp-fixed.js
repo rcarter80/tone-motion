@@ -1,5 +1,6 @@
 const tm = new ToneMotion();
 tm.debug = false; // if true, skips clock sync and shows console
+tm.showPracticeButtons = false;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -1126,8 +1127,13 @@ Tone.Transport.schedule((time) => {
   scheduleAllCues();
 }, "0");
 
+// TODO: fill out cue timings, but will need to change again to add tutorial cues in video
+
 function scheduleAllCues() {
-  tm.cue[1].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(1);
+  tm.cue[6].timeoutID = window.setTimeout( () => {
+    tm.triggerFixedCue(6);
   }, 1000);
+  tm.cue[7].timeoutID = window.setTimeout( () => {
+    tm.triggerFixedCue(7);
+  }, 5000);
 }

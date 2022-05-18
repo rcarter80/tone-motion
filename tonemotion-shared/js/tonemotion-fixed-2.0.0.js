@@ -3,7 +3,8 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '1.4.2';
+// NOTE: this version number isn't really accurate because this is the fixed library and I should eventually merge the fixed and normal versions. Consider adding fixed supplemental js file?
+const VERSION = '2.0.0';
 
 /*
 ** DOM HOOKS
@@ -60,6 +61,7 @@ var yTilt = new Tone.Signal(0.5);
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldTestOnDesktop - Sets motion values to 0
  * @param {boolean} demoOnly - Does not use cue counter at all
+ * @param {boolean} showPracticeButtons - shows buttons to practice shake/tilt
  * @param {boolean} glowingTransitions - Makes status label pulse once at end of cue
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
@@ -106,6 +108,7 @@ function ToneMotion() {
   this.shakeGapCounter = 0;
   this.shouldTestOnDesktop = false;
   this.demoOnly = false;
+  this.showPracticeButtons = true;
   this.glowingTransitions = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
@@ -524,12 +527,14 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     switch (this.status) {
       case 'readyToPlay':
         this.startMotionUpdates();
-        shake_test_button.classList.remove('hidden');
-        tilt_test_button.classList.remove('hidden');
-        if (this.demoOnly) {
-          this.publicMessage('To try out the two modes of interactive sound, tap the buttons above.');
-        } else {
-        this.publicMessage('To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.');
+        if (this.showPracticeButtons) {
+          shake_test_button.classList.remove('hidden');
+          tilt_test_button.classList.remove('hidden');
+          if (this.demoOnly) {
+            this.publicMessage('To try out the two modes of interactive sound, tap the buttons above.');
+          } else {
+          this.publicMessage('To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons below to practice the two modes of interactive sound before you begin playing the recording.');
+          }
         }
         break;
       case 'startNow':
@@ -552,10 +557,12 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'missedCue':
         this.setStatus('stopped');
         this.shutEverythingDown();
-        shake_test_button.classList.remove('hidden');
-        tilt_test_button.classList.remove('hidden');
-        if (this.demoOnly) {
-          this.setStartStopButton('hidden', '');
+        if (this.showPracticeButtons) {
+          shake_test_button.classList.remove('hidden');
+          tilt_test_button.classList.remove('hidden');
+          if (this.demoOnly) {
+            this.setStartStopButton('hidden', '');
+          }
         }
         break;
       case 'error':
