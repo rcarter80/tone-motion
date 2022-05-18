@@ -233,7 +233,6 @@ tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
-  tm.clearMotionErrorMessage();
 };
 tm.cue[5].stopCue = function() {
   // nothing to clean up
@@ -262,12 +261,7 @@ tm.cue[6].goCue = function() {
   sineTails.volume.value = -28;
   sinTremolo.depth.value = 0;
   count_6 = 0;
-
-  if (tm.getElapsedTimeInCue(6) < 500) {
-    // only trigger opening sound if it's actually beginning of cue
-    // otherwise if someone stops and restarts, this sound is triggered again
-    bellSparkle.start();
-  }
+  bellSparkle.start();
 };
 tm.cue[6].triggerShakeSound = function() {
   let time_6 = tm.getElapsedTimeInCue(6);
