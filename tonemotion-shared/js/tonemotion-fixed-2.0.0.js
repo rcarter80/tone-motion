@@ -152,28 +152,18 @@ ToneMotion.prototype.init = function(urlOfServer) {
   // Load test audio file into Tone.Buffer (same audio file as <audio> shim to tell Safari that page should play audio)
   const bufferLoadingTestFile = new Tone.Buffer('tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3');
 
-  Tone.Buffer.on('progress', () => {
-    this.setStatus('loading');
-    if (this.debug) {
-      this.publicLog('Audio buffers loading');
-    }
-  });
-
-  // Called when all buffers are done loading
-  Tone.Buffer.on('load', () => {
-    if (this.debug) {
-      this.publicLog('Audio buffers finished loading');
-      this.publicLog(`tonemotion v${VERSION} loaded`);
-    }
+  this.setStatus('loading');
+  this.publicLog('Audio buffers loading');
+  Tone.loaded().then(() => {
+    this.publicLog('Audio buffers finished loading');
+    this.publicLog(`tonemotion v${VERSION} loaded`);
     // Synchronize client clock to server once all resources loaded
     this.syncClocks();
-  });
-
-  Tone.Buffer.on('error', () => {
+    this.beginMotionHandlingOnAndroid();
+  }).catch(() => {
+    // BUG: Safari resolves promise even if files don't load
     this.publicError('Error loading the audio files');
   });
-
-  this.beginMotionHandlingOnAndroid();
 };
 
 // Tests if device is Android, registers 'devicemotion' event listener. iOS devices require permission after user interaction, but Android devices can begin polling motion sensor data immediately. Waiting to get motion data on Android until same point as I ask for permission on iOS does NOT work on Android. Motion polling chokes.
