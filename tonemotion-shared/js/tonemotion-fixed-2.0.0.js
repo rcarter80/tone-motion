@@ -1050,6 +1050,9 @@ ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
     // Use for additional sounds that don't interrupt current interaction
     if (this.cue[cue].mode === 'hidden') {
       try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      // need timestamp for hidden cue to trigger getSectionBreakpoints
+      // NB: time is only accurate if waitTime for hidden cue is 0
+      this.cue[cue].startedAt = this.cueTimeFromServer;
       return;
     }
   } else {
