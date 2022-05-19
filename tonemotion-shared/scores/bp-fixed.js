@@ -1123,6 +1123,8 @@ Tone.Transport.schedule((time) => {
 
 // TODO: could add purple color to tilt and shake section
 
+// TODO: when 'start' button is tapped, add publicMessage instructions about tutorial, etc. AND instruction to restart if this was unintentional (stop, start will start over).
+
 // TODO: will need to change cue timings to add tutorial cues in video
 // 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
