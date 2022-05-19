@@ -1075,6 +1075,24 @@ ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
   }
 };
 
+// Schedules fixed cue triggers from 2-dimensional array of cue/time pairs
+ToneMotion.prototype.scheduleFixedCues = function(cues) {
+  if (this.debug) {
+    // check accuracy of fixed cue trigger timings
+    this.fixedCuesStartedAt = Date.now();
+  }
+  for (let i in cues) {
+    this.cue[cues[i][0]].timeoutID = window.setTimeout( () => {
+      this.triggerFixedCue(cues[i][0]);
+      this.publicLog(`Fixed cue number ${cues[i][0]} triggered`);
+      if (this.debug) {
+        let now = Date.now();
+        this.publicLog(`Scheduled wait time: ${cues[i][1]}. Actual wait time: ${now - this.fixedCuesStartedAt}.`);
+      }
+    }, cues[i][1]);
+  }
+};
+
 // Clears all cues that are currently sounding
 ToneMotion.prototype.clearActiveCues = function() {
   for (var i = 0; i < this.cue.length; i++) {
