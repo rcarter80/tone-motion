@@ -1121,11 +1121,14 @@ Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
 
-// TODO: fill out cue timings, but will need to change again to add tutorial cues in video
+// TODO: will need to change cue timings to add tutorial cues in video
+// 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
-  // [6, 46036],
-  // [7, 116432]
   [0, 0],
-  [6, 1000],
-  [7, 2000]
+  [6, 47399],
+  [7, 116432],
+  [8, 123255],
+  [9, 129669],
+  [10, 155245],
+  [11, 180744, 1538]
 ];

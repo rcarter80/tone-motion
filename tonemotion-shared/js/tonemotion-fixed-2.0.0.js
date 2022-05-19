@@ -1060,6 +1060,18 @@ ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
   // clear all current cues
   this.clearActiveCues();
 
+  // new with v1.5.0, this method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients, but also won't be triggered if user taps "stop"
+  // These sounds will play even if skipping cues, so in a rehearsal going straight to one cue will trigger the previous cue's transition if it exists
+  if (cue > 0) {
+    try {
+      // cue transition is from PREVIOUS cue number
+      this.cue[cue-1].cueTransition();
+    } catch(e) {
+      // not a big deal if transition sound doesn't work
+      this.publicLog(e);
+    }
+  }
+
   // trigger new cue (immediately or after gapTime)
   if (gapTime) {
     setTimeout( () => {
@@ -1083,8 +1095,13 @@ ToneMotion.prototype.scheduleFixedCues = function(cues) {
   }
   for (let i in cues) {
     this.cue[cues[i][0]].timeoutID = window.setTimeout( () => {
-      this.triggerFixedCue(cues[i][0]);
-      this.publicLog(`Fixed cue number ${cues[i][0]} triggered`);
+      if (cues[i][2]) {
+        // this means there IS a gapTime to pass to triggerFixedCue()
+        this.triggerFixedCue(cues[i][0], cues[i][2]);
+      } else {
+        this.triggerFixedCue(cues[i][0]);
+      }
+      this.publicLog(`Fixed cue number ${cues[i][0]} was triggered`);
       if (this.debug) {
         let now = Date.now();
         this.publicLog(`Scheduled wait time: ${cues[i][1]}. Actual wait time: ${now - this.fixedCuesStartedAt}.`);
@@ -1316,6 +1333,13 @@ function TMCue(mode, waitTime, openWindow) {
 // Override this method in score to code the music for this section
 TMCue.prototype.goCue = function() {
   console.log('No music coded for this section.');
+};
+
+// Override this method in score to code the music for this section
+TMCue.prototype.cueTransition = function() {
+  if (this.debug) {
+    console.log('No transition sound coded for this cue.');
+  }
 };
 
 // Override this method in score to code the cleanup for this section
