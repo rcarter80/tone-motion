@@ -66,6 +66,7 @@ var yTilt = new Tone.Signal(0.5);
  * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
+ * @param {number} motionUpdateInSeconds - (seconds) Same value as above but in seconds (to minimize calculations for Tone.js objects that take seconds)
  * @param {number} cuePollingInterval - (ms.) How often server is polled
  * @param {array} intervalIDArray - used to store all interval IDs to clear
  * @param {number} motionUpdateCounter - used to check that motion is updating
@@ -112,6 +113,7 @@ function ToneMotion() {
   this.glowingTransitions = true;
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
+  this.motionUpdateInSeconds = 0.05;
   this.cuePollingInterval = 500;
   this.intervalIDArray = [];
   this.motionUpdateCounter = 0;
@@ -827,6 +829,7 @@ ToneMotion.prototype.beginMotionUpdates = function() {
     }, 500);
   }
 
+  this.motionUpdateInSeconds = this.motionUpdateLoopInterval/1000;
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
   // push ID to array so that I can clear everything later
   this.intervalIDArray.push(this.motionUpdateLoopID);
@@ -874,8 +877,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     this.ySig.value = this.accel.y;
   } else {
     // BUT this is for mobile anyway, so use this to smooth signal
-    this.xSig.linearRampTo(this.accel.x, (this.motionUpdateLoopInterval/1000));
-    this.ySig.linearRampTo(this.accel.y, (this.motionUpdateLoopInterval/1000));
+    this.xSig.linearRampTo(this.accel.x, this.motionUpdateInSeconds);
+    this.ySig.linearRampTo(this.accel.y, this.motionUpdateInSeconds);
   }
 
   if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
