@@ -844,8 +844,8 @@ ToneMotion.prototype.beginMotionUpdates = function() {
 ToneMotion.prototype.motionUpdateLoop = function() {
   // ASSIGN VALUES DIRECTLY FROM SLIDERS IF TESTING ON DESKTOP
   if (this.shouldTestOnDesktop) {
-    this.accel.x = this.sliderX.value;
-    this.accel.y = this.sliderY.value;
+    this.accel.x = parseFloat(this.sliderX.value);
+    this.accel.y = parseFloat(this.sliderY.value);
   } else {
     // NORMALIZE ACCELEROMETER DATA
     if (this.accel.rawX < -10) { // clamp
