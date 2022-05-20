@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: set debug to false
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 tm.showPracticeButtons = false;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -155,7 +154,7 @@ clave.volume.value = -18;
 // CUE 0: piece is in "waiting" state by default
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  tm.publicMessage(`A short video tutorial will begin soon. You won't need to tap any more buttons for the remainder of the performance; your phone will automatically play the right sounds at the right times.`);
 };
 tm.cue[0].stopCue = function() {
   // nothing to clean up
@@ -165,7 +164,7 @@ tm.cue[0].stopCue = function() {
 // CUE 1: SHAKE tutorial
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  // nothing to do until shake gestures
+  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. Just flicking your wrist gently will play a sound, in this case just a short click. If you hold your phone still, it will not make sound.');
 };
 tm.cue[1].triggerShakeSound = function() {
   clave.start();
@@ -178,7 +177,7 @@ tm.cue[1].stopCue = function() {
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  // nothing to play
+  tm.publicMessage(`During a section marked "tacet," your phone won't make any sound. This is a section for just the orchestra.`);
 };
 tm.cue[2].stopCue = function() {
   // nothing to clean up
@@ -193,6 +192,7 @@ tm.cue[3].goCue = function() {
   fmSynth.volume.value = -99;
   fmSynthDefaults();
   fmSynth.triggerAttack('E4');
+  tm.publicMessage(`During a section marked "tilt," you can control sounds by holding your phone in different positions. In this case, the tone you hear will be muted when your phone is upright, but will get louder and brighter as you tip your phone upside down. Additionally, you can control the note that you play. When you tilt your phone to the left, it will play lower notes, and when you tilt your phone to the right, it will play higher notes.`);
 };
 tm.cue[3].updateTiltSounds = function() {
   fmSynth.frequency.value = tiltPitchArr_3[Math.floor(tm.accel.x * 0.99 * len_3)];
@@ -222,7 +222,7 @@ tm.cue[3].stopCue = function() {
 // CUE 4: sets status to 'waitingForPieceToStart'
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
-  tm.publicLog('Waiting for piece to start');
+  tm.publicMessage(`The piece will begin shortly.`);
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -1121,14 +1121,15 @@ Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
 
-// TODO: could add purple color to tilt and shake section
-
-// TODO: when 'start' button is tapped, add publicMessage instructions about tutorial, etc. AND instruction to restart if this was unintentional (stop, start will start over).
-
 // TODO: will need to change cue timings to add tutorial cues in video
 // 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
   [0, 0],
+  // [1, 3000],
+  // [2, 6000],
+  // [3, 9000],
+  // [4, 12000],
+  // [5, 15000],
   [6, 47399],
   [7, 116432],
   [8, 123255],
