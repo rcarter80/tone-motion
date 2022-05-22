@@ -796,6 +796,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
+      // TODO: major bug below: this should be accel.x not y. This is in every version of the library
       this.accel.y = 1;
     }
     else {
