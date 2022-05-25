@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
 tm.debug = false; // if true, skips clock sync and shows console
-tm.showPracticeButtons = false;
 tm.showConsoleOnLaunch = false;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
@@ -101,6 +100,37 @@ const pianoSampler = new Tone.Sampler({
   baseUrl: piano_sounds,
 }).toDestination();
 
+function fmSynthPreset2() {
+  fmSynth.envelope.attack = 3;
+  fmSynth.envelope.attackCurve = 'linear';
+  fmSynth.envelope.release = 3;
+  fmSynth.envelope.releaseCurve = 'linear';
+  fmSynth.modulationEnvelope.attack = 3;
+  fmSynth.modulationEnvelope.attackCurve = 'linear';
+  fmSynth.modulationEnvelope.release = 3;
+  fmSynth.modulationEnvelope.releaseCurve = 'linear';
+  fmSynth.detune.value = 0;
+  // keep volume out because I want to set it independently by cue
+}
+
+// reversed cymbal sound to use at ends of some sections
+const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
+
+const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
+triangle.volume.value = -12;
+
+// *******************************************************************
+// CUE 0: piece is in "waiting" state by default
+tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[0].goCue = function() {
+  tm.publicMessage(`A short video tutorial will begin soon. You won't need to tap any more buttons for the remainder of the performance; your phone will automatically play the right sounds at the right times.`);
+};
+tm.cue[0].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 1: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
 const fmSynth = new Tone.FMSynth({
   envelope: {
     attack: 1,
@@ -129,73 +159,17 @@ function fmSynthDefaults() {
   fmSynth.detune.value = 0;
   // keep volume out because I want to set it independently by cue
 }
-function fmSynthPreset2() {
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
-  fmSynth.detune.value = 0;
-  // keep volume out because I want to set it independently by cue
-}
 
-// reversed cymbal sound to use at ends of some sections
-const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
-
-const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
-triangle.volume.value = -12;
-
-const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
-clave.volume.value = -18;
-
-// *******************************************************************
-// CUE 0: piece is in "waiting" state by default
-tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
-tm.cue[0].goCue = function() {
-  tm.publicMessage(`A short video tutorial will begin soon. You won't need to tap any more buttons for the remainder of the performance; your phone will automatically play the right sounds at the right times.`);
-};
-tm.cue[0].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 1: SHAKE tutorial
-tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
-tm.cue[1].goCue = function() {
-  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. Just flicking your wrist gently will play a sound, in this case just a short click. If you hold your phone still, it will not make sound.');
-};
-tm.cue[1].triggerShakeSound = function() {
-  clave.start();
-};
-tm.cue[1].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 2: tacet tutorial
-tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[2].goCue = function() {
-  tm.publicMessage(`During a section marked "tacet," your phone won't make any sound. This is a section for just the orchestra.`);
-};
-tm.cue[2].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 3: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
 let tiltPitchArr_3 = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
 let len_3 = tiltPitchArr_3.length;
-tm.cue[3] = new TMCue('tilt', 0, NO_LIMIT);
-tm.cue[3].goCue = function() {
+tm.cue[1] = new TMCue('tilt', 0, NO_LIMIT);
+tm.cue[1].goCue = function() {
   fmSynth.volume.value = -99;
   fmSynthDefaults();
   fmSynth.triggerAttack('E4');
   tm.publicMessage(`During a section marked "tilt," you can control sounds by holding your phone in different positions. In this case, the tone you hear will be muted when your phone is upright, but will get louder and brighter as you tip your phone upside down. Additionally, you can control the note that you play. When you tilt your phone to the left, it will play lower notes, and when you tilt your phone to the right, it will play higher notes.`);
 };
-tm.cue[3].updateTiltSounds = function() {
+tm.cue[1].updateTiltSounds = function() {
   fmSynth.frequency.value = tiltPitchArr_3[Math.floor(tm.accel.x * 0.99 * len_3)];
   let fmSynVol;
   if (tm.accel.y < 0.25) {
@@ -215,8 +189,34 @@ tm.cue[3].updateTiltSounds = function() {
     fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
   }
 };
-tm.cue[3].stopCue = function() {
+tm.cue[1].stopCue = function() {
   fmSynth.triggerRelease();
+};
+
+// *******************************************************************
+// CUE 2: tacet tutorial
+tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[2].goCue = function() {
+  tm.publicMessage(`During a section marked "tacet," your phone won't make any sound. This is a section for just the instruments on the recording.`);
+};
+tm.cue[2].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 3: SHAKE tutorial
+const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
+clave.volume.value = -12;
+
+tm.cue[3] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[3].goCue = function() {
+  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. Just flicking your wrist gently will play a sound, in this case just a short click. If you hold your phone still, it will not make sound.');
+};
+tm.cue[3].triggerShakeSound = function() {
+  clave.start();
+};
+tm.cue[3].stopCue = function() {
+  // nothing to clean up
 };
 
 // *******************************************************************
@@ -235,6 +235,7 @@ tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
+  tm.publicMessage('The beginning of the piece is just for orchestra, but your part will start soon!');
 };
 tm.cue[5].stopCue = function() {
   // nothing to clean up
@@ -1122,15 +1123,8 @@ Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
 
-// TODO: will need to change cue timings to add tutorial cues in video
-// 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
-  [0, 0],
-  // [1, 3000],
-  // [2, 6000],
-  // [3, 9000],
-  // [4, 12000],
-  // [5, 15000],
+  [5, 0],
   [6, 47399],
   [7, 116432],
   [8, 123255],
