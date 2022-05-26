@@ -153,9 +153,9 @@ clave.volume.value = -18;
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
-tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
+tm.cue[0] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  tm.publicMessage(`TESTING`);
+  tm.publicMessage(`As long as you tapped the "start" button above at the same time that the video said "tap start," your phone will automatically synchronize with the video. If not, you can tap "stop," rewind the video to the instruction screen, and tap "start" again at the end of the countdown.`);
 };
 tm.cue[0].stopCue = function() {
   // nothing to clean up
