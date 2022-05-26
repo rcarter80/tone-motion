@@ -155,7 +155,7 @@ clave.volume.value = -18;
 // CUE 0: piece is in "waiting" state by default
 tm.cue[0] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[0].goCue = function() {
-  tm.publicMessage(`A short video tutorial will begin soon. You won't need to tap any more buttons for the remainder of the performance; your phone will automatically play the right sounds at the right times.`);
+  tm.publicMessage(`TESTING`);
 };
 tm.cue[0].stopCue = function() {
   // nothing to clean up
@@ -165,7 +165,7 @@ tm.cue[0].stopCue = function() {
 // CUE 1: SHAKE tutorial
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. Just flicking your wrist gently will play a sound, in this case just a short click. If you hold your phone still, it will not make sound.');
+  tm.publicMessage(`The video should now be demonstrating the "shake" mode. If your phone doesn't line up with the video, you can tap "stop," rewind the video to the instruction screen, and tap "start" again at the end of the countdown.`);
 };
 tm.cue[1].triggerShakeSound = function() {
   clave.start();
@@ -1126,36 +1126,36 @@ Tone.Transport.schedule((time) => {
 // 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
   [0, 0],
-  // [1, 3000],
-  // [2, 6000],
-  // [3, 9000],
-  // [4, 12000],
-  // [5, 15000],
-  [6, 47399],
-  [7, 116432],
-  [8, 123255],
-  [9, 129669],
-  [10, 155245],
-  [11, 180744, 1538],
-  [12, 190590],
-  [13, 199158],
-  [14, 269885],
-  [15, 285548],
-  [16, 300476],
-  [17, 363116],
-  [18, 378642],
-  [19, 459295],
-  [20, 526977],
-  [21, 534662],
-  [22, 567397],
-  [23, 610455],
-  [24, 618054],
-  [25, 623858, 1538],
-  [26, 676254],
-  [27, 683640],
-  [28, 717273],
-  [29, 764229],
-  [30, 798556],
-  [31, 811455],
-  [32, 840000]
+  [1, 74780],
+  [2, 103910],
+  [3, 211750],
+  [4, 250750],
+  [5, 277750],
+  [6, 322899],
+  [7, 391932],
+  [8, 398755],
+  [9, 405169],
+  [10, 430745],
+  [11, 456244, 1538],
+  [12, 466090],
+  [13, 474658],
+  [14, 545385],
+  [15, 561048],
+  [16, 575976],
+  [17, 638616],
+  [18, 654142],
+  [19, 734795],
+  [20, 802477],
+  [21, 810162],
+  [22, 842897],
+  [23, 885955],
+  [24, 893554],
+  [25, 899358, 1538],
+  [26, 951754],
+  [27, 959140],
+  [28, 992773],
+  [29, 1039729],
+  [30, 1074056],
+  [31, 1086955],
+  [32, 1115500]
 ];
