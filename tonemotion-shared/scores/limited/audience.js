@@ -243,7 +243,7 @@ function displayShakesLeft(num) {
 
 tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // TODO: show number of shakes left immediately?
+  // TODO: show number of shakes left immediately? or probably not necessary because people will likely shake/dip right away
 };
 tm.cue[5].triggerShakeSound = function() {
   if (count_5 > 0) {
