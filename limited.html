@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Concerto Molto Grosso</title>
+  <title>A Limited Number of Contributions</title>
   <meta name="description" content="Web-based algorithmic generation of interactive music">
   <meta name="author" content="Ryan Carter">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 <body>
 
 <header>
-  <h1>Concerto Molto Grosso</h1>
+  <h1>A Limited Number of Contributions</h1>
   <button id="help_button" type="button">?</button>
 </header>
 
@@ -25,9 +25,11 @@
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
   <button id="start_stop_button" type="button" class="hidden"></button>
+  <div id="cue_container" class="hidden">
+    <p id="cue_label"></p>
+  </div>
   <div id="message_container" class="hidden">
-    <p id="cue_label">99</p>
-    <p id="message_label">message</p>
+    <p id="message_label"></p>
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->

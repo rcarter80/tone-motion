@@ -13,6 +13,7 @@ const help_button = document.querySelector('#help_button');
 const status_container = document.querySelector('#status_container');
 const status_label = document.querySelector('#status_label');
 const start_stop_button = document.querySelector('#start_stop_button');
+const cue_container = document.querySelector('#cue_container');
 const message_container = document.querySelector('#message_container');
 const message_label = document.querySelector('#message_label');
 const help_panel = document.querySelector('#help_panel');
@@ -267,7 +268,7 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStartStopButton('stop', 'stop');
       break;
     case 'missedCue':
-      this.setStatusLabel('(wait for next cue)', 'default');
+      this.setStatusLabel('waiting for next cue', 'default');
       this.setStartStopButton('stop', 'stop');
       break;
     case 'stopped':
@@ -688,6 +689,17 @@ ToneMotion.prototype.setBackgroundBlue = function() {
   );
 };
 
+// Displays large-font cue number (or other message) in message container
+ToneMotion.prototype.displayCueNumber = function(cue) {
+  cue_container.classList.remove('hidden');
+  cue_label.innerHTML = cue;
+}
+ToneMotion.prototype.clearCueDisplay = function(cue) {
+  cue_container.classList.add('hidden');
+  cue_label.innerHTML = '';
+}
+
+
 /*********************************************************************
 ********************** DEVICE MOTION HANDLING ************************
 *********************************************************************/
@@ -796,8 +808,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
-      // TODO: major bug below: this should be accel.x not y. This is in every version of the library
-      this.accel.y = 1;
+      this.accel.x = 1;
     }
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
@@ -1096,7 +1107,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     // clear all current cues and previous messages
     this.clearActiveCues();
     this.setStatus('missedCue');
-    this.publicWarning('Your device missed its cue by ' + (-delay) + ' milliseconds! If this keeps happening, there may be a problem with your connection.');
+    this.publicWarning(`Your device missed its cue by ${(-(delay/1000))} seconds. You'll be able to rejoin at the next cue.`);
   } else if (delay < 20) {
     // clear all current cues and previous messages
     this.clearActiveCues();

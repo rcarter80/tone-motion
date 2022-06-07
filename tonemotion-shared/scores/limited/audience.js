@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: decide on possible longer cue fetch interval. Should tolerate even once per second. Check tone-motion code to make sure changing cue fetch interval doesn't have unintended consequences. Also 'hidden' cues are always triggered immediately and don't use waitTime or openWindow so I could get rid of those
-tm.debug = false; // if true, skips clock sync and shows console
+tm.debug = true; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -162,9 +161,9 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: SHAKE tutorial
+
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  // nothing to do until shake gestures
 };
 tm.cue[1].triggerShakeSound = function() {
   clave.start();
@@ -218,25 +217,37 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'
+// CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
+  // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
+  count_5 = 20;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 5: actual beginning of piece (audience is tacet)
-tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
+// CUE 5: actual beginning of piece
+let count_5 = 20;
+
+tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // optimize motion update loop by turning off motion testing when piece starts
-  tm.shouldTestMotion = false;
-  tm.clearMotionErrorMessage();
+  tm.displayCueNumber(count_5);
+};
+tm.cue[5].triggerShakeSound = function() {
+  if (count_5 > 0) {
+    clave.start();
+    count_5--;
+    tm.displayCueNumber(count_5);
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
 };
 tm.cue[5].stopCue = function() {
-  // nothing to clean up
+  // this is just a test
+  // tm.clearCueDisplay();
 };
 
 // *******************************************************************
