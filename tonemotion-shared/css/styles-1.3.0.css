@@ -349,27 +349,14 @@ fieldset {
 #message_container.hidden {
   opacity: 0;
 }
-/* used for large font in a musician cueing site like for A Shared Space */
-#cue_container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  width: 200px;
-  margin: 25px auto;
-  padding: 20px;
-  border: 2px dashed #fff;
-  border-radius: 10px;
-  background-color: transparent;
-  opacity: 1;
-  color: #fff;
-  transition: all .2s linear;
-}
-#cue_container.hidden {
-  display: none;
-}
-#cue_label {
+
+/* TODO: get rid of #cue_label (change to "span.jumbo") and change site for shared-cues */
+#cue_label,
+span.jumbo {
   font-size: 500%;
+}
+span.large {
+  font-size: 250%;
 }
 
 #motion_error_container {

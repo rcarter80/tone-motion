@@ -232,15 +232,24 @@ tm.cue[4].stopCue = function() {
 // CUE 5: actual beginning of piece
 let count_5 = 20;
 
+// shows number of shakes listener has left
+function displayShakesLeft(num) {
+  if (num === 1) {
+    status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>shake left';
+  } else {
+    status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>shakes left';
+  }
+}
+
 tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  tm.displayCueNumber(count_5);
+  // TODO: show number of shakes left immediately?
 };
 tm.cue[5].triggerShakeSound = function() {
   if (count_5 > 0) {
     clave.start();
     count_5--;
-    tm.displayCueNumber(count_5);
+    displayShakesLeft(count_5);
   } else {
     tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
   }
