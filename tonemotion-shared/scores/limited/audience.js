@@ -222,7 +222,7 @@ tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
   // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
-  count_5 = 20;
+  count_5 = 21;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -230,20 +230,17 @@ tm.cue[4].stopCue = function() {
 
 // *******************************************************************
 // CUE 5: actual beginning of piece
-let count_5 = 20;
+let count_5 = 21;
 
 // shows number of shakes listener has left
 function displayShakesLeft(num) {
-  if (num === 1) {
-    status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>shake left';
-  } else {
-    status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>shakes left';
-  }
+  let shakes = (num === 1) ? 'shake' : 'shakes';
+  // status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>' + shakes + ' left';
+  status_label.innerHTML = `<span class="large">${count_5}</span><br>${shakes} left`;
 }
 
 tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // TODO: show number of shakes left immediately? or probably not necessary because people will likely shake/dip right away
 };
 tm.cue[5].triggerShakeSound = function() {
   if (count_5 > 0) {
@@ -251,6 +248,7 @@ tm.cue[5].triggerShakeSound = function() {
     count_5--;
     displayShakesLeft(count_5);
   } else {
+    displayShakesLeft(count_5);
     tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
   }
 };
