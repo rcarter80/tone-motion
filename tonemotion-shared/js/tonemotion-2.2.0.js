@@ -24,7 +24,7 @@ const console_checkbox = document.querySelector('#console_checkbox');
 const console_container = document.querySelector('#console_container');
 const body_element = document.querySelector('body');
 // NodeList of all elements that get set by setBackgroundColor()
-const colorElements = document.querySelectorAll('button, a, html, body, #help_button');
+const colorElements = document.querySelectorAll('button, a, html, body, #help_panel');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -296,9 +296,8 @@ ToneMotion.prototype.setStatus = function(status) {
       case 'playing_shake':
         this.setBackgroundColor('gray');
         break;
-        // TODO: after adding 'dip' mode, set that to purple and change this to another color. orange maybe?
       case 'playing_tiltAndShake':
-        this.setBackgroundColor('purple');
+        this.setBackgroundColor('orange');
         break;
       case 'playing_dip':
         this.setBackgroundColor('purple');
@@ -615,7 +614,7 @@ ToneMotion.prototype.setBackgroundColor = function(color) {
     function(currentValue) {
       // default color is blue, so there's no .blue, but remove every other
       // if I add another color to stylesheet, it needs to get added here too
-      currentValue.classList.remove('purple', 'gray', 'green');
+      currentValue.classList.remove('purple', 'gray', 'green', 'orange');
       // if color is blue, no CSS class is needed because that's the default
       // any invalid argument to this function results in default blue
       if (color !== 'blue') {

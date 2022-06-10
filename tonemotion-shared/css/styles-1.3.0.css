@@ -14,6 +14,8 @@
  --theme-color-dark-purple: #39095e;
  --theme-color-light-gray: #6b7d80;
  --theme-color-dark-gray: #002529;
+ --theme-color-light-orange: #fca344;
+ --theme-color-dark-orange: #b55e02;
 }
 
 *,
@@ -36,6 +38,9 @@ html.purple {
 }
 html.gray {
   background-color: var(--theme-color-light-gray);
+}
+html.orange {
+  background-color: var(--theme-color-light-orange);
 }
 
 body {
@@ -63,6 +68,10 @@ body.purple {
 body.gray {
   /* gradient goes from theme-color-dark-gray to theme-color-light-gray */
   background: linear-gradient(#002529, #6b7d80);
+}
+body.orange {
+  /* gradient goes from theme-color-dark-orange to theme-color-light-orange */
+  background: linear-gradient(#b55e02, #fca344);
 }
 body.fade {
   /* allows <html> background-color transition to be visible */
@@ -145,6 +154,12 @@ a.gray {
 a.gray:hover {
   color: var(--theme-color-dark-gray);
 }
+a.orange {
+  color: var(--theme-color-light-orange);
+}
+a.orange:hover {
+  color: var(--theme-color-dark-orange);
+}
 
 /*
 ** BUTTONS
@@ -185,6 +200,10 @@ button.gray {
   border-color: var(--theme-color-dark-gray);
   color: var(--theme-color-dark-gray);
 }
+button.orange {
+  border-color: var(--theme-color-dark-orange);
+  color: var(--theme-color-dark-orange);
+}
 
 input[type=checkbox] {
   display: inline;
@@ -217,6 +236,9 @@ input[type=checkbox] {
 }
 #help_button.gray {
   box-shadow: 0 0 16px rgba(0, 37, 41, 0.28); /* theme-color-dark-gray */
+}
+#help_button.orange {
+  box-shadow: 0 0 16px rgba(181, 94, 2, 0.28); /* theme-color-dark-orange */
 }
 
 /*
@@ -401,6 +423,9 @@ span.large {
 #help_panel.gray {
   color: var(--theme-color-dark-gray);
 }
+#help_panel.orange {
+  color: var(--theme-color-dark-orange);
+}
 
 @media (max-width: 767px) {
   #help_panel {
@@ -437,6 +462,9 @@ span.large {
 }
 #help_panel.gray h2 {
   border-color: var(--theme-color-dark-gray);
+}
+#help_panel.orange h2 {
+  border-color: var(--theme-color-dark-orange);
 }
 
 #help_panel div {
