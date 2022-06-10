@@ -20,9 +20,21 @@ const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 
+// TODO: decide if I need these definitions
 // 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
+
+// shows number of shakes listener has left
+function displayShakesLeft(num) {
+  let shakes = (num === 1) ? 'shake' : 'shakes';
+  status_label.innerHTML = `<span class="large">${num}</span><br>${shakes} left`;
+}
+// shows number of dips listener has left
+function displayDipsLeft(num) {
+  let dips = (num === 1) ? 'dip' : 'dips';
+  status_label.innerHTML = `<span class="large">${num}</span><br>${dips} left`;
+}
 
 // INSTRUMENTS
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
@@ -231,13 +243,6 @@ tm.cue[4].stopCue = function() {
 // *******************************************************************
 // CUE 5: actual beginning of piece
 let count_5 = 21;
-
-// shows number of shakes listener has left
-function displayShakesLeft(num) {
-  let shakes = (num === 1) ? 'shake' : 'shakes';
-  // status_label.innerHTML = '<span class="large">' + count_5 + '</span><br>' + shakes + ' left';
-  status_label.innerHTML = `<span class="large">${count_5}</span><br>${shakes} left`;
-}
 
 tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
