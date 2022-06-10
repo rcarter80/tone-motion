@@ -64,6 +64,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} shakeGapCounter - To prevent immediate successive
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
+ * @param {boolean} dipFlag - true when device is upside down. Needs resetting.
  * @param {boolean} shouldSimulateMotion - Sets motion values to 0
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
@@ -116,6 +117,7 @@ function ToneMotion() {
   this.shakeFlag = false;
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
+  this.dipFlag = false;
   this.shouldSimulateMotion = false;
   this.motionUpdateLoopInterval = 50;
   this.motionUpdateInSeconds = 0.05;
@@ -257,6 +259,10 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStatusLabel('tilt and shake', 'default');
       this.setStartStopButton('stop', 'stop');
       break;
+    case 'playing_dip':
+      this.setStatusLabel('dip', 'default');
+      this.setStartStopButton('stop', 'stop');
+      break;
     case 'playing_listen':
       this.setStatusLabel('just listen', 'default');
       this.setStartStopButton('stop', 'stop');
@@ -292,6 +298,9 @@ ToneMotion.prototype.setStatus = function(status) {
         break;
         // TODO: after adding 'dip' mode, set that to purple and change this to another color. orange maybe?
       case 'playing_tiltAndShake':
+        this.setBackgroundColor('purple');
+        break;
+      case 'playing_dip':
         this.setBackgroundColor('purple');
         break;
       default:
@@ -512,6 +521,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'playing_tilt':
       case 'playing_shake':
       case 'playing_tiltAndShake':
+      case 'playing_dip':
       case 'playing_listen':
       case 'missedCue':
         this.shutEverythingDown();
@@ -589,7 +599,12 @@ ToneMotion.prototype.simulateMotion = function() {
     this.shakeButton = document.querySelector('#simulateShakeButton');
 
     this.shakeButton.addEventListener('click', () => {
-      this.currentCue.triggerShakeSound();
+      if (this.status === 'playing_shake' ||
+      this.status === 'playing_tiltAndShake') {
+        this.currentCue.triggerShakeSound();
+      } else if (this.status === 'playing_dip') {
+        this.currentCue.triggerDipSound();
+      }
     });
   }
 };
@@ -670,6 +685,7 @@ ToneMotion.prototype.checkForFailure = function() {
     this.status === 'playing_tilt' ||
     this.status === 'playing_shake' ||
     this.status === 'playing_tiltAndShake' ||
+    this.status === 'playing_dip' ||
     this.status === 'playing_listen') {
       // start everything up again
       this.cueTimeFromServer = 0;
@@ -750,7 +766,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
   this.xSig.linearRampTo(this.accel.x, this.motionUpdateInSeconds);
   this.ySig.linearRampTo(this.accel.y, this.motionUpdateInSeconds);
 
-  if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake') {
+  if (this.status === 'playing_tilt' || this.status === 'playing_tiltAndShake' || this.status === 'playing_dip') {
+    // DIP mode can also include TILT sounds
     this.currentCue.updateTiltSounds();
   }
 
@@ -776,6 +793,22 @@ ToneMotion.prototype.motionUpdateLoop = function() {
         // After waiting for shakeGap ms., reset boths flags
         this.shakeFlag = false;
         this.recentShakeFlag = false;
+      }
+    }
+  }
+
+  // TRIGGER DIP EVENT
+  if (this.status === 'playing_dip') {
+    if (tm.accel.y < 0.4) {
+      // tipping phone upright resets flag so that DIP can be triggered again
+      if (!tm.dipFlag) {
+        tm.dipFlag = true;
+      }
+    } else if (tm.accel.y > 0.7) {
+      if (tm.dipFlag) {
+        // Dip gesture triggered here
+        this.currentCue.triggerDipSound();
+        tm.dipFlag = false; // flag is false until phone tipped back up
       }
     }
   }
@@ -1077,6 +1110,9 @@ ToneMotion.prototype.setStatusForNewCue = function(cue) {
     case 'tiltAndShake':
       this.setStatus('playing_tiltAndShake');
       break;
+    case 'dip':
+      this.setStatus('playing_dip');
+      break;
     case 'listen':
       this.setStatus('playing_listen');
       break;
@@ -1289,4 +1325,9 @@ TMCue.prototype.updateTiltSounds = function() {
 // Override this method in score to make "shake" interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
   // Override if section uses shake
+};
+
+// Override this method in score to make "dip" interactive sounds
+TMCue.prototype.triggerDipSound = function() {
+  // Override if section uses dip
 };

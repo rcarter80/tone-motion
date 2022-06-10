@@ -195,37 +195,17 @@ tm.cue[2].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 3: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
-let tiltPitchArr_3 = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
-let len_3 = tiltPitchArr_3.length;
-tm.cue[3] = new TMCue('tilt', 0, NO_LIMIT);
+// CUE 3: DIP tutorial
+// TODO: write DIP tutorial. Could use very quiet TILT tutorial from earlier and add loud clave with dip
+tm.cue[3] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
-  fmSynth.volume.value = -99;
-  fmSynthDefaults();
-  fmSynth.triggerAttack('E4');
 };
 tm.cue[3].updateTiltSounds = function() {
-  fmSynth.frequency.value = tiltPitchArr_3[Math.floor(tm.accel.x * 0.99 * len_3)];
-  let fmSynVol;
-  if (tm.accel.y < 0.25) {
-    // set volume with rampTo to avoid zipper noise
-    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
-  } else if (tm.accel.y < 0.5) {
-    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
-  } else if (tm.accel.y < 0.75) {
-    fmSynVol = -12 - (0.75 - tm.accel.y) * 64; // -28 to -12 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
-  } else {
-    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
-  }
 };
+tm.cue[3].triggerDipSound = function() {
+  console.log('dip');
+}
 tm.cue[3].stopCue = function() {
-  fmSynth.triggerRelease();
 };
 
 // *******************************************************************
@@ -246,6 +226,8 @@ let count_5 = 21;
 
 tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  // turn off motion testing to optimize motionUpdateLoop
+  tm.shouldTestMotion = false;
 };
 tm.cue[5].triggerShakeSound = function() {
   if (count_5 > 0) {
