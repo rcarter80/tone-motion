@@ -3,7 +3,7 @@
 *********************************************************************/
 
 // NOTE: This all depends on Tone.js, which must appear first
-const VERSION = '2.1.0';
+const VERSION = '2.2.0';
 
 /*
 ** DOM HOOKS
@@ -22,11 +22,9 @@ const motion_data_checkbox = document.querySelector('#motion_data_checkbox');
 const motion_data_label = document.querySelector('#motion_data_label');
 const console_checkbox = document.querySelector('#console_checkbox');
 const console_container = document.querySelector('#console_container');
-const html_element = document.querySelector('html');
 const body_element = document.querySelector('body');
-// NodeLists of all buttons and links
-const buttonList = document.querySelectorAll('button');
-const linkList = document.querySelectorAll('a');
+// NodeList of all elements that get set by setBackgroundColor()
+const colorElements = document.querySelectorAll('button, a, html, body, #help_button');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -67,8 +65,6 @@ const yTilt = new Tone.Signal(0.5);
  *    shake gestures, counter counts down (shakeGap /
  *    motionUpdateLoopInterval) times, then reset recentShakeFlag
  * @param {boolean} shouldSimulateMotion - Sets motion values to 0
- * @param {boolean} glowingTransitions - Makes status label pulse once at end of cue
- * @param {boolean} colorCodeMode - Changes background color with cue mode
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} motionUpdateInSeconds - (seconds) Same value as above but in seconds (to minimize calculations for Tone.js objects that take seconds)
@@ -121,8 +117,6 @@ function ToneMotion() {
   this.recentShakeFlag = false;
   this.shakeGapCounter = 0;
   this.shouldSimulateMotion = false;
-  this.glowingTransitions = true;
-  this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.motionUpdateInSeconds = 0.05;
   this.cuePollingInterval = 500;
@@ -288,28 +282,25 @@ ToneMotion.prototype.setStatus = function(status) {
     default:
       this.publicError('Error setting application status');
     }
-    // changes background color with interactivity mode (if color code is on)
-    if (this.colorCodeMode) {
-      switch (status) {
-        case 'playing_tilt':
-          this.setBackgroundGreen();
-          break;
-        case 'playing_shake':
-          this.setBackgroundGray();
-          break;
-        case 'playing_tiltAndShake':
-          this.setBackgroundPurple();
-          break;
-        default:
-          this.setBackgroundBlue();
-      }
+    // changes background color with interactivity mode
+    switch (status) {
+      case 'playing_tilt':
+        this.setBackgroundColor('green');
+        break;
+      case 'playing_shake':
+        this.setBackgroundColor('gray');
+        break;
+        // TODO: after adding 'dip' mode, set that to purple and change this to another color. orange maybe?
+      case 'playing_tiltAndShake':
+        this.setBackgroundColor('purple');
+        break;
+      default:
+        this.setBackgroundColor('blue');
     }
     // need to remove 'swell' class to reset pulsing glow at end of next cue
     // need to add 'fade' class to <body> to create background color transition
-    if (this.glowingTransitions) {
-      status_container.classList.remove('swell');
-      body_element.classList.add('fade');
-    }
+    status_container.classList.remove('swell');
+    body_element.classList.add('fade');
     this.publicLog('Application status set to ' + this.status);
 };
 
@@ -603,88 +594,18 @@ ToneMotion.prototype.simulateMotion = function() {
   }
 };
 
-// Changes background to green gradient
-ToneMotion.prototype.setBackgroundGreen = function() {
-  // remove purple class in case background is currently purple
-  html_element.classList.remove('purple', 'gray');
-  html_element.classList.add('green');
-  body_element.classList.remove('purple', 'gray');
-  body_element.classList.add('green');
-  help_panel.classList.remove('purple', 'gray');
-  help_panel.classList.add('green');
-  buttonList.forEach(
+// Changes background to any color defined in stylesheet
+ToneMotion.prototype.setBackgroundColor = function(color) {
+  colorElements.forEach(
     function(currentValue) {
-      currentValue.classList.remove('purple', 'gray');
-      currentValue.classList.add('green');
-    }
-  );
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('purple', 'gray');
-      currentValue.classList.add('green');
-    }
-  );
-};
-
-// Changes background to purple gradient
-ToneMotion.prototype.setBackgroundPurple = function() {
-  // remove green class in case background is currently green
-  html_element.classList.remove('green', 'gray');
-  html_element.classList.add('purple');
-  body_element.classList.remove('green', 'gray');
-  body_element.classList.add('purple');
-  help_panel.classList.remove('green', 'gray');
-  help_panel.classList.add('purple');
-  buttonList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'gray');
-      currentValue.classList.add('purple');
-    }
-  );
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'gray');
-      currentValue.classList.add('purple');
-    }
-  );
-};
-
-// Changes background to gray gradient
-ToneMotion.prototype.setBackgroundGray = function() {
-  // remove green class in case background is currently green
-  html_element.classList.remove('green', 'purple');
-  html_element.classList.add('gray');
-  body_element.classList.remove('green', 'purple');
-  body_element.classList.add('gray');
-  help_panel.classList.remove('green', 'purple');
-  help_panel.classList.add('gray');
-  buttonList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'purple');
-      currentValue.classList.add('gray');
-    }
-  );
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'purple');
-      currentValue.classList.add('gray');
-    }
-  );
-};
-
-// Changes background to default blue gradient
-ToneMotion.prototype.setBackgroundBlue = function() {
-  html_element.classList.remove('green', 'purple', 'gray');
-  body_element.classList.remove('green', 'purple', 'gray');
-  help_panel.classList.remove('green', 'purple', 'gray');
-  buttonList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'purple', 'gray')
-    }
-  );
-  linkList.forEach(
-    function(currentValue) {
-      currentValue.classList.remove('green', 'purple', 'gray')
+      // default color is blue, so there's no .blue, but remove every other
+      // if I add another color to stylesheet, it needs to get added here too
+      currentValue.classList.remove('purple', 'gray', 'green');
+      // if color is blue, no CSS class is needed because that's the default
+      // any invalid argument to this function results in default blue
+      if (color !== 'blue') {
+        currentValue.classList.add(color);
+      }
     }
   );
 };
@@ -1065,12 +986,10 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     return;
   }
 
-  // by default, end of cue causes status label to pulse once
+  // end of cue causes status label to pulse once
   // new cue causes background to fade out / in. Need to clear previous fade
-  if (this.glowingTransitions) {
-    status_container.classList.add('swell');
-    body_element.classList.remove('fade');
-  }
+  status_container.classList.add('swell');
+  body_element.classList.remove('fade');
 
   // new with v1.5.0, this method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients, but also won't be triggered if user taps "stop"
   // These sounds will play even if skipping cues, so in a rehearsal going straight to one cue will trigger the previous cue's transition if it exists
