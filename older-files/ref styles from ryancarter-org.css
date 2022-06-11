@@ -1,0 +1,998 @@
+  /* COLOR PALETTE
+  dark blue: #2026E3 [rgb(32, 38, 227)]
+  light blue: #368DD9 [rgb(54, 141, 217)]
+  orange: #FFDD80
+  very light gray: #f9f9fa
+  light gray: #b2b7b6
+  medium gray: #8a8f8d
+  dark gray: #6a6f6d
+  very dark gray: #4a4f4d
+  */
+
+  /* -------------------------  GENERAL STYLES ------------------------- */
+  html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+
+  /* apply a natural box layout model to all elements (suggestion from Paul Irish) */
+  *, *:before, *:after { 
+    -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #eee;
+    background-image: url("../img/manuscript_background.png");
+    color: #6a6f6d;
+    font-size: 87%; 
+    font-family: 'Open Sans', Arial, sans-serif;
+    line-height: 1.5;
+  }
+
+  div, ul, ol, li {
+    margin: 0;
+    padding: 0;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+    line-height: 0;
+  }
+  .clearfix:after {
+    clear: both;
+  }
+
+  img {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border: 0;
+    vertical-align: middle;
+    -ms-interpolation-mode: bicubic;
+  }
+
+  hr {
+    margin: 20px 0 10px 0;
+    border: 0;
+    border-top: 1px solid #b2b7b6;
+  }
+
+  /* -------------------------  GENERAL TEXT STYLES ------------------------- */
+  a:link,
+  a:visited {
+    color: #2026E3;
+    text-decoration: none;
+  }
+  a:focus {
+    outline: thin dotted #333;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+    background-color: #fff;
+  }
+  a:hover,
+  a:active {
+    outline: 0;
+    color: #368DD9;
+  }
+  /* background hover color on desktop only */
+  @media (min-device-width: 980px) {
+    a:hover,
+    a:active {
+      background-color: #f9f9fa;
+    }
+  }
+  a.block_link {
+    display: block;
+    padding: 3px 0 3px 10px;
+    border-left: 4px solid #b2b7b6;
+  }
+
+  a,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0 0 10px 0;
+    background-color: #fff;
+    font-family: inherit;
+  }
+
+  h1 { /* always and only used in header at top of each page */
+    margin: 0;
+    background: transparent;
+    color: #4a4f4d;
+    text-align: center;
+    letter-spacing: 1px;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 42px;
+  }
+  /* tablet */
+  @media (min-device-width: 768px) and (max-device-width: 979px) {
+    #header > h1 {
+      font-size: 12px; /* slightly smaller to accomodate narrower nav bar */
+    }
+  }
+
+  h2 { /* always and only used in title banner of each page */
+    margin: 22px 0;
+    background: rgb(32, 38, 227);
+    background: rgba(32, 38, 227, 0.6);
+    color: #fff;
+    letter-spacing: 2px;
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #6a6f6d;
+    font-size: 14px;
+  }
+
+  ::-moz-selection {  background: #FFDD80; color: inherit; }
+  ::selection      {  background: #FFDD80; color: inherit; } 
+
+  small {
+    font-size: 85%;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  cite {
+    font-style: normal;
+  }
+
+  p.center {
+    text-align: center;
+  }
+
+  span.very_light,
+  p.very_light {
+    color: #f9f9fa;
+  }
+  span.light,
+  p.light {
+    color: #b2b7b6;
+  }
+  span.medium,
+  p.medium {
+    color: #8a8f8d;
+  }
+  span.dark,
+  p.dark {
+    color: #6a6f6d;
+  }
+  span.very_dark,
+  p.very_dark {
+    color: #4a4f4d;
+  }
+  span.small {
+    font-size: 80%;
+  }
+  span.very_large {
+    font-size: 150%;
+  }
+
+  /* -------------------------  PAGE TEMPLATE ------------------------- */
+  /* -------------------------  HEADER ------------------------- */
+  #header_wrapper {
+    position: fixed; /* header sticks to top unless viewport is narrower than 940px */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    border-bottom: 1px solid #b2b7b6; /* keep border for browsers that don't suprt box-shadow */
+    background: rgb(255, 255, 255); /* fallback for browsers that don't support rbga() */
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 1px 4px #000;
+  }
+  /* mouse hover on desktop only */
+  @media (min-device-width: 980px) {
+    #header_wrapper:hover {
+      background: rgb(255, 255, 255);
+      background: rgba(255, 255, 255, 1.0);
+      box-shadow: 0 2px 4px #000;
+    }
+  }
+
+  #header_container {
+    margin: 0 auto;
+    width: 940px;
+    height: 42px;
+  }
+
+  #header {
+    float: left;
+    width: 260px;
+  }
+
+  /* desktop with narrow viewport */
+  @media (max-width: 940px) and (min-device-width: 980px) {
+    #header_wrapper,
+    #header_wrapper:hover {
+      position: relative; /* fixes problem with scrolling horizontally with sticky header */
+      border: none;
+      background: transparent; /* background color needs to be set on #header_container */
+      box-shadow: none;
+    }
+    #header_container {
+      border-bottom: 1px solid #b2b7b6;
+      background: rgb(255, 255, 255); /* fallback for browsers that don't support rbga() */
+      background: rgba(255, 255, 255, 0.92); /* normally set on #header_wrapper, unless viewport is too narrow */
+      box-shadow: 0 1px 4px #000;
+    }
+    #header_container:hover {
+      background: rgb(255, 255, 255);
+      background: rgba(255, 255, 255, 1.0);
+      box-shadow: 0 2px 4px #000;
+    }
+  }
+
+  /* tablet */
+  @media (min-device-width: 768px) and (max-device-width: 979px) {
+    #header_container {
+      margin: 0;
+      width: 100%;
+    }
+    #header {
+      width: 30%;
+    }
+  }
+
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    #header_container {
+      margin: 0;
+      width: 100%;
+    }
+    #header {
+      width: 75%;
+    }
+  }
+
+  #navigation_disclosure {
+    display: none; /* only shows on phone */
+  }
+
+  #nav {
+    float: left;
+    width: 680px;
+  }
+  #nav > ul {
+    list-style: none;
+  }
+  #nav > ul > li {
+    float: left;
+    width: 14%;
+    border-left: 1px solid #b2b7b6;
+    text-align: center;
+    font-size: 14px;
+  }
+  #nav > ul > li:last-child {
+    border-right: 1px solid #b2b7b6;
+  }
+  #nav > ul > li > a {
+    display: block;
+    margin: 0;
+    padding: 0;
+    line-height: 42px;
+  }
+  #nav > ul > li > a:link,
+  #nav > ul > li > a:visited {
+    background: transparent;
+  }
+  /* mouse hover on desktop only */
+  @media (min-device-width: 980px) {
+    #nav > ul > li > a:hover,
+    #nav > ul > li > a:active {
+      background-color: #f9f9fa;
+      color: #368DD9;
+    }
+  }
+  #nav > ul > li > a.disabled {
+    background: rgb(248, 248, 248);
+    background: rgba(178, 183, 182, 0.2);
+    color: #4a4f4d;
+  }
+
+  /* tablet */
+  @media (min-device-width: 768px) and (max-device-width: 979px) {
+    #nav {
+      width: 70%;
+    }
+    #nav > ul > li {
+      font-size: 12px;
+    }
+    #nav > ul > li:last-child {
+      border-right: none;
+    }
+  }
+
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    #navigation_disclosure {
+      display: block;
+      float: left;
+      width: 25%;
+    }
+    #navigation_disclosure > a {
+      display: block;
+      margin: 0;
+      border-left: 1px solid #b2b7b6;
+      background: transparent;
+      text-align: center;
+      font-size: 14px;
+      line-height: 42px;
+    }
+
+    #nav {
+      display: none; /* normally hidden */
+      clear: both;
+      width: 100%;
+      border-top: 1px solid #b2b7b6;
+    }
+    #nav > ul > li {
+      clear: both;
+      width: 100%;
+      border-bottom: 1px solid #b2b7b6;
+      border-left: none;
+      background-color: #fff;
+      font-size: 14px;
+    }
+    #nav > ul > li:last-child {
+      border-right: none;
+    }
+  }
+
+  /* -------------------------  MAIN CONTENT ------------------------- */
+  #main_wrapper {
+    margin: 83px auto 40px;
+    padding: 10px 0;
+    width: 940px;
+    border: 1px solid #b2b7b6; /* mostly here for browsers that don't support box shadow */
+    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 4px #000;
+    -webkit-animation-name: fadeIn; -moz-animation-name: fadeIn; animation-name: fadeIn;
+    -webkit-animation-duration: 1s; -moz-animation-duration: 1s; animation-duration: 1s;
+  }
+  @-webkit-keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+  @-moz-keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+  @keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+
+  /* desktop with narrow viewport */
+  @media (max-width: 940px) and (min-device-width: 980px) {
+    #main_wrapper {
+      margin-top: 40px; /* removes margin for header bar */
+    }
+  }
+
+  #main_container {
+    margin: 20px 40px;
+    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  /* tablet */
+  @media (min-device-width: 768px) and (max-device-width: 979px) {
+    #main_wrapper {
+      margin: 83px 30px 40px;
+      width: auto;
+    }
+  }
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    #main_wrapper {
+      padding: 5px 0;
+      width: 100%;
+    }
+    #main_container {
+      margin: 10px 10px;
+    }
+  }
+
+  #banner {
+    margin-top: 0px;
+    width: 100%;
+    height: 72px;
+    border: 1px solid #b2b7b6;
+    background: url("../img/banner_engraved.png");
+    background-position: 0;
+    background-repeat: repeat-x;
+    text-align: center;
+    -webkit-animation: animatedBackground 60s linear infinite alternate;
+    -moz-animation: animatedBackground 60s linear infinite alternate;
+    animation: animatedBackground 60s linear infinite alternate;
+  }
+  @-webkit-keyframes animatedBackground { to { background-position: 1500px 0; } }
+  @-moz-keyframes animatedBackground { to { background-position: 1500px 0; } }
+  @keyframes animatedBackground { to { background-position: 1500px 0; } }
+
+  .section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #b2b7b6;
+  }
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    .section {
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+  }
+
+  /* -------------------------  FOOTER ------------------------- */
+  #tiny_phone_nav {
+    display: none; /* phone only */
+  }
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    #tiny_phone_nav {
+      display: block;
+    }
+    #tiny_phone_nav > ul {
+      list-style: none;
+    }
+    #tiny_phone_nav > ul > li {
+      display: inline-block;
+      width: 13%;
+      text-align: center;
+    }
+    #tiny_phone_nav > ul > li > a {
+      font-size: 60%;
+    }
+    #tiny_phone_nav > ul > li > a.disabled {
+      color: #4a4f4d;
+    }
+  }
+
+  .copyright {
+    color: #b2b7b6;
+    font-size: 75%;
+    text-align: center;
+  }
+  /* phone */
+  @media (max-device-width: 767px) {
+    .copyright p {
+      padding-left: 5px;
+    }
+  }
+
+  .backToTop {
+    display: none; /* only show if necessary */
+    margin: 0 auto 30px auto;
+    width: 72px;
+    height: 72px;
+    border: 1px solid #b2b7b6; /* mostly here for browsers that don't support box shadow */
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 4px #000;
+  }
+  .backToTop:hover {
+    background: rgb(249, 249, 250);
+    background: rgba(249, 249, 250, 1.0);
+    box-shadow: 0 0 6px #000;
+  }
+  .backToTop a {
+    display: block;
+    padding: 12px 0 24px 0;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    background: transparent;
+    text-align: center;
+    font-size: 36px;
+    line-height: 1;
+  }
+  .backToTop a:hover {
+
+  }
+
+  /* -------------------------  FAQ ------------------------- */
+  .faq {
+    border: 1px solid #b2b7b6;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    font-size: 90%;
+    font-weight: lighter;
+    width: auto;
+    margin: 20px 0;
+    background-color: #fff;
+  }
+  .faq:before,
+  .faq:after {
+    display: table;
+    line-height: 0;
+    content: "";
+  }
+  .faq:after {
+    clear: both;
+  }
+  /* desktop */
+  @media (min-device-width: 980px) {
+    .faq {
+      padding: 10px 20px;
+    }
+  }
+  /* tablet */
+  @media (min-device-width: 768px) and (max-device-width: 979px) {
+    .faq {
+      padding: 10px 20px;
+    }
+  }
+  /* phone */
+  @media (max-device-width: 767px) {
+    .faq {
+      padding: 8px;
+    }
+  }
+
+  .faq h3,
+  .faq h4 {
+    margin-top: 5px;
+    line-height: 1;
+    text-align: center;
+  }
+
+  a.faqQuestion {
+    display: block;
+    clear: both;
+    margin-top: 5px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  span.faqTriangle {
+    font-size: 75%;
+  }
+
+  .faqAnswer p {
+    margin-bottom: 5px;
+  }
+
+  a.faqClose {
+    display: block;
+    padding: 0;
+    margin: 4px 0;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  a.faqClose:hover {
+    letter-spacing: 0px;
+  }
+
+  /* -------------------------  ACCORDION ------------------------- */
+  .accordion {
+    margin: 30px 0;
+  }
+
+  .accordionSection {
+    margin-bottom: 8px;
+    border: 1px solid #b2b7b6;
+  }
+  .accordionSection:last-child {
+    margin-bottom: 0;
+  }
+
+  .accordionToggle,
+  .accordionToggle > a {
+    background-color: #f9f9fa;
+  }
+  .accordionToggle > a {
+    display: block;
+    margin: 0;
+    padding: 12px 20px;
+  }
+
+  .accordionContent {
+    display: none; /* hidden by default. REQUIRES JS TO VIEW. */
+    padding: 12px 20px 5px 20px;
+    border-top: 1px solid #b2b7b6;
+  }
+
+  /* -------------------------  ABOUT PAGE ------------------------- */
+  .headshot {
+    float: left;
+    margin: 0 20px 5px 0;
+  }
+  .headshot > img {
+    width: 250px;
+    height: 223px;
+    background-color: #000;
+    box-shadow: 0 1px 4px #000;
+  }
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    .headshot > img {
+      width: 125px;
+      height: 111px;
+    }
+  }
+  .headshot > p {
+    margin: 5px 0 0 0;
+    text-align: center;
+    font-size: 60%;
+  }
+
+  #mc_embed_signup {
+    clear: left;
+    margin: 20px 0;
+    padding-top: 10px;
+    width: 100%;
+    border: 1px solid #b2b7b6;
+    border-radius: 6px;
+    background: #f9f9fa;
+    text-align: center;
+  }
+
+  input[type="email"]:focus {
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 4px #368DD9;
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 4px #368DD9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 4px #368DD9;
+    -webkit-appearance: none; /* otherwise iOS doesn't display box-shadow */
+  }
+
+  /* MailChimp Form Embed Code - Slim - 08/17/2011 */
+  /* (copied directly from MailChimp code, then modified to fit look of site) */
+  #mc_embed_signup h2 { margin:15px 0; padding:0;font-weight:bold; font-size:1.4em;}
+  #mc_embed_signup input {border:1px solid #b2b7b6; -webkit-appearance:none;}
+  #mc_embed_signup input[type=checkbox]{-webkit-appearance:checkbox;}
+  #mc_embed_signup input[type=radio]{-webkit-appearance:radio;}
+  #mc_embed_signup .button { display: inline-block;clear:both; margin-bottom: 10px; padding:0; width: auto; height: 32px; border: 0 none; border-radius:4px; background-color: #b2b7b6; color: #FFFFFF; vertical-align: top; text-align: center; text-decoration: none; white-space: nowrap; font-weight: bold; font-size:15px; line-height: 32px; cursor: pointer;}
+  #mc_embed_signup .button:hover {background-color:#8a8f8d;}
+  #mc_embed_signup .small-meta {font-size: 11px;}
+  #mc_embed_signup .nowrap {white-space:nowrap;}     
+  #mc_embed_signup .clear { display:inline;clear:none;}
+
+  #mc_embed_signup label {display:block; padding-bottom:10px; font-weight:bold; font-size:16px;}
+  #mc_embed_signup input.email { margin-bottom: 10px;padding:8px 0; min-width:130px; width:58%; border-radius: 4px; text-indent:5px;}
+  #mc_embed_signup input.button { margin-bottom: 10px; min-width:90px;width:35%;}
+
+  #mc_embed_signup div#mce-responses { top:-1.4em;float:left; clear: both; overflow:hidden;margin: 0 5%; padding:0em .5em 0em .5em; width:90%;}
+  #mc_embed_signup div.response { top:-1.5em; z-index:1; float:left;margin:1em 0; padding:1em .5em .5em 0; width:80%; font-weight:bold;}
+  #mc_embed_signup #mce-error-response {display:none;}
+  #mc_embed_signup #mce-success-response { display:none;color:#529214;}
+  #mc_embed_signup label.error {display:block; float:none; margin-left:1.05em; padding:.5em 0; width:auto; text-align:left;}
+
+  /* -------------------------  LISTEN PAGE ------------------------- */
+  .listen_header > a > p {
+    background-color: #f9f9fa;
+    margin: 0 0 0 10px;
+    color: #6a6f6d;
+  }
+
+  audio {
+    margin: 5px 0;
+    width: 100%;
+  }
+
+  .program_notes {
+    margin-top: 10px;
+  }
+  .program_notes > p {
+    font-size: 90%;
+  }
+
+  /* -------------------------  WORKS PAGE ------------------------- */
+  .works > h3 {
+    margin-bottom: 20px;
+    display: block;
+    text-align: center;
+    background-color: #8a8f8d;
+    color: #fff;
+    line-height: 2;
+  }
+  .works > h4 {
+    display: block;
+    margin-bottom: 20px;
+    padding-left: 10px;
+    text-align: left;
+    background-color: #b2b7b6;
+    color: #fff;
+    line-height: 2;
+  }
+  .works > h5 {
+    margin-bottom: 0;
+    padding-left: 10px;
+    font-weight: normal;
+    border-left: 4px solid #b2b7b6;
+  }
+  .works > p {
+    margin-bottom: 15px;
+    padding-left: 20px;
+    font-size: 90%;
+    color: #b2b7b6;
+    border-left: 4px solid #b2b7b6;
+  }
+
+  /* -------------------------  EVENTS PAGE ------------------------- */
+
+  .events_banner > * > h4,
+  .events_banner > h4 {
+    margin-bottom: 20px;
+    display: block;
+    text-align: center;
+    background-color: #8a8f8d;
+    color: #fff;
+    line-height: 2;
+  }
+
+  .events_entry {
+    width: 100%;
+    margin-bottom: 15px;
+    padding-top: 5px;
+    text-align: center;
+    border: 1px solid #b2b7b6;
+    background-color: #f9f9fa;
+    -webkit-transition: background 0.5s;
+    -moz-transition: background 0.5s;
+    transition: background 0.5s;
+    -webkit-transition: box-shadow 0.75s;
+    -moz-transition: box-shadow 0.75s;
+    transition: box-shadow 0.75s;
+  }
+  /* only use this mouse hover effect on desktop */
+  @media (min-device-width: 980px) {
+    .events_entry:hover {
+      border: 1px solid #8a8f8d;
+      box-shadow: 0 0 5px #8a8f8d;
+      background-color: #fff;
+      -webkit-transition: background 0.5s;
+      -moz-transition: background 0.5s;
+      transition: background 0.5s;
+      -webkit-transition: box-shadow 0.5s;
+      -moz-transition: box-shadow 0.5s;
+      transition: box-shadow 0.5s;
+    }
+  }
+
+  .events_entry > * > p {
+    margin: 5px 5px 10px 5px;
+    background: transparent;
+  }
+  .events_entry > * > a,
+  .events_entry > * > * > a {
+    background: transparent;
+  }
+  /* background hover color on desktop only */
+  @media (min-device-width: 980px) {
+    .events_entry > * > a:hover,
+    .events_entry > * > * > a:hover {
+      background-color: #f9f9fa;
+    }
+  }
+
+  /* desktop and tablet */
+  @media (min-device-width: 768px) {
+    .events_date {
+      width: 15%;
+      float: left;
+    }
+    .events_venue {
+      width: 30%;
+      float: left;
+    }
+    .events_location {
+      width: 20%;
+      float: left;
+    }
+    .events_details {
+      width: 35%;
+      float: left;
+    }
+  }
+
+  /* phone */
+  @media (max-device-width: 767px) {
+    .events_banner > .events_details {
+      display: none; /* must hide for phone layout */
+    }
+    .events_entry > * {
+      overflow: scroll;
+    }
+    .events_date {
+      width: 25%;
+      float: left;
+    }
+    .events_venue {
+      width: 40%;
+      float: left;
+    }
+    .events_location {
+      width: 35%;
+      float: left;
+    }
+    .events_details {
+      width: 100%;
+      clear: both;
+      border-top: 1px dotted #b2b7b6;
+      padding-top: 5px;
+    }
+    .events_entry > * > p {
+      font-size: 85%;
+      margin: 5px 3px;
+    }
+  }
+
+  /* -------------------------  PRESS PAGE ------------------------- */
+  blockquote {
+    margin: 30px 0 0 0;
+    padding-left: 20px;
+    border-left: 4px solid #b2b7b6;
+  }
+
+  blockquote > p {
+    margin: 0 0 5px 0;
+    font-size: 110%;
+    color: #4a4f4d;
+  }
+
+  blockquote > cite {
+    margin-left: 20px;
+    font-size: 90%;
+    color: #b2b7b6;
+  }
+
+  /* -------------------------  CONTACT PAGE ------------------------- */
+  .contact > h4 {
+    font-weight: normal;
+  }
+
+  /* -------------------------  ELECTRONICS PAGE ------------------------- */
+  .electronics > h3 {
+    margin-bottom: 20px;
+    display: block;
+    text-align: center;
+    background-color: #8a8f8d;
+    color: #fff;
+    line-height: 2;
+  }
+
+  .demo_video {
+    margin: 20px auto 10px auto;
+  }
+  /* desktop and tablet */
+  @media (min-device-width: 768px) {
+    .demo_video {
+      width: 560px;
+    }
+    .demo_video > iframe {
+      width: 560px; 
+      height: 315px;
+      border: none;
+    }
+  }
+  /* phone */
+  @media (max-device-width: 767px) {
+    .demo_video {
+      width: 420px;
+    }
+    .demo_video > iframe {
+      width: 420px; 
+      height: 315px;
+      border: none;
+    }
+  }
+
+  img.app_store_badge {
+    display: block;
+    width: 160px;
+    margin: 10px auto 0 auto;
+  }
+
+  /* phone */
+  @media (max-device-width: 767px) {
+    .demo_video {
+      width: 100%;
+    }
+    .demo_video > iframe {
+      width: auto;
+      height: auto;
+    }
+  }
+
+  /* -------------------------  PORTFOLIO PAGE ------------------------- */
+  .portfolio > h3 {
+    margin-bottom: 20px;
+    display: block;
+    text-align: center;
+    background-color: #8a8f8d;
+    color: #fff;
+    line-height: 2;
+  }
+
+  .soundcloud > iframe {
+    width: 100%;
+    height: 410px;
+    overflow: hidden;
+    border: none;
+  }
+
+  .score_info {
+    padding: 10px;
+  }
+  /* desktop and tablet */
+  @media (min-device-width: 768px) {
+    .score_info {
+      margin-left: 340px;
+    }
+    .score_info > p {
+      margin-bottom: 20px;
+    }
+    .score_link {
+      float: left;
+      width: 340px;
+      padding: 0 20px;
+    }
+  }
+  /* phone (use max-width: instead of max-device-width: for local testing) */
+  @media (max-device-width: 767px) {
+    .score_link {
+      margin-bottom: 20px;
+    }
+  }
+
+  .score_thumbnail {
+    width: 300px;
+    height: 300px;
+    border: 1px solid #b2b7b6;
+    box-shadow: 0 0 4px #000;
+  }
+
+  #score_skeuomorphic {
+    background: url("../img/skeuomorphic-thumbnail.png");
+  }
+  #score_skeuomorphic:hover {
+    background: url("../img/skeuomorphic-thumbnail_hover.png");
+  }
+  #score_arguments {
+    background: url("../img/arguments-thumbnail.png");
+  }
+  #score_arguments:hover {
+    background: url("../img/arguments-thumbnail_hover.png");
+  }
+  #fioretti {
+    background: url("../img/fioretti-thumbnail.jpg");
+  }
+
+  .score_thumbnail > p {
+    text-align: center;
+    display: block;
+    margin: 120px 0;
+    width: 100%;
+    background: rgb(32, 38, 227);
+    background: rgba(32, 38, 227, 0.8);
+    color: #fff;
+    letter-spacing: 2px;
+    font-size: 20px;
+    line-height: 60px;
+  }
+
+  #link_to_materials {
+    font-size: 125%;
+    text-align: center;
+  }
