@@ -203,7 +203,8 @@ tm.cue[3].goCue = function() {
 tm.cue[3].updateTiltSounds = function() {
 };
 tm.cue[3].triggerDipSound = function() {
-  console.log('dip');
+  tm.publicLog('dip');
+  clave.start();
 }
 tm.cue[3].stopCue = function() {
 };
