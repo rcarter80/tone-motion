@@ -249,6 +249,8 @@ tm.cue[5].stopCue = function() {
 // CUE 6:
 const pitchArr_6 = ['G3', 'A3', 'Bb3', 'C4', 'G4', 'A4', 'Bb4', 'C5', 'G5', 'A5', 'Bb5', 'C6'];
 const arrLen_6 = pitchArr_6.length;
+const hiPitchArr_6 = ['G6', 'A6', 'Bb6', 'C7'];
+const hiArrLen_6 = hiPitchArr_6.length;
 
 const softBellLoop_6 = new Tone.Loop((time) => {
   envVibeSampler.triggerAttackRelease(pitchArr_6[count_6 % arrLen_6], '4n');
@@ -279,7 +281,7 @@ const envVibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).connect(vibEnv);
 
-tm.cue[6] = new TMCue('dip', 0, NO_LIMIT); // TODO: decide on wait times
+tm.cue[6] = new TMCue('dip', 2000, NO_LIMIT);
 tm.cue[6].goCue = function() {
   count_6 = 0;
   softBellLoop_6.start();
@@ -287,9 +289,11 @@ tm.cue[6].goCue = function() {
 tm.cue[6].updateTiltSounds = function() {
 }
 tm.cue[6].triggerDipSound = function() {
+  let time_6 = tm.getElapsedTimeInCue(6);
+
   if (limit_6 > 0) {
     // dip triggers bell sound + enveloped flurry of softer faster vibes loop
-    bellSampler.triggerAttackRelease('G6', 3);
+    bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
   	vibEnv.triggerAttackRelease('8n');
     limit_6--;
     displayDipsLeft(limit_6);
