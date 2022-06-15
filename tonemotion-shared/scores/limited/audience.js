@@ -309,7 +309,9 @@ tm.cue[6].triggerDipSound = function() {
   }
 };
 tm.cue[6].triggerDipReset = function() {
-  tm.publicLog('dip reset');
+  if (limit_6 > 0) {
+    tm.publicLog('dip reset');  
+  }
 };
 tm.cue[6].stopCue = function() {
   softBellLoop_6.stop();
