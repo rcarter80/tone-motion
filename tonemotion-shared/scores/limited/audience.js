@@ -279,6 +279,11 @@ const envVibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).connect(vibEnv);
 
+const sineSynth = new Tone.Synth().toDestination();
+
+const sineSynthFreqScale = new Tone.Scale(440, 1560);
+yTilt.chain(sineSynthFreqScale, sineSynth.frequency);
+
 tm.cue[6] = new TMCue('dip', 4000, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
   // NOTE: the following test prevents transition sound if section was previously cued (e.g., in rehearsal if we go back to this cue)
@@ -291,6 +296,13 @@ tm.cue[6].goCue = function() {
   softBellLoop_6.start();
 };
 tm.cue[6].updateTiltSounds = function() {
+  if (tm.accel.y < 0.4) {
+    sineSynth.volume.value = -99;
+  } else if (tm.accel.y < 0.7) {
+    sineSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
+  } else {
+    sineSynth.volume.value = 0; // BUT envelope release is trigged at this point
+  }
 }
 tm.cue[6].triggerDipSound = function() {
   tm.publicLog('dip');
@@ -299,8 +311,9 @@ tm.cue[6].triggerDipSound = function() {
 
   if (limit_6 > 0) {
     // dip triggers bell sound + enveloped flurry of softer faster vibes loop
-    bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
-  	vibEnv.triggerAttackRelease('8n');
+    // bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
+  	// vibEnv.triggerAttackRelease('8n');
+    sineSynth.triggerRelease();
     limit_6--;
     displayDipsLeft(limit_6);
   } else {
@@ -310,7 +323,8 @@ tm.cue[6].triggerDipSound = function() {
 };
 tm.cue[6].triggerDipReset = function() {
   if (limit_6 > 0) {
-    tm.publicLog('dip reset');  
+    tm.publicLog('dip reset');
+    sineSynth.triggerAttack('A4');
   }
 };
 tm.cue[6].stopCue = function() {
