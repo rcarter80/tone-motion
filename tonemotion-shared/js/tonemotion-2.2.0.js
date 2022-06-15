@@ -801,6 +801,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
     if (tm.accel.y < 0.4) {
       // tipping phone upright resets flag so that DIP can be triggered again
       if (!tm.dipFlag) {
+        // "secret" event happens when device is tipped back up again
+        this.currentCue.triggerDipReset();
         tm.dipFlag = true;
       }
     } else if (tm.accel.y > 0.7) {
@@ -1298,35 +1300,33 @@ function TMCue(mode, waitTime, openWindow) {
   this.startedAt = 0; // not set by constructor. used by getSectionBreakpoints()
 }
 
-// Override this method in score to code the music for this section
-TMCue.prototype.goCue = function() {
-  console.log('No music coded for this section.');
-};
-
-// Override this method in score to code the music for this section
+// All the following methods should be overriden in score for a particular cue
 TMCue.prototype.cueTransition = function() {
-  if (this.debug) {
-    console.log('No transition sound coded for this cue.');
-  }
+  // TODO: change so that transition is called from CURRENT cue, not previous. Can also use getElapsedTimeInCue() to ensure transition sounds not called if user stops and start
+  // Override if section uses sound as transition from previous cue
 };
 
-// Override this method in score to code the cleanup for this section
+TMCue.prototype.goCue = function() {
+  // Override to set up section (called at beginning of section)
+};
+
 TMCue.prototype.stopCue = function() {
-  console.log('No clean-up implemented for this section.');
+  // Override if section needs to release synths, stop loops, etc.
 };
 
-// Override this method in score to make "tilt" interactive sounds
 TMCue.prototype.updateTiltSounds = function() {
-  // This will get real annoying unless this method is overridden
-  status_label.innerHTML = 'updateTiltSounds() called at ' + Date.now() + ' with xSig value of ' + this.xSig + this.status;
+  // Override if section uses TILT (which also applies to DIP)
 };
 
-// Override this method in score to make "shake" interactive sounds
+// Override this method in score to make SHAKE interactive sounds
 TMCue.prototype.triggerShakeSound = function() {
-  // Override if section uses shake
+  // Override if section uses SHAKE
 };
 
-// Override this method in score to make "dip" interactive sounds
 TMCue.prototype.triggerDipSound = function() {
-  // Override if section uses dip
+  // Override this method in score to make DIP interactive sounds
+};
+
+TMCue.prototype.triggerDipReset = function() {
+  // Called in DIP section if device is turned BACK right-side up
 };

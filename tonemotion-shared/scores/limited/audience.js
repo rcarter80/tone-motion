@@ -289,6 +289,8 @@ tm.cue[6].goCue = function() {
 tm.cue[6].updateTiltSounds = function() {
 }
 tm.cue[6].triggerDipSound = function() {
+  tm.publicLog('dip');
+
   let time_6 = tm.getElapsedTimeInCue(6);
 
   if (limit_6 > 0) {
@@ -301,6 +303,9 @@ tm.cue[6].triggerDipSound = function() {
     displayDipsLeft(limit_6);
     tm.publicWarning(`I'm sorry, but you're all out of dips.`);
   }
+};
+tm.cue[6].triggerDipReset = function() {
+  tm.publicLog('dip reset');
 };
 tm.cue[6].stopCue = function() {
   softBellLoop_6.stop();
