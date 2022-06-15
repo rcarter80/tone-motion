@@ -20,8 +20,6 @@ const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
 
-// TODO: decide if I need these definitions
-// 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
 
@@ -281,7 +279,13 @@ const envVibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).connect(vibEnv);
 
-tm.cue[6] = new TMCue('dip', 2000, NO_LIMIT);
+tm.cue[6] = new TMCue('dip', 4000, NO_LIMIT);
+tm.cue[6].cueTransition = function() {
+  // NOTE: the following test prevents transition sound if section was previously cued (e.g., in rehearsal if we go back to this cue)
+  if (tm.getElapsedTimeInCue(6) < 100) {
+    tm.publicLog('cueTransition() called');
+  }
+}
 tm.cue[6].goCue = function() {
   count_6 = 0;
   softBellLoop_6.start();

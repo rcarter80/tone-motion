@@ -1025,21 +1025,11 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   status_container.classList.add('swell');
   body_element.classList.remove('fade');
 
-  // new with v1.5.0, this method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients, but also won't be triggered if user taps "stop"
-  // These sounds will play even if skipping cues, so in a rehearsal going straight to one cue will trigger the previous cue's transition if it exists
-  if (cue > 0) {
-    try {
-      // cue transition is from PREVIOUS cue number
-      this.cue[cue-1].cueTransition();
-    } catch(e) {
-      // not a big deal if transition sound doesn't work
-      this.publicLog(e);
-    }
-  }
+  // This method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients. Like with goCue() sounds, these sounds can be suppressed when user stops and starts by checking getElapsedTimeInCue()
+  // NOTE: This was previously attached to PREVIOUS cue number, so if I migrate an older piece to this version of the library, I need to move cueTransition() in the score forward by one cue 
+  this.cue[cue].cueTransition();
 
   // immediately trigger cue with minimum latency if waitTime is -1
-  // This could be faster if moved to top of function,
-  // but that makes the code messy.
   if (this.cue[cue].waitTime == -1) {
     // clear all current cues and previous messages
     this.clearActiveCues();
@@ -1302,7 +1292,6 @@ function TMCue(mode, waitTime, openWindow) {
 
 // All the following methods should be overriden in score for a particular cue
 TMCue.prototype.cueTransition = function() {
-  // TODO: change so that transition is called from CURRENT cue, not previous. Can also use getElapsedTimeInCue() to ensure transition sounds not called if user stops and start
   // Override if section uses sound as transition from previous cue
 };
 
