@@ -798,7 +798,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
 
   // TRIGGER DIP EVENT
   if (this.status === 'playing_dip') {
-    if (tm.accel.y < 0.4) {
+    if (tm.accel.y < 0.2) {
       // tipping phone upright resets flag so that DIP can be triggered again
       if (!tm.dipFlag) {
         // "secret" event happens when device is tipped back up again
@@ -1026,7 +1026,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   body_element.classList.remove('fade');
 
   // This method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients. Like with goCue() sounds, these sounds can be suppressed when user stops and starts by checking getElapsedTimeInCue()
-  // NOTE: This was previously attached to PREVIOUS cue number, so if I migrate an older piece to this version of the library, I need to move cueTransition() in the score forward by one cue 
+  // NOTE: This was previously attached to PREVIOUS cue number, so if I migrate an older piece to this version of the library, I need to move cueTransition() in the score forward by one cue
   this.cue[cue].cueTransition();
 
   // immediately trigger cue with minimum latency if waitTime is -1

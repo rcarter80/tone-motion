@@ -49,7 +49,7 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     decay: 0.1,
     decayCurve: "linear",
     sustain: 1,
-    release: 3,
+    release: 1,
     releaseCurve: "linear",
   },
   volume: -28,
@@ -279,10 +279,11 @@ const envVibeSampler = new Tone.Sampler({
   baseUrl: vibes_sounds,
 }).connect(vibEnv);
 
-const sineSynth = new Tone.Synth().toDestination();
-
-const sineSynthFreqScale = new Tone.Scale(440, 1560);
-yTilt.chain(sineSynthFreqScale, sineSynth.frequency);
+const sineSynth = new Tone.Synth({
+  oscillator: {
+    type: 'sine',
+  },
+}).toDestination();
 
 tm.cue[6] = new TMCue('dip', 4000, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
@@ -295,14 +296,22 @@ tm.cue[6].goCue = function() {
   count_6 = 0;
   softBellLoop_6.start();
 };
+let vol_6, bend_6;
 tm.cue[6].updateTiltSounds = function() {
-  if (tm.accel.y < 0.4) {
-    sineSynth.volume.value = -99;
+  if (tm.accel.y < 0.2) {
+    vol_6 = -99 + tm.accel.y * 195;
+    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -99 to -60 dB
+  } else if (tm.accel.y < 0.5) {
+    vol_6 = -60 + (tm.accel.y - 0.2) * 160;
+    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -60 to -12 dB
   } else if (tm.accel.y < 0.7) {
-    sineSynth.volume.value = -99 + (tm.accel.y - 0.4) * 330; // -99 to 0 dB
+    vol_6 = -12 + (tm.accel.y - 0.5) * 60;
+    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -12 to 0 dB
   } else {
     sineSynth.volume.value = 0; // BUT envelope release is trigged at this point
   }
+  bend_6 = -(tm.accel.y * 1200); // bends up to octave down when upside down
+  sineSynth.detune.rampTo(bend_6, tm.motionUpdateInSeconds);
 }
 tm.cue[6].triggerDipSound = function() {
   tm.publicLog('dip');
@@ -313,6 +322,7 @@ tm.cue[6].triggerDipSound = function() {
     // dip triggers bell sound + enveloped flurry of softer faster vibes loop
     // bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
   	// vibEnv.triggerAttackRelease('8n');
+    clave.start();
     sineSynth.triggerRelease();
     limit_6--;
     displayDipsLeft(limit_6);
@@ -324,11 +334,13 @@ tm.cue[6].triggerDipSound = function() {
 tm.cue[6].triggerDipReset = function() {
   if (limit_6 > 0) {
     tm.publicLog('dip reset');
+    // TODO: randomize inital pitch
     sineSynth.triggerAttack('A4');
   }
 };
 tm.cue[6].stopCue = function() {
   softBellLoop_6.stop();
+  sineSynth.triggerRelease();
 };
 
 // *******************************************************************
