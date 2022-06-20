@@ -194,7 +194,7 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: DIP tutorial
-// TODO: write DIP tutorial. Could use very quiet TILT tutorial from earlier and add loud clave with dip
+// TODO: write DIP tutorial. Could use very quiet TILT tutorial from earlier and add loud clave with dip. Or just use clave?
 tm.cue[3] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
 };
@@ -344,37 +344,32 @@ tm.cue[6].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 7: [D] - cue to fade out final SHAKE sounds from last cue
-let count_7 = 0;
-let revCymTriggered = false;
+// CUE 7
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
+claveLoop.loop = true;
 
-tm.cue[7] = new TMCue('shake', -1);
+tm.cue[7] = new TMCue('dip', -1);
 tm.cue[7].goCue = function() {
-  // reset flag in case section was previously triggered
-  revCymTriggered = false;
-  count_7 = 0;
-  vibeSampler.volume.value = 0;
-  sineTails.volume.value = -28;
-  sinTremolo.depth.value = 0;
-  vibeSampler.volume.rampTo(-36, 6);
-  sineTails.volume.rampTo(-36, 6);
 };
-tm.cue[7].triggerShakeSound = function() {
-  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
-  vibeSampler.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 3);
-  sineTails.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 1);
-  count_7++;
-  // first shake between the 500ms and 1500ms point also triggers revCym, creating whooshing sound mostly around downbeat of m. 60
-  let time_7 = tm.getElapsedTimeInCue(7);
-  if (time_7 > 500 && time_7 < 1500) {
-    if (!revCymTriggered) {
-      revCym.start();
-      revCymTriggered = true;
-    }
+tm.cue[7].updateTiltSounds = function() {
+  if (tm.accel.y < 0.2) {
+    claveLoop.volume.value = -99 + (tm.accel.y * 315); // -99 to -36 dB
+  } else if (tm.accel.y < 0.7) {
+    claveLoop.volume.value = -36 + (tm.accel.y - 0.2) * 66; // -36 to -3 dB
+  } else {
+    claveLoop.volume.value = -3; // but loop stops at this point anyway
   }
+  claveLoop.playbackRate = 1 + (tm.accel.y * 3);
+};
+tm.cue[7].triggerDipSound = function() {
+  bellSampler.triggerAttackRelease('G5', 3);
+  claveLoop.stop();
+};
+tm.cue[7].triggerDipReset = function() {
+  claveLoop.start();
 };
 tm.cue[7].stopCue = function() {
-  sineTails.releaseAll();
+  claveLoop.stop();
 };
 
 // *******************************************************************
@@ -579,8 +574,7 @@ tm.cue[15].stopCue = function() {
 
 // *******************************************************************
 // CUE 16: [L] granular TILT texture during beginning of second part of piece
-const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
-claveLoop.loop = true;
+
 // used to control clave loop gain on x-axis
 const claveLoopVol = new Tone.Volume(0);
 // used to fade out clave loop during next (hidden) cue (17)
