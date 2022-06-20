@@ -348,28 +348,45 @@ tm.cue[6].stopCue = function() {
 const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
 claveLoop.loop = true;
 
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3');
+ziplockLoop.loop = true;
+
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
+
+// everyone is randomly assigned one of three clicky loops to control on y-axis
+const clickLoop_7 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
+
+const pitchArr_7 = ['G5', 'F#5', 'G5', 'E5', 'F#5', 'G5', 'D5', 'C#5'];
+let count_7 = 0;
+
 tm.cue[7] = new TMCue('dip', -1);
 tm.cue[7].goCue = function() {
+  count_7 = 0;
 };
 tm.cue[7].updateTiltSounds = function() {
   if (tm.accel.y < 0.2) {
-    claveLoop.volume.value = -99 + (tm.accel.y * 315); // -99 to -36 dB
+    clickLoop_7.volume.value = -99;
+  } else if (tm.accel.y < 0.4) {
+    clickLoop_7.volume.value = -99 + (tm.accel.y - 0.2) * 375; // -99 to -24 dB
   } else if (tm.accel.y < 0.7) {
-    claveLoop.volume.value = -36 + (tm.accel.y - 0.2) * 66; // -36 to -3 dB
+    clickLoop_7.volume.value = -24 + (tm.accel.y - 0.4) * 70; // -24 to -3 dB
   } else {
-    claveLoop.volume.value = -3; // but loop stops at this point anyway
+    clickLoop_7.volume.value = -3; // but loop stops at this point anyway
   }
-  claveLoop.playbackRate = 1 + (tm.accel.y * 3);
+  clickLoop_7.playbackRate = 1 + (tm.accel.y * 3);
 };
 tm.cue[7].triggerDipSound = function() {
-  bellSampler.triggerAttackRelease('G5', 3);
-  claveLoop.stop();
+  let pitch_7 = pitchArr_7[count_7 % pitchArr_7.length];
+  bellSampler.triggerAttackRelease(pitch_7, 5);
+  clickLoop_7.stop();
+  count_7++;
 };
 tm.cue[7].triggerDipReset = function() {
-  claveLoop.start();
+  clickLoop_7.start();
 };
 tm.cue[7].stopCue = function() {
-  claveLoop.stop();
+  clickLoop_7.stop();
 };
 
 // *******************************************************************
@@ -705,8 +722,6 @@ shaker2.volume.value  = -12;
 const shaker3 = new Tone.Player(perc_sounds + 'shaker3.mp3').toDestination();
 shaker3.volume.value  = -12;
 let shakerArr = [shaker1, shaker2, shaker3];
-const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
-pingpongClickLoop.loop = true;
 
 const chimeA7 = new Tone.Player(chime_sounds + 'chimeA7.mp3').toDestination();
 const chimeC8 = new Tone.Player(chime_sounds + '2sec-chime-C8.mp3').toDestination();
