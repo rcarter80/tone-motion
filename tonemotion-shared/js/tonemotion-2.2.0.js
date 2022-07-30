@@ -32,6 +32,7 @@ const colorElements = document.querySelectorAll('button, a, html, body, #help_pa
 
 const xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
 const yTilt = new Tone.Signal(0.5);
+// TODO: add master volume object here AND need to add as property of object below (alongside xTilt, etc.) Set default to 0dBFS
 
 /**
  * Object to encapsulate properties and methods for ToneMotion
@@ -56,6 +57,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} gyroPeak - when debugging, used to monitor peak gyro values
  * @param {Tone.Signal} xSig - Control signal mapped to x-axis of accel
  * @param {Tone.Signal} ySig - Control signal mapped to y-axis of accel
+ * @param {number} masterVolume - master volume optionally control set by server
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
  * @param {number} shakeGap - (ms.) Min. time between shake gestures
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
@@ -112,6 +114,7 @@ function ToneMotion() {
   this.gyroPeak = Number.NEGATIVE_INFINITY;
   this.xSig = xTilt;
   this.ySig = yTilt;
+  this.masterVolume = 0;
   this.shakeThreshold = 2;
   this.shakeGap = 250;
   this.shakeFlag = false;
@@ -125,8 +128,7 @@ function ToneMotion() {
   this.intervalIDArray = [];
   this.motionUpdateCounter = 0;
   this.lastMotionUpdateCounter = 0;
-  // when server restarts, both cue number and time revert to 0
-  // init with -1 for both so cue 0 is still triggered when server restarts
+  // init with -1 so initial cue is always triggered when server restarts
   this.cueOnClient = -1;
   this.cueTimeFromServer = -1;
   this.cue = [];
@@ -962,7 +964,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
     // check if there's a new cue
     // checks cue *time* (not number) because in rehearsal the same cue
     // could be retriggered. same cue number, different time.
-    if (this.cueTimeFromServer !== jsonRes.t+timestampBias) {
+    if (this.cueTimeFromServer !== jsonRes.t + timestampBias) {
       // Trigger new cue
       this.cueOnClient = jsonRes.c;
       this.cueTimeFromServer = jsonRes.t + timestampBias;
@@ -975,6 +977,11 @@ ToneMotion.prototype.getCuesFromServer = function() {
         }
       }
     } // else no new cue and control falls through, on to next loop
+    // BUT first check if master volume (set from server interface) has changed
+    if (this.masterVolume !== jsonRes.v) {
+      // TODO: implement volume change and delete console log
+      console.log('Volume has changed');
+    }
   })
   .catch(error => this.publicError(error));
 
