@@ -981,6 +981,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
     if (this.masterVolume !== jsonRes.v) {
       // TODO: implement volume change and delete console log
       console.log('Volume has changed');
+      this.masterVolume = jsonRes.v;
     }
   })
   .catch(error => this.publicError(error));

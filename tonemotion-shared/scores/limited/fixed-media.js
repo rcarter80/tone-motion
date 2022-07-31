@@ -1,6 +1,5 @@
 const tm = new ToneMotion();
-// TODO: decide on possible longer cue fetch interval. Should tolerate even once per second. Check tone-motion code to make sure changing cue fetch interval doesn't have unintended consequences. Also 'hidden' cues are always triggered immediately and don't use waitTime or openWindow so I could get rid of those
-tm.debug = false; // if true, skips clock sync and shows console
+tm.debug = true; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
