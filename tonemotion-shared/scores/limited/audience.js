@@ -4,9 +4,9 @@ window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
   if (tm.localTest) {
-    tm.init('http://localhost:3000/bp-server/current-cue');
+    tm.init('http://localhost:3000/limited-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/bp-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/limited-server/current-cue');
   }
 };
 
