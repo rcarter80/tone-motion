@@ -32,7 +32,6 @@ const colorElements = document.querySelectorAll('button, a, html, body, #help_pa
 
 const xTilt = new Tone.Signal(0.5); // ranges from 0.0 to 1.0
 const yTilt = new Tone.Signal(0.5);
-// TODO: add master volume object here AND need to add as property of object below (alongside xTilt, etc.) Set default to 0dBFS
 
 /**
  * Object to encapsulate properties and methods for ToneMotion
@@ -57,7 +56,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {number} gyroPeak - when debugging, used to monitor peak gyro values
  * @param {Tone.Signal} xSig - Control signal mapped to x-axis of accel
  * @param {Tone.Signal} ySig - Control signal mapped to y-axis of accel
- * @param {number} masterVolume - master volume optionally control set by server
+ * @param {number} masterVolume - master volume control optionally set by server
  * @param {number} shakeThreshold - gyro value to trigger shakeFlag
  * @param {number} shakeGap - (ms.) Min. time between shake gestures
  * @param {boolean} shakeFlag - If gyro values exceed threshold, true
@@ -979,8 +978,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
     } // else no new cue and control falls through, on to next loop
     // BUT first check if master volume (set from server interface) has changed
     if (this.masterVolume !== jsonRes.v) {
-      // TODO: implement volume change and delete console log
-      console.log('Volume has changed');
+      Tone.Master.volume.rampTo(jsonRes.v, this.motionUpdateInSeconds);
       this.masterVolume = jsonRes.v;
     }
   })
