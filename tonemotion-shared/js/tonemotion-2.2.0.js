@@ -38,6 +38,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {string} status - Application status (set automatically)
  * @param {boolean} debug - Can set to 'true' in score.js
  * @param {boolean} localTest - Set to 'true' in score.js to test locally
+ * @param {boolean} fixedCuesOnly - if true, does not communicate with server
  * @param {boolean} showConsoleOnLaunch - Set to 'true' to show console
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
@@ -92,6 +93,7 @@ function ToneMotion() {
   this.status = '';
   this.debug = false;
   this.localTest = false;
+  this.fixedCuesOnly = false;
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
@@ -373,13 +375,17 @@ ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
     }
   }
 
-  // while waiting for cue
-  this.setStartStopButton('disabled');
-  this.setStatusLabel('loading', 'active'); // label will update with new cue
-  // starts interval that fetches cues from server
-  this.cueFetchIntervalID = setInterval(this.getCuesFromServer.bind(this), this.cuePollingInterval);
-  // push ID to array so that I can clear everything later
-  this.intervalIDArray.push(this.cueFetchIntervalID);
+  if (this.fixedCuesOnly) {
+    this.setStatus('readyToPlay');
+  } else {
+    // while waiting for cue
+    this.setStartStopButton('disabled');
+    this.setStatusLabel('loading', 'active'); // label will update with new cue
+    // starts interval that fetches cues from server
+    this.cueFetchIntervalID = setInterval(this.getCuesFromServer.bind(this), this.cuePollingInterval);
+    // push ID to array so that I can clear everything later
+    this.intervalIDArray.push(this.cueFetchIntervalID);
+  }
 };
 
 // registers event handler for devicemotion, but only once
@@ -495,6 +501,7 @@ ToneMotion.prototype.setStartStopButton = function(className, text) {
 
 // Handles click events from primary button (startStopButton)
 // Stops and starts Transport, calls startMotionUpdatesAndCueFetching()
+// TODO: decide how to handle practice buttons for fixed site. Probably need additional status (ready to complete set up?). see tonemotion-fixed-2.0.0.js
 ToneMotion.prototype.bindButtonFunctions = function() {
   start_stop_button.addEventListener('click', () => {
     // Audio context can't start without user action
@@ -502,23 +509,38 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     if (Tone.context.state !== 'running') {
       this.publicLog('Starting AudioContext and Transport');
       Tone.start().then(() => {
-        Tone.Transport.start();
+        // fixed cue sites need secondary setup, so no Transport yet
+        if (!this.fixedCuesOnly) {
+          Tone.Transport.start();
+        }
       });
     } else if (Tone.Transport.state !== 'started') {
       // possible that audio context is running but Transport was stopped
-      this.publicLog('Starting Transport');
-      Tone.Transport.start();
+      if (!this.fixedCuesOnly) {
+        this.publicLog('Starting Transport');
+        Tone.Transport.start();
+      }
     } else {
       // Both audio context and Tone.Transport running. Nothing to do here.
     }
 
     switch (this.status) {
+      case 'readyForSetup':
+        // fixed cue sites have additional step before fixed cues play (to give people time to practice), so start motion updates, but NOT Transport
+        if (this.fixedCuesOnly) {
+          this.startMotionUpdatesAndCueFetching();
+        }
       case 'readyToPlay':
       case 'stopped':
-        // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
-        this.cueTimeFromServer = 0;
-        this.startMotionUpdatesAndCueFetching();
-        break;
+        if (this.fixedCuesOnly) {
+          // NOW is the time when a fixed cue site starts the Transport
+          Tone.Transport.start();
+        } else {
+          // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
+          this.cueTimeFromServer = 0;
+          this.startMotionUpdatesAndCueFetching();
+          break;
+        }
       case 'waitingForPieceToStart':
       case 'playing_tacet':
       case 'playing_tilt':
@@ -903,7 +925,7 @@ ToneMotion.prototype.clearMotionErrorMessage = function() {
 // Synchronizes client time to server time
 const urlForClockSync = 'https://tonemotion-cue-manager.herokuapp.com/clock-sync';
 ToneMotion.prototype.syncClocks = function() {
-  if (this.shouldSyncToServer) {
+  if (this.shouldSyncToServer && !this.fixedCuesOnly) {
     this.setStatus('synchronizing');
     let syncClockCounter = 0;
 
@@ -950,7 +972,11 @@ ToneMotion.prototype.syncClocks = function() {
     }, 1000);
   } else {
     // no client synchronizing (keep clientServerOffset to default of 0)
-    this.setStatus('readyToPlay');
+    if (this.fixedCuesOnly) {
+      this.setStatus('readyForSetup');
+    } else {
+      this.setStatus('readyToPlay');
+    }
   }
 };
 
