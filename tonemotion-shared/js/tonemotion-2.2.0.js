@@ -88,7 +88,6 @@ const yTilt = new Tone.Signal(0.5);
  * @param {Tone.Meter} masterMeter - meter for master output
  * @param {object} meter - isOn: boolean value to choose whether to use metering. rapid: creates additional loop to poll meter at rate of block size (otherwise metering is embedded in motion loop at slower rate and might miss transients). level: current value of meter. peak: highest peak up to this point, which can be reset by unchecking "Show motion data"
  */
-
 function ToneMotion() {
   this.status = '';
   this.debug = false;
@@ -144,9 +143,11 @@ function ToneMotion() {
   };
 }
 
-// Registers event handlers to interface elements, confirms that buffers are loaded, starts Tone.js
-// Triggers syncClocks() once buffers have succesfully loaded
+// called immediately after window.onload() in score
+// Registers event handlers to interface elements
+// Triggers syncClocks() once Tone.js and buffers have succesfully loaded
 // Actual motion updates and cue fetching MUST be triggered by user input
+// at bindButtonFunctions() --> startMotionUpdatesAndCueFetching()
 ToneMotion.prototype.init = function(urlOfServer) {
   // debug mode shows console, stops sync with server, logs messages
   if (this.debug) {
@@ -313,7 +314,8 @@ ToneMotion.prototype.setStatus = function(status) {
     this.publicLog('Application status set to ' + this.status);
 };
 
-// Starts Transport, loops, motion handling, and network requests
+// Starts noSleep, motion permission request, motion handling, cue fetching
+// calls beginMotionUpdates() and getCuesFromServer()
 let noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdatesAndCueFetching = function() {
   this.publicLog('Starting motion updates and cue fetching');
@@ -492,6 +494,7 @@ ToneMotion.prototype.setStartStopButton = function(className, text) {
 };
 
 // Handles click events from primary button (startStopButton)
+// Stops and starts Transport, calls startMotionUpdatesAndCueFetching()
 ToneMotion.prototype.bindButtonFunctions = function() {
   start_stop_button.addEventListener('click', () => {
     // Audio context can't start without user action
@@ -931,7 +934,6 @@ ToneMotion.prototype.syncClocks = function() {
         }
         if (syncClockCounter === 6) { // last check
           if (this.shortestRoundtrip > 2000) {
-            ;
             this.publicWarning('There seems to be a lot of latency in your connection to the server (' + this.shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
           } else {
             this.publicLog('Shortest roundtrip latency was ' + this.shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
@@ -1074,6 +1076,76 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
       try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
       this.setStatusForNewCue(cue);
     }, delay);
+  }
+};
+
+
+// Called when cue schedule is fixed and does NOT come from server
+// This could be used for interactive videos when timeline is predetermined
+// gapTime allows final sound from previous cue to happen before new cue
+ToneMotion.prototype.triggerFixedCue = function(cue, gapTime) {
+  // Check that cue exists
+  if (this.cue[cue]) {
+    // A 'hidden' cue is triggered immediately, does NOT set app status
+    // and does NOT clear currently playing cue
+    // Use for additional sounds that don't interrupt current interaction
+    if (this.cue[cue].mode === 'hidden') {
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      // need timestamp for hidden cue to trigger getSectionBreakpoints
+      // NB: time is only accurate if waitTime for hidden cue is 0
+      this.cue[cue].startedAt = this.cueTimeFromServer;
+      return;
+    }
+  } else {
+    this.publicError('Cue number ' + cue + ' does not exist.');
+    return;
+  }
+
+  // end of cue causes status label to pulse once
+  // new cue causes background to fade out / in. Need to clear previous fade
+  status_container.classList.add('swell');
+  body_element.classList.remove('fade');
+
+  // This method allows sounds to be triggered when new cue is received (but has not yet begun). But in fixed cue context, use gapTime to simulate that
+  this.cue[cue].cueTransition();
+
+  // trigger new cue (immediately or after gapTime)
+  if (gapTime) {
+    setTimeout( () => {
+      this.clearActiveCues();
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+      // need to set time when cue began to facilitate gradual processes
+      this.cue[cue].startedAt = Date.now();
+      this.setStatusForNewCue(cue);
+    }, gapTime);
+  } else {
+    this.clearActiveCues();
+    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
+    this.cue[cue].startedAt = Date.now();
+    this.setStatusForNewCue(cue);
+  }
+};
+
+// Schedules fixed cue triggers from 2-dimensional array of cue/time pairs (or optionally cue, time, gapTime)
+ToneMotion.prototype.scheduleFixedCues = function(cues) {
+  if (this.debug) {
+    // check accuracy of fixed cue trigger timings
+    this.fixedCuesStartedAt = Date.now();
+  }
+  for (let i in cues) {
+    this.cue[cues[i][0]].timeoutID = window.setTimeout( () => {
+      if (cues[i][2]) {
+        // this means there IS a gapTime to pass to triggerFixedCue()
+        this.triggerFixedCue(cues[i][0], cues[i][2]);
+      } else {
+        this.triggerFixedCue(cues[i][0]);
+      }
+      this.publicLog(`Fixed cue number ${cues[i][0]} was triggered`);
+      if (this.debug) {
+        let now = Date.now();
+        this.publicLog(`Scheduled wait time: ${cues[i][1]}. Actual wait time: ${now - this.fixedCuesStartedAt}.`);
+      }
+    }, cues[i][1]);
   }
 };
 
@@ -1275,7 +1347,7 @@ ToneMotion.prototype.pickRand = function(array) {
 /**
  * Create a new musical section
  * @param {string} mode - Mode of interactivity. Can be: 'waiting',
- * 'tacet', 'tilt', 'shake', 'tiltAndShake', 'listen', 'finished'
+ * 'tacet', 'tilt', 'shake', 'tiltAndShake', 'dip', 'listen', 'finished'
  * or 'hidden' (immediate cue without changing application status)
  * @param {number} waitTime - Delay before cue is triggered.
  * Use -1 for minimum latency response (no need for openWindow param)
