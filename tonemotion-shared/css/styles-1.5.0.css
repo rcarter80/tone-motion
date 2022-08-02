@@ -1,0 +1,521 @@
+/*
+** GENERAL STYLING AND RESETTING
+**/
+
+:root {
+ --theme-color-light: #032dc1;
+ --theme-color-dark: #384577;
+ --theme-color-error-light: #fcc4c4;
+ --theme-color-error-dark: #b50000;
+ --theme-color-warning: #ffcc84;
+ --theme-color-light-green: #02b52c;
+ --theme-color-dark-green: #026117;
+ --theme-color-light-purple: #7d2abd;
+ --theme-color-dark-purple: #39095e;
+ --theme-color-light-gray: #6b7d80;
+ --theme-color-dark-gray: #002529;
+ --theme-color-light-orange: #fca344;
+ --theme-color-dark-orange: #b55e02;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--theme-color-dark);
+  /* <body> can change opacity to make this color transition visible */
+  transition: background-color 0.25s;
+}
+html.green {
+  background-color: var(--theme-color-light-green);
+}
+html.purple {
+  background-color: var(--theme-color-light-purple);
+}
+html.gray {
+  background-color: var(--theme-color-light-gray);
+}
+html.orange {
+  background-color: var(--theme-color-light-orange);
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #000;
+  text-align: left;
+  /* gradient goes from theme-color-light to theme-color-dark */
+  background: linear-gradient(#032dc1, #384577);
+  overflow-x: hidden;
+}
+body.green {
+  /* gradient goes from theme-color-dark-green to theme-color-light-green */
+  background: linear-gradient(#026117, #02b52c);
+}
+body.purple {
+  /* gradient goes from theme-color-dark-purple to theme-color-light-purple */
+  background: linear-gradient(#39095e, #7d2abd);
+}
+body.gray {
+  /* gradient goes from theme-color-dark-gray to theme-color-light-gray */
+  background: linear-gradient(#002529, #6b7d80);
+}
+body.orange {
+  /* gradient goes from theme-color-dark-orange to theme-color-light-orange */
+  background: linear-gradient(#b55e02, #fca344);
+}
+body.fade {
+  /* allows <html> background-color transition to be visible */
+  animation: fade 0.25s ease-out 0s 2 alternate;
+}
+@keyframes fade {
+  from { opacity: 1; }
+  to   { opacity: 0.75; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+}
+
+h1 {
+  margin: 0;
+  padding: 25px 90px;
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 0.1rem;
+  color: #fff;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p {
+  margin: 0.5rem 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: inherit;
+}
+
+a {
+  color: var(--theme-color-dark);
+  text-decoration: underline;
+  background-color: transparent;
+}
+a:hover {
+  color: var(--theme-color-light);
+}
+a.green {
+  color: var(--theme-color-light-green);
+}
+a.green:hover {
+  color: var(--theme-color-dark-green);
+}
+a.purple {
+  color: var(--theme-color-light-purple);
+}
+a.purple:hover {
+  color: var(--theme-color-dark-purple);
+}
+a.gray {
+  color: var(--theme-color-light-gray);
+}
+a.gray:hover {
+  color: var(--theme-color-dark-gray);
+}
+a.orange {
+  color: var(--theme-color-light-orange);
+}
+a.orange:hover {
+  color: var(--theme-color-dark-orange);
+}
+
+/*
+** BUTTONS
+**/
+
+button,
+button:hover,
+button:active,
+button:focus {
+  display: inline-block;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  border: 1px solid var(--theme-color-light);
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--theme-color-light);
+  background-color: #fff;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+button.green {
+  border-color: var(--theme-color-dark-green);
+  color: var(--theme-color-dark-green);
+}
+button.purple {
+  border-color: var(--theme-color-dark-purple);
+  color: var(--theme-color-dark-purple);
+}
+button.gray {
+  border-color: var(--theme-color-dark-gray);
+  color: var(--theme-color-dark-gray);
+}
+button.orange {
+  border-color: var(--theme-color-dark-orange);
+  color: var(--theme-color-dark-orange);
+}
+
+input[type=checkbox] {
+  display: inline;
+}
+
+#help_button,
+#help_button.slide-out {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  height: 50px;
+  width: 50px;
+  margin: 20px;
+  border-radius: 100%;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 0.25s;
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+#help_button.slide-in {
+  transform: rotate(90deg);
+  box-shadow: 0 0 16px rgba(3, 45, 193, 0.28); /* theme-color-light */
+}
+#help_button.green {
+  box-shadow: 0 0 16px rgba(2, 97, 23, 0.28); /* theme-color-dark-green */
+}
+#help_button.purple {
+  box-shadow: 0 0 16px rgba(57, 9, 94, 0.28); /* theme-color-dark-purple */
+}
+#help_button.gray {
+  box-shadow: 0 0 16px rgba(0, 37, 41, 0.28); /* theme-color-dark-gray */
+}
+#help_button.orange {
+  box-shadow: 0 0 16px rgba(181, 94, 2, 0.28); /* theme-color-dark-orange */
+}
+
+/*
+** PANEL LAYOUT
+**/
+
+header {
+  background-color: transparent;
+}
+
+main {
+  background-color: transparent;
+  margin 0;
+  padding-bottom: 25px;
+}
+
+#status_container,
+#status_container.default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 200px;
+  margin-top: calc(20vh - 75px);
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+  padding: 20px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.75rem;
+  text-align: center;
+  transition: all .2s linear;
+}
+#status_container.active {
+  animation: pulsing 2s ease-out 0s infinite alternate;
+}
+@keyframes pulsing {
+  from { opacity: 1; }
+  to   { opacity: 0.2; }
+}
+#status_container.error {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
+}
+/* creates single big pulsing glow to announce end of cue */
+#status_container.swell {
+  animation: swelling 0.5s linear 0s 2 alternate;
+}
+@keyframes swelling {
+  from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
+  to   { box-shadow: 0 0 250px rgba(255,255,255,.28); }
+}
+
+#status_label {
+  padding: 20px;
+}
+
+/* TODO: yeah I should really style these as a btn class, not a bunch of IDs */
+button.transport,
+#simulateShakeButton,
+button.default,
+button.fixed-media {
+  display: block;
+  margin-top: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 50px;
+  min-width: 100px;
+  border-radius: 10px;
+  padding: 10px;
+  letter-spacing: 0.05rem;
+}
+button.fixed-media:hover {
+  border-color: white;
+}
+
+button.transport.hidden {
+  display: none;
+}
+
+button.transport.start {
+  animation: glowing 1s linear 0s infinite alternate;
+}
+@keyframes glowing {
+  from { box-shadow: 0 0 0 rgba(255,255,255,.28); }
+  to   { box-shadow: 0 0 100px rgba(255,255,255,.28); }
+}
+/* NOTE: when button has "stop" class, styling is default button style */
+
+/* use after button has been tapped but cue is being fetched */
+button.transport.disabled {
+  opacity: 0.5;
+}
+
+button.transport.reload {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+}
+
+button.practice.hidden {
+  display: none;
+}
+
+/* I should probably style containers by class, not id, but I would need to change how classes are set for message container */
+#message_container,
+#message_container.default,
+fieldset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 25px 50px;
+  padding: 20px;
+  border: 2px dashed #fff;
+  border-radius: 10px;
+  background-color: transparent;
+  opacity: 1;
+  color: #fff;
+  transition: all .2s linear;
+}
+#message_container.warning {
+  color: var(--theme-color-warning);
+  border-color: var(--theme-color-warning);
+}
+#message_container.error {
+  color: var(--theme-color-error-dark);
+  border-color: var(--theme-color-error-dark);
+  background-color: var(--theme-color-error-light);
+}
+#message_container.hidden {
+  opacity: 0;
+}
+
+/* TODO: get rid of #cue_label (change to "span.jumbo") and change site for shared-cues */
+#cue_label,
+span.jumbo {
+  font-size: 500%;
+}
+span.large {
+  font-size: 250%;
+}
+
+#motion_error_container {
+  display: block; /* flex here causes button to float next to text */
+  align-items: center;
+  justify-content: center;
+  margin: 25px 50px;
+  padding: 20px;
+  border: 2px dashed;
+  border-color: var(--theme-color-error-dark);
+  border-radius: 10px;
+  background-color: var(--theme-color-error-light);
+  opacity: 1;
+  color: var(--theme-color-error-dark);
+  transition: all .2s linear;
+}
+
+#help_panel {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 100px 20px 20px;
+  background-color: #fff;
+  color: var(--theme-color-light);
+  border-right: 1px solid var(--theme-color-light);
+  box-shadow: 0 0 16px rgba(255,255,255,.28);
+}
+#help_panel.slide-in {
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0s;
+}
+#help_panel.green {
+  color: var(--theme-color-dark-green);
+}
+#help_panel.purple {
+  color: var(--theme-color-dark-purple);
+}
+#help_panel.gray {
+  color: var(--theme-color-dark-gray);
+}
+#help_panel.orange {
+  color: var(--theme-color-dark-orange);
+}
+
+@media (max-width: 767px) {
+  #help_panel {
+    width: 90%;
+  }
+  #help_panel.slide-out {
+    visibility: hidden;
+    transform: translateX(-110%);
+    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
+  }
+}
+@media (min-width: 768px) {
+  #help_panel {
+    width: 400px;
+  }
+  #help_panel.slide-out {
+    visibility: hidden;
+    transform: translateX(-416px);
+    transition: transform 0.25s cubic-bezier(0.4,0.0,0.2,1), visibility 0s linear 0.25s;
+  }
+}
+
+#help_panel h2 {
+  border-left: 5px solid var(--theme-color-dark);
+  border-top: 1px solid var(--theme-color-dark);
+  padding-left: 10px;
+  font-size: 1.5rem;
+}
+#help_panel.green h2 {
+  border-color: var(--theme-color-dark-green);
+}
+#help_panel.purple h2 {
+  border-color: var(--theme-color-dark-purple);
+}
+#help_panel.gray h2 {
+  border-color: var(--theme-color-dark-gray);
+}
+#help_panel.orange h2 {
+  border-color: var(--theme-color-dark-orange);
+}
+
+#help_panel div {
+  margin-bottom: 40px;
+}
+
+#console_container,
+#motion_container {
+  max-height: 200px;
+  overflow-y: scroll;
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid var(--theme-color-dark);
+  font-size: 80%;
+  font-family: Courier, monospace;
+  line-height: 1.25;
+  color: var(--theme-color-dark);
+}
+#console_container.hidden,
+#motion_container.hidden {
+  display: none;
+}
+
+/*
+** MOTION SIMULATION ON DESKTOP
+**/
+
+fieldset {
+  flex-direction: column;
+}
+
+fieldset.hidden {
+  display: none;
+}
+fieldset.visible {
+  display: flex;
+}
+
+label {
+  margin-top: 15px;
+}
+
+input[type="range"] {
+  margin: 15px 0 15px 0;
+  width: 75%;
+  max-width: 240px;
+}
+
+#simulateShakeButton:hover {
+  box-shadow: 0 0 40px rgba(255,255,255,.28);
+}

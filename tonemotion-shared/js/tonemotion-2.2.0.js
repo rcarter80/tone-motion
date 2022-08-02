@@ -25,6 +25,8 @@ const console_container = document.querySelector('#console_container');
 const body_element = document.querySelector('body');
 // NodeList of all elements that get set by setBackgroundColor()
 const colorElements = document.querySelectorAll('button, a, html, body, #help_panel');
+// NodeList of practice buttons (normally empty unless this is a fixed cue site)
+const practiceButtons = document.querySelectorAll('button.practice');
 
 /*
 ** Tone.Signal objects: set by accelerometer to act as control signals
@@ -529,17 +531,18 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     }
 
     switch (this.status) {
+      // 'readyForSetup' can ONLY be status if fixedCuesOnly is true
       case 'readyForSetup':
         // fixed cue sites have additional step before fixed cues play (to give people time to practice), so start motion updates, but NOT Transport
-        if (this.fixedCuesOnly) {
-          this.startMotionUpdatesAndCueFetching();
-        }
-        break;
+        this.startMotionUpdatesAndCueFetching();
+        this.showPracticeButtons();
+      break;
       case 'readyToPlay':
       case 'stopped':
         if (this.fixedCuesOnly) {
           // NOW is the time when a fixed cue site starts the Transport
           Tone.Transport.start();
+          this.hidePracticeButtons();
         } else {
           // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
           this.cueTimeFromServer = 0;
@@ -556,6 +559,9 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'missedCue':
         this.shutEverythingDown();
         this.setStatus('stopped');
+        if (this.fixedCuesOnly) {
+          this.showPracticeButtons();
+        }
         break;
       case 'error':
         // Reload the current page, without using the cache
@@ -566,6 +572,18 @@ ToneMotion.prototype.bindButtonFunctions = function() {
     }
   });
 };
+ToneMotion.prototype.showPracticeButtons = function() {
+  practiceButtons.forEach(function(button) {
+    button.classList.remove('hidden');
+  });
+  this.publicMessage('You can use the buttons below to practice before playing along with the recording.');
+}
+ToneMotion.prototype.hidePracticeButtons = function() {
+  practiceButtons.forEach(function(button) {
+    button.classList.add('hidden');
+  });
+  this.clearMessageLabel();
+}
 
 // Toggles display for console in side panel. Hiding clears log.
 ToneMotion.prototype.bindConsoleCheckboxFunctions = function() {
