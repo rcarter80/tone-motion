@@ -238,6 +238,10 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStatusLabel('synchronizing', 'active');
       this.setStartStopButton('hidden', '');
       break;
+    case 'readyForSetup':
+      this.setStatusLabel('done loading', 'default');
+      this.setStartStopButton('start', 'tap to complete setup');
+      break;
     case 'readyToPlay':
       this.setStatusLabel('ready', 'default');
       this.setStartStopButton('start', 'start');
@@ -530,6 +534,7 @@ ToneMotion.prototype.bindButtonFunctions = function() {
         if (this.fixedCuesOnly) {
           this.startMotionUpdatesAndCueFetching();
         }
+        break;
       case 'readyToPlay':
       case 'stopped':
         if (this.fixedCuesOnly) {
@@ -539,8 +544,8 @@ ToneMotion.prototype.bindButtonFunctions = function() {
           // Reset cue time so that next response from server (if everything is started again) will start cue (whether it's a new cue or the same)
           this.cueTimeFromServer = 0;
           this.startMotionUpdatesAndCueFetching();
-          break;
         }
+        break;
       case 'waitingForPieceToStart':
       case 'playing_tacet':
       case 'playing_tilt':
