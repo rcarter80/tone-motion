@@ -412,6 +412,13 @@ ToneMotion.prototype.shutEverythingDown = function() {
     clearInterval(i);
   }
 
+  // for fixed cue site, need to clear all previously scheduled cue triggers 
+  if (this.fixedCuesOnly) {
+    for (var i = 0; i < this.cue.length; i++) {
+      window.clearTimeout(this.cue[i].timeoutID);
+    }
+  }
+
   this.publicLog('Shutting down Transport, sound, motion handling, and network requests');
   this.clearActiveCues();
   Tone.Transport.stop();
