@@ -514,7 +514,6 @@ ToneMotion.prototype.setStartStopButton = function(className, text) {
 
 // Handles click events from primary button (startStopButton)
 // Stops and starts Transport, calls startMotionUpdatesAndCueFetching()
-// TODO: decide how to handle practice buttons for fixed site. Probably need additional status (ready to complete set up?). see tonemotion-fixed-2.0.0.js
 ToneMotion.prototype.bindButtonFunctions = function() {
   start_stop_button.addEventListener('click', () => {
     // Audio context can't start without user action
