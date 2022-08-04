@@ -1,10 +1,5 @@
 const tm = new ToneMotion();
 tm.debug = true; // if true, skips clock sync and shows console
-
-
-tm.fixedCuesOnly = true;
-
-
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -1180,14 +1175,3 @@ tm.cue[32] = new TMCue('finished', 0, NO_LIMIT);
 tm.cue[32].goCue = function() {
   // nothing to play
 };
-
-// TODO: delete after testing fixed cue feature
-// timeline for fixed cues below
-Tone.Transport.schedule((time) => {
-  tm.scheduleFixedCues(cueArray);
-}, '0');
-
-const cueArray = [
-  [0, 0],
-  [1, 3000]
-];

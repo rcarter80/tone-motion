@@ -25,16 +25,9 @@
   <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
   <!-- when piece is done, button goes away -->
   <button id="start_stop_button" type="button" class="transport hidden"></button>
-  <div id="cue_container" class="hidden">
-    <p id="cue_label"></p>
-  </div>
   <div id="message_container" class="hidden">
     <p id="message_label"></p>
   </div>
-
-  <!-- TODO: delete practice buttons below (only for fixed cue testing) -->
-  <button id="shake_test_button" type="button" class="transport practice hidden">practice shake mode</button>
-  <button id="tilt_test_button" type="button" class="transport practice hidden">practice tilt mode</button>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
   <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>

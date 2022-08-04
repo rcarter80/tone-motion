@@ -412,7 +412,7 @@ ToneMotion.prototype.shutEverythingDown = function() {
     clearInterval(i);
   }
 
-  // for fixed cue site, need to clear all previously scheduled cue triggers 
+  // for fixed cue site, need to clear all previously scheduled cue triggers
   if (this.fixedCuesOnly) {
     for (var i = 0; i < this.cue.length; i++) {
       window.clearTimeout(this.cue[i].timeoutID);
@@ -583,7 +583,7 @@ ToneMotion.prototype.showPracticeButtons = function() {
   practiceButtons.forEach(function(button) {
     button.classList.remove('hidden');
   });
-  this.publicMessage('You can use the buttons below to practice before playing along with the recording.');
+  this.publicMessage('To experience the interactive sounds for this piece, load this site on your phone and load the recording of the piece on another device. Then begin playing that recording at the exact same time that you tap the start button on your phone. You can use the buttons above to practice before you begin playing the recording.');
 }
 ToneMotion.prototype.hidePracticeButtons = function() {
   practiceButtons.forEach(function(button) {
