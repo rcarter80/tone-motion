@@ -263,12 +263,13 @@ tm.cue[5].updateTiltSounds = function() {
   } else if (tm.accel.y < 0.7) {
     pitchedIceLoop.volume.value = -12 + (tm.accel.y - 0.3) * 22; // -12 to -3dB
   } else {
-    pitchedIceLoop.volume.value = -3; // maybe change to fade out?
+    pitchedIceLoop.volume.value = -3 - (tm.accel.y - 0.7) * 320; // -3 to -99dB
   }
 };
 tm.cue[5].triggerDipSound = function() {
   limit_5--;
   displayDipsLeft(limit_5);
+  // TODO: if DIP limit is reached, stop ice loop so they can't make any sound
 };
 tm.cue[5].triggerDipReset = function() {
 };
