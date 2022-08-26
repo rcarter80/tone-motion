@@ -255,23 +255,25 @@ pitchedIceLoop.playbackRate = 0.773; // retuned to G4
 
 tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  pitchedIceLoop.start();
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
-    pitchedIceLoop.volume.value = -99 + tm.accel.y * 290; // -99 to -12dB
+    pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
   } else if (tm.accel.y < 0.7) {
-    pitchedIceLoop.volume.value = -12 + (tm.accel.y - 0.3) * 22; // -12 to -3dB
+    pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
   } else {
-    pitchedIceLoop.volume.value = -3 - (tm.accel.y - 0.7) * 320; // -3 to -99dB
+    pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
   }
 };
 tm.cue[5].triggerDipSound = function() {
   limit_5--;
   displayDipsLeft(limit_5);
-  // TODO: if DIP limit is reached, stop ice loop so they can't make any sound
+  pitchedIceLoop.stop();
+  vibeSampler.triggerAttackRelease('G4', 5);
 };
 tm.cue[5].triggerDipReset = function() {
+  // TODO: if DIP limit is reached, stop ice loop so they can't make any sound
+  pitchedIceLoop.start();
 };
 tm.cue[5].stopCue = function() {
   pitchedIceLoop.stop();
