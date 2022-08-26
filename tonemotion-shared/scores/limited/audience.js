@@ -220,27 +220,60 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5: first cue in piece (but code below may not be first musical section)
-let limit_5 = 21;
+// sketched idea labeled "cue 5" but commented out
+// let limit_5 = 21;
+//
+// tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
+// tm.cue[5].goCue = function() {
+//   // turn off motion testing to optimize motionUpdateLoop
+//   tm.shouldTestMotion = false;
+// };
+// tm.cue[5].triggerShakeSound = function() {
+//   if (limit_5 > 0) {
+//     clave.start();
+//     limit_5--;
+//     displayShakesLeft(limit_5);
+//   } else {
+//     displayShakesLeft(limit_5);
+//     tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+//   }
+// };
+// tm.cue[5].stopCue = function() {
+//   // this is just a test
+//   // tm.clearCueDisplay();
+// };
 
-tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
+// *******************************************************************
+// CUE 5 (DIP): 1st section. Ice crunch tilt with gong (unison to M3 cluster)
+limit_5 = 21; // limit of audience DIPS in section (reset also above)
+
+// Center of most prominent frequency is c. 507Hz (~C5)
+const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
+pitchedIceLoop.loop = true;
+pitchedIceLoop.playbackRate = 0.773; // retuned to G4
+// NOTE: "melting ice#02" has nice noisy ice sounds. could use later
+
+tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // turn off motion testing to optimize motionUpdateLoop
-  tm.shouldTestMotion = false;
+  pitchedIceLoop.start();
 };
-tm.cue[5].triggerShakeSound = function() {
-  if (limit_5 > 0) {
-    clave.start();
-    limit_5--;
-    displayShakesLeft(limit_5);
+tm.cue[5].updateTiltSounds = function() {
+  if (tm.accel.y < 0.3) {
+    pitchedIceLoop.volume.value = -99 + tm.accel.y * 290; // -99 to -12dB
+  } else if (tm.accel.y < 0.7) {
+    pitchedIceLoop.volume.value = -12 + (tm.accel.y - 0.3) * 22; // -12 to -3dB
   } else {
-    displayShakesLeft(limit_5);
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+    pitchedIceLoop.volume.value = -3; // maybe change to fade out?
   }
 };
+tm.cue[5].triggerDipSound = function() {
+  limit_5--;
+  displayDipsLeft(limit_5);
+};
+tm.cue[5].triggerDipReset = function() {
+};
 tm.cue[5].stopCue = function() {
-  // this is just a test
-  // tm.clearCueDisplay();
+  pitchedIceLoop.stop();
 };
 
 // *******************************************************************
@@ -345,10 +378,10 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7
-const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
 claveLoop.loop = true;
 
-const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3');
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
 ziplockLoop.loop = true;
 
 const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
