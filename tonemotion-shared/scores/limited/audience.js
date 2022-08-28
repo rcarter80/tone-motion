@@ -212,7 +212,7 @@ tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
   // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
-  limit_5 = 21;
+  limit_5 = 31;
   limit_6 = 21;
 };
 tm.cue[4].stopCue = function() {
@@ -220,60 +220,64 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// sketched idea labeled "cue 5" but commented out
-// let limit_5 = 21;
-//
-// tm.cue[5] = new TMCue('shake', 2000, NO_LIMIT);
-// tm.cue[5].goCue = function() {
-//   // turn off motion testing to optimize motionUpdateLoop
-//   tm.shouldTestMotion = false;
-// };
-// tm.cue[5].triggerShakeSound = function() {
-//   if (limit_5 > 0) {
-//     clave.start();
-//     limit_5--;
-//     displayShakesLeft(limit_5);
-//   } else {
-//     displayShakesLeft(limit_5);
-//     tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
-//   }
-// };
-// tm.cue[5].stopCue = function() {
-//   // this is just a test
-//   // tm.clearCueDisplay();
-// };
+// CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
+let limit_5 = 31; // limit of audience DIPS in section (reset also above)
+const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
+const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
+const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
+const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
 
-// *******************************************************************
-// CUE 5 (DIP): 1st section. Ice crunch tilt with gong (unison to M3 cluster)
-limit_5 = 21; // limit of audience DIPS in section (reset also above)
+// lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
+const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
+// upper voice of canon
+const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DqS5, DqS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AqS5, AqS5, 'Bb5', 'Bb5'];
 
 // Center of most prominent frequency is c. 507Hz (~C5)
 const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
 pitchedIceLoop.loop = true;
-pitchedIceLoop.playbackRate = 0.773; // retuned to G4
 // NOTE: "melting ice#02" has nice noisy ice sounds. could use later
 
 tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  // turn off motion testing to optimize motionUpdateLoop
+    tm.shouldTestMotion = false;
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
     pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pitchedIceLoop.playbackRate = 1.15844; // retuned to D5
   } else if (tm.accel.y < 0.7) {
     pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    pitchedIceLoop.playbackRate = 1.15844 + (tm.accel.y - 0.3) * 0.17215; //D-Eb
   } else {
     pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pitchedIceLoop.playbackRate = 1.2273; // Eb5
   }
 };
 tm.cue[5].triggerDipSound = function() {
-  limit_5--;
-  displayDipsLeft(limit_5);
   pitchedIceLoop.stop();
-  vibeSampler.triggerAttackRelease('G4', 5);
+  if (limit_5 > 0) {
+    // still got DIPS left, so find time elapsed to determine pitch to play
+    let time_5 = tm.getElapsedTimeInCue(5);
+    // alternate selection from upper and lower voice of canon
+    let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
+    let index_5 = Math.floor(time_5 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_5 > arr_5.length - 1) {
+      index_5 = arr_5.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
+    limit_5--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_5);
 };
 tm.cue[5].triggerDipReset = function() {
-  // TODO: if DIP limit is reached, stop ice loop so they can't make any sound
-  pitchedIceLoop.start();
+  // slushy ice sounds only available when there are DIPS remaining
+  if (limit_5 > 0) {
+    pitchedIceLoop.start();
+  }
 };
 tm.cue[5].stopCue = function() {
   pitchedIceLoop.stop();
@@ -357,7 +361,7 @@ tm.cue[6].triggerDipSound = function() {
   if (limit_6 > 0) {
     // dip triggers bell sound + enveloped flurry of softer faster vibes loop
     // bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
-  	// vibEnv.triggerAttackRelease('8n');
+    // vibEnv.triggerAttackRelease('8n');
     clave.start();
     sineSynth.triggerRelease();
     limit_6--;
