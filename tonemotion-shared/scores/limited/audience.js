@@ -207,13 +207,18 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
+// Section DIP/SHAKE limits, which are reset in 2 spots - define here only once
+const LIMIT_5 = 931; // after testing, remove 9 (to make this 31)
+const LIMIT_6 = 941; // remove 9 (to make this 41)
+
+// *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
   // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
-  limit_5 = 31;
-  limit_6 = 21;
+  limit_5 = LIMIT_5;
+  limit_6 = LIMIT_6;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -221,7 +226,7 @@ tm.cue[4].stopCue = function() {
 
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
-let limit_5 = 31; // limit of audience DIPS in section (reset also above)
+let limit_5 = LIMIT_5; // limit of audience DIPS in section
 const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
 const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
 const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
@@ -284,104 +289,138 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6:
-const pitchArr_6 = ['G3', 'A3', 'Bb3', 'C4', 'G4', 'A4', 'Bb4', 'C5', 'G5', 'A5', 'Bb5', 'C6'];
-const arrLen_6 = pitchArr_6.length;
-const hiPitchArr_6 = ['G6', 'A6', 'Bb6', 'C7'];
-const hiArrLen_6 = hiPitchArr_6.length;
+// CUE 6 (SHAKE): continuation of canon
+let limit_6 = LIMIT_6; // limit of audience SHAKES in section
 
-const softBellLoop_6 = new Tone.Loop((time) => {
-  envVibeSampler.triggerAttackRelease(pitchArr_6[count_6 % arrLen_6], '4n');
-  count_6++;
-}, '16n');
+const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
-let limit_6 = 21;
-let count_6 = 0;
-
-
-const vibEnv = new Tone.AmplitudeEnvelope({
-  attack: 0.1,
-  decay: 0.2,
-  sustain: 1.0,
-  release: 1
-}).toDestination();
-const envVibeSampler = new Tone.Sampler({
-  urls: {
-    'F3': 'vibe_bell-F3.mp3',
-    'A3': 'vibe_bell-A3.mp3',
-    'Db4': 'vibe_bell-Db4.mp3',
-    'F4': 'vibe_bell-F4.mp3',
-    'A4': 'vibe_bell-A4.mp3',
-    'Db5': 'vibe_bell-Db5.mp3',
-    'A5': 'vibe_bell-A5.mp3',
-    'Db6': 'vibe_bell-Db6.mp3',
-  },
-  baseUrl: vibes_sounds,
-}).connect(vibEnv);
-
-const sineSynth = new Tone.Synth({
-  oscillator: {
-    type: 'sine',
-  },
-}).toDestination();
-
-tm.cue[6] = new TMCue('dip', 4000, NO_LIMIT);
-tm.cue[6].cueTransition = function() {
-  // NOTE: the following test prevents transition sound if section was previously cued (e.g., in rehearsal if we go back to this cue)
-  if (tm.getElapsedTimeInCue(6) < 100) {
-    tm.publicLog('cueTransition() called');
-  }
-}
+tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  count_6 = 0;
-  softBellLoop_6.start();
+  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6])
 };
-let vol_6, bend_6;
-tm.cue[6].updateTiltSounds = function() {
-  if (tm.accel.y < 0.2) {
-    vol_6 = -99 + tm.accel.y * 195;
-    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -99 to -60 dB
-  } else if (tm.accel.y < 0.5) {
-    vol_6 = -60 + (tm.accel.y - 0.2) * 160;
-    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -60 to -12 dB
-  } else if (tm.accel.y < 0.7) {
-    vol_6 = -12 + (tm.accel.y - 0.5) * 60;
-    sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -12 to 0 dB
-  } else {
-    sineSynth.volume.value = 0; // BUT envelope release is trigged at this point
-  }
-  bend_6 = -(tm.accel.y * 1200); // bends up to octave down when upside down
-  sineSynth.detune.rampTo(bend_6, tm.motionUpdateInSeconds);
-}
-tm.cue[6].triggerDipSound = function() {
-  tm.publicLog('dip');
-
-  let time_6 = tm.getElapsedTimeInCue(6);
-
+tm.cue[6].triggerShakeSound = function() {
   if (limit_6 > 0) {
-    // dip triggers bell sound + enveloped flurry of softer faster vibes loop
-    // bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
-    // vibEnv.triggerAttackRelease('8n');
-    clave.start();
-    sineSynth.triggerRelease();
+    // still got SHAKES left, so find time elapsed to determine pitch to play
+    let time_6 = tm.getElapsedTimeInCue(6);
+    // alternate selection from upper and lower voice of canon
+    // (lower voice of canon is same pitches as cue 5)
+    let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
+    let index_6 = Math.floor(time_6 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_6 > arr_6.length - 1) {
+      index_6 = arr_6.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
     limit_6--;
-    displayDipsLeft(limit_6);
   } else {
-    displayDipsLeft(limit_6);
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
   }
-};
-tm.cue[6].triggerDipReset = function() {
-  if (limit_6 > 0) {
-    tm.publicLog('dip reset');
-    // TODO: randomize inital pitch
-    sineSynth.triggerAttack('A4');
-  }
+  displayShakesLeft(limit_6);
 };
 tm.cue[6].stopCue = function() {
-  softBellLoop_6.stop();
-  sineSynth.triggerRelease();
+  // nothing to do here?
 };
+
+//
+// // *******************************************************************
+// // CUE 6:
+// const pitchArr_6 = ['G3', 'A3', 'Bb3', 'C4', 'G4', 'A4', 'Bb4', 'C5', 'G5', 'A5', 'Bb5', 'C6'];
+// const arrLen_6 = pitchArr_6.length;
+// const hiPitchArr_6 = ['G6', 'A6', 'Bb6', 'C7'];
+// const hiArrLen_6 = hiPitchArr_6.length;
+//
+// const softBellLoop_6 = new Tone.Loop((time) => {
+//   envVibeSampler.triggerAttackRelease(pitchArr_6[count_6 % arrLen_6], '4n');
+//   count_6++;
+// }, '16n');
+//
+// let limit_6 = 21;
+// let count_6 = 0;
+//
+//
+// const vibEnv = new Tone.AmplitudeEnvelope({
+//   attack: 0.1,
+//   decay: 0.2,
+//   sustain: 1.0,
+//   release: 1
+// }).toDestination();
+// const envVibeSampler = new Tone.Sampler({
+//   urls: {
+//     'F3': 'vibe_bell-F3.mp3',
+//     'A3': 'vibe_bell-A3.mp3',
+//     'Db4': 'vibe_bell-Db4.mp3',
+//     'F4': 'vibe_bell-F4.mp3',
+//     'A4': 'vibe_bell-A4.mp3',
+//     'Db5': 'vibe_bell-Db5.mp3',
+//     'A5': 'vibe_bell-A5.mp3',
+//     'Db6': 'vibe_bell-Db6.mp3',
+//   },
+//   baseUrl: vibes_sounds,
+// }).connect(vibEnv);
+//
+// const sineSynth = new Tone.Synth({
+//   oscillator: {
+//     type: 'sine',
+//   },
+// }).toDestination();
+//
+// tm.cue[6] = new TMCue('dip', 4000, NO_LIMIT);
+// tm.cue[6].cueTransition = function() {
+//   // NOTE: the following test prevents transition sound if section was previously cued (e.g., in rehearsal if we go back to this cue)
+//   if (tm.getElapsedTimeInCue(6) < 100) {
+//     tm.publicLog('cueTransition() called');
+//   }
+// }
+// tm.cue[6].goCue = function() {
+//   count_6 = 0;
+//   softBellLoop_6.start();
+// };
+// let vol_6, bend_6;
+// tm.cue[6].updateTiltSounds = function() {
+//   if (tm.accel.y < 0.2) {
+//     vol_6 = -99 + tm.accel.y * 195;
+//     sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -99 to -60 dB
+//   } else if (tm.accel.y < 0.5) {
+//     vol_6 = -60 + (tm.accel.y - 0.2) * 160;
+//     sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -60 to -12 dB
+//   } else if (tm.accel.y < 0.7) {
+//     vol_6 = -12 + (tm.accel.y - 0.5) * 60;
+//     sineSynth.volume.rampTo(vol_6, tm.motionUpdateInSeconds); // -12 to 0 dB
+//   } else {
+//     sineSynth.volume.value = 0; // BUT envelope release is trigged at this point
+//   }
+//   bend_6 = -(tm.accel.y * 1200); // bends up to octave down when upside down
+//   sineSynth.detune.rampTo(bend_6, tm.motionUpdateInSeconds);
+// }
+// tm.cue[6].triggerDipSound = function() {
+//   tm.publicLog('dip');
+//
+//   let time_6 = tm.getElapsedTimeInCue(6);
+//
+//   if (limit_6 > 0) {
+//     // dip triggers bell sound + enveloped flurry of softer faster vibes loop
+//     // bellSampler.triggerAttackRelease(hiPitchArr_6[Math.floor(time_6/2000) % hiArrLen_6], 3);
+//     // vibEnv.triggerAttackRelease('8n');
+//     clave.start();
+//     sineSynth.triggerRelease();
+//     limit_6--;
+//     displayDipsLeft(limit_6);
+//   } else {
+//     displayDipsLeft(limit_6);
+//     tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+//   }
+// };
+// tm.cue[6].triggerDipReset = function() {
+//   if (limit_6 > 0) {
+//     tm.publicLog('dip reset');
+//     // TODO: randomize inital pitch
+//     sineSynth.triggerAttack('A4');
+//   }
+// };
+// tm.cue[6].stopCue = function() {
+//   softBellLoop_6.stop();
+//   sineSynth.triggerRelease();
+// };
 
 // *******************************************************************
 // CUE 7
