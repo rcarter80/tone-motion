@@ -237,13 +237,17 @@ tm.cue[4].stopCue = function() {
 let limit_5 = LIMIT_5; // limit of audience DIPS in section
 const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
 const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
+const DsS5 = 440 * ((2**(1/36))**16); // D sixth-sharp 5
 const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
+const DtS5 = 440 * ((2**(1/36))**17); // D third-sharp 5
+const AsS5 = 880 * (2**(1/36)); // A sixth-sharp 5
 const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
+const AtS5 = 880 * ((2**(1/36))**2); // A third-sharp 5
 
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
-const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DqS5, DqS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AqS5, AqS5, 'Bb5', 'Bb5'];
+const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
 
 // Center of most prominent frequency is c. 507Hz (~C5)
 const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
