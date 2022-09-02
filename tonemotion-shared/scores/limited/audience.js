@@ -109,6 +109,14 @@ const pianoSampler = new Tone.Sampler({
   baseUrl: piano_sounds,
 }).toDestination();
 
+// 4-sec. "tail" of chimes/sugar. Not pitched, but Sampler manages retriggering
+const sparklyTailSampler = new Tone.Sampler({
+  urls: {
+    // "tune" to A4 (440) so that I can use Hz as argument to triggerAttack()
+    'A4': granulated_sounds + 'sparklyTail.mp3'
+  }
+}).toDestination();
+
 const fmSynth = new Tone.FMSynth({
   envelope: {
     attack: 1,
@@ -297,6 +305,7 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[6].goCue = function() {
   // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6])
+  sparklyTailSampler.volume.value = -18;
 };
 tm.cue[6].triggerShakeSound = function() {
   if (limit_6 > 0) {
@@ -311,6 +320,8 @@ tm.cue[6].triggerShakeSound = function() {
       index_6 = arr_6.length - 1;
     }
     vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
+    let sparklyPitch = 440 + Math.random() * 200;
+    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
     limit_6--;
   } else {
     tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
