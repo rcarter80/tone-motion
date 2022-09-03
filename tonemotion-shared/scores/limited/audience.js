@@ -344,8 +344,8 @@ tm.cue[6].stopCue = function() {
 // CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
 let limit_7 = LIMIT_7; // limit of audience DIPS in section
 
-const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
-ziplockLoop.loop = true;
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 
 let count_7 = 0;
@@ -356,18 +356,18 @@ tm.cue[7].goCue = function() {
 };
 tm.cue[7].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
-    ziplockLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
-    ziplockLoop.playbackRate = 0.75;
+    pingpongClickLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pingpongClickLoop.playbackRate = 0.75;
   } else if (tm.accel.y < 0.7) {
-    ziplockLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
-    ziplockLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; // 0.75x - 2x
+    pingpongClickLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    pingpongClickLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; // 0.75x - 2x
   } else {
-    ziplockLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
-    ziplockLoop.playbackRate = 2;
+    pingpongClickLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pingpongClickLoop.playbackRate = 2;
   }
 };
 tm.cue[7].triggerDipSound = function() {
-  ziplockLoop.stop();
+  pingpongClickLoop.stop();
   if (limit_7 > 0) {
     bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
     count_7++;
@@ -378,10 +378,12 @@ tm.cue[7].triggerDipSound = function() {
   displayDipsLeft(limit_7);
 };
 tm.cue[7].triggerDipReset = function() {
-  ziplockLoop.start();
+  if (limit_7 > 0) {
+    pingpongClickLoop.start();
+  }
 };
 tm.cue[7].stopCue = function() {
-  ziplockLoop.stop();
+  pingpongClickLoop.stop();
 };
 
 // *******************************************************************
@@ -399,8 +401,8 @@ tm.cue[8].stopCue = function() {
 const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
 claveLoop.loop = true;
 
-const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
-pingpongClickLoop.loop = true;
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
+ziplockLoop.loop = true;
 
 // everyone is randomly assigned one of three clicky loops to control on y-axis
 const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
