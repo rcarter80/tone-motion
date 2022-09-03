@@ -88,6 +88,19 @@ const bellSampler = new Tone.Sampler({
   },
   baseUrl: bell_sounds,
 }).toDestination();
+const bellDelay = new Tone.FeedbackDelay({
+  delayTime: 0.22,
+  feedback: 0.4,
+}).toDestination();
+const bellDelaySampler = new Tone.Sampler({
+  urls: {
+    'C6': 'handbell-C6.mp3',
+    'E6': 'handbell-E6.mp3',
+    'Ab6': 'handbell-Ab6.mp3',
+    'B6': 'handbell-B6.mp3',
+  },
+  baseUrl: bell_sounds,
+}).connect(bellDelay);
 
 const harpSampler = new Tone.Sampler({
   urls: {
@@ -229,6 +242,8 @@ const LIMIT_6 = 941; // remove 9 (to make this 41)
 // need to define pitch array here in order to set LIMIT_7 from array length
 const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
 const LIMIT_7 = pitchArr_7.length;
+const pitchArr_8 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
+const LIMIT_8 = pitchArr_8.length;
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
@@ -239,6 +254,7 @@ tm.cue[4].goCue = function() {
   limit_5 = LIMIT_5;
   limit_6 = LIMIT_6;
   limit_7 = LIMIT_7;
+  limit_8 = LIMIT_8;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -387,13 +403,29 @@ tm.cue[7].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 8: [E] - tacet transition
-tm.cue[8] = new TMCue('tacet', -1);
+// CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
+let limit_8 = LIMIT_8; // limit of audience SHAKE in section
+
+let count_8 = 0;
+
+tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[8].goCue = function() {
-  // nothing to play
+  count_8 = 0;
+};
+tm.cue[8].triggerShakeSound = function() {
+  if (limit_8 > 0) {
+    // BUG: only works for note names as strings, so microtones fail 
+    let hiPitch = Tone.Midi(pitchArr_8[count_8]).transpose(24);
+    bellDelaySampler.triggerAttackRelease(hiPitch, 5);
+    count_8++;
+    limit_8--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_8);
 };
 tm.cue[8].stopCue = function() {
-  // nothing to clean up
+
 };
 
 // *******************************************************************
