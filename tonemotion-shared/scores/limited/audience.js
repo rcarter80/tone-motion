@@ -22,6 +22,14 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
+const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
+const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
+const DsS5 = 440 * ((2**(1/36))**16); // D sixth-sharp 5
+const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
+const DtS5 = 440 * ((2**(1/36))**17); // D third-sharp 5
+const AsS5 = 880 * (2**(1/36)); // A sixth-sharp 5
+const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
+const AtS5 = 880 * ((2**(1/36))**2); // A third-sharp 5
 
 // shows number of shakes listener has left
 function displayShakesLeft(num) {
@@ -218,6 +226,9 @@ tm.cue[3].stopCue = function() {
 // Section DIP/SHAKE limits, which are reset in 2 spots - define here only once
 const LIMIT_5 = 931; // after testing, remove 9 (to make this 31)
 const LIMIT_6 = 941; // remove 9 (to make this 41)
+// need to define pitch array here in order to set LIMIT_7 from array length
+const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
+const LIMIT_7 = pitchArr_7.length;
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
@@ -227,6 +238,7 @@ tm.cue[4].goCue = function() {
   // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
   limit_5 = LIMIT_5;
   limit_6 = LIMIT_6;
+  limit_7 = LIMIT_7;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -235,14 +247,6 @@ tm.cue[4].stopCue = function() {
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
 let limit_5 = LIMIT_5; // limit of audience DIPS in section
-const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
-const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
-const DsS5 = 440 * ((2**(1/36))**16); // D sixth-sharp 5
-const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
-const DtS5 = 440 * ((2**(1/36))**17); // D third-sharp 5
-const AsS5 = 880 * (2**(1/36)); // A sixth-sharp 5
-const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
-const AtS5 = 880 * ((2**(1/36))**2); // A third-sharp 5
 
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
@@ -257,7 +261,7 @@ pitchedIceLoop.loop = true;
 tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
-    tm.shouldTestMotion = false;
+  tm.shouldTestMotion = false;
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
@@ -335,6 +339,104 @@ tm.cue[6].triggerShakeSound = function() {
 tm.cue[6].stopCue = function() {
   // nothing to do here?
 };
+
+// *******************************************************************
+// CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
+let limit_7 = LIMIT_7; // limit of audience DIPS in section
+
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
+ziplockLoop.loop = true;
+bellSampler.release = 0.8; // bells pitched very low require gentler fade out
+
+let count_7 = 0;
+
+tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[7].goCue = function() {
+  count_7 = 0;
+};
+tm.cue[7].updateTiltSounds = function() {
+  if (tm.accel.y < 0.3) {
+    ziplockLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    ziplockLoop.playbackRate = 0.75;
+  } else if (tm.accel.y < 0.7) {
+    ziplockLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    ziplockLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; // 0.75x - 2x
+  } else {
+    ziplockLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    ziplockLoop.playbackRate = 2;
+  }
+};
+tm.cue[7].triggerDipSound = function() {
+  ziplockLoop.stop();
+  if (limit_7 > 0) {
+    bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
+    count_7++;
+    limit_7--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_7);
+};
+tm.cue[7].triggerDipReset = function() {
+  ziplockLoop.start();
+};
+tm.cue[7].stopCue = function() {
+  ziplockLoop.stop();
+};
+
+// *******************************************************************
+// CUE 8: [E] - tacet transition
+tm.cue[8] = new TMCue('tacet', -1);
+tm.cue[8].goCue = function() {
+  // nothing to play
+};
+tm.cue[8].stopCue = function() {
+  // nothing to clean up
+};
+
+// *******************************************************************
+// CUE 9
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
+claveLoop.loop = true;
+
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
+
+// everyone is randomly assigned one of three clicky loops to control on y-axis
+const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
+
+let count_9 = 0;
+
+tm.cue[9] = new TMCue('dip', -1);
+tm.cue[9].goCue = function() {
+  count_9 = 0;
+};
+tm.cue[9].updateTiltSounds = function() {
+  if (tm.accel.y < 0.2) {
+    clickLoop_9.volume.value = -99;
+  } else if (tm.accel.y < 0.4) {
+    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 375; // -99 to -24 dB
+  } else if (tm.accel.y < 0.7) {
+    clickLoop_9.volume.value = -24 + (tm.accel.y - 0.4) * 70; // -24 to -3 dB
+  } else {
+    clickLoop_9.volume.value = -3; // but loop stops at this point anyway
+  }
+  clickLoop_9.playbackRate = 1 + (tm.accel.y * 3);
+};
+tm.cue[9].triggerDipSound = function() {
+  let pitch_9 = pitchArr_9[count_9 % pitchArr_9.length];
+  bellSampler.triggerAttackRelease(pitch_9, 5);
+  clickLoop_9.stop();
+  count_9++;
+};
+tm.cue[9].triggerDipReset = function() {
+  clickLoop_9.start();
+};
+tm.cue[9].stopCue = function() {
+  clickLoop_9.stop();
+};
+
+
 
 //
 // // *******************************************************************
@@ -436,59 +538,3 @@ tm.cue[6].stopCue = function() {
 //   softBellLoop_6.stop();
 //   sineSynth.triggerRelease();
 // };
-
-// *******************************************************************
-// CUE 7
-const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
-claveLoop.loop = true;
-
-const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
-ziplockLoop.loop = true;
-
-const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
-pingpongClickLoop.loop = true;
-
-// everyone is randomly assigned one of three clicky loops to control on y-axis
-const clickLoop_7 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
-
-const pitchArr_7 = ['G5', 'F#5', 'G5', 'E5', 'F#5', 'G5', 'D5', 'C#5'];
-let count_7 = 0;
-
-tm.cue[7] = new TMCue('dip', -1);
-tm.cue[7].goCue = function() {
-  count_7 = 0;
-};
-tm.cue[7].updateTiltSounds = function() {
-  if (tm.accel.y < 0.2) {
-    clickLoop_7.volume.value = -99;
-  } else if (tm.accel.y < 0.4) {
-    clickLoop_7.volume.value = -99 + (tm.accel.y - 0.2) * 375; // -99 to -24 dB
-  } else if (tm.accel.y < 0.7) {
-    clickLoop_7.volume.value = -24 + (tm.accel.y - 0.4) * 70; // -24 to -3 dB
-  } else {
-    clickLoop_7.volume.value = -3; // but loop stops at this point anyway
-  }
-  clickLoop_7.playbackRate = 1 + (tm.accel.y * 3);
-};
-tm.cue[7].triggerDipSound = function() {
-  let pitch_7 = pitchArr_7[count_7 % pitchArr_7.length];
-  bellSampler.triggerAttackRelease(pitch_7, 5);
-  clickLoop_7.stop();
-  count_7++;
-};
-tm.cue[7].triggerDipReset = function() {
-  clickLoop_7.start();
-};
-tm.cue[7].stopCue = function() {
-  clickLoop_7.stop();
-};
-
-// *******************************************************************
-// CUE 8: [E] - tacet transition
-tm.cue[8] = new TMCue('tacet', -1);
-tm.cue[8].goCue = function() {
-  // nothing to play
-};
-tm.cue[8].stopCue = function() {
-  // nothing to clean up
-};
