@@ -242,7 +242,7 @@ const LIMIT_6 = 941; // remove 9 (to make this 41)
 // need to define pitch array here in order to set LIMIT_7 from array length
 const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
 const LIMIT_7 = pitchArr_7.length;
-const pitchArr_8 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
+const pitchArr_8 = ['C3', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
 const LIMIT_8 = pitchArr_8.length;
 
 // *******************************************************************
@@ -414,9 +414,10 @@ tm.cue[8].goCue = function() {
 };
 tm.cue[8].triggerShakeSound = function() {
   if (limit_8 > 0) {
-    // BUG: only works for note names as strings, so microtones fail 
-    let hiPitch = Tone.Midi(pitchArr_8[count_8]).transpose(24);
+    // higher bell with feedback delay is 2 oct. higher. Get freq and mult by 4
+    let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
     bellDelaySampler.triggerAttackRelease(hiPitch, 5);
+    bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
     count_8++;
     limit_8--;
   } else {
