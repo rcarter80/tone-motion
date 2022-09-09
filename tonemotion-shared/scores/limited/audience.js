@@ -411,6 +411,7 @@ let count_8 = 0;
 tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[8].goCue = function() {
   count_8 = 0;
+  bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
 };
 tm.cue[8].triggerShakeSound = function() {
   if (limit_8 > 0) {
