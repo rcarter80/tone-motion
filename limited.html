@@ -86,7 +86,13 @@
 <script src="tonemotion-shared/js/tonemotion-2.2.0.js"></script>
 
 <!-- Score for this piece -->
-<script src="tonemotion-shared/scores/limited/audience.js"></script>
+<!-- <script src="tonemotion-shared/scores/limited/audience.js"></script> -->
+<!-- HACK: It's annoying to have to clear cache everytime I want to test on phone, so the following randomly changes the script name with each load -->
+<!-- TODO: remove hack and replace with normal <script> element when done testing -->
+<script type="text/javascript">
+document.write('<scr'+'ipt src="tonemotion-shared/scores/limited/audience.js?'+Math.random()+'" type="text/javascript"></scr'+'ipt>');
+</script>
+
 
 </body>
 </html>
