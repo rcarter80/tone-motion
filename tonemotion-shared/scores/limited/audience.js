@@ -374,11 +374,13 @@ bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
-// TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles, but consider downbeat sound (maybe on goCue not cueTransition), which should have a clear pitch. Maybe not Eb. Maybe C? If using downbeat sound on goCue, don't forget getElapsedTimeInCue check to prevent retrigger if someone stops and starts again
+// TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles (in addition to downbeat sound on goCue())
 tm.cue[7].goCue = function() {
   count_7 = 0;
   if (tm.getElapsedTimeInCue(7) < 200) {
-    bellDelaySampler.triggerAttackRelease('C6', 5);
+    vibeSampler.triggerAttackRelease('C5', 5);
+    vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
+    sparklyTailSampler.triggerAttackRelease(440, 5);
   }
 };
 tm.cue[7].updateTiltSounds = function() {
@@ -443,6 +445,9 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9 (DIP) increased accel/decel clicks with restricted canon
+
+// NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
+
 let limit_9 = LIMIT_9; // limit of audience DIPS in section
 // everyone is randomly assigned one of three clicky loops to control on y-axis
 const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
