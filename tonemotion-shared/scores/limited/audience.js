@@ -11,6 +11,7 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
+// TODO: delete unused paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
@@ -138,6 +139,21 @@ const sparklyTailSampler = new Tone.Sampler({
   }
 }).toDestination();
 
+// Center of most prominent frequency is c. 507Hz (~C5)
+const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
+pitchedIceLoop.loop = true;
+// NOTE: "melting ice#02" has nice noisy ice sounds. could use later
+
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
+
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
+claveLoop.loop = true;
+
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
+ziplockLoop.loop = true;
+
+// TODO: delete unused instruments
 const fmSynth = new Tone.FMSynth({
   envelope: {
     attack: 1,
@@ -244,6 +260,7 @@ const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'E
 const LIMIT_7 = pitchArr_7.length;
 const pitchArr_8 = ['C3', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
 const LIMIT_8 = pitchArr_8.length;
+const LIMIT_9 = 921; // after testing, remove 9
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
@@ -255,6 +272,7 @@ tm.cue[4].goCue = function() {
   limit_6 = LIMIT_6;
   limit_7 = LIMIT_7;
   limit_8 = LIMIT_8;
+  limit_9 = LIMIT_9;
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -263,16 +281,10 @@ tm.cue[4].stopCue = function() {
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
 let limit_5 = LIMIT_5; // limit of audience DIPS in section
-
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
-
-// Center of most prominent frequency is c. 507Hz (~C5)
-const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
-pitchedIceLoop.loop = true;
-// NOTE: "melting ice#02" has nice noisy ice sounds. could use later
 
 tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
@@ -323,7 +335,6 @@ tm.cue[5].stopCue = function() {
 // *******************************************************************
 // CUE 6 (SHAKE): continuation of canon
 let limit_6 = LIMIT_6; // limit of audience SHAKES in section
-
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
@@ -359,11 +370,7 @@ tm.cue[6].stopCue = function() {
 // *******************************************************************
 // CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
 let limit_7 = LIMIT_7; // limit of audience DIPS in section
-
-const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
-pingpongClickLoop.loop = true;
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
-
 let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
@@ -406,7 +413,6 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
 let limit_8 = LIMIT_8; // limit of audience SHAKE in section
-
 let count_8 = 0;
 
 tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
@@ -433,42 +439,71 @@ tm.cue[8].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 9
-const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
-claveLoop.loop = true;
-
-const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
-ziplockLoop.loop = true;
-
+// CUE 9 (DIP) increased accel/decel clicks with restricted canon
+let limit_9 = LIMIT_9; // limit of audience DIPS in section
 // everyone is randomly assigned one of three clicky loops to control on y-axis
 const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
-
+const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
 let count_9 = 0;
+let playCanon_9 = true;
 
 tm.cue[9] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[9].goCue = function() {
+  // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
+  if (Math.random() > 0.5) {
+    playCanon_9 = false;
+  } else {
+    playCanon_9 = true;
+  }
   count_9 = 0;
+  clickLoop_9.volume.value = -99; // start clicks muted
+  clickLoop_9.start();
 };
 tm.cue[9].updateTiltSounds = function() {
   if (tm.accel.y < 0.2) {
     clickLoop_9.volume.value = -99;
+    clickLoop_9.playbackRate = 0.5;
   } else if (tm.accel.y < 0.4) {
-    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 375; // -99 to -24 dB
+    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 435; // -99 to -12 dB
+    clickLoop_9.playbackRate = 0.5 + (tm.accel.y - 0.2) * 2.5; // 0.5 to 1
   } else if (tm.accel.y < 0.7) {
-    clickLoop_9.volume.value = -24 + (tm.accel.y - 0.4) * 70; // -24 to -3 dB
+    clickLoop_9.volume.value = -12 + (tm.accel.y - 0.4) * 20; // -12 to -6 dB
+    clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
   } else {
-    clickLoop_9.volume.value = -3; // but loop stops at this point anyway
+    clickLoop_9.volume.value = -6;
+    clickLoop_9.playbackRate = 2;
   }
-  clickLoop_9.playbackRate = 1 + (tm.accel.y * 3);
 };
 tm.cue[9].triggerDipSound = function() {
-  // let pitch_9 = pitchArr_9[count_9 % pitchArr_9.length];
-  // bellSampler.triggerAttackRelease(pitch_9, 5);
-  clickLoop_9.stop();
-  count_9++;
+  if (limit_9 > 0) {
+    if (playCanon_9) {
+      // randomly assigned to play middle voice of canon
+      let time_9 = tm.getElapsedTimeInCue(9);
+      let index_9 = Math.floor(time_9 / 4000); // 4 seconds for each note
+      // only go through first 16 notes of canon voice
+      if (index_9 > 15) {
+        index_9 = 15;
+      }
+      // TODO: replace vibeSampler with new "glassSampler" ?
+      vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
+      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 6);
+    } else {
+      // randomly assigned to play array-based loop
+      let index_9 = count_9 % loopArr_9.length;
+      bellSampler.triggerAttackRelease(loopArr_9[index_9], 5);
+      count_9++;
+    }
+    limit_9--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  if (limit_9 === 0) {
+    // no more clicky sounds if you've used all your dips, but stop on last dip
+    clickLoop_9.stop();
+  }
+  displayDipsLeft(limit_9);
 };
 tm.cue[9].triggerDipReset = function() {
-  clickLoop_9.start();
 };
 tm.cue[9].stopCue = function() {
   clickLoop_9.stop();
