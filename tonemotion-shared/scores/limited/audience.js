@@ -377,6 +377,9 @@ tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
 // TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles, but consider downbeat sound (maybe on goCue not cueTransition), which should have a clear pitch. Maybe not Eb. Maybe C? If using downbeat sound on goCue, don't forget getElapsedTimeInCue check to prevent retrigger if someone stops and starts again
 tm.cue[7].goCue = function() {
   count_7 = 0;
+  if (tm.getElapsedTimeInCue(7) < 200) {
+    bellDelaySampler.triggerAttackRelease('C6', 5);
+  }
 };
 tm.cue[7].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
@@ -464,13 +467,13 @@ tm.cue[9].updateTiltSounds = function() {
     clickLoop_9.volume.value = -99;
     clickLoop_9.playbackRate = 0.5;
   } else if (tm.accel.y < 0.4) {
-    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 435; // -99 to -12 dB
+    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 405; // -99 to -18 dB
     clickLoop_9.playbackRate = 0.5 + (tm.accel.y - 0.2) * 2.5; // 0.5 to 1
   } else if (tm.accel.y < 0.7) {
-    clickLoop_9.volume.value = -12 + (tm.accel.y - 0.4) * 20; // -12 to -6 dB
+    clickLoop_9.volume.value = -18 + (tm.accel.y - 0.4) * 30; // -18 to -9 dB
     clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
   } else {
-    clickLoop_9.volume.value = -6;
+    clickLoop_9.volume.value = -9;
     clickLoop_9.playbackRate = 2;
   }
 };
