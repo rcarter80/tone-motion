@@ -328,7 +328,7 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 
 tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6])
+  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly
   sparklyTailSampler.volume.value = -18;
 };
 tm.cue[6].triggerShakeSound = function() {
@@ -367,6 +367,7 @@ bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
+// TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles, but consider downbeat sound (maybe on goCue not cueTransition), which should have a clear pitch. Maybe not Eb. Maybe C? If using downbeat sound on goCue, don't forget getElapsedTimeInCue check to prevent retrigger if someone stops and starts again
 tm.cue[7].goCue = function() {
   count_7 = 0;
 };
@@ -409,6 +410,7 @@ let limit_8 = LIMIT_8; // limit of audience SHAKE in section
 let count_8 = 0;
 
 tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
+// TODO: decide on transition sounds?
 tm.cue[8].goCue = function() {
   count_8 = 0;
   bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
@@ -443,7 +445,7 @@ const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
 
 let count_9 = 0;
 
-tm.cue[9] = new TMCue('dip', -1);
+tm.cue[9] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[9].goCue = function() {
   count_9 = 0;
 };
@@ -460,8 +462,8 @@ tm.cue[9].updateTiltSounds = function() {
   clickLoop_9.playbackRate = 1 + (tm.accel.y * 3);
 };
 tm.cue[9].triggerDipSound = function() {
-  let pitch_9 = pitchArr_9[count_9 % pitchArr_9.length];
-  bellSampler.triggerAttackRelease(pitch_9, 5);
+  // let pitch_9 = pitchArr_9[count_9 % pitchArr_9.length];
+  // bellSampler.triggerAttackRelease(pitch_9, 5);
   clickLoop_9.stop();
   count_9++;
 };
