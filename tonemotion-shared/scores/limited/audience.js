@@ -370,6 +370,8 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
+// REVISION idea: make pitches clearer? maybe double bells with sineTails? very low bells are very distorted. Change octave of first pitch in loop to make pitch clearer at least at first?
+
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
@@ -418,6 +420,8 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
 let count_8 = 0;
+
+// REVISION idea: maybe double bells with sineTails to clarify pitches?
 
 tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
 // TODO: decide on transition sounds?
@@ -517,6 +521,8 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
+
+// REVISION idea: make one of the randomly assigned sound loops a clicking pulse. Could alternate clave, ping pong? but produce in same Logic session so that it's exactly the same rhythm, tempo, loop duration and every syncs. Probably also make release time shorter than 5 seconds
 
 const ampEnv_10 = new Tone.AmplitudeEnvelope({
 		attack: 0.1,
