@@ -211,7 +211,6 @@ tm.cue[0].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
 tm.cue[0].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
@@ -224,22 +223,18 @@ tm.cue[1].triggerShakeSound = function() {
   clave.start();
 };
 tm.cue[1].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  // nothing to play
 };
 tm.cue[2].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 3: DIP tutorial
-// TODO: write DIP tutorial. Could use very quiet TILT tutorial from earlier and add loud clave with dip. Or just use clave?
 tm.cue[3] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
 };
@@ -252,15 +247,26 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// Section DIP/SHAKE limits, which are reset in 2 spots - define here only once
-const LIMIT_5 = 931; // after testing, remove 9 (to make this 31)
-const LIMIT_6 = 941; // remove 9 (to make this 41)
-// need to define pitch array here in order to set LIMIT_7 from array length
+// Section DIP/SHAKE limits
+// need to define pitch array here in order to set limit_7 / 8 from array length
 const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
-const LIMIT_7 = pitchArr_7.length;
 const pitchArr_8 = ['C3', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
-const LIMIT_8 = pitchArr_8.length;
-const LIMIT_9 = 921; // after testing, remove 9
+let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
+function resetCueLimits() {
+  limit_5 = 931; // after testing, remove 9 (to make this 31)
+  limit_6 = 941; // remove 9 (to make this 41)
+  limit_7 = pitchArr_7.length;
+  limit_8 = pitchArr_8.length;
+  limit_9 = 921; // after testing, remove 9
+  limit_10 = 916; // after testing, remove 9
+  limit_11 = 941; // after testing, remove 9
+  limit_12 = 129;
+  limit_13 = 916; // after testing, remove 9
+  limit_14 = 99; // after testing, remove 9
+  limit_15 = 96; // after testing, remove 9
+}
+// call once to initially set limits on page load, but can also reset in cue 4
+resetCueLimits();
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
@@ -268,11 +274,7 @@ tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
   // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
-  limit_5 = LIMIT_5;
-  limit_6 = LIMIT_6;
-  limit_7 = LIMIT_7;
-  limit_8 = LIMIT_8;
-  limit_9 = LIMIT_9;
+  resetCueLimits();
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -280,7 +282,6 @@ tm.cue[4].stopCue = function() {
 
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
-let limit_5 = LIMIT_5; // limit of audience DIPS in section
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
@@ -334,7 +335,6 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6 (SHAKE): continuation of canon
-let limit_6 = LIMIT_6; // limit of audience SHAKES in section
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
@@ -369,7 +369,6 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
-let limit_7 = LIMIT_7; // limit of audience DIPS in section
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
@@ -417,7 +416,6 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
-let limit_8 = LIMIT_8; // limit of audience SHAKE in section
 let count_8 = 0;
 
 tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
@@ -448,7 +446,6 @@ tm.cue[8].stopCue = function() {
 
 // NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
 
-let limit_9 = LIMIT_9; // limit of audience DIPS in section
 // everyone is randomly assigned one of three clicky loops to control on y-axis
 const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
 const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
@@ -517,8 +514,92 @@ tm.cue[9].stopCue = function() {
   clickLoop_9.stop();
 };
 
+// *******************************************************************
+// CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
+
+tm.cue[10] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[10].goCue = function() {
+};
+tm.cue[10].triggerShakeSound = function() {
+};
+tm.cue[10].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 11 (DIP) no pulse, but increasingly chaotic, heteregeneous sounds
+
+tm.cue[11] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[11].goCue = function() {
+};
+tm.cue[11].updateTiltSounds = function() {
+};
+tm.cue[11].triggerDipSound = function() {
+};
+tm.cue[11].triggerDipReset = function() {
+};
+tm.cue[11].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 12 (SHAKE) peak variety, surging drone in fixed media, sudden cutoff
+
+tm.cue[12] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[12].goCue = function() {
+};
+tm.cue[12].triggerShakeSound = function() {
+};
+tm.cue[12].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?)
+
+tm.cue[13] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[13].goCue = function() {
+};
+tm.cue[13].updateTiltSounds = function() {
+};
+tm.cue[13].triggerDipSound = function() {
+};
+tm.cue[13].triggerDipReset = function() {
+};
+tm.cue[13].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30")
+
+tm.cue[14] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[14].goCue = function() {
+};
+tm.cue[14].triggerShakeSound = function() {
+};
+tm.cue[14].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 15 (DIP) continuation of cue 14 with very few dips. Shorter (c. 30")
+
+tm.cue[15] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[15].goCue = function() {
+};
+tm.cue[15].updateTiltSounds = function() {
+};
+tm.cue[15].triggerDipSound = function() {
+};
+tm.cue[15].triggerDipReset = function() {
+};
+tm.cue[15].stopCue = function() {
+};
+
+// *******************************************************************
+// CUE 16: finished
+tm.cue[16] = new TMCue('finished', 0, NO_LIMIT);
+tm.cue[16].goCue = function() {
+};
 
 
+// TODO: delete unused code below
 //
 // // *******************************************************************
 // // CUE 6:
