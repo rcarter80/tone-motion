@@ -20,6 +20,7 @@ const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
 const glass_sounds = 'tonemotion-shared/audio/glass/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
@@ -517,12 +518,26 @@ tm.cue[9].stopCue = function() {
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
 
+const ampEnv_10 = new Tone.AmplitudeEnvelope({
+		attack: 0.1,
+		decay: 0.2,
+		sustain: 1.0,
+		release: 5
+	}).toDestination();
+  // TODO: create multiple pitch loop and randomly select only 1 to load so that different phones play same rhythm but different pitches
+const testLoop = new Tone.Player(misc_sounds + 'testLoop.mp3').connect(ampEnv_10);
+testLoop.loop = true;
+
 tm.cue[10] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[10].goCue = function() {
+  testLoop.start();
 };
 tm.cue[10].triggerShakeSound = function() {
+  clave.start();
+  ampEnv_10.triggerAttackRelease(0.1);
 };
 tm.cue[10].stopCue = function() {
+  testLoop.stop();
 };
 
 // *******************************************************************
