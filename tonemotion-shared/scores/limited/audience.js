@@ -526,29 +526,57 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
-
-// REVISION idea: make one of the randomly assigned sound loops a clicking pulse. Could alternate clave, ping pong? but produce in same Logic session so that it's exactly the same rhythm, tempo, loop duration and every syncs. Probably also make release time shorter than 5 seconds
-
-const ampEnv_10 = new Tone.AmplitudeEnvelope({
-		attack: 0.1,
-		decay: 0.2,
-		sustain: 1.0,
-		release: 4
-	}).toDestination();
-  // TODO: create multiple pitch loop and randomly select only 1 to load so that different phones play same rhythm but different pitches
-const testLoop = new Tone.Player(misc_sounds + 'C-Eb_loop.mp3').connect(ampEnv_10);
-testLoop.loop = true;
+// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds
+const ampEnvHi_10 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+const ampEnvLo_10 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+let soundFileHi_10, soundFileLo_10;
+let partSelector_10 = Math.random();
+partSelector_10 = 0.1;
+if (partSelector_10 > 0.8) {
+  // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
+  soundFileHi_10 = 'clave-pingpong_loop.mp3';
+  soundFileLo_10 = 'clave-ziplock_loop.mp3';
+} else if (partSelector_10 > 0.4) {
+  // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
+  soundFileHi_10 = 'Eb-G_loop.mp3';
+  soundFileLo_10 = 'D-F_loop.mp3';
+} else {
+  // 2 out of 5 people randomly assigned pitched loops alternating C/G - Bb/D
+  soundFileHi_10 = 'C-Eb_loop.mp3';
+  soundFileLo_10 = 'Bb-D_loop.mp3';
+}
+const loopHi_10 = new Tone.Player(misc_sounds + soundFileHi_10).connect(ampEnvHi_10);
+loopHi_10.loop = true;
+const loopLo_10 = new Tone.Player(misc_sounds + soundFileLo_10).connect(ampEnvLo_10);
+loopLo_10.loop = true;
+let count_10 = 0;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].goCue = function() {
-  testLoop.start();
+  loopHi_10.start();
+  loopLo_10.start();
+  count_10 = 0;
 };
 tm.cue[10].triggerShakeSound = function() {
   vibeSampler.triggerAttackRelease('C4', 5);
-  ampEnv_10.triggerAttackRelease(0.1);
+  // alternate between envelopes that trigger higher and lower loops
+  let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
+  env.triggerAttackRelease(0.1);
+  count_10++;
 };
 tm.cue[10].stopCue = function() {
-  testLoop.stop();
+  loopHi_10.stop();
+  loopLo_10.stop();
 };
 
 // *******************************************************************
