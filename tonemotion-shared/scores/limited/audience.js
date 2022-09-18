@@ -24,14 +24,17 @@ const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 Tone.Transport.bpm.value = 156;
 const halfStep = 2 ** (1 / 12);
-const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
-const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
-const DsS5 = 440 * ((2**(1/36))**16); // D sixth-sharp 5
-const DqS5 = 440 * ((2**(1/24))**11); // D quarter-sharp 5
-const DtS5 = 440 * ((2**(1/36))**17); // D third-sharp 5
-const AsS5 = 880 * (2**(1/36)); // A sixth-sharp 5
-const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
-const AtS5 = 880 * ((2**(1/36))**2); // A third-sharp 5
+const AeS3 = 220 * (2 ** (1 / 48)); // A eighth-sharp 3
+const AqS3 = 220 * (2 ** (1 / 24)); // A quarter-sharp 3
+const AteS3 = 220 * ((2 ** (1 / 48)) ** 3); // A 3-eighths-sharp 3
+const DqS4 = 220 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 4
+const AqS4 = 440 * (2 ** (1 / 24)); // A quarter-sharp 4
+const DsS5 = 440 * ((2 ** (1 / 36)) ** 16); // D sixth-sharp 5
+const DqS5 = 440 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 5
+const DtS5 = 440 * ((2 ** (1 / 36)) ** 17); // D third-sharp 5
+const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
+const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
+const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
 
 const WAIT_TIME = 1000; // use to globally set standard wait time for cues
 
@@ -526,8 +529,9 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
-// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement
-const loPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
+// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
+const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
+const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 const ampEnvHi_10 = new Tone.AmplitudeEnvelope({
   attack: 0.1,
@@ -569,10 +573,19 @@ tm.cue[10].goCue = function() {
   count_10 = 0;
 };
 tm.cue[10].triggerShakeSound = function() {
+  // REVISION idea: if this is too static, could randomly assign array-based faster note loop. If low vox is too hard to hear, could randomly assign three octaves higher with bells instead of vibes
   if (limit_10 > 0) {
     let time_10 = tm.getElapsedTimeInCue(10);
-    // alternate selection from upper and lower voice of canon
-    let arr_10 = (limit_10 % 2) ? loPitchArr_10 : hiPitchArr_10;
+    // rotate array selection among three voices (and separate arrays)
+    let arr_10;
+    if (count_10 % 3 === 2) {
+      arr_10 = hiPitchArr_10;
+    } else if (count_10 % 3 === 1) {
+      arr_10 = midPitchArr_10;
+    } else {
+      arr_10 = loPitchArr_10;
+    }
+    // select pitch index for array
     let index_10 = Math.floor(time_10 / 4000);
     // stay on last pitch of array if last pitch is reached
     if (index_10 > arr_10.length - 1) {
