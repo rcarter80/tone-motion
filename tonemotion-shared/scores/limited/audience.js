@@ -533,10 +533,10 @@ const ampEnv_10 = new Tone.AmplitudeEnvelope({
 		attack: 0.1,
 		decay: 0.2,
 		sustain: 1.0,
-		release: 5
+		release: 4
 	}).toDestination();
   // TODO: create multiple pitch loop and randomly select only 1 to load so that different phones play same rhythm but different pitches
-const testLoop = new Tone.Player(misc_sounds + 'testLoop.mp3').connect(ampEnv_10);
+const testLoop = new Tone.Player(misc_sounds + 'C-Eb_loop.mp3').connect(ampEnv_10);
 testLoop.loop = true;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
@@ -544,7 +544,7 @@ tm.cue[10].goCue = function() {
   testLoop.start();
 };
 tm.cue[10].triggerShakeSound = function() {
-  clave.start();
+  vibeSampler.triggerAttackRelease('C4', 5);
   ampEnv_10.triggerAttackRelease(0.1);
 };
 tm.cue[10].stopCue = function() {
