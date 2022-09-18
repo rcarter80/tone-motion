@@ -261,7 +261,7 @@ function resetCueLimits() {
   limit_7 = pitchArr_7.length;
   limit_8 = pitchArr_8.length;
   limit_9 = 921; // after testing, remove 9
-  limit_10 = 916; // after testing, remove 9
+  limit_10 = 931; // after testing, remove 9
   limit_11 = 941; // after testing, remove 9
   limit_12 = 129;
   limit_13 = 916; // after testing, remove 9
@@ -526,7 +526,9 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
-// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds
+// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement
+const loPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
+const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 const ampEnvHi_10 = new Tone.AmplitudeEnvelope({
   attack: 0.1,
   decay: 0.2,
@@ -541,7 +543,6 @@ const ampEnvLo_10 = new Tone.AmplitudeEnvelope({
 }).toDestination();
 let soundFileHi_10, soundFileLo_10;
 let partSelector_10 = Math.random();
-partSelector_10 = 0.1;
 if (partSelector_10 > 0.8) {
   // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
   soundFileHi_10 = 'clave-pingpong_loop.mp3';
@@ -568,11 +569,26 @@ tm.cue[10].goCue = function() {
   count_10 = 0;
 };
 tm.cue[10].triggerShakeSound = function() {
-  vibeSampler.triggerAttackRelease('C4', 5);
-  // alternate between envelopes that trigger higher and lower loops
-  let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
-  env.triggerAttackRelease(0.1);
-  count_10++;
+  if (limit_10 > 0) {
+    let time_10 = tm.getElapsedTimeInCue(10);
+    // alternate selection from upper and lower voice of canon
+    let arr_10 = (limit_10 % 2) ? loPitchArr_10 : hiPitchArr_10;
+    let index_10 = Math.floor(time_10 / 4000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_10 > arr_10.length - 1) {
+      index_10 = arr_10.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_10[index_10], 5);
+    sineTails.triggerAttackRelease(arr_10[index_10], 6);
+    // alternate between envelopes that trigger higher and lower loops
+    let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
+    env.triggerAttackRelease(0.1);
+    count_10++;
+    limit_10--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_10);
 };
 tm.cue[10].stopCue = function() {
   loopHi_10.stop();
