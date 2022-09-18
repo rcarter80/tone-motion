@@ -33,6 +33,8 @@ const AsS5 = 880 * (2**(1/36)); // A sixth-sharp 5
 const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2**(1/36))**2); // A third-sharp 5
 
+const WAIT_TIME = 1000; // use to globally set standard wait time for cues
+
 // shows number of shakes listener has left
 function displayShakesLeft(num) {
   let shakes = (num === 1) ? 'shake' : 'shakes';
@@ -250,8 +252,8 @@ tm.cue[3].stopCue = function() {
 // *******************************************************************
 // Section DIP/SHAKE limits
 // need to define pitch array here in order to set limit_7 / 8 from array length
-const pitchArr_7 = ['Eb3', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
-const pitchArr_8 = ['C3', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
+const pitchArr_7 = ['Eb5', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
+const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
 let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
 function resetCueLimits() {
   limit_5 = 931; // after testing, remove 9 (to make this 31)
@@ -288,7 +290,7 @@ const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
 
-tm.cue[5] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
@@ -338,7 +340,7 @@ tm.cue[5].stopCue = function() {
 // CUE 6 (SHAKE): continuation of canon
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
-tm.cue[6] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].goCue = function() {
   // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly
   sparklyTailSampler.volume.value = -18;
@@ -355,6 +357,7 @@ tm.cue[6].triggerShakeSound = function() {
     if (index_6 > arr_6.length - 1) {
       index_6 = arr_6.length - 1;
     }
+    // REVISION idea: with pitches that will bend, add sineTails WITH pitch bend
     vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
     let sparklyPitch = 440 + Math.random() * 200;
     sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
@@ -370,30 +373,28 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
-// REVISION idea: make pitches clearer? maybe double bells with sineTails? very low bells are very distorted. Change octave of first pitch in loop to make pitch clearer at least at first?
-
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
-tm.cue[7] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 // TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles (in addition to downbeat sound on goCue())
 tm.cue[7].goCue = function() {
-  count_7 = 0;
   if (tm.getElapsedTimeInCue(7) < 200) {
     vibeSampler.triggerAttackRelease('C5', 5);
     vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
     sparklyTailSampler.triggerAttackRelease(440, 5);
   }
+  count_7 = 0;
 };
 tm.cue[7].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
     pingpongClickLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
     pingpongClickLoop.playbackRate = 0.75;
   } else if (tm.accel.y < 0.7) {
-    pingpongClickLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
-    pingpongClickLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; // 0.75x - 2x
+    pingpongClickLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; //-40 to -12
+    pingpongClickLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; //.75-2x
   } else {
-    pingpongClickLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pingpongClickLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to-99
     pingpongClickLoop.playbackRate = 2;
   }
 };
@@ -401,6 +402,7 @@ tm.cue[7].triggerDipSound = function() {
   pingpongClickLoop.stop();
   if (limit_7 > 0) {
     bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
+    sineTails.triggerAttackRelease(pitchArr_7[count_7], 6);
     count_7++;
     limit_7--;
   } else {
@@ -420,12 +422,14 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
 let count_8 = 0;
-
-// REVISION idea: maybe double bells with sineTails to clarify pitches?
-
-tm.cue[8] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 // TODO: decide on transition sounds?
 tm.cue[8].goCue = function() {
+  if (tm.getElapsedTimeInCue(8) < 200) {
+    vibeSampler.triggerAttackRelease('Bb4', 5);
+    vibeSampler.triggerAttackRelease('Bb5', 5, '+0.25');
+    sparklyTailSampler.triggerAttackRelease(440, 5);
+  }
   count_8 = 0;
   bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
 };
@@ -435,6 +439,7 @@ tm.cue[8].triggerShakeSound = function() {
     let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
     bellDelaySampler.triggerAttackRelease(hiPitch, 5);
     bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
+    sineTails.triggerAttackRelease(pitchArr_8[count_8], 6);
     count_8++;
     limit_8--;
   } else {
@@ -457,7 +462,7 @@ const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
 let count_9 = 0;
 let playCanon_9 = true;
 
-tm.cue[9] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].goCue = function() {
   // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
   if (Math.random() > 0.5) {
@@ -534,7 +539,7 @@ const ampEnv_10 = new Tone.AmplitudeEnvelope({
 const testLoop = new Tone.Player(misc_sounds + 'testLoop.mp3').connect(ampEnv_10);
 testLoop.loop = true;
 
-tm.cue[10] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].goCue = function() {
   testLoop.start();
 };
@@ -549,7 +554,7 @@ tm.cue[10].stopCue = function() {
 // *******************************************************************
 // CUE 11 (DIP) no pulse, but increasingly chaotic, heteregeneous sounds
 
-tm.cue[11] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].goCue = function() {
 };
 tm.cue[11].updateTiltSounds = function() {
@@ -564,7 +569,7 @@ tm.cue[11].stopCue = function() {
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, surging drone in fixed media, sudden cutoff
 
-tm.cue[12] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].goCue = function() {
 };
 tm.cue[12].triggerShakeSound = function() {
@@ -575,7 +580,7 @@ tm.cue[12].stopCue = function() {
 // *******************************************************************
 // CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?)
 
-tm.cue[13] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[13].goCue = function() {
 };
 tm.cue[13].updateTiltSounds = function() {
@@ -590,7 +595,7 @@ tm.cue[13].stopCue = function() {
 // *******************************************************************
 // CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30")
 
-tm.cue[14] = new TMCue('shake', 0, NO_LIMIT);
+tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
 };
 tm.cue[14].triggerShakeSound = function() {
@@ -601,7 +606,7 @@ tm.cue[14].stopCue = function() {
 // *******************************************************************
 // CUE 15 (DIP) continuation of cue 14 with very few dips. Shorter (c. 30")
 
-tm.cue[15] = new TMCue('dip', 0, NO_LIMIT);
+tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].goCue = function() {
 };
 tm.cue[15].updateTiltSounds = function() {
