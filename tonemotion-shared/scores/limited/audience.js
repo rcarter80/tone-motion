@@ -322,6 +322,7 @@ tm.cue[5].triggerDipSound = function() {
     if (index_5 > arr_5.length - 1) {
       index_5 = arr_5.length - 1;
     }
+    // REVISION idea: for notes that signal microtone coming, on first attack double with sinusoid that bends. Need to create new monoSine instrument
     vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
     limit_5--;
   } else {
