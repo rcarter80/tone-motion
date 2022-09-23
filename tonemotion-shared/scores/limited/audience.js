@@ -79,6 +79,22 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
   },
   volume: -28,
 }).connect(sinTremolo);
+// monophonic sinusoid synth that allows pitch bend (not allowed with PolySynth)
+const monoSine = new Tone.Synth({
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 1,
+    releaseCurve: "linear",
+  },
+  volume: -28,
+}).toDestination();
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
 const vibeSampler = new Tone.Sampler({
@@ -332,8 +348,25 @@ tm.cue[5].triggerDipSound = function() {
     if (index_5 > arr_5.length - 1) {
       index_5 = arr_5.length - 1;
     }
-    // REVISION idea: for notes that signal microtone coming, on first attack double with sinusoid that bends. Need to create new monoSine instrument
     vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
+    // notes that will be followed by microtones are doubled with bending sine
+    if (arr_5 === loPitchArr_5) {
+      if (index_5 === 7) {
+        monoSine.triggerAttackRelease('Eb4', 4);
+        monoSine.frequency.rampTo('D4', 3);
+      } else if (index_5 === 13) {
+        monoSine.triggerAttackRelease('A4', 4);
+        monoSine.frequency.rampTo('Bb4', 3);
+      }
+    } else if (arr_5 === hiPitchArr_5) {
+      if (index_5 === 15) {
+        monoSine.triggerAttackRelease('Eb5', 4);
+        monoSine.frequency.rampTo('D5', 3);
+      } else if (index_5 === 27) {
+        monoSine.triggerAttackRelease('A5', 4);
+        monoSine.frequency.rampTo('Bb5', 3);
+      }
+    }
     limit_5--;
   } else {
     tm.publicWarning(`I'm sorry, but you're all out of dips.`);
@@ -356,7 +389,7 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].goCue = function() {
-  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly
+  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly. Could use a transition sound AND a downbeat sound, which could be noisy percussive sound with a lot of reverb OR downbeat sound could be single triangle hit (with slightly randomized playbackRate)
   sparklyTailSampler.volume.value = -18;
 };
 tm.cue[6].triggerShakeSound = function() {
@@ -371,8 +404,17 @@ tm.cue[6].triggerShakeSound = function() {
     if (index_6 > arr_6.length - 1) {
       index_6 = arr_6.length - 1;
     }
-    // REVISION idea: with pitches that will bend, add sineTails WITH pitch bend
     vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
+    // notes that will be followed by microtones are doubled with bending sine
+    if (arr_6 === loPitchArr_5) {
+      if (index_6 === 7) {
+        monoSine.triggerAttackRelease('Eb4', 4);
+        monoSine.frequency.rampTo('D4', 3);
+      } else if (index_6 === 13) {
+        monoSine.triggerAttackRelease('A4', 4);
+        monoSine.frequency.rampTo('Bb4', 3);
+      }
+    }
     let sparklyPitch = 440 + Math.random() * 200;
     sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
     limit_6--;
