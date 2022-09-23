@@ -23,15 +23,25 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 Tone.Transport.bpm.value = 156;
-const halfStep = 2 ** (1 / 12);
+const GeS3 = 110 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 3
+const GqS3 = 110 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 3
+const GteS3 = 110 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 3
 const AeS3 = 220 * (2 ** (1 / 48)); // A eighth-sharp 3
 const AqS3 = 220 * (2 ** (1 / 24)); // A quarter-sharp 3
 const AteS3 = 220 * ((2 ** (1 / 48)) ** 3); // A 3-eighths-sharp 3
+const CqS4 = 220 * ((2 ** (1 / 24)) ** 7); // C quarter-sharp 4
 const DqS4 = 220 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 4
+const GqS4 = 220 * ((2 ** (1 / 24)) ** 21); // G quarter-sharp 4
 const AqS4 = 440 * (2 ** (1 / 24)); // A quarter-sharp 4
+const CeS5 = 440 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 5
+const CqS5 = 440 * ((2 ** (1 / 48)) ** 14); // C quarter-sharp 5
+const CteS5 = 440 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 5
 const DsS5 = 440 * ((2 ** (1 / 36)) ** 16); // D sixth-sharp 5
 const DqS5 = 440 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 5
 const DtS5 = 440 * ((2 ** (1 / 36)) ** 17); // D third-sharp 5
+const GeS5 = 440 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 5
+const GqS5 = 440 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 5
+const GteS5 = 440 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 5
 const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
 const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
@@ -627,6 +637,9 @@ tm.cue[10].stopCue = function() {
 
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pylse. increasingly chaotic/heteregeneous sounds
+const loPitchArr_11 = ['G3', 'G3', 'G3', 'G3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Bb3', 'Bb3', 'Bb3', 'Bb3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'C4', 'C4', 'C4', 'C4', 'G3', 'G3', GeS3, GeS3];
+const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4, 'Ab4', 'G4', 'Eb4', 'Eb4', 'Db4', CqS4, 'C4', 'Bb4', 'Ab4', 'G4', 'Eb4', 'Eb4', 'F4', 'F4', 'G4', 'Ab4', 'F4', 'F4', 'Eb4', 'Eb4', 'G4', 'G4', 'Ab4'];
+const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
 let count_11 = 0;
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
@@ -640,8 +653,29 @@ tm.cue[11].updateTiltSounds = function() {
 };
 tm.cue[11].triggerDipSound = function() {
   if (limit_11 > 0) {
-    // alternate between envelopes that trigger higher and lower loops
-    // let env = (count_11 % 2) ? ampEnvLo_11 : ampEnvHi_10;
+    let time_11 = tm.getElapsedTimeInCue(11);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_11, inst_11;
+    if (count_11 % 3 === 2) {
+      arr_11 = hiPitchArr_11;
+      inst_11 = bellSampler;
+    } else if (count_11 % 3 === 1) {
+      arr_11 = midPitchArr_11;
+      inst_11 = vibeSampler;
+    } else {
+      arr_11 = loPitchArr_11;
+      // REVISION idea: replace with a different instrument? like a pot or bowl
+      inst_11 = pianoSampler;
+    }
+    // select pitch index for array
+    let index_11 = Math.floor(time_11 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_11 > arr_11.length - 1) {
+      index_11 = arr_11.length - 1;
+    }
+    inst_11.triggerAttackRelease(arr_11[index_11], 5);
+    sineTails.triggerAttackRelease(arr_11[index_11], 6);
+    // alternating loops also gradually gliss up and fade out
     if (count_11 % 2) {
       loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
       loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
