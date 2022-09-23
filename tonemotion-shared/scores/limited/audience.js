@@ -546,29 +546,45 @@ const ampEnvLo_10 = new Tone.AmplitudeEnvelope({
   sustain: 1.0,
   release: 4
 }).toDestination();
-let soundFileHi_10, soundFileLo_10;
+const ampEnvLo_11 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+let soundFileHi_10, soundFileLo_10, soundFileLo_11;
 let partSelector_10 = Math.random();
 if (partSelector_10 > 0.8) {
   // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
   soundFileHi_10 = 'clave-pingpong_loop.mp3';
   soundFileLo_10 = 'clave-ziplock_loop.mp3';
+  // REVISION idea: could replace with different sound loop
+  soundFileLo_11 = 'clave-ziplock_loop.mp3';
 } else if (partSelector_10 > 0.4) {
   // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
   soundFileHi_10 = 'Eb-G_loop.mp3';
   soundFileLo_10 = 'D-F_loop.mp3';
+  // Ds changed to Db in next cue, but other notes are the same
+  soundFileLo_11 = 'Db-F_loop.mp3';
 } else {
   // 2 out of 5 people randomly assigned pitched loops alternating C/G - Bb/D
   soundFileHi_10 = 'C-Eb_loop.mp3';
   soundFileLo_10 = 'Bb-D_loop.mp3';
+  soundFileLo_11 = 'Bb-Db_loop.mp3';
 }
 const loopHi_10 = new Tone.Player(misc_sounds + soundFileHi_10).connect(ampEnvHi_10);
 loopHi_10.loop = true;
 const loopLo_10 = new Tone.Player(misc_sounds + soundFileLo_10).connect(ampEnvLo_10);
 loopLo_10.loop = true;
+const loopLo_11 = new Tone.Player(misc_sounds + soundFileLo_11).connect(ampEnvLo_11);
+loopLo_11.loop = true;
 let count_10 = 0;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].goCue = function() {
+  // need to reset upper loop parameters, which could change in cue 11
+  loopHi_10.playbackRate = 1;
+  loopHi_10.volume.value = 0;
   loopHi_10.start();
   loopLo_10.start();
   count_10 = 0;
@@ -610,18 +626,43 @@ tm.cue[10].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 11 (DIP) no pulse, but increasingly chaotic, heteregeneous sounds
+// CUE 11 (DIP) rising/decaying pylse. increasingly chaotic/heteregeneous sounds
+let count_11 = 0;
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].goCue = function() {
+  // upper of two loops is same as cue 10, but lower is different
+  loopHi_10.start();
+  loopLo_11.start();
+  count_11 = 0;
 };
 tm.cue[11].updateTiltSounds = function() {
 };
 tm.cue[11].triggerDipSound = function() {
+  if (limit_11 > 0) {
+    // alternate between envelopes that trigger higher and lower loops
+    // let env = (count_11 % 2) ? ampEnvLo_11 : ampEnvHi_10;
+    if (count_11 % 2) {
+      loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
+      loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
+      ampEnvLo_11.triggerAttackRelease(0.1);
+    } else {
+      loopHi_10.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
+      loopHi_10.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
+      ampEnvHi_10.triggerAttackRelease(0.1);
+    }
+    count_11++;
+    limit_11--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayDipsLeft(limit_11);
 };
 tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
+  loopHi_10.stop();
+  loopLo_11.stop();
 };
 
 // *******************************************************************
