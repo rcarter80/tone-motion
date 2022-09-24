@@ -547,6 +547,7 @@ tm.cue[9].updateTiltSounds = function() {
     clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
   } else {
     clickLoop_9.volume.value = -9;
+    // REVISION idea: continue to increase playback rate a bit to get faster when fully upside down
     clickLoop_9.playbackRate = 2;
   }
 };
@@ -638,6 +639,7 @@ loopLo_11.loop = true;
 let count_10 = 0;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+// REVISION idea: add cueTransition that is pp<ff click loop (won't be syncd)
 tm.cue[10].goCue = function() {
   // need to reset upper loop parameters, which could change in cue 11
   loopHi_10.playbackRate = 1;
@@ -804,7 +806,7 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?)
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?) could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out)
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[13].goCue = function() {
