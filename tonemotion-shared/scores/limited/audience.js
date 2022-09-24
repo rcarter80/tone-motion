@@ -23,6 +23,8 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 
 Tone.Transport.bpm.value = 156;
+const halfStepUp = 2 ** (1 / 12);
+const halfStepDown = 1 / halfStepUp;
 const GeS3 = 110 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 3
 const GqS3 = 110 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 3
 const GteS3 = 110 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 3
@@ -717,14 +719,24 @@ tm.cue[11].triggerDipSound = function() {
     }
     inst_11.triggerAttackRelease(arr_11[index_11], 5);
     sineTails.triggerAttackRelease(arr_11[index_11], 6);
-    // alternating loops also gradually gliss up and fade out
-    // REVISION idea: randomly assign 3 groups: 1 starts gliss slightly up, 1 starts gliss slightly down, 1 stays put. at later breakpoint, all gliss up
+    // alternating loops also gradually gliss apart then gliss up and fade out
+    let bend;
+    let bendSelector = Math.random();
+    if (bendSelector < 0.3) {
+      // randomly assigned to bend down half step
+      bend = halfStepDown;
+    } else if (bendSelector > 0.7) {
+      bend = halfStepUp;
+    } else {
+      // 40% of phones don't bend until end of section
+      bend = 1;
+    }
     if (count_11 % 2) {
-      loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
+      loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
       loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
       ampEnvLo_11.triggerAttackRelease(0.1);
     } else {
-      loopHi_10.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
+      loopHi_10.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
       loopHi_10.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
       ampEnvHi_10.triggerAttackRelease(0.1);
     }
