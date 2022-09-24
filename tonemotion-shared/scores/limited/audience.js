@@ -718,6 +718,7 @@ tm.cue[11].triggerDipSound = function() {
     inst_11.triggerAttackRelease(arr_11[index_11], 5);
     sineTails.triggerAttackRelease(arr_11[index_11], 6);
     // alternating loops also gradually gliss up and fade out
+    // REVISION idea: randomly assign 3 groups: 1 starts gliss slightly up, 1 starts gliss slightly down, 1 stays put. at later breakpoint, all gliss up
     if (count_11 % 2) {
       loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 30000, 1, 50000, 2]);
       loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
