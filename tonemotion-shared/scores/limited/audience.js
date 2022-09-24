@@ -25,6 +25,9 @@ const misc_sounds = 'tonemotion-shared/audio/misc/';
 Tone.Transport.bpm.value = 156;
 const halfStepUp = 2 ** (1 / 12);
 const halfStepDown = 1 / halfStepUp;
+const CeS3 = 110 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 3
+const CqS3 = 110 * ((2 ** (1 / 48)) ** 14); // C quarter-sharp 3
+const CteS3 = 110 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 3
 const GeS3 = 110 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 3
 const GqS3 = 110 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 3
 const GteS3 = 110 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 3
@@ -48,7 +51,7 @@ const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
 const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
 
-const WAIT_TIME = 1000; // use to globally set standard wait time for cues
+const WAIT_TIME = 2000; // use to globally set standard wait time for cues
 
 // shows number of shakes listener has left
 function displayShakesLeft(num) {
@@ -743,7 +746,7 @@ tm.cue[11].triggerDipSound = function() {
     count_11++;
     limit_11--;
   } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
   }
   displayDipsLeft(limit_11);
 };
@@ -756,11 +759,46 @@ tm.cue[11].stopCue = function() {
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, surging drone in fixed media, sudden cutoff
+const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
+// mid pitch line is same as from cue 10
+const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
+let count_12 = 0;
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].goCue = function() {
+  count_12 = 0;
 };
 tm.cue[12].triggerShakeSound = function() {
+  if (limit_12 > 0) {
+    let time_12 = tm.getElapsedTimeInCue(12);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_12, inst_12;
+    if (count_12 % 3 === 2) {
+      arr_12 = hiPitchArr_12;
+      inst_12 = bellSampler;
+    } else if (count_12 % 3 === 1) {
+      arr_12 = midPitchArr_11; // mid voice is same as cue 11
+      inst_12 = vibeSampler;
+    } else {
+      arr_12 = loPitchArr_12;
+      // REVISION idea: replace with a different instrument? like a pot or bowl
+      inst_12 = pianoSampler;
+    }
+    // select pitch index for array
+    let index_12 = Math.floor(time_12 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_12 > arr_12.length - 1) {
+      index_12 = arr_12.length - 1;
+    }
+    inst_12.triggerAttackRelease(arr_12[index_12], 5);
+    sineTails.triggerAttackRelease(arr_12[index_12], 6);
+
+    count_12++;
+    limit_12--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_12);
 };
 tm.cue[12].stopCue = function() {
 };
