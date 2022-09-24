@@ -806,7 +806,7 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?) could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out)
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?). OR dip triggers synth sound with bendy/distorted buzz controlled on tilt and release triggered by dip reset
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[13].goCue = function() {
@@ -821,7 +821,7 @@ tm.cue[13].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30")
+// CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30") could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
