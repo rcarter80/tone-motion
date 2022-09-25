@@ -52,6 +52,7 @@ const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
 
 const WAIT_TIME = 2000; // use to globally set standard wait time for cues
+const CUE_SOUND_WINDOW = 200; // short window at beginning of cue to play sound
 
 // shows number of shakes listener has left
 function displayShakesLeft(num) {
@@ -232,14 +233,17 @@ function fmSynthPreset2() {
   // keep volume out because I want to set it independently by cue
 }
 
-// reversed cymbal sound to use at ends of some sections
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
+
+const revHat = new Tone.Player(misc_sounds + 'revHatRiser.mp3').toDestination();
 
 const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
 triangle.volume.value = -12;
 
 const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
 clave.volume.value = -18;
+
+const clickFading = new Tone.Player(misc_sounds + 'clave-pingpong-dimin.mp3').toDestination();
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
@@ -290,17 +294,18 @@ const pitchArr_7 = ['Eb5', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'E
 const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
 let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
 function resetCueLimits() {
-  limit_5 = 931; // after testing, remove 9 (to make this 31)
-  limit_6 = 941; // remove 9 (to make this 41)
+  // some dip and shake limits are higher for testing
+  limit_5 = (tm.debug) ? 931 : 31;
+  limit_6 = (tm.debug) ? 941 : 41;
   limit_7 = pitchArr_7.length;
   limit_8 = pitchArr_8.length;
-  limit_9 = 921; // after testing, remove 9
-  limit_10 = 931; // after testing, remove 9
-  limit_11 = 941; // after testing, remove 9
+  limit_9 = (tm.debug) ? 921 : 21;
+  limit_10 = (tm.debug) ? 931 : 31;
+  limit_11 = (tm.debug) ? 941 : 41;
   limit_12 = 129;
-  limit_13 = 916; // after testing, remove 9
-  limit_14 = 99; // after testing, remove 9
-  limit_15 = 96; // after testing, remove 9
+  limit_13 = (tm.debug) ? 916 : 16;
+  limit_14 = (tm.debug) ? 99 : 9;
+  limit_15 = (tm.debug) ? 99 : 9;
 }
 // call once to initially set limits on page load, but can also reset in cue 4
 resetCueLimits();
@@ -393,9 +398,16 @@ tm.cue[5].stopCue = function() {
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[6].cueTransition = function() {
+  revHat.start();
+};
 tm.cue[6].goCue = function() {
   // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly. Could use a transition sound AND a downbeat sound, which could be noisy percussive sound with a lot of reverb OR downbeat sound could be single triangle hit (with slightly randomized playbackRate)
   sparklyTailSampler.volume.value = -18;
+  if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
+    triangle.playbackRate = 1 + Math.random();
+    triangle.start()
+  }
 };
 tm.cue[6].triggerShakeSound = function() {
   if (limit_6 > 0) {
@@ -439,8 +451,11 @@ let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 // TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles (in addition to downbeat sound on goCue())
+tm.cue[7].cueTransition = function() {
+  revHat.start();
+};
 tm.cue[7].goCue = function() {
-  if (tm.getElapsedTimeInCue(7) < 200) {
+  if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('C5', 5);
     vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
     sparklyTailSampler.triggerAttackRelease(440, 5);
@@ -773,28 +788,37 @@ tm.cue[12].goCue = function() {
 tm.cue[12].triggerShakeSound = function() {
   if (limit_12 > 0) {
     let time_12 = tm.getElapsedTimeInCue(12);
-    // rotate array selection among three voices (and separate arrays)
+    // rotate array selection among three voices (and separate arrays) OR clicks
     let arr_12, inst_12;
-    if (count_12 % 3 === 2) {
-      arr_12 = hiPitchArr_12;
-      inst_12 = bellSampler;
-    } else if (count_12 % 3 === 1) {
-      arr_12 = midPitchArr_11; // mid voice is same as cue 11
-      inst_12 = vibeSampler;
+    if (count_12 % 4 === 3) {
+      clickFading.playbackRate = tm.getSectionBreakpoints(12, [0, 1, 60000, 2]);
+      clickFading.start();
     } else {
-      arr_12 = loPitchArr_12;
-      // REVISION idea: replace with a different instrument? like a pot or bowl
-      inst_12 = pianoSampler;
+      // pitched sounds only triggered if clicking sound is not
+      if (count_12 % 4 === 2) {
+        arr_12 = hiPitchArr_12;
+        inst_12 = bellSampler;
+      } else if (count_12 % 4 === 1) {
+        arr_12 = midPitchArr_11; // mid voice is same as cue 11
+        inst_12 = vibeSampler;
+      } else {
+        arr_12 = loPitchArr_12;
+        // REVISION idea: replace with a different instrument? like a pot or bowl
+        inst_12 = pianoSampler;
+      }
+      // select pitch index for array
+      let index_12 = Math.floor(time_12 / 2000);
+      // stay on last pitch of array if last pitch is reached
+      if (index_12 > arr_12.length - 1) {
+        index_12 = arr_12.length - 1;
+      }
+      inst_12.triggerAttackRelease(arr_12[index_12], 5);
+      sineTails.triggerAttackRelease(arr_12[index_12], 6);
+      // higher bell is 2 oct. higher and 0.1 sec later. Get freq and mult by 4
+      let index = count_12 % midPitchArr_11.length;
+      let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
+      bellSampler.triggerAttackRelease(hiPitch, 5, '+0.1');
     }
-    // select pitch index for array
-    let index_12 = Math.floor(time_12 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_12 > arr_12.length - 1) {
-      index_12 = arr_12.length - 1;
-    }
-    inst_12.triggerAttackRelease(arr_12[index_12], 5);
-    sineTails.triggerAttackRelease(arr_12[index_12], 6);
-
     count_12++;
     limit_12--;
   } else {
@@ -809,6 +833,7 @@ tm.cue[12].stopCue = function() {
 // CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?). OR dip triggers synth sound with bendy/distorted buzz controlled on tilt and release triggered by dip reset
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone)
 tm.cue[13].goCue = function() {
 };
 tm.cue[13].updateTiltSounds = function() {
