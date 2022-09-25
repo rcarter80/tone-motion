@@ -835,6 +835,10 @@ tm.cue[12].stopCue = function() {
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 // NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone)
 tm.cue[13].goCue = function() {
+  console.log(tm.getElapsedTimeInCue(13));
+  if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
+    pianoSampler.triggerAttackRelease('Bb2', 6);
+  }
 };
 tm.cue[13].updateTiltSounds = function() {
 };
