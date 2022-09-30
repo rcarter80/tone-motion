@@ -830,19 +830,42 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13 (DIP) much calmer, residual buzz, melty pitches (canon bending up?). OR dip triggers synth sound with bendy/distorted buzz controlled on tilt and release triggered by dip reset
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches
+let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
-// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone)
+// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
 tm.cue[13].goCue = function() {
-  console.log(tm.getElapsedTimeInCue(13));
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
-    pianoSampler.triggerAttackRelease('Bb2', 6);
+    pianoSampler.triggerAttackRelease('Bb2', 10);
   }
+  count_13 = 0;
 };
 tm.cue[13].updateTiltSounds = function() {
 };
 tm.cue[13].triggerDipSound = function() {
+  if (limit_13 > 0) {
+    let time_13 = tm.getElapsedTimeInCue(13);
+    // alternate selection from upper and lower voice of canon
+    let arr_13 = (count_13 % 2) ? hiPitchArr_5 : loPitchArr_5;
+    let index_13 = Math.floor(time_13 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_13 > arr_13.length - 1) {
+      index_13 = arr_13.length - 1;
+    }
+    // pitches taken from earlier canon but transposed to Ab, then bending down
+    let P4 = halfStepUp ** 5;
+    let M3 = halfStepUp ** 4;
+    let bend = tm.getSectionBreakpoints(13, [0, P4, 32000, P4, 60000, M3]);
+    let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
+    let inst = (count_13 % 2) ? bellSampler : vibeSampler;
+    inst.triggerAttackRelease(pitch, 5);
+    limit_13--;
+    count_13++;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_13);
 };
 tm.cue[13].triggerDipReset = function() {
 };
