@@ -860,6 +860,10 @@ tm.cue[13].triggerDipSound = function() {
     let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
     let inst = (count_13 % 2) ? bellSampler : vibeSampler;
     inst.triggerAttackRelease(pitch, 5);
+    // REVISION ideas: replace with buzzy sounds?
+    sineTails.triggerAttack(pitch);
+    monoSine.triggerAttack(pitch*4.01
+    );
     limit_13--;
     count_13++;
   } else {
@@ -868,6 +872,8 @@ tm.cue[13].triggerDipSound = function() {
   displayDipsLeft(limit_13);
 };
 tm.cue[13].triggerDipReset = function() {
+  sineTails.releaseAll();
+  monoSine.triggerRelease();
 };
 tm.cue[13].stopCue = function() {
 };
@@ -879,6 +885,7 @@ tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
 };
 tm.cue[14].triggerShakeSound = function() {
+  // IDEA: follow main SHAKE sound with high tinkly sound and shaker dust trail
 };
 tm.cue[14].stopCue = function() {
 };
