@@ -876,6 +876,8 @@ tm.cue[13].triggerDipReset = function() {
   monoSine.triggerRelease();
 };
 tm.cue[13].stopCue = function() {
+  sineTails.releaseAll();
+  monoSine.triggerRelease();
 };
 
 // *******************************************************************
