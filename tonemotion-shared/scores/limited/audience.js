@@ -16,13 +16,11 @@ const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
-const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
-const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 
-Tone.Transport.bpm.value = 156;
+// interval and microtonal pitch definitions
 const halfStepUp = 2 ** (1 / 12);
 const halfStepDown = 1 / halfStepUp;
 const CeS3 = 110 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 3
@@ -67,10 +65,7 @@ function displayDipsLeft(num) {
 
 // INSTRUMENTS
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
-// can add tremolo by increasing depth of sinTremolo
 // 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
-// TODO: delete tremolo if unused
-const sinTremolo = new Tone.Tremolo(4, 0.0).toDestination().start();
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
     type: 'sine',
@@ -85,7 +80,7 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     releaseCurve: "linear",
   },
   volume: -28,
-}).connect(sinTremolo);
+}).toDestination();
 // monophonic sinusoid synth that allows pitch bend (not allowed with PolySynth)
 const monoSine = new Tone.Synth({
   oscillator: {
@@ -103,6 +98,8 @@ const monoSine = new Tone.Synth({
   volume: -28,
 }).toDestination();
 
+// monophonic buzzy synth with LFO
+const buzzyTremolo = new Tone.Tremolo(4, 1.0).toDestination().start();
 const buzzySynth = new Tone.Synth({
   oscillator: {
     type: 'sawtooth',
@@ -117,7 +114,7 @@ const buzzySynth = new Tone.Synth({
     releaseCurve: "linear",
   },
   volume: -60,
-}).toDestination();
+}).connect(buzzyTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
 const vibeSampler = new Tone.Sampler({
@@ -157,21 +154,6 @@ const bellDelaySampler = new Tone.Sampler({
   },
   baseUrl: bell_sounds,
 }).connect(bellDelay);
-
-const harpSampler = new Tone.Sampler({
-  urls: {
-    'G3': 'harpG3.mp3',
-    'B3': 'harpB3.mp3',
-    'D4': 'harpD4.mp3',
-    'G4': 'harpG4.mp3',
-    'B4': 'harpB4.mp3',
-    'D5': 'harpD5.mp3',
-    'G5': 'harpG5.mp3',
-  },
-  baseUrl: harp_sounds,
-});
-const harpSamplerVol = new Tone.Volume(0);
-harpSampler.chain(harpSamplerVol, Tone.Destination);
 
 // piano sampler with samples from Logic
 const pianoSampler = new Tone.Sampler({
@@ -840,8 +822,10 @@ tm.cue[13].goCue = function() {
   count_13 = 0;
 };
 tm.cue[13].updateTiltSounds = function() {
+  // REVISION idea: add LFO to buzzySynth
   let buzzVol;
   if (tm.accel.y < 0.2) {
+    // TODO: update comments about beating, and maybe detune high sine more
     // when DIP reset is triggered, both synths are tuned down a quarter tone
     buzzySynth.detune.value = -50;
     monoSine.detune.value = -50;
@@ -884,7 +868,7 @@ tm.cue[13].triggerDipSound = function() {
     let inst = (count_13 % 2) ? bellSampler : vibeSampler;
     inst.triggerAttackRelease(pitch, 5);
     buzzySynth.triggerAttack(pitch * 2);
-    monoSine.triggerAttack(pitch * 2);
+    monoSine.triggerAttack(pitch * 4);
     limit_13--;
     count_13++;
   } else {
