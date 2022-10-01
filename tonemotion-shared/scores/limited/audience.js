@@ -313,6 +313,8 @@ tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
+  // volume is different in cue 13, so may need to reset here
+  monoSine.volume.value = -28;
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
@@ -384,6 +386,8 @@ tm.cue[6].cueTransition = function() {
 tm.cue[6].goCue = function() {
   // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly. Could use a transition sound AND a downbeat sound, which could be noisy percussive sound with a lot of reverb OR downbeat sound could be single triangle hit (with slightly randomized playbackRate)
   sparklyTailSampler.volume.value = -18;
+  // volume is different in cue 13, so may need to reset here
+  monoSine.volume.value = -28;
   if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
     triangle.playbackRate = 1 + Math.random();
     triangle.start()
@@ -819,32 +823,29 @@ tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
     pianoSampler.triggerAttackRelease('Bb2', 10);
   }
+  monoSine.volume.value = -40;
   count_13 = 0;
 };
 tm.cue[13].updateTiltSounds = function() {
-  // REVISION idea: add LFO to buzzySynth
   let buzzVol;
   if (tm.accel.y < 0.2) {
-    // TODO: update comments about beating, and maybe detune high sine more
-    // when DIP reset is triggered, both synths are tuned down a quarter tone
-    buzzySynth.detune.value = -50;
+    // both synths bend pitch down with DIP reset, but buzzy bends more
+    buzzySynth.detune.value = -100;
     monoSine.detune.value = -50;
     buzzySynth.volume.value = -60;
   } else if (tm.accel.y < 0.45) {
-    // when tipping phone back up, both synths retune and beating stops
-    buzzySynth.detune.value = -((0.45 - tm.accel.y) * 200);// 0 to 50 cents down
+    buzzySynth.detune.value = -((0.45 - tm.accel.y) * 400);// 0-100 cents down
     monoSine.detune.value = -50;
     // buzzySynth fades in and out
     buzzVol = -24 - (0.45 - tm.accel.y) * 144; // -24 to -60dB
     buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
   } else if (tm.accel.y < 0.7) {
-    // after DIP, monoSine detunes, causing beating against stable buzzySynth
+    // synths detune independently
     buzzySynth.detune.value = 0;
     monoSine.detune.value = -((0.7 - tm.accel.y) * 200); // 0 to 50 cents down
     buzzVol = -60 + (0.7 - tm.accel.y) * 144; // -60 to -24dB
     buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
   } else {
-    // no sound here but DIP will trigger both synths in tune
     buzzySynth.detune.value = 0;
     monoSine.detune.value = 0;
     buzzySynth.volume.value = -60;
@@ -887,6 +888,7 @@ tm.cue[13].stopCue = function() {
 
 // *******************************************************************
 // CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30") could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
+// pitch idea: keep 2-vox canon but bend down half step (so M3 to mi3)
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
@@ -898,7 +900,8 @@ tm.cue[14].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 15 (DIP) continuation of cue 14 with very few dips. Shorter (c. 30")
+// CUE 15 (DIP) continuation of cue 14 with very few dips. Shorter (c. 30"), maybe doubled with shaker dust trails?
+// pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
 
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].goCue = function() {
