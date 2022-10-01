@@ -69,6 +69,7 @@ function displayDipsLeft(num) {
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
 // can add tremolo by increasing depth of sinTremolo
 // 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
+// TODO: delete tremolo if unused
 const sinTremolo = new Tone.Tremolo(4, 0.0).toDestination().start();
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
@@ -100,6 +101,22 @@ const monoSine = new Tone.Synth({
     releaseCurve: "linear",
   },
   volume: -28,
+}).toDestination();
+
+const buzzySynth = new Tone.Synth({
+  oscillator: {
+    type: 'sawtooth',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 1,
+    releaseCurve: "linear",
+  },
+  volume: -60,
 }).toDestination();
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
@@ -195,43 +212,24 @@ ziplockLoop.loop = true;
 const fmSynth = new Tone.FMSynth({
   envelope: {
     attack: 1,
+    attackCurve: "linear",
     decay: 0.1,
+    decayCurve: "linear",
     sustain: 1,
-    release: 2,
+    release: 1,
+    releaseCurve: "linear",
   },
   modulationEnvelope: {
-    attack: 1,
+    attack: 0.1,
     decay: 0.1,
     sustain: 1,
-    release: 10,
+    release: 0.1,
   },
-  harmonicity: 0.125,
+  modulationIndex: 0.0,
+  harmonicity: 0.25,
+  volume: -28,
 }).toDestination();
 fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-function fmSynthDefaults() {
-  fmSynth.envelope.attack = 1;
-  fmSynth.envelope.attackCurve = 'exponential';
-  fmSynth.envelope.release = 2;
-  fmSynth.envelope.releaseCurve = 'exponential';
-  fmSynth.modulationEnvelope.attack = 1;
-  fmSynth.modulationEnvelope.attackCurve = 'exponential';
-  fmSynth.modulationEnvelope.release = 10;
-  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
-  fmSynth.detune.value = 0;
-  // keep volume out because I want to set it independently by cue
-}
-function fmSynthPreset2() {
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
-  fmSynth.detune.value = 0;
-  // keep volume out because I want to set it independently by cue
-}
 
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
@@ -842,6 +840,31 @@ tm.cue[13].goCue = function() {
   count_13 = 0;
 };
 tm.cue[13].updateTiltSounds = function() {
+  let buzzVol;
+  if (tm.accel.y < 0.2) {
+    // when DIP reset is triggered, both synths are tuned down a quarter tone
+    buzzySynth.detune.value = -50;
+    monoSine.detune.value = -50;
+    buzzySynth.volume.value = -60;
+  } else if (tm.accel.y < 0.45) {
+    // when tipping phone back up, both synths retune and beating stops
+    buzzySynth.detune.value = -((0.45 - tm.accel.y) * 200);// 0 to 50 cents down
+    monoSine.detune.value = -50;
+    // buzzySynth fades in and out
+    buzzVol = -24 - (0.45 - tm.accel.y) * 144; // -24 to -60dB
+    buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
+  } else if (tm.accel.y < 0.7) {
+    // after DIP, monoSine detunes, causing beating against stable buzzySynth
+    buzzySynth.detune.value = 0;
+    monoSine.detune.value = -((0.7 - tm.accel.y) * 200); // 0 to 50 cents down
+    buzzVol = -60 + (0.7 - tm.accel.y) * 144; // -60 to -24dB
+    buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
+  } else {
+    // no sound here but DIP will trigger both synths in tune
+    buzzySynth.detune.value = 0;
+    monoSine.detune.value = 0;
+    buzzySynth.volume.value = -60;
+  }
 };
 tm.cue[13].triggerDipSound = function() {
   if (limit_13 > 0) {
@@ -860,10 +883,8 @@ tm.cue[13].triggerDipSound = function() {
     let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
     let inst = (count_13 % 2) ? bellSampler : vibeSampler;
     inst.triggerAttackRelease(pitch, 5);
-    // REVISION ideas: replace with buzzy sounds?
-    sineTails.triggerAttack(pitch);
-    monoSine.triggerAttack(pitch*4.01
-    );
+    buzzySynth.triggerAttack(pitch * 2);
+    monoSine.triggerAttack(pitch * 2);
     limit_13--;
     count_13++;
   } else {
@@ -872,11 +893,11 @@ tm.cue[13].triggerDipSound = function() {
   displayDipsLeft(limit_13);
 };
 tm.cue[13].triggerDipReset = function() {
-  sineTails.releaseAll();
+  buzzySynth.triggerRelease();
   monoSine.triggerRelease();
 };
 tm.cue[13].stopCue = function() {
-  sineTails.releaseAll();
+  buzzySynth.triggerRelease();
   monoSine.triggerRelease();
 };
 
