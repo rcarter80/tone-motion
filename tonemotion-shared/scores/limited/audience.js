@@ -279,13 +279,13 @@ function resetCueLimits() {
   limit_6 = (tm.debug) ? 941 : 41;
   limit_7 = pitchArr_7.length;
   limit_8 = pitchArr_8.length;
-  limit_9 = (tm.debug) ? 921 : 21;
+  limit_9 = (tm.debug) ? 917 : 17;
   limit_10 = (tm.debug) ? 931 : 31;
   limit_11 = (tm.debug) ? 941 : 41;
   limit_12 = 129;
   limit_13 = (tm.debug) ? 916 : 16;
   limit_14 = (tm.debug) ? 99 : 9;
-  limit_15 = (tm.debug) ? 99 : 9;
+  limit_15 = (tm.debug) ? 98 : 8;
 }
 // call once to initially set limits on page load, but can also reset in cue 4
 resetCueLimits();
@@ -303,8 +303,8 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5 (DIP): 1st section. Ice crunch tilt with gong (partials over Eb1)
-// lower voice of canon (32 notes @ 2sec. per note, so section should be ~64s.)
+// CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
+// lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
@@ -376,7 +376,7 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6 (SHAKE): continuation of canon
+// CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 60")
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
@@ -429,7 +429,7 @@ tm.cue[6].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 7 (DIP): accelerating clicks leading to 3-vox cannon (pitches in array)
+// CUE 7 (DIP): accel clicks-> vibes 3-vox canon, pitches in array (c. 30-60")
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
@@ -480,7 +480,7 @@ tm.cue[7].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 8 (SHAKE): 3-vox canon with 2-oct bells (higher note has feedback delay)
+// CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
 let count_8 = 0;
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 // TODO: decide on transition sounds?
@@ -512,7 +512,7 @@ tm.cue[8].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 9 (DIP) increased accel/decel clicks with restricted canon
+// CUE 9 (DIP) increased accel/decel clicks with restricted canon (c. 30")
 
 // NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
 
@@ -555,7 +555,7 @@ tm.cue[9].triggerDipSound = function() {
     if (playCanon_9) {
       // randomly assigned to play middle voice of canon
       let time_9 = tm.getElapsedTimeInCue(9);
-      let index_9 = Math.floor(time_9 / 4000); // 4 seconds for each note
+      let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
       // only go through first 16 notes of canon voice
       if (index_9 > 15) {
         index_9 = 15;
@@ -586,7 +586,7 @@ tm.cue[9].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 10 (SHAKE) synchronized pulse triggered by shake sounds
+// CUE 10 (SHAKE) synchronized pulse triggered by shake sounds (c. 30")
 // NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
 const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
 const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
@@ -648,7 +648,6 @@ tm.cue[10].goCue = function() {
   count_10 = 0;
 };
 tm.cue[10].triggerShakeSound = function() {
-  // REVISION idea: if this is too static, could randomly assign array-based faster note loop. If low vox is too hard to hear, could randomly assign three octaves higher with bells instead of vibes
   if (limit_10 > 0) {
     let time_10 = tm.getElapsedTimeInCue(10);
     // rotate array selection among three voices (and separate arrays)
@@ -661,7 +660,7 @@ tm.cue[10].triggerShakeSound = function() {
       arr_10 = loPitchArr_10;
     }
     // select pitch index for array
-    let index_10 = Math.floor(time_10 / 4000);
+    let index_10 = Math.floor(time_10 / 2000);
     // stay on last pitch of array if last pitch is reached
     if (index_10 > arr_10.length - 1) {
       index_10 = arr_10.length - 1;
@@ -684,7 +683,7 @@ tm.cue[10].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 11 (DIP) rising/decaying pylse. increasingly chaotic/heteregeneous sounds
+// CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
 const loPitchArr_11 = ['G3', 'G3', 'G3', 'G3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Bb3', 'Bb3', 'Bb3', 'Bb3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'C4', 'C4', 'C4', 'C4', 'G3', 'G3', GeS3, GeS3];
 const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4, 'Ab4', 'G4', 'Eb4', 'Eb4', 'Db4', CqS4, 'C4', 'Bb4', 'Ab4', 'G4', 'Eb4', 'Eb4', 'F4', 'F4', 'G4', 'Ab4', 'F4', 'F4', 'Eb4', 'Eb4', 'G4', 'G4', 'Ab4'];
 const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
@@ -759,7 +758,7 @@ tm.cue[11].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 12 (SHAKE) peak variety, surging drone in fixed media, sudden cutoff
+// CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
 const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
 // mid pitch line is same as from cue 10
 const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
@@ -814,7 +813,7 @@ tm.cue[12].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 13 (DIP) much calmer, residual buzz, melty pitches
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches (c. 60")
 let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
@@ -887,7 +886,8 @@ tm.cue[13].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 14 (SHAKE) very low density, fading buzzes and melts. Shorter (c. 30") could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
+// CUE 14 (SHAKE) very low density, fading buzzes and melts (c. 30")
+// could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
 // pitch idea: keep 2-vox canon but bend down half step (so M3 to mi3)
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
@@ -900,7 +900,7 @@ tm.cue[14].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 15 (DIP) continuation of cue 14 with very few dips. Shorter (c. 30"), maybe doubled with shaker dust trails?
+// CUE 15 (DIP) continuation of cue 14 with very few dips (c. 30"), maybe doubled with shaker dust trails?
 // pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
 
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
