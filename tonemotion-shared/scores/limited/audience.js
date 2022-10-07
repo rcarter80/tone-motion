@@ -65,7 +65,6 @@ function displayDipsLeft(num) {
 
 // INSTRUMENTS
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
-// 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
     type: 'sine',
@@ -76,7 +75,7 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     decay: 0.1,
     decayCurve: "linear",
     sustain: 1,
-    release: 1,
+    release: 3,
     releaseCurve: "linear",
   },
   volume: -28,
@@ -477,7 +476,7 @@ tm.cue[7].triggerDipSound = function() {
   pingpongClickLoop.stop();
   if (limit_7 > 0) {
     bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
-    sineTails.triggerAttackRelease(pitchArr_7[count_7], 6);
+    sineTails.triggerAttackRelease(pitchArr_7[count_7], 4);
     count_7++;
     limit_7--;
   } else {
@@ -514,7 +513,7 @@ tm.cue[8].triggerShakeSound = function() {
     let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
     bellDelaySampler.triggerAttackRelease(hiPitch, 5);
     bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
-    sineTails.triggerAttackRelease(pitchArr_8[count_8], 6);
+    sineTails.triggerAttackRelease(pitchArr_8[count_8], 4);
     count_8++;
     limit_8--;
   } else {
@@ -577,7 +576,7 @@ tm.cue[9].triggerDipSound = function() {
       }
       // TODO: replace vibeSampler with new "glassSampler" ?
       vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
-      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 6);
+      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
     } else {
       // randomly assigned to play array-based loop
       let index_9 = count_9 % loopArr_9.length;
@@ -681,7 +680,7 @@ tm.cue[10].triggerShakeSound = function() {
       index_10 = arr_10.length - 1;
     }
     vibeSampler.triggerAttackRelease(arr_10[index_10], 5);
-    sineTails.triggerAttackRelease(arr_10[index_10], 6);
+    sineTails.triggerAttackRelease(arr_10[index_10], 4);
     // alternate between envelopes that trigger higher and lower loops
     let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
     env.triggerAttackRelease(0.1);
@@ -736,7 +735,7 @@ tm.cue[11].triggerDipSound = function() {
       index_11 = arr_11.length - 1;
     }
     inst_11.triggerAttackRelease(arr_11[index_11], 5);
-    sineTails.triggerAttackRelease(arr_11[index_11], 6);
+    sineTails.triggerAttackRelease(arr_11[index_11], 4);
     // alternating loops also gradually gliss apart then gliss up and fade out
     let bend;
     let bendSelector = Math.random();
@@ -811,7 +810,7 @@ tm.cue[12].triggerShakeSound = function() {
         index_12 = arr_12.length - 1;
       }
       inst_12.triggerAttackRelease(arr_12[index_12], 5);
-      sineTails.triggerAttackRelease(arr_12[index_12], 6);
+      sineTails.triggerAttackRelease(arr_12[index_12], 4);
       // higher bell is 2 oct. higher and 0.1 sec later. Get freq and mult by 4
       let index = count_12 % midPitchArr_11.length;
       let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
@@ -902,7 +901,8 @@ tm.cue[13].stopCue = function() {
 
 // *******************************************************************
 // CUE 14 (SHAKE) very low density, fading buzzes and melts (c. 30")
-// could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
+// also includes slower synchronized clave clicks.
+// Fixed media can have same sync'd click loop on goCue, maybe fading out
 let count_14 = 0;
 
 const ampEnv_14 = new Tone.AmplitudeEnvelope({
@@ -916,14 +916,14 @@ claveLoop_14.loop = true;
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
-  monoSine.volume.value = -40;
-  monoSine.detune.value = 0;
+  chimeSampler.volume.value = -18;
   sparklyTailSampler.volume.value = -18;
+  claveLoop_14.playbackRate = 1;
+  claveLoop_14.volume.value = 0;
   claveLoop_14.start();
   count_14 = 0;
 };
 tm.cue[14].triggerShakeSound = function() {
-  // IDEA: follow main SHAKE sound with high tinkly sound and shaker dust trail
   if (limit_14 > 0) {
     let time_14 = tm.getElapsedTimeInCue(14);
     // alternate canon voices. lower voice is same as last cue, higher changes
@@ -938,18 +938,15 @@ tm.cue[14].triggerShakeSound = function() {
     let m3 = halfStepUp ** 3;
     let bend = tm.getSectionBreakpoints(14, [0, M3, 32000, m3]);
     let pitch = (Tone.Frequency(arr_14[index_14]).toFrequency()) * bend;
-    let inst = (count_14 % 2) ? bellSampler : vibeSampler;
+    let inst = (count_14 % 2) ? vibeSampler : vibeSampler;
     inst.triggerAttackRelease(pitch, 5);
     // chime sounds just after first sound, but is either 1 or 2 octaves higher
     let oct_14 = (count_14 % 2) ? 2 : 4;
     chimeSampler.triggerAttackRelease(pitch * oct_14, 2, '+0.1');
-    monoSine.detune.value = 0; // starts without bend
-    monoSine.triggerAttackRelease(pitch * 4, 2);
-    monoSine.detune.rampTo(-100, 2);
     let sparklyPitch = 440 + Math.random() * 200;
     sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
     // slower synchronized clave clicks
-    ampEnv_14.triggerAttackRelease(0.1);
+    ampEnv_14.triggerAttackRelease(0.5);
     limit_14--;
     count_14++;
   } else {
@@ -958,22 +955,76 @@ tm.cue[14].triggerShakeSound = function() {
   displayShakesLeft(limit_14);
 };
 tm.cue[14].stopCue = function() {
+  claveLoop_14.stop();
 };
 
 // *******************************************************************
-// CUE 15 (DIP) continuation of cue 14 with very few dips (c. 30"), maybe doubled with shaker dust trails?
+// CUE 15 (DIP) continuation of cue 14 with very few dips (c. 30"), followed by decelerating and dimin clave clicks
 // pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
+let count_15 = 0;
+const hiPitchArr_15 = ['F5', 'F5', 'Ab5', 'Ab5', 'Ab5', 'Ab5', 'Bb5', 'Bb5', 'Bb5', 'Bb5', 'Gb5', 'Gb5', 'Gb5', 'Gb5', 'F5', 'F5'];
 
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].goCue = function() {
+  claveLoop_14.start();
+  count_15 = 0;
 };
 tm.cue[15].updateTiltSounds = function() {
+  // ice crunch from first cue returns
+  if (tm.accel.y < 0.3) {
+    pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pitchedIceLoop.playbackRate = 1.15844; // retuned to D5
+  } else if (tm.accel.y < 0.7) {
+    pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    pitchedIceLoop.playbackRate = 1.15844 + (tm.accel.y - 0.3) * 0.17215; //D-Eb
+  } else {
+    pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pitchedIceLoop.playbackRate = 1.2273; // Eb5
+  }
 };
 tm.cue[15].triggerDipSound = function() {
+  pitchedIceLoop.stop();
+  if (limit_15 > 0) {
+    let time_15 = tm.getElapsedTimeInCue(15);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_15;
+    if (count_15 % 3 === 2) {
+      arr_15 = hiPitchArr_15;
+    } else if (count_15 % 3 === 1) {
+      arr_15 = hiPitchArr_15; // change to midPitchArr_15
+    } else {
+      arr_15 = hiPitchArr_15; // change to loPitchArr_15
+    }
+    // select pitch index for array
+    let index_15 = Math.floor(time_15 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_15 > arr_15.length - 1) {
+      index_15 = arr_15.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_15[index_15], 5);
+    sineTails.triggerAttackRelease(arr_15[index_15], 4);
+    // also trigger dimin/decel clave clicks, which continue until dip reset
+    claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.75]);
+    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -24]);
+    ampEnv_14.triggerAttack();
+    count_15++;
+    limit_15--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_15);
 };
 tm.cue[15].triggerDipReset = function() {
+  ampEnv_14.triggerRelease();
+  // slushy ice sounds only available when there are DIPS remaining
+  if (limit_15 > 0) {
+    pitchedIceLoop.start();
+  }
 };
 tm.cue[15].stopCue = function() {
+  pitchedIceLoop.stop();
+  ampEnv_14.triggerRelease();
+  claveLoop_14.stop();
 };
 
 // *******************************************************************
