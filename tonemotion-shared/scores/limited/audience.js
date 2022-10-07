@@ -32,7 +32,9 @@ const GteS3 = 110 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 3
 const AeS3 = 220 * (2 ** (1 / 48)); // A eighth-sharp 3
 const AqS3 = 220 * (2 ** (1 / 24)); // A quarter-sharp 3
 const AteS3 = 220 * ((2 ** (1 / 48)) ** 3); // A 3-eighths-sharp 3
+const CeS4 = 220 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 4
 const CqS4 = 220 * ((2 ** (1 / 24)) ** 7); // C quarter-sharp 4
+const CteS4 = 220 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 4
 const DqS4 = 220 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 4
 const GqS4 = 220 * ((2 ** (1 / 24)) ** 21); // G quarter-sharp 4
 const AqS4 = 440 * (2 ** (1 / 24)); // A quarter-sharp 4
@@ -938,7 +940,7 @@ tm.cue[14].triggerShakeSound = function() {
     let m3 = halfStepUp ** 3;
     let bend = tm.getSectionBreakpoints(14, [0, M3, 32000, m3]);
     let pitch = (Tone.Frequency(arr_14[index_14]).toFrequency()) * bend;
-    let inst = (count_14 % 2) ? vibeSampler : vibeSampler;
+    let inst = (count_14 % 2) ? bellSampler : vibeSampler;
     inst.triggerAttackRelease(pitch, 5);
     // chime sounds just after first sound, but is either 1 or 2 octaves higher
     let oct_14 = (count_14 % 2) ? 2 : 4;
@@ -963,6 +965,8 @@ tm.cue[14].stopCue = function() {
 // pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
 let count_15 = 0;
 const hiPitchArr_15 = ['F5', 'F5', 'Ab5', 'Ab5', 'Ab5', 'Ab5', 'Bb5', 'Bb5', 'Bb5', 'Bb5', 'Gb5', 'Gb5', 'Gb5', 'Gb5', 'F5', 'F5'];
+const midPitchArr_15 = ['Eb4', 'F4', 'Gb4', 'Bb4', 'Bb4', 'Ab4', 'Ab4', 'Gb4', 'F4', 'Ab4', 'Ab4', 'Bb4', 'Bb4', 'Gb4', 'Gb4', 'F4'];
+const loPitchArr_15 = ['Bb3', 'Bb3', 'Bb3', 'Bb3', 'C4', 'C4', CeS4, CeS4, CqS4, CqS4, CteS4, CteS4, 'Db4', 'Db4', 'Db4', 'Db4'];
 
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].goCue = function() {
@@ -991,9 +995,9 @@ tm.cue[15].triggerDipSound = function() {
     if (count_15 % 3 === 2) {
       arr_15 = hiPitchArr_15;
     } else if (count_15 % 3 === 1) {
-      arr_15 = hiPitchArr_15; // change to midPitchArr_15
+      arr_15 = midPitchArr_15;
     } else {
-      arr_15 = hiPitchArr_15; // change to loPitchArr_15
+      arr_15 = loPitchArr_15;
     }
     // select pitch index for array
     let index_15 = Math.floor(time_15 / 2000);
