@@ -155,6 +155,19 @@ const bellDelaySampler = new Tone.Sampler({
   baseUrl: bell_sounds,
 }).connect(bellDelay);
 
+// chime sampler from my old wind chimes
+const chimeSampler = new Tone.Sampler({
+  urls: {
+    'D6': '2sec-chime-D6.mp3',
+    'F6': '2sec-chime-F6.mp3',
+    'A6': '2sec-chime-A6.mp3',
+    'C7': '2sec-chime-C7.mp3',
+    'D7': '2sec-chime-D7.mp3',
+    'F7': '2sec-chime-F7.mp3',
+  },
+  baseUrl: chime_sounds,
+}).toDestination();
+
 // piano sampler with samples from Logic
 const pianoSampler = new Tone.Sampler({
   urls: {
@@ -315,6 +328,7 @@ tm.cue[5].goCue = function() {
   tm.shouldTestMotion = false;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
+  monoSine.detune.value = 0;
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
@@ -388,6 +402,7 @@ tm.cue[6].goCue = function() {
   sparklyTailSampler.volume.value = -18;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
+  monoSine.detune.value = 0;
   if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
     triangle.playbackRate = 1 + Math.random();
     triangle.start()
@@ -888,13 +903,59 @@ tm.cue[13].stopCue = function() {
 // *******************************************************************
 // CUE 14 (SHAKE) very low density, fading buzzes and melts (c. 30")
 // could also include synchronized but slighlty slowly uniform click loop with gradual dimin (manipulate envelope to fade sounds out). Fixed media can have sync'd click loop on goCue
-// pitch idea: keep 2-vox canon but bend down half step (so M3 to mi3)
+let count_14 = 0;
+
+const ampEnv_14 = new Tone.AmplitudeEnvelope({
+  attack: 0.25,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4,
+}).toDestination();
+const claveLoop_14 = new Tone.Player(misc_sounds + 'clave-solo_loop.mp3').connect(ampEnv_14);
+claveLoop_14.loop = true;
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].goCue = function() {
+  monoSine.volume.value = -40;
+  monoSine.detune.value = 0;
+  sparklyTailSampler.volume.value = -18;
+  claveLoop_14.start();
+  count_14 = 0;
 };
 tm.cue[14].triggerShakeSound = function() {
   // IDEA: follow main SHAKE sound with high tinkly sound and shaker dust trail
+  if (limit_14 > 0) {
+    let time_14 = tm.getElapsedTimeInCue(14);
+    // alternate canon voices. lower voice is same as last cue, higher changes
+    let arr_14 = (count_14 % 2) ? hiPitchArr_6 : loPitchArr_5;
+    let index_14 = Math.floor(time_14 / 2000);
+    // only go through first 16 notes of array, cue 15 continues with next note
+    if (index_14 > 15) {
+      index_14 = 15;
+    }
+    // pitches taken from earlier canon but transposed to G, then bending down
+    let M3 = halfStepUp ** 4;
+    let m3 = halfStepUp ** 3;
+    let bend = tm.getSectionBreakpoints(14, [0, M3, 32000, m3]);
+    let pitch = (Tone.Frequency(arr_14[index_14]).toFrequency()) * bend;
+    let inst = (count_14 % 2) ? bellSampler : vibeSampler;
+    inst.triggerAttackRelease(pitch, 5);
+    // chime sounds just after first sound, but is either 1 or 2 octaves higher
+    let oct_14 = (count_14 % 2) ? 2 : 4;
+    chimeSampler.triggerAttackRelease(pitch * oct_14, 2, '+0.1');
+    monoSine.detune.value = 0; // starts without bend
+    monoSine.triggerAttackRelease(pitch * 4, 2);
+    monoSine.detune.rampTo(-100, 2);
+    let sparklyPitch = 440 + Math.random() * 200;
+    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
+    // slower synchronized clave clicks
+    ampEnv_14.triggerAttackRelease(0.1);
+    limit_14--;
+    count_14++;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_14);
 };
 tm.cue[14].stopCue = function() {
 };
