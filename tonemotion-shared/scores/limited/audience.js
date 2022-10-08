@@ -400,6 +400,7 @@ tm.cue[6].cueTransition = function() {
 };
 tm.cue[6].goCue = function() {
   // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly. Could use a transition sound AND a downbeat sound, which could be noisy percussive sound with a lot of reverb OR downbeat sound could be single triangle hit (with slightly randomized playbackRate)
+  // TODO: create sparkly vibe rev sampler using sparklyTail and vibe sounds but reversed to last just under 2 seconds to use as transition sound
   sparklyTailSampler.volume.value = -18;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
@@ -1009,6 +1010,7 @@ tm.cue[15].triggerDipSound = function() {
     sineTails.triggerAttackRelease(arr_15[index_15], 4);
     // also trigger dimin/decel clave clicks, which continue until dip reset
     claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.75]);
+    // TODO: change volume below from -24 to something softer
     claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -24]);
     ampEnv_14.triggerAttack();
     count_15++;
