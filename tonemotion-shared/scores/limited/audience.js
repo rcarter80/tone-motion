@@ -131,6 +131,18 @@ const vibeSampler = new Tone.Sampler({
   },
   baseUrl: vibes_sounds,
 }).toDestination();
+// same but 1.5-sec. reversed sounds (to use with cueTransition 2s. before cue)
+const revVibeSampler = new Tone.Sampler({
+  // each sound file is exactly 1.5 sec. - transposed could be shorter or longer
+  urls: {
+    'F4': 'rev_vibe_bell-F4.mp3',
+    'A4': 'rev_vibe_bell-A4.mp3',
+    'Db5': 'rev_vibe_bell-Db5.mp3',
+    'A5': 'rev_vibe_bell-A5.mp3',
+    'Db6': 'rev_vibe_bell-Db6.mp3',
+  },
+  baseUrl: vibes_sounds,
+}).toDestination();
 
 // handbell sampler from freesound.org/people/radwoc/ (CC0 license)
 const bellSampler = new Tone.Sampler({
@@ -396,18 +408,17 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
-  revHat.start();
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
 };
 tm.cue[6].goCue = function() {
-  // TODO: add sound that announces new section. Could be here or could be a transition sound (which should now be connected to cue[6]). Could use reverse of sparklyTailSampler, so rev sound turns sparkly. Could use a transition sound AND a downbeat sound, which could be noisy percussive sound with a lot of reverb OR downbeat sound could be single triangle hit (with slightly randomized playbackRate)
-  // TODO: create sparkly vibe rev sampler using sparklyTail and vibe sounds but reversed to last just under 2 seconds to use as transition sound
   sparklyTailSampler.volume.value = -18;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
   monoSine.detune.value = 0;
   if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
-    triangle.playbackRate = 1 + Math.random();
-    triangle.start()
+    vibeSampler.triggerAttackRelease('Eb4', 5);
+    vibeSampler.triggerAttackRelease('C6', 5, '+0.1');
   }
 };
 tm.cue[6].triggerShakeSound = function() {
@@ -451,9 +462,9 @@ bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
-// TODO: add more prominent cueTransition sound here. Could use similar reversed sparkles (in addition to downbeat sound on goCue())
 tm.cue[7].cueTransition = function() {
-  revHat.start();
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'D5'], 2);
 };
 tm.cue[7].goCue = function() {
   if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
@@ -500,11 +511,14 @@ tm.cue[7].stopCue = function() {
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
 let count_8 = 0;
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
-// TODO: decide on transition sounds?
+tm.cue[8].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 2);
+};
 tm.cue[8].goCue = function() {
   if (tm.getElapsedTimeInCue(8) < 200) {
-    vibeSampler.triggerAttackRelease('Bb4', 5);
-    vibeSampler.triggerAttackRelease('Bb5', 5, '+0.25');
+    vibeSampler.triggerAttackRelease('C4', 5);
+    vibeSampler.triggerAttackRelease('D6', 5, '+0.25');
     sparklyTailSampler.triggerAttackRelease(440, 5);
   }
   count_8 = 0;
@@ -540,7 +554,15 @@ let count_9 = 0;
 let playCanon_9 = true;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[9].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
+};
 tm.cue[9].goCue = function() {
+  if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Eb4', 5);
+    vibeSampler.triggerAttackRelease('C5', 5, '+0.1');
+  }
   // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
   if (Math.random() > 0.5) {
     playCanon_9 = false;
