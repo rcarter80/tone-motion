@@ -241,6 +241,8 @@ fmSynth.oscillator.partials = [1, 0, 0, 0.25];
 
 const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
 
+const clickTransition = new Tone.Player(misc_sounds + 'click-transition.mp3').toDestination();
+
 const revHat = new Tone.Player(misc_sounds + 'revHatRiser.mp3').toDestination();
 
 const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
@@ -250,6 +252,8 @@ const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
 clave.volume.value = -18;
 
 const clickFading = new Tone.Player(misc_sounds + 'clave-pingpong-dimin.mp3').toDestination();
+
+const clavePingpong = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').toDestination();
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
@@ -677,8 +681,15 @@ loopLo_11.loop = true;
 let count_10 = 0;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
-// REVISION idea: add cueTransition that is pp<ff click loop (won't be syncd)
+tm.cue[10].cueTransition = function() {
+  clickTransition.start();
+};
 tm.cue[10].goCue = function() {
+  if (tm.getElapsedTimeInCue(10) < CUE_SOUND_WINDOW) {
+    clavePingpong.volume.value = 0;
+    clavePingpong.start();
+    clavePingpong.volume.rampTo(-99, 3);
+  }
   // need to reset upper loop parameters, which could change in cue 11
   loopHi_10.playbackRate = 1;
   loopHi_10.volume.value = 0;
@@ -729,7 +740,15 @@ const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5'
 let count_11 = 0;
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[11].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
+};
 tm.cue[11].goCue = function() {
+  if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Db4', 5);
+    vibeSampler.triggerAttackRelease('Db5', 5, '+0.1');
+  }
   // upper of two loops is same as cue 10, but lower is different
   loopHi_10.start();
   loopLo_11.start();
@@ -804,7 +823,15 @@ const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb
 let count_12 = 0;
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[12].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 2);
+};
 tm.cue[12].goCue = function() {
+  if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Ab4', 5);
+    vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
+  }
   count_12 = 0;
 };
 tm.cue[12].triggerShakeSound = function() {
@@ -857,9 +884,15 @@ let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 // NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
+tm.cue[13].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease('C5', 2);
+  clickTransition.start();
+};
 tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
     pianoSampler.triggerAttackRelease('Bb2', 10);
+    chimeSampler.triggerAttackRelease('Bb6', 5, '+0.2');
   }
   monoSine.volume.value = -40;
   count_13 = 0;
@@ -940,7 +973,15 @@ const claveLoop_14 = new Tone.Player(misc_sounds + 'clave-solo_loop.mp3').connec
 claveLoop_14.loop = true;
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[14].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 2);
+};
 tm.cue[14].goCue = function() {
+  if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('E4', 5);
+    vibeSampler.triggerAttackRelease('E5', 5, '+0.25');
+  }
   chimeSampler.volume.value = -18;
   sparklyTailSampler.volume.value = -18;
   claveLoop_14.playbackRate = 1;
@@ -992,7 +1033,15 @@ const midPitchArr_15 = ['Eb4', 'F4', 'Gb4', 'Bb4', 'Bb4', 'Ab4', 'Ab4', 'Gb4', '
 const loPitchArr_15 = ['Bb3', 'Bb3', 'Bb3', 'Bb3', 'C4', 'C4', CeS4, CeS4, CqS4, CqS4, CteS4, CteS4, 'Db4', 'Db4', 'Db4', 'Db4'];
 
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[15].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 2);
+};
 tm.cue[15].goCue = function() {
+  if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
+    pianoSampler.triggerAttackRelease('Bb3', 5);
+    vibeSampler.triggerAttackRelease('F5', 5, '+0.25');
+  }
   claveLoop_14.start();
   count_15 = 0;
 };
