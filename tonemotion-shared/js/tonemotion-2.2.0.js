@@ -1088,9 +1088,15 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   status_container.classList.add('swell');
   body_element.classList.remove('fade');
 
-  // This method allows sounds to be triggered when new cue is received (but has not yet begun). These sounds will not be synchronized across clients. Like with goCue() sounds, these sounds can be suppressed when user stops and starts by checking getElapsedTimeInCue()
+  // This method allows sounds to be triggered right when new cue is received (but has not yet begun). These sounds will NOT be synchronized across clients.
   // NOTE: This was previously attached to PREVIOUS cue number, so if I migrate an older piece to this version of the library, I need to move cueTransition() in the score forward by one cue
-  this.cue[cue].cueTransition();
+  // only play transition sound if continuing from previous cue, but must first check that I'm not trying to access negative cue number
+  if (cue > 0) {
+    if (this.cue[cue - 1].isPlaying) {
+      // previous cue is playing, so play transition sound before next cue
+      this.cue[cue].cueTransition();
+    }
+  }
 
   // immediately trigger cue with minimum latency if waitTime is -1
   if (this.cue[cue].waitTime == -1) {
