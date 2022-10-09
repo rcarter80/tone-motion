@@ -11,7 +11,6 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-// TODO: delete unused paths
 const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
@@ -118,6 +117,7 @@ const buzzySynth = new Tone.Synth({
 }).connect(buzzyTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
+// REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -216,37 +216,7 @@ claveLoop.loop = true;
 const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
 ziplockLoop.loop = true;
 
-// TODO: delete unused instruments
-const fmSynth = new Tone.FMSynth({
-  envelope: {
-    attack: 1,
-    attackCurve: "linear",
-    decay: 0.1,
-    decayCurve: "linear",
-    sustain: 1,
-    release: 1,
-    releaseCurve: "linear",
-  },
-  modulationEnvelope: {
-    attack: 0.1,
-    decay: 0.1,
-    sustain: 1,
-    release: 0.1,
-  },
-  modulationIndex: 0.0,
-  harmonicity: 0.25,
-  volume: -28,
-}).toDestination();
-fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-
-const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
-
 const clickTransition = new Tone.Player(misc_sounds + 'click-transition.mp3').toDestination();
-
-const revHat = new Tone.Player(misc_sounds + 'revHatRiser.mp3').toDestination();
-
-const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
-triangle.volume.value = -12;
 
 const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
 clave.volume.value = -18;
@@ -589,8 +559,7 @@ tm.cue[9].updateTiltSounds = function() {
     clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
   } else {
     clickLoop_9.volume.value = -9;
-    // REVISION idea: continue to increase playback rate a bit to get faster when fully upside down
-    clickLoop_9.playbackRate = 2;
+    clickLoop_9.playbackRate = 2 + (tm.accel.y - 0.7) * 3.33; // 2 to 3
   }
 };
 tm.cue[9].triggerDipSound = function() {
@@ -603,7 +572,6 @@ tm.cue[9].triggerDipSound = function() {
       if (index_9 > 15) {
         index_9 = 15;
       }
-      // TODO: replace vibeSampler with new "glassSampler" ?
       vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
       sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
     } else {
@@ -852,7 +820,6 @@ tm.cue[12].triggerShakeSound = function() {
         inst_12 = vibeSampler;
       } else {
         arr_12 = loPitchArr_12;
-        // REVISION idea: replace with a different instrument? like a pot or bowl
         inst_12 = pianoSampler;
       }
       // select pitch index for array
@@ -1081,8 +1048,7 @@ tm.cue[15].triggerDipSound = function() {
     sineTails.triggerAttackRelease(arr_15[index_15], 4);
     // also trigger dimin/decel clave clicks, which continue until dip reset
     claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.75]);
-    // TODO: change volume below from -24 to something softer
-    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -24]);
+    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -32]);
     ampEnv_14.triggerAttack();
     count_15++;
     limit_15--;
