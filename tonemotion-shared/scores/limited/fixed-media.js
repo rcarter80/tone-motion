@@ -15,20 +15,57 @@ const perc_sounds = 'tonemotion-shared/audio/perc/';
 const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
-const harp_sounds = 'tonemotion-shared/audio/harp/';
 const granulated_sounds = 'tonemotion-shared/audio/granulated/';
 const piano_sounds = 'tonemotion-shared/audio/piano/';
-const glass_sounds = 'tonemotion-shared/audio/glass/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
 
-// 1st tempo used by Tone.Loop. Putting this is goCue() caused ~2 min. latency
-Tone.Transport.bpm.value = 156;
-const halfStep = 2 ** (1 / 12);
+// interval and microtonal pitch definitions
+const halfStepUp = 2 ** (1 / 12);
+const halfStepDown = 1 / halfStepUp;
+const CeS3 = 110 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 3
+const CqS3 = 110 * ((2 ** (1 / 48)) ** 14); // C quarter-sharp 3
+const CteS3 = 110 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 3
+const GeS3 = 110 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 3
+const GqS3 = 110 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 3
+const GteS3 = 110 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 3
+const AeS3 = 220 * (2 ** (1 / 48)); // A eighth-sharp 3
+const AqS3 = 220 * (2 ** (1 / 24)); // A quarter-sharp 3
+const AteS3 = 220 * ((2 ** (1 / 48)) ** 3); // A 3-eighths-sharp 3
+const CeS4 = 220 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 4
+const CqS4 = 220 * ((2 ** (1 / 24)) ** 7); // C quarter-sharp 4
+const CteS4 = 220 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 4
+const DqS4 = 220 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 4
+const GqS4 = 220 * ((2 ** (1 / 24)) ** 21); // G quarter-sharp 4
+const AqS4 = 440 * (2 ** (1 / 24)); // A quarter-sharp 4
+const CeS5 = 440 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 5
+const CqS5 = 440 * ((2 ** (1 / 48)) ** 14); // C quarter-sharp 5
+const CteS5 = 440 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 5
+const DsS5 = 440 * ((2 ** (1 / 36)) ** 16); // D sixth-sharp 5
+const DqS5 = 440 * ((2 ** (1 / 24)) ** 11); // D quarter-sharp 5
+const DtS5 = 440 * ((2 ** (1 / 36)) ** 17); // D third-sharp 5
+const GeS5 = 440 * ((2 ** (1 / 48)) ** 41); // G eighth-sharp 5
+const GqS5 = 440 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 5
+const GteS5 = 440 * ((2 ** (1 / 48)) ** 43); // G 3-eighths-sharp 5
+const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
+const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
+const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
+
+const WAIT_TIME = 2000; // use to globally set standard wait time for cues
+const CUE_SOUND_WINDOW = 200; // short window at beginning of cue to play sound
+
+// shows number of shakes listener has left
+function displayShakesLeft(num) {
+  let shakes = (num === 1) ? 'shake' : 'shakes';
+  status_label.innerHTML = `<span class="large">${num}</span><br>${shakes} left`;
+}
+// shows number of dips listener has left
+function displayDipsLeft(num) {
+  let dips = (num === 1) ? 'dip' : 'dips';
+  status_label.innerHTML = `<span class="large">${num}</span><br>${dips} left`;
+}
 
 // INSTRUMENTS
 // sinusoidal tails to add to shake sounds (poly voice allocation automatic)
-// can add tremolo by increasing depth of sinTremolo
-// 1 sec attack and 3 sec release means up to 16 vox may be allocated with SHAKE
-const sinTremolo = new Tone.Tremolo(4, 0.0).toDestination().start();
 const sineTails = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
     type: 'sine',
@@ -43,9 +80,44 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
     releaseCurve: "linear",
   },
   volume: -28,
-}).connect(sinTremolo);
+}).toDestination();
+// monophonic sinusoid synth that allows pitch bend (not allowed with PolySynth)
+const monoSine = new Tone.Synth({
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 1,
+    releaseCurve: "linear",
+  },
+  volume: -28,
+}).toDestination();
+
+// monophonic buzzy synth with LFO
+const buzzyTremolo = new Tone.Tremolo(4, 1.0).toDestination().start();
+const buzzySynth = new Tone.Synth({
+  oscillator: {
+    type: 'sawtooth',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 1,
+    releaseCurve: "linear",
+  },
+  volume: -60,
+}).connect(buzzyTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
+// REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -56,6 +128,18 @@ const vibeSampler = new Tone.Sampler({
     'Db5': 'vibe_bell-Db5.mp3',
     'A5': 'vibe_bell-A5.mp3',
     'Db6': 'vibe_bell-Db6.mp3',
+  },
+  baseUrl: vibes_sounds,
+}).toDestination();
+// same but 1.5-sec. reversed sounds (to use with cueTransition 2s. before cue)
+const revVibeSampler = new Tone.Sampler({
+  // each sound file is exactly 1.5 sec. - transposed could be shorter or longer
+  urls: {
+    'F4': 'rev_vibe_bell-F4.mp3',
+    'A4': 'rev_vibe_bell-A4.mp3',
+    'Db5': 'rev_vibe_bell-Db5.mp3',
+    'A5': 'rev_vibe_bell-A5.mp3',
+    'Db6': 'rev_vibe_bell-Db6.mp3',
   },
   baseUrl: vibes_sounds,
 }).toDestination();
@@ -70,21 +154,32 @@ const bellSampler = new Tone.Sampler({
   },
   baseUrl: bell_sounds,
 }).toDestination();
-
-const harpSampler = new Tone.Sampler({
+const bellDelay = new Tone.FeedbackDelay({
+  delayTime: 0.22,
+  feedback: 0.4,
+}).toDestination();
+const bellDelaySampler = new Tone.Sampler({
   urls: {
-    'G3': 'harpG3.mp3',
-    'B3': 'harpB3.mp3',
-    'D4': 'harpD4.mp3',
-    'G4': 'harpG4.mp3',
-    'B4': 'harpB4.mp3',
-    'D5': 'harpD5.mp3',
-    'G5': 'harpG5.mp3',
+    'C6': 'handbell-C6.mp3',
+    'E6': 'handbell-E6.mp3',
+    'Ab6': 'handbell-Ab6.mp3',
+    'B6': 'handbell-B6.mp3',
   },
-  baseUrl: harp_sounds,
-});
-const harpSamplerVol = new Tone.Volume(0);
-harpSampler.chain(harpSamplerVol, Tone.Destination);
+  baseUrl: bell_sounds,
+}).connect(bellDelay);
+
+// chime sampler from my old wind chimes
+const chimeSampler = new Tone.Sampler({
+  urls: {
+    'D6': '2sec-chime-D6.mp3',
+    'F6': '2sec-chime-F6.mp3',
+    'A6': '2sec-chime-A6.mp3',
+    'C7': '2sec-chime-C7.mp3',
+    'D7': '2sec-chime-D7.mp3',
+    'F7': '2sec-chime-F7.mp3',
+  },
+  baseUrl: chime_sounds,
+}).toDestination();
 
 // piano sampler with samples from Logic
 const pianoSampler = new Tone.Sampler({
@@ -99,55 +194,36 @@ const pianoSampler = new Tone.Sampler({
   baseUrl: piano_sounds,
 }).toDestination();
 
-const fmSynth = new Tone.FMSynth({
-  envelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 2,
-  },
-  modulationEnvelope: {
-    attack: 1,
-    decay: 0.1,
-    sustain: 1,
-    release: 10,
-  },
-  harmonicity: 0.125,
+// 4-sec. "tail" of chimes/sugar. Not pitched, but Sampler manages retriggering
+const sparklyTailSampler = new Tone.Sampler({
+  urls: {
+    // "tune" to A4 (440) so that I can use Hz as argument to triggerAttack()
+    'A4': granulated_sounds + 'sparklyTail.mp3'
+  }
 }).toDestination();
-fmSynth.oscillator.partials = [1, 0, 0, 0.25];
-function fmSynthDefaults() {
-  fmSynth.envelope.attack = 1;
-  fmSynth.envelope.attackCurve = 'exponential';
-  fmSynth.envelope.release = 2;
-  fmSynth.envelope.releaseCurve = 'exponential';
-  fmSynth.modulationEnvelope.attack = 1;
-  fmSynth.modulationEnvelope.attackCurve = 'exponential';
-  fmSynth.modulationEnvelope.release = 10;
-  fmSynth.modulationEnvelope.releaseCurve = 'exponential';
-  fmSynth.detune.value = 0;
-  // keep volume out because I want to set it independently by cue
-}
-function fmSynthPreset2() {
-  fmSynth.envelope.attack = 3;
-  fmSynth.envelope.attackCurve = 'linear';
-  fmSynth.envelope.release = 3;
-  fmSynth.envelope.releaseCurve = 'linear';
-  fmSynth.modulationEnvelope.attack = 3;
-  fmSynth.modulationEnvelope.attackCurve = 'linear';
-  fmSynth.modulationEnvelope.release = 3;
-  fmSynth.modulationEnvelope.releaseCurve = 'linear';
-  fmSynth.detune.value = 0;
-  // keep volume out because I want to set it independently by cue
-}
 
-// reversed cymbal sound to use at ends of some sections
-const revCym = new Tone.Player(perc_sounds + 'revCym.mp3').toDestination();
+// Center of most prominent frequency is c. 507Hz (~C5)
+const pitchedIceLoop = new Tone.Player(granulated_sounds + 'pitchedIceLoop.mp3').toDestination();
+pitchedIceLoop.loop = true;
+// NOTE: "melting ice#02" has nice noisy ice sounds. could use later
 
-const triangle = new Tone.Player(perc_sounds + 'triangle.mp3').toDestination();
-triangle.volume.value = -12;
+const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
+pingpongClickLoop.loop = true;
+
+const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3').toDestination();
+claveLoop.loop = true;
+
+const ziplockLoop = new Tone.Player(granulated_sounds + 'ziplockClickLoop.mp3').toDestination();
+ziplockLoop.loop = true;
+
+const clickTransition = new Tone.Player(misc_sounds + 'click-transition.mp3').toDestination();
 
 const clave = new Tone.Player(perc_sounds + 'clave.mp3').toDestination();
 clave.volume.value = -18;
+
+const clickFading = new Tone.Player(misc_sounds + 'clave-pingpong-dimin.mp3').toDestination();
+
+const clavePingpong = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').toDestination();
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
@@ -156,965 +232,848 @@ tm.cue[0].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
 tm.cue[0].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 1: SHAKE tutorial
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  // nothing to do until shake gestures
 };
 tm.cue[1].triggerShakeSound = function() {
   clave.start();
 };
 tm.cue[1].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  // nothing to play
 };
 tm.cue[2].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 3: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
-let tiltPitchArr_3 = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
-let len_3 = tiltPitchArr_3.length;
-tm.cue[3] = new TMCue('tilt', 0, NO_LIMIT);
+// CUE 3: DIP tutorial
+tm.cue[3] = new TMCue('dip', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
-  fmSynth.volume.value = -99;
-  fmSynthDefaults();
-  fmSynth.triggerAttack('E4');
 };
 tm.cue[3].updateTiltSounds = function() {
-  fmSynth.frequency.value = tiltPitchArr_3[Math.floor(tm.accel.x * 0.99 * len_3)];
-  let fmSynVol;
-  if (tm.accel.y < 0.25) {
-    // set volume with rampTo to avoid zipper noise
-    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
-  } else if (tm.accel.y < 0.5) {
-    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
-  } else if (tm.accel.y < 0.75) {
-    fmSynVol = -12 - (0.75 - tm.accel.y) * 64; // -28 to -12 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
-  } else {
-    fmSynth.volume.rampTo(-12, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
-  }
 };
+tm.cue[3].triggerDipSound = function() {
+  clave.start();
+}
 tm.cue[3].stopCue = function() {
-  fmSynth.triggerRelease();
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'
+// Section DIP/SHAKE limits
+// need to define pitch array here in order to set limit_7 / 8 from array length
+const pitchArr_7 = ['Eb5', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
+const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
+let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
+function resetCueLimits() {
+  // some dip and shake limits are higher for testing
+  limit_5 = (tm.debug) ? 931 : 31;
+  limit_6 = (tm.debug) ? 941 : 41;
+  limit_7 = pitchArr_7.length;
+  limit_8 = pitchArr_8.length;
+  limit_9 = (tm.debug) ? 917 : 17;
+  limit_10 = (tm.debug) ? 931 : 31;
+  limit_11 = (tm.debug) ? 941 : 41;
+  limit_12 = 129;
+  limit_13 = (tm.debug) ? 916 : 16;
+  limit_14 = (tm.debug) ? 99 : 9;
+  limit_15 = (tm.debug) ? 98 : 8;
+}
+// call once to initially set limits on page load, but can also reset in cue 4
+resetCueLimits();
+
+// *******************************************************************
+// CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
+  // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
+  resetCueLimits();
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 5: actual beginning of piece (audience is tacet)
-tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
+// CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
+// lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
+const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
+// upper voice of canon
+const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
+
+tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[5].goCue = function() {
-  // optimize motion update loop by turning off motion testing when piece starts
+  // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
-  tm.clearMotionErrorMessage();
+  // volume is different in cue 13, so may need to reset here
+  monoSine.volume.value = -28;
+  monoSine.detune.value = 0;
+};
+tm.cue[5].updateTiltSounds = function() {
+  if (tm.accel.y < 0.3) {
+    pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pitchedIceLoop.playbackRate = 1.15844; // retuned to D5
+  } else if (tm.accel.y < 0.7) {
+    pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    pitchedIceLoop.playbackRate = 1.15844 + (tm.accel.y - 0.3) * 0.17215; //D-Eb
+  } else {
+    pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pitchedIceLoop.playbackRate = 1.2273; // Eb5
+  }
+};
+tm.cue[5].triggerDipSound = function() {
+  pitchedIceLoop.stop();
+  if (limit_5 > 0) {
+    // still got DIPS left, so find time elapsed to determine pitch to play
+    let time_5 = tm.getElapsedTimeInCue(5);
+    // alternate selection from upper and lower voice of canon
+    let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
+    let index_5 = Math.floor(time_5 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_5 > arr_5.length - 1) {
+      index_5 = arr_5.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
+    // notes that will be followed by microtones are doubled with bending sine
+    if (arr_5 === loPitchArr_5) {
+      if (index_5 === 7) {
+        monoSine.triggerAttackRelease('Eb4', 4);
+        monoSine.frequency.rampTo('D4', 3);
+      } else if (index_5 === 13) {
+        monoSine.triggerAttackRelease('A4', 4);
+        monoSine.frequency.rampTo('Bb4', 3);
+      }
+    } else if (arr_5 === hiPitchArr_5) {
+      if (index_5 === 15) {
+        monoSine.triggerAttackRelease('Eb5', 4);
+        monoSine.frequency.rampTo('D5', 3);
+      } else if (index_5 === 27) {
+        monoSine.triggerAttackRelease('A5', 4);
+        monoSine.frequency.rampTo('Bb5', 3);
+      }
+    }
+    limit_5--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_5);
+};
+tm.cue[5].triggerDipReset = function() {
+  // slushy ice sounds only available when there are DIPS remaining
+  if (limit_5 > 0) {
+    pitchedIceLoop.start();
+  }
 };
 tm.cue[5].stopCue = function() {
-  // nothing to clean up
+  pitchedIceLoop.stop();
 };
 
 // *******************************************************************
-// CUE 6: [B] Audience enters with metallic SHAKE sounds outlining main theme
-const DqS4 = 220 * ((2**(1/24))**11); // D quarter-sharp 4
-const AqS3 = 220 * (2**(1/24)); // A quarter-sharp 3
-const AqS4 = 440 * (2**(1/24)); // A quarter-sharp 4
-const AqS5 = 880 * (2**(1/24)); // A quarter-sharp 5
+// CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 60")
+const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
-const pitchArr1_6 = ['F4', 'F5', 'F5', 'F4', 'Eb5', 'Eb5', 'F4', 'D5', 'D5', 'F4', 'C5', 'C5', 'Eb4', 'C5', 'Eb4', DqS4, DqS4, 'C5', 'D4', 'C5', 'D4', 'C4', 'C5', 'C5'];
-const pitchArr2_6 = ['C4', 'Bb4', 'C5', 'Bb5', 'C4', 'Bb5', 'C4', AqS4, 'C5', AqS5, 'C4', AqS5, 'C4', 'A4', 'C5', 'A5', 'C4', 'A5', 'C4', 'G4', 'C5', 'G5', 'C4', 'G5', 'Bb3', 'G4', 'Bb4', 'G5', 'Bb3', 'G5', AqS3, 'G4', AqS4, 'G5', AqS3, 'G5', 'A3', 'G4', 'A4', 'G5', 'A3', 'G5', 'G3', 'G4', 'G5', 'G4', 'G3', 'G5', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4', 'E3', 'G#3', 'E4', 'G#4', 'E3', 'G#4'];
-const pitchArr3_6 = ['E4', 'E5', 'E6', 'E5'];
-let count_6 = 0;
-
-// uses two handbell sounds from freesound.org/people/radwoc/ (CC0 license)
-const bellSparkle = new Tone.Player(bell_sounds + 'bell_sparkle-FAA.mp3').toDestination();
-
-// wait window of 22 seconds prevents people from stopping and starting
-tm.cue[6] = new TMCue('shake', 1363, 22000); // 3 beats @ 132 bpm
+tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[6].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
+};
 tm.cue[6].goCue = function() {
-  // reset volume from possible previous change
-  vibeSampler.volume.value = 0;
-  sineTails.volume.value = -28;
-  sinTremolo.depth.value = 0;
-  count_6 = 0;
-
-  if (tm.getElapsedTimeInCue(6) < 500) {
-    // only trigger opening sound if it's actually beginning of cue
-    // otherwise if someone stops and restarts, this sound is triggered again
-    bellSparkle.start();
+  sparklyTailSampler.volume.value = -18;
+  // volume is different in cue 13, so may need to reset here
+  monoSine.volume.value = -28;
+  monoSine.detune.value = 0;
+  if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Eb4', 5);
+    vibeSampler.triggerAttackRelease('C6', 5, '+0.1');
   }
 };
 tm.cue[6].triggerShakeSound = function() {
-  let time_6 = tm.getElapsedTimeInCue(6);
-  // prevent shakes at same time as bellSparkle (455ms = 1 beat @ 132 bpm)
-  if (time_6 > 455) {
-    // 21815 ms ~ 24 beats @ 66 bpm (this is first 8 measures of section)
-    if (time_6 < 21815) {
-      // first notes are coordinated by time so everyone is playing same note
-      // 909 ms = 1 beat @ 66 bpm (each note in above array is one beat)
-      vibeSampler.triggerAttackRelease(pitchArr1_6[Math.floor(time_6/909)], 3);
-      sineTails.triggerAttackRelease(pitchArr1_6[Math.floor(time_6/909)], 1);
-    } else if (count_6 < pitchArr2_6.length) {
-      // then notes go through array, creating an independent canon
-      vibeSampler.triggerAttackRelease(pitchArr2_6[count_6], 3);
-      sineTails.triggerAttackRelease(pitchArr2_6[count_6], 1);
-      count_6++;
-    } else {
-      // final loop of pitches
-      vibeSampler.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 3);
-      sineTails.triggerAttackRelease(pitchArr3_6[(count_6 - pitchArr2_6.length) % pitchArr3_6.length], 1);
-      count_6++;
+  if (limit_6 > 0) {
+    // still got SHAKES left, so find time elapsed to determine pitch to play
+    let time_6 = tm.getElapsedTimeInCue(6);
+    // alternate selection from upper and lower voice of canon
+    // (lower voice of canon is same pitches as cue 5)
+    let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
+    let index_6 = Math.floor(time_6 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_6 > arr_6.length - 1) {
+      index_6 = arr_6.length - 1;
     }
+    vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
+    // notes that will be followed by microtones are doubled with bending sine
+    if (arr_6 === loPitchArr_5) {
+      if (index_6 === 7) {
+        monoSine.triggerAttackRelease('Eb4', 4);
+        monoSine.frequency.rampTo('D4', 3);
+      } else if (index_6 === 13) {
+        monoSine.triggerAttackRelease('A4', 4);
+        monoSine.frequency.rampTo('Bb4', 3);
+      }
+    }
+    let sparklyPitch = 440 + Math.random() * 200;
+    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
+    limit_6--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
   }
+  displayShakesLeft(limit_6);
 };
 tm.cue[6].stopCue = function() {
-  sineTails.releaseAll();
+  // nothing to do here
 };
 
 // *******************************************************************
-// CUE 7: [D] - cue to fade out final SHAKE sounds from last cue
+// CUE 7 (DIP): accel clicks-> vibes 3-vox canon, pitches in array (c. 30-60")
+bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
-let revCymTriggered = false;
 
-tm.cue[7] = new TMCue('shake', -1);
-tm.cue[7].goCue = function() {
-  // reset flag in case section was previously triggered
-  revCymTriggered = false;
-  count_7 = 0;
-  vibeSampler.volume.value = 0;
-  sineTails.volume.value = -28;
-  sinTremolo.depth.value = 0;
-  vibeSampler.volume.rampTo(-36, 6);
-  sineTails.volume.rampTo(-36, 6);
+tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[7].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'D5'], 2);
 };
-tm.cue[7].triggerShakeSound = function() {
-  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
-  vibeSampler.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 3);
-  sineTails.triggerAttackRelease(pitchArr3_6[count_7 % pitchArr3_6.length], 1);
-  count_7++;
-  // first shake between the 500ms and 1500ms point also triggers revCym, creating whooshing sound mostly around downbeat of m. 60
-  let time_7 = tm.getElapsedTimeInCue(7);
-  if (time_7 > 500 && time_7 < 1500) {
-    if (!revCymTriggered) {
-      revCym.start();
-      revCymTriggered = true;
-    }
+tm.cue[7].goCue = function() {
+  if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('C5', 5);
+    vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
+    sparklyTailSampler.triggerAttackRelease(440, 5);
+  }
+  count_7 = 0;
+};
+tm.cue[7].updateTiltSounds = function() {
+  if (tm.accel.y < 0.3) {
+    pingpongClickLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pingpongClickLoop.playbackRate = 0.75;
+  } else if (tm.accel.y < 0.7) {
+    pingpongClickLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; //-40 to -12
+    pingpongClickLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; //.75-2x
+  } else {
+    pingpongClickLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to-99
+    pingpongClickLoop.playbackRate = 2;
+  }
+};
+tm.cue[7].triggerDipSound = function() {
+  pingpongClickLoop.stop();
+  if (limit_7 > 0) {
+    bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
+    sineTails.triggerAttackRelease(pitchArr_7[count_7], 4);
+    count_7++;
+    limit_7--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_7);
+};
+tm.cue[7].triggerDipReset = function() {
+  if (limit_7 > 0) {
+    pingpongClickLoop.start();
   }
 };
 tm.cue[7].stopCue = function() {
-  sineTails.releaseAll();
+  pingpongClickLoop.stop();
 };
 
 // *******************************************************************
-// CUE 8: [E] - tacet transition
-tm.cue[8] = new TMCue('tacet', -1);
+// CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
+let count_8 = 0;
+tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[8].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 2);
+};
 tm.cue[8].goCue = function() {
-  // nothing to play
+  if (tm.getElapsedTimeInCue(8) < 200) {
+    vibeSampler.triggerAttackRelease('C4', 5);
+    vibeSampler.triggerAttackRelease('D6', 5, '+0.25');
+    sparklyTailSampler.triggerAttackRelease(440, 5);
+  }
+  count_8 = 0;
+  bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
+};
+tm.cue[8].triggerShakeSound = function() {
+  if (limit_8 > 0) {
+    // higher bell with feedback delay is 2 oct. higher. Get freq and mult by 4
+    let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
+    bellDelaySampler.triggerAttackRelease(hiPitch, 5);
+    bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
+    sineTails.triggerAttackRelease(pitchArr_8[count_8], 4);
+    count_8++;
+    limit_8--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_8);
 };
 tm.cue[8].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 9: [F] - TILT synth with pitch on x-axis and intensity on y-axis
+// CUE 9 (DIP) increased accel/decel clicks with restricted canon (c. 30")
 
-let pitchArr_9 = ['E4', 'E4', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'D6', 'E6', 'E6'];
-let pitchArr8ba_9 = ['E3', 'E3', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'D5', 'E5', 'E5'];
-let pitchLo_9, pitchHi_9;
-let cue10WasTriggered = false;
+// NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
 
-const harpLoop_9 = new Tone.Loop((time) => {
-  pitchLo_9 = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
-  pitchHi_9 = pitchArr_9[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)]
-  if (cue10WasTriggered) {
-    // pitch bend up perfect 4 in second half of section
-    let trans = tm.getSectionBreakpoints(10, [0, 0, 12307, 5]);
-    pitchLo_9 = Tone.Frequency(pitchLo_9).transpose(trans);
-    pitchHi_9 = Tone.Frequency(pitchHi_9).transpose(trans);
-  }
-	harpSampler.triggerAttackRelease(pitchLo_9, 1);
-  harpSampler.triggerAttackRelease(pitchHi_9, 1, '+8n');
-}, '4n');
+// everyone is randomly assigned one of three clicky loops to control on y-axis
+const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
+const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
+let count_9 = 0;
+let playCanon_9 = true;
 
-tm.cue[9] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[9].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
+};
 tm.cue[9].goCue = function() {
-  // additional volume control used during cue 11 - reset it here if needed
-  harpSamplerVol.volume.value = 0;
-  harpLoop_9.start();
-  triangle.start();
-  fmSynthDefaults();
-  fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
-  fmSynth.triggerAttack('E4');
-  cue10WasTriggered = false;
+  if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Eb4', 5);
+    vibeSampler.triggerAttackRelease('C5', 5, '+0.1');
+  }
+  // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
+  if (Math.random() > 0.5) {
+    playCanon_9 = false;
+  } else {
+    playCanon_9 = true;
+  }
+  count_9 = 0;
+  clickLoop_9.volume.value = -99; // start clicks muted
+  clickLoop_9.start();
 };
 tm.cue[9].updateTiltSounds = function() {
-  // after HIDDEN cue 10 is triggered, pitches bend up perfect 4
-  if (cue10WasTriggered) {
-    fmSynth.detune.value = tm.getSectionBreakpoints(10, [0, 0, 12307, 500]);
-  }
-  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
-  fmSynth.frequency.value = pitchArr8ba_9[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_9.length)];
-  if (tm.accel.y < 0.4) {
-    // with phone mostly upright, synth is mostly silent and harp is soft
-    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
-    fmSynth.modulationIndex.value = 1;
-    fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
+  if (tm.accel.y < 0.2) {
+    clickLoop_9.volume.value = -99;
+    clickLoop_9.playbackRate = 0.5;
+  } else if (tm.accel.y < 0.4) {
+    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 405; // -99 to -18 dB
+    clickLoop_9.playbackRate = 0.5 + (tm.accel.y - 0.2) * 2.5; // 0.5 to 1
   } else if (tm.accel.y < 0.7) {
-    // with phone in mid position, synth and harp cross fade, synth gets bright
-    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
-    fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
-    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
+    clickLoop_9.volume.value = -18 + (tm.accel.y - 0.4) * 30; // -18 to -9 dB
+    clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
   } else {
-    // with phone mostly upside down, harp is soft and bright synth is heard
-    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
-    fmSynth.modulationIndex.value = 10 - (1.0 - tm.accel.y) * 16.66; // 5 to 10
-    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
+    clickLoop_9.volume.value = -9;
+    clickLoop_9.playbackRate = 2 + (tm.accel.y - 0.7) * 3.33; // 2 to 3
   }
+};
+tm.cue[9].triggerDipSound = function() {
+  if (limit_9 > 0) {
+    if (playCanon_9) {
+      // randomly assigned to play middle voice of canon
+      let time_9 = tm.getElapsedTimeInCue(9);
+      let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
+      // only go through first 16 notes of canon voice
+      if (index_9 > 15) {
+        index_9 = 15;
+      }
+      vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
+      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
+    } else {
+      // randomly assigned to play array-based loop
+      let index_9 = count_9 % loopArr_9.length;
+      bellSampler.triggerAttackRelease(loopArr_9[index_9], 5);
+      count_9++;
+    }
+    limit_9--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  if (limit_9 === 0) {
+    // no more clicky sounds if you've used all your dips, but stop on last dip
+    clickLoop_9.stop();
+  }
+  displayDipsLeft(limit_9);
+};
+tm.cue[9].triggerDipReset = function() {
 };
 tm.cue[9].stopCue = function() {
-  // both are stopped in cue 10 transition, but stop here too in case user stops
-  harpLoop_9.stop();
-  fmSynth.triggerRelease();
+  clickLoop_9.stop();
 };
 
 // *******************************************************************
-// CUE 10: [G] - hidden cue to bend pitches up
-tm.cue[10] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[10].goCue = function() {
-  // once this flag is set to true, pitch bend in cue 9 are triggered
-  cue10WasTriggered = true;
-};
-tm.cue[10].cueTransition = function() {
-  // this is called BEFORE tm.cue[9].stopCue
-  harpLoop_9.stop();
-  vibeSampler.volume.value = 0;
-  vibeSampler.triggerAttackRelease('B5', 3);
-  vibeSampler.triggerAttackRelease('C#6', 3, '+8n');
-  vibeSampler.triggerAttackRelease('D6', 3, '+4n');
-  fmSynth.triggerRelease();
+// CUE 10 (SHAKE) synchronized pulse triggered by shake sounds (c. 30")
+
+// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
+
+const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
+const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
+const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
+const ampEnvHi_10 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+const ampEnvLo_10 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+const ampEnvLo_11 = new Tone.AmplitudeEnvelope({
+  attack: 0.1,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4
+}).toDestination();
+let soundFileHi_10, soundFileLo_10, soundFileLo_11;
+let partSelector_10 = Math.random();
+if (partSelector_10 > 0.8) {
+  // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
+  soundFileHi_10 = 'clave-pingpong_loop.mp3';
+  soundFileLo_10 = 'clave-ziplock_loop.mp3';
+  // REVISION idea: could replace with different sound loop
+  soundFileLo_11 = 'clave-ziplock_loop.mp3';
+} else if (partSelector_10 > 0.4) {
+  // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
+  soundFileHi_10 = 'Eb-G_loop.mp3';
+  soundFileLo_10 = 'D-F_loop.mp3';
+  // Ds changed to Db in next cue, but other notes are the same
+  soundFileLo_11 = 'Db-F_loop.mp3';
+} else {
+  // 2 out of 5 people randomly assigned pitched loops alternating C/G - Bb/D
+  soundFileHi_10 = 'C-Eb_loop.mp3';
+  soundFileLo_10 = 'Bb-D_loop.mp3';
+  soundFileLo_11 = 'Bb-Db_loop.mp3';
 }
+const loopHi_10 = new Tone.Player(misc_sounds + soundFileHi_10).connect(ampEnvHi_10);
+loopHi_10.loop = true;
+const loopLo_10 = new Tone.Player(misc_sounds + soundFileLo_10).connect(ampEnvLo_10);
+loopLo_10.loop = true;
+const loopLo_11 = new Tone.Player(misc_sounds + soundFileLo_11).connect(ampEnvLo_11);
+loopLo_11.loop = true;
+let count_10 = 0;
+
+tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[10].cueTransition = function() {
+  clickTransition.start();
+};
+tm.cue[10].goCue = function() {
+  if (tm.getElapsedTimeInCue(10) < CUE_SOUND_WINDOW) {
+    clavePingpong.volume.value = 0;
+    clavePingpong.start();
+    clavePingpong.volume.rampTo(-99, 3);
+  }
+  // need to reset upper loop parameters, which could change in cue 11
+  loopHi_10.playbackRate = 1;
+  loopHi_10.volume.value = 0;
+  loopHi_10.start();
+  loopLo_10.start();
+  count_10 = 0;
+};
+tm.cue[10].triggerShakeSound = function() {
+  if (limit_10 > 0) {
+    let time_10 = tm.getElapsedTimeInCue(10);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_10;
+    if (count_10 % 3 === 2) {
+      arr_10 = hiPitchArr_10;
+    } else if (count_10 % 3 === 1) {
+      arr_10 = midPitchArr_10;
+    } else {
+      arr_10 = loPitchArr_10;
+    }
+    // select pitch index for array
+    let index_10 = Math.floor(time_10 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_10 > arr_10.length - 1) {
+      index_10 = arr_10.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_10[index_10], 5);
+    sineTails.triggerAttackRelease(arr_10[index_10], 4);
+    // alternate between envelopes that trigger higher and lower loops
+    let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
+    env.triggerAttackRelease(0.1);
+    count_10++;
+    limit_10--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_10);
+};
+tm.cue[10].stopCue = function() {
+  loopHi_10.stop();
+  loopLo_10.stop();
+};
 
 // *******************************************************************
-// CUE 11: [H] - harp only dimin (still TILT)
-let pitchArr_11 = ['C#4', 'C#4', 'C#5', 'D5', 'E5', 'F#5', 'G5', 'A5', 'C#6', 'C#6'];
-let pitchArr8ba_11 = ['C#3', 'C#3', 'C#4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'C#5', 'C#5'];
+// CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
+const loPitchArr_11 = ['G3', 'G3', 'G3', 'G3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Bb3', 'Bb3', 'Bb3', 'Bb3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'C4', 'C4', 'C4', 'C4', 'G3', 'G3', GeS3, GeS3];
+const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4, 'Ab4', 'G4', 'Eb4', 'Eb4', 'Db4', CqS4, 'C4', 'Bb4', 'Ab4', 'G4', 'Eb4', 'Eb4', 'F4', 'F4', 'G4', 'Ab4', 'F4', 'F4', 'Eb4', 'Eb4', 'G4', 'G4', 'Ab4'];
+const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
+let count_11 = 0;
 
-const harpLoop_11 = new Tone.Loop((time) => {
-  harpSampler.triggerAttackRelease(pitchArr8ba_11[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_11.length)], 1, '+8n');
-  harpSampler.triggerAttackRelease(pitchArr_11[Math.floor(tm.accel.x * 0.99 * pitchArr_11.length)], 1);
-}, '4n');
-
-tm.cue[11] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
+tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[11].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
+};
 tm.cue[11].goCue = function() {
-  harpLoop_11.start();
-  bellSampler.volume.value = 0;
-  bellSampler.triggerAttackRelease('C#5', 5);
+  if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Db4', 5);
+    vibeSampler.triggerAttackRelease('Db5', 5, '+0.1');
+  }
+  // upper of two loops is same as cue 10, but lower is different
+  loopHi_10.start();
+  loopLo_11.start();
+  count_11 = 0;
 };
 tm.cue[11].updateTiltSounds = function() {
-  // final harp sounds fade out (breakpoints at each downbeat)
-  harpSamplerVol.volume.value = tm.getSectionBreakpoints(11, [0, 0, 1730, 0, 3460, -6, 5190, -15, 6923, -40]);
-  if (tm.accel.y < 0.4) {
-    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
-  } else if (tm.accel.y < 0.7) {
-    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+};
+tm.cue[11].triggerDipSound = function() {
+  if (limit_11 > 0) {
+    let time_11 = tm.getElapsedTimeInCue(11);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_11, inst_11;
+    if (count_11 % 3 === 2) {
+      arr_11 = hiPitchArr_11;
+      inst_11 = bellSampler;
+    } else if (count_11 % 3 === 1) {
+      arr_11 = midPitchArr_11;
+      inst_11 = vibeSampler;
+    } else {
+      arr_11 = loPitchArr_11;
+      // REVISION idea: replace with a different instrument? like a pot or bowl
+      inst_11 = pianoSampler;
+    }
+    // select pitch index for array
+    let index_11 = Math.floor(time_11 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_11 > arr_11.length - 1) {
+      index_11 = arr_11.length - 1;
+    }
+    inst_11.triggerAttackRelease(arr_11[index_11], 5);
+    sineTails.triggerAttackRelease(arr_11[index_11], 4);
+    // alternating loops also gradually gliss apart then gliss up and fade out
+    let bend;
+    let bendSelector = Math.random();
+    if (bendSelector < 0.3) {
+      // randomly assigned to bend down half step
+      bend = halfStepDown;
+    } else if (bendSelector > 0.7) {
+      bend = halfStepUp;
+    } else {
+      // 40% of phones don't bend until end of section
+      bend = 1;
+    }
+    if (count_11 % 2) {
+      loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
+      loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
+      ampEnvLo_11.triggerAttackRelease(0.1);
+    } else {
+      loopHi_10.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
+      loopHi_10.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
+      ampEnvHi_10.triggerAttackRelease(0.1);
+    }
+    count_11++;
+    limit_11--;
   } else {
-    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
   }
+  displayDipsLeft(limit_11);
+};
+tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
-  harpLoop_11.stop();
+  loopHi_10.stop();
+  loopLo_11.stop();
 };
 
 // *******************************************************************
-// CUE 12: four after [H]
-tm.cue[12] = new TMCue('tacet', 0, NO_LIMIT);
+// CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
+const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
+// mid pitch line is same as from cue 10
+const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
+let count_12 = 0;
+
+tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[12].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 2);
+};
 tm.cue[12].goCue = function() {
-  // nothing to play
+  if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('Ab4', 5);
+    vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
+  }
+  count_12 = 0;
+};
+tm.cue[12].triggerShakeSound = function() {
+  if (limit_12 > 0) {
+    let time_12 = tm.getElapsedTimeInCue(12);
+    // rotate array selection among three voices (and separate arrays) OR clicks
+    let arr_12, inst_12;
+    if (count_12 % 4 === 3) {
+      clickFading.playbackRate = tm.getSectionBreakpoints(12, [0, 1, 60000, 2]);
+      clickFading.start();
+    } else {
+      // pitched sounds only triggered if clicking sound is not
+      if (count_12 % 4 === 2) {
+        arr_12 = hiPitchArr_12;
+        inst_12 = bellSampler;
+      } else if (count_12 % 4 === 1) {
+        arr_12 = midPitchArr_11; // mid voice is same as cue 11
+        inst_12 = vibeSampler;
+      } else {
+        arr_12 = loPitchArr_12;
+        inst_12 = pianoSampler;
+      }
+      // select pitch index for array
+      let index_12 = Math.floor(time_12 / 2000);
+      // stay on last pitch of array if last pitch is reached
+      if (index_12 > arr_12.length - 1) {
+        index_12 = arr_12.length - 1;
+      }
+      inst_12.triggerAttackRelease(arr_12[index_12], 5);
+      sineTails.triggerAttackRelease(arr_12[index_12], 4);
+      // higher bell is 2 oct. higher and 0.1 sec later. Get freq and mult by 4
+      let index = count_12 % midPitchArr_11.length;
+      let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
+      bellSampler.triggerAttackRelease(hiPitch, 5, '+0.1');
+    }
+    count_12++;
+    limit_12--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_12);
 };
 tm.cue[12].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 13: [I] metallic SHAKE canon over flowing woodwinds
-const Gqb4 = 220 * ((2**(1/24))**19); // G quarter-flat 4
-const Gqb5 = 440 * ((2**(1/24))**19); // G quarter-flat 5
-const Dqb5 = 440 * ((2**(1/24))**9); // D quarter-flat 5
-const Dqb6 = 880 * ((2**(1/24))**9); // D quarter-flat 6
-const Aqb4 = 220 * ((2**(1/24))**23); // A quarter-flat 4
-const Aqb5 = 440 * ((2**(1/24))**23); // A quarter-flat 5
-
-const pitchArr1_13 = ['A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'G4', 'G5', Gqb4, Gqb5, 'F#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'F#4', 'F#5', 'E4', 'E5', 'E4', 'E5', 'E4', 'E5', 'A4', 'D5', 'A5', 'D6', 'A4', 'D5', 'A4', Dqb5, 'A5', Dqb6, 'A4', Dqb5, 'A4', 'C#5', 'A5', 'C#6', 'A4', 'C#5', 'A4', 'B4', 'A5', 'B5', 'A4', 'B4', 'A4', 'B4', 'A5', 'B4', 'A4', 'B4', Aqb4, 'B4', Aqb5, 'B4', Aqb4, 'B4', 'G#4', 'B4', 'G#5', 'B4', 'G#4', 'B4', 'F#4', 'B4', 'F#5', 'B4', 'F#4', 'B4', 'F4', 'B4', 'F5', 'B4', 'F4', 'B4', 'F4', 'B4', 'F5', 'B4', 'F4', 'B4'];
-const pitchArr2_13 = ['F4', 'F5', 'F6', 'F5', 'F4', 'F5'];
+// CUE 13 (DIP) much calmer, residual buzz, melty pitches (c. 60")
 let count_13 = 0;
 
-tm.cue[13] = new TMCue('shake', 1730, NO_LIMIT); // 3 beats @ 104 bpm
+tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+
+// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
+
+tm.cue[13].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease('C5', 2);
+  clickTransition.start();
+};
 tm.cue[13].goCue = function() {
-  // reset volume from possible previous change
-  vibeSampler.volume.value = 0;
-  sineTails.volume.value = -28;
-  sinTremolo.depth.value = 0;
+  if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
+    pianoSampler.triggerAttackRelease('Bb2', 10);
+    chimeSampler.triggerAttackRelease('Bb6', 5, '+0.2');
+  }
+  monoSine.volume.value = -40;
   count_13 = 0;
 };
-tm.cue[13].triggerShakeSound = function() {
-  if (count_13 < pitchArr1_13.length) {
-    // long array of first pitches for independent canon
-    vibeSampler.triggerAttackRelease(pitchArr1_13[count_13], 3);
-    sineTails.triggerAttackRelease(pitchArr1_13[count_13], 1);
+tm.cue[13].updateTiltSounds = function() {
+  let buzzVol;
+  if (tm.accel.y < 0.2) {
+    // both synths bend pitch down with DIP reset, but buzzy bends more
+    buzzySynth.detune.value = -100;
+    monoSine.detune.value = -50;
+    buzzySynth.volume.value = -60;
+  } else if (tm.accel.y < 0.45) {
+    buzzySynth.detune.value = -((0.45 - tm.accel.y) * 400);// 0-100 cents down
+    monoSine.detune.value = -50;
+    // buzzySynth fades in and out
+    buzzVol = -24 - (0.45 - tm.accel.y) * 144; // -24 to -60dB
+    buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
+  } else if (tm.accel.y < 0.7) {
+    // synths detune independently
+    buzzySynth.detune.value = 0;
+    monoSine.detune.value = -((0.7 - tm.accel.y) * 200); // 0 to 50 cents down
+    buzzVol = -60 + (0.7 - tm.accel.y) * 144; // -60 to -24dB
+    buzzySynth.volume.rampTo(buzzVol, tm.motionUpdateInSeconds);
   } else {
-    // final loop of pitches that everyone arrives at
-    vibeSampler.triggerAttackRelease(pitchArr2_13[(count_13 - pitchArr1_13.length) % pitchArr2_13.length], 3);
-    sineTails.triggerAttackRelease(pitchArr2_13[(count_13 - pitchArr1_13.length) % pitchArr2_13.length], 1);
+    buzzySynth.detune.value = 0;
+    monoSine.detune.value = 0;
+    buzzySynth.volume.value = -60;
   }
-  count_13++;
+};
+tm.cue[13].triggerDipSound = function() {
+  if (limit_13 > 0) {
+    let time_13 = tm.getElapsedTimeInCue(13);
+    // alternate selection from upper and lower voice of canon
+    let arr_13 = (count_13 % 2) ? hiPitchArr_5 : loPitchArr_5;
+    let index_13 = Math.floor(time_13 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_13 > arr_13.length - 1) {
+      index_13 = arr_13.length - 1;
+    }
+    // pitches taken from earlier canon but transposed to Ab, then bending down
+    let P4 = halfStepUp ** 5;
+    let M3 = halfStepUp ** 4;
+    let bend = tm.getSectionBreakpoints(13, [0, P4, 32000, P4, 60000, M3]);
+    let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
+    let inst = (count_13 % 2) ? bellSampler : vibeSampler;
+    inst.triggerAttackRelease(pitch, 5);
+    buzzySynth.triggerAttack(pitch * 2);
+    monoSine.triggerAttack(pitch * 4);
+    limit_13--;
+    count_13++;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_13);
+};
+tm.cue[13].triggerDipReset = function() {
+  buzzySynth.triggerRelease();
+  monoSine.triggerRelease();
 };
 tm.cue[13].stopCue = function() {
-  sineTails.releaseAll();
+  buzzySynth.triggerRelease();
+  monoSine.triggerRelease();
 };
 
 // *******************************************************************
-// CUE 14: [K] - cue to fade out final SHAKE sounds from last cue
+// CUE 14 (SHAKE) very low density, fading buzzes and melts (c. 30")
+// also includes slower synchronized clave clicks.
+// Fixed media can have same sync'd click loop on goCue, maybe fading out
 let count_14 = 0;
 
-tm.cue[14] = new TMCue('shake', -1);
+const ampEnv_14 = new Tone.AmplitudeEnvelope({
+  attack: 0.25,
+  decay: 0.2,
+  sustain: 1.0,
+  release: 4,
+}).toDestination();
+const claveLoop_14 = new Tone.Player(misc_sounds + 'clave-solo_loop.mp3').connect(ampEnv_14);
+claveLoop_14.loop = true;
+
+tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
+tm.cue[14].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 2);
+};
 tm.cue[14].goCue = function() {
+  if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
+    vibeSampler.triggerAttackRelease('E4', 5);
+    vibeSampler.triggerAttackRelease('E5', 5, '+0.25');
+  }
+  chimeSampler.volume.value = -18;
+  sparklyTailSampler.volume.value = -18;
+  claveLoop_14.playbackRate = 1;
+  claveLoop_14.volume.value = 0;
+  claveLoop_14.start();
   count_14 = 0;
-  vibeSampler.volume.value = 0;
-  sineTails.volume.value = -28;
-  sinTremolo.depth.value = 0;
-  vibeSampler.volume.rampTo(-36, 6);
-  sineTails.volume.rampTo(-36, 6);
 };
 tm.cue[14].triggerShakeSound = function() {
-  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
-  vibeSampler.triggerAttackRelease(pitchArr2_13[count_14 % pitchArr2_13.length], 3);
-  sineTails.triggerAttackRelease(pitchArr2_13[count_14 % pitchArr2_13.length], 1);
-  count_14++;
+  if (limit_14 > 0) {
+    let time_14 = tm.getElapsedTimeInCue(14);
+    // alternate canon voices. lower voice is same as last cue, higher changes
+    let arr_14 = (count_14 % 2) ? hiPitchArr_6 : loPitchArr_5;
+    let index_14 = Math.floor(time_14 / 2000);
+    // only go through first 16 notes of array, cue 15 continues with next note
+    if (index_14 > 15) {
+      index_14 = 15;
+    }
+    // pitches taken from earlier canon but transposed to G, then bending down
+    let M3 = halfStepUp ** 4;
+    let m3 = halfStepUp ** 3;
+    let bend = tm.getSectionBreakpoints(14, [0, M3, 32000, m3]);
+    let pitch = (Tone.Frequency(arr_14[index_14]).toFrequency()) * bend;
+    let inst = (count_14 % 2) ? bellSampler : vibeSampler;
+    inst.triggerAttackRelease(pitch, 5);
+    // chime sounds just after first sound, but is either 1 or 2 octaves higher
+    let oct_14 = (count_14 % 2) ? 2 : 4;
+    chimeSampler.triggerAttackRelease(pitch * oct_14, 2, '+0.1');
+    let sparklyPitch = 440 + Math.random() * 200;
+    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
+    // slower synchronized clave clicks
+    ampEnv_14.triggerAttackRelease(0.5);
+    limit_14--;
+    count_14++;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  }
+  displayShakesLeft(limit_14);
 };
 tm.cue[14].stopCue = function() {
-  sineTails.releaseAll();
+  claveLoop_14.stop();
 };
 
 // *******************************************************************
-// CUE 15: four after [K] - tacet end to the first third of the piece
-tm.cue[15] = new TMCue('tacet', -1);
+// CUE 15 (DIP) continuation of cue 14 with very few dips (c. 30"), followed by decelerating and dimin clave clicks
+// pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
+let count_15 = 0;
+const hiPitchArr_15 = ['F5', 'F5', 'Ab5', 'Ab5', 'Ab5', 'Ab5', 'Bb5', 'Bb5', 'Bb5', 'Bb5', 'Gb5', 'Gb5', 'Gb5', 'Gb5', 'F5', 'F5'];
+const midPitchArr_15 = ['Eb4', 'F4', 'Gb4', 'Bb4', 'Bb4', 'Ab4', 'Ab4', 'Gb4', 'F4', 'Ab4', 'Ab4', 'Bb4', 'Bb4', 'Gb4', 'Gb4', 'F4'];
+const loPitchArr_15 = ['Bb3', 'Bb3', 'Bb3', 'Bb3', 'C4', 'C4', CeS4, CeS4, CqS4, CqS4, CteS4, CteS4, 'Db4', 'Db4', 'Db4', 'Db4'];
+
+tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[15].cueTransition = function() {
+  revVibeSampler.volume.value = -9;
+  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 2);
+};
 tm.cue[15].goCue = function() {
-  // nothing to play
+  if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
+    pianoSampler.triggerAttackRelease('Bb3', 5);
+    vibeSampler.triggerAttackRelease('F5', 5, '+0.25');
+  }
+  claveLoop_14.start();
+  count_15 = 0;
+};
+tm.cue[15].updateTiltSounds = function() {
+  // ice crunch from first cue returns
+  if (tm.accel.y < 0.3) {
+    pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
+    pitchedIceLoop.playbackRate = 1.15844; // retuned to D5
+  } else if (tm.accel.y < 0.7) {
+    pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
+    pitchedIceLoop.playbackRate = 1.15844 + (tm.accel.y - 0.3) * 0.17215; //D-Eb
+  } else {
+    pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
+    pitchedIceLoop.playbackRate = 1.2273; // Eb5
+  }
+};
+tm.cue[15].triggerDipSound = function() {
+  pitchedIceLoop.stop();
+  if (limit_15 > 0) {
+    let time_15 = tm.getElapsedTimeInCue(15);
+    // rotate array selection among three voices (and separate arrays)
+    let arr_15;
+    if (count_15 % 3 === 2) {
+      arr_15 = hiPitchArr_15;
+    } else if (count_15 % 3 === 1) {
+      arr_15 = midPitchArr_15;
+    } else {
+      arr_15 = loPitchArr_15;
+    }
+    // select pitch index for array
+    let index_15 = Math.floor(time_15 / 2000);
+    // stay on last pitch of array if last pitch is reached
+    if (index_15 > arr_15.length - 1) {
+      index_15 = arr_15.length - 1;
+    }
+    vibeSampler.triggerAttackRelease(arr_15[index_15], 5);
+    sineTails.triggerAttackRelease(arr_15[index_15], 4);
+    // also trigger dimin/decel clave clicks, which continue until dip reset
+    claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.75]);
+    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -32]);
+    ampEnv_14.triggerAttack();
+    count_15++;
+    limit_15--;
+  } else {
+    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  }
+  displayDipsLeft(limit_15);
+};
+tm.cue[15].triggerDipReset = function() {
+  ampEnv_14.triggerRelease();
+  // slushy ice sounds only available when there are DIPS remaining
+  if (limit_15 > 0) {
+    pitchedIceLoop.start();
+  }
 };
 tm.cue[15].stopCue = function() {
-  // nothing to clean up
+  pitchedIceLoop.stop();
+  ampEnv_14.triggerRelease();
+  claveLoop_14.stop();
 };
 
 // *******************************************************************
-// CUE 16: [L] granular TILT texture during beginning of second part of piece
-const claveLoop = new Tone.Player(granulated_sounds + 'claveLoop.mp3');
-claveLoop.loop = true;
-// used to control clave loop gain on x-axis
-const claveLoopVol = new Tone.Volume(0);
-// used to fade out clave loop during next (hidden) cue (17)
-const claveLoopFade = new Tone.Volume(0);
-claveLoop.chain(claveLoopVol, claveLoopFade, Tone.Destination);
-
-const crunchyIce = new Tone.Player(granulated_sounds + 'iceInWineGlass.mp3');
-const crunchyIceFade = new Tone.Volume(0);
-crunchyIce.chain(crunchyIceFade, Tone.Destination);
-crunchyIce.loop = true;
-// I use a regular Tone.Player to granulate sound because GrainPlayer doesn't have .seek() or .scrub() anymore
-let grLen_16 = 0.25;
-
-// sampler using "vibes" sounds that I synthesized in Logic?
-const synVibSampler = new Tone.Sampler({
-  urls: {
-    'A3': 'vibe-A3.mp3',
-    'E4': 'vibe-E4.mp3',
-  },
-  baseUrl: vibes_sounds,
-});
-const synVibFade = new Tone.Volume(0);
-synVibSampler.chain(synVibFade, Tone.Destination);
-
-const pitchArr_16 = ['G4', 'F#4', 'D4', 'C#4', 'A3'];
-let count_16 = 0;
-let len_16 = 2; // first len_16 notes from pitchArr_16 are used, value goes up
-
-let playGongFlag_16 = true;
-
-tm.cue[16] = new TMCue('tilt', 0, NO_LIMIT); // immediate trigger, faded in
+// CUE 16: finished
+tm.cue[16] = new TMCue('finished', 0, NO_LIMIT);
 tm.cue[16].goCue = function() {
-  // gong sounds triggered when phone is upside down, but that sets flag that can only be reset when phone tilted back up, so gong only plays once per downward tipping gesture
-  playGongFlag_16 = true;
-  claveLoopFade.volume.value = -99;
-  claveLoopFade.volume.rampTo(0, 5);
-  claveLoop.volume.value = -99; // start muted and only play with phone tipped
-  claveLoop.start();
-  crunchyIceFade.volume.value = -99;
-  crunchyIceFade.volume.rampTo(0, 3);
-  crunchyIce.start();
-  synVibFade.volume.value = 0;
-};
-tm.cue[16].updateTiltSounds = function() {
-  let time_16 = tm.getElapsedTimeInCue(16);
-  // at first, only 2 notes from gong pitch array played, but then more added
-  if (time_16 < 40000) {
-    // only G and F# until [M]
-    len_16 = 2;
-  } else if (time_16 < 48000) {
-    // then add D after two measures
-    len_16 = 3;
-  } else if (time_16 < 56000) {
-    len_16 = 4;
-  } else {
-    len_16 = 5;
-  }
-  if (tm.accel.y < 0.4) {
-    // phone silent when upright, crunchy and clicky sounds fade in when tipped
-    // tipping phone upright resets flag so that gong can be triggered again
-    if (!playGongFlag_16) {
-      playGongFlag_16 = true;
-    }
-    crunchyIce.volume.value = -20 - (0.4 - tm.accel.y) * 197.5; // -99 to -20 dB
-    crunchyIce.playbackRate = 0.8;
-    claveLoop.playbackRate = 0.75;
-    claveLoop.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
-  } else if (tm.accel.y < 0.7) {
-    // crunchy ice sounds fade in, with varying seek points and pitch/speed
-    crunchyIce.playbackRate = 1.1 - (0.7 - tm.accel.y); // 0.8 to 1.1
-    crunchyIce.volume.value = 0 - (0.7 - tm.accel.y) * 66.66; // -20 to 0 dB
-    // clicking clave sounds accessible when phone tipped to left
-    claveLoop.volume.value = 0 - (0.7 - tm.accel.y) * 120; // -36 to 0 dB
-    claveLoop.playbackRate = 2 - (0.7 - tm.accel.y) * 4.166 // 0.75 to 2
-  } else {
-    // crunchy ice fades out again when phone upside down
-    // tipping phone upside down triggers gong, but only ONCE until flag resets
-    if (playGongFlag_16) {
-      synVibSampler.triggerAttackRelease(pitchArr_16[count_16 % len_16], 5);
-      playGongFlag_16 = false; // flag is false until phone tipped back up
-      count_16++;
-    }
-    crunchyIce.volume.value = -36 + (1 - tm.accel.y) * 120; // 0 to -36 dB
-    crunchyIce.playbackRate = 1.1;
-    claveLoop.volume.value = 0;
-    claveLoop.playbackRate = 2.75 - (1 - tm.accel.y) * 2.5 // 2 to 2.75
-  }
-  // clave loop only audible when phone tilted to left
-  claveLoopVol.volume.value = -99 + (1.0 - tm.accel.x) * 99;
-  // granulate crunchyIce and set seek point on x-axis
-  crunchyIce.loopStart = tm.accel.x * 13;
-  crunchyIce.loopEnd = crunchyIce.loopStart + grLen_16;
-};
-tm.cue[16].stopCue = function() {
-  crunchyIce.stop();
-  claveLoop.stop();
-};
-
-// *******************************************************************
-// CUE 17: hidden cue to fade out cue 16
-tm.cue[17] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[17].goCue = function() {
-  // fade out clave and ice sounds (which also have gain controlled by TILT)
-  claveLoopFade.volume.value = 0;
-  claveLoopFade.volume.rampTo(-99, 16);
-  crunchyIceFade.volume.value = 0;
-  crunchyIceFade.volume.rampTo(-99, 16);
-  synVibFade.volume.value = 0;
-  synVibFade.volume.rampTo(-36, 16);
-};
-
-// *******************************************************************
-// CUE 18: silence just before [N]
-tm.cue[18] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[18].goCue = function() {
-  // nothing to play
-};
-tm.cue[18].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 19: [O] - Cadenza: shakers with sine tails (LFO on TILT), then bells
-const shaker1 = new Tone.Player(perc_sounds + 'shaker1.mp3').toDestination();
-shaker1.volume.value  = -12;
-const shaker2 = new Tone.Player(perc_sounds + 'shaker2.mp3').toDestination();
-shaker2.volume.value  = -12;
-const shaker3 = new Tone.Player(perc_sounds + 'shaker3.mp3').toDestination();
-shaker3.volume.value  = -12;
-let shakerArr = [shaker1, shaker2, shaker3];
-const pingpongClickLoop = new Tone.Player(granulated_sounds + 'pingpongClickLoop.mp3').toDestination();
-pingpongClickLoop.loop = true;
-
-const chimeA7 = new Tone.Player(chime_sounds + 'chimeA7.mp3').toDestination();
-const chimeC8 = new Tone.Player(chime_sounds + '2sec-chime-C8.mp3').toDestination();
-// randomly select one chime for sparkly interjection
-let chime_19 = tm.pickRand([chimeA7, chimeC8]);
-// randomly select two bell pitches at upper partials of F2
-let randBellLo_19 = 55 * ((2**(1/12))**8) * tm.pickRand([10, 14, 17, 20]);
-let randBellHi_19 = 55 * ((2**(1/12))**8) * tm.pickRand([23, 28, 36]);
-
-let pitchArr_19 = ['Eb7', 'F6', 'G5', 'A4', 'A7', 'D7', 'E6', 'F5', 'G4'];
-let count_19 = 0;
-let triggerSparkles_19 = true;
-let countdown_19 = 7; // initial number of shakers between bells after ~m.188
-let bellCountdown = countdown_19; // actual # of shakers between bells goes down
-
-// randomly select one of two pitch trajectories for second half (F/A or Eb/Eb)
-const metalPitchArr_19 = tm.pickRand([['F5', 'A6'], ['Eb5', 'Eb6']]);
-// players assigned F/A have 1 oct transposition. Ebs have mi7 trans
-let transRange_19 = metalPitchArr_19[0] === 'F5' ? -12 : -10;
-
-// randomly select one of three time spans for single revCym trigger
-let revCymRange = tm.pickRand([[58000, 60000], [59000, 61000], [60000, 62000]]);
-let triggerCymRev = true;
-
-tm.cue[19] = new TMCue('tiltAndShake', 0, NO_LIMIT);
-tm.cue[19].goCue = function() {
-  count_19 = 0;
-  sineTails.volume.value = -24;
-  sinTremolo.depth.value = 1;
-  triggerSparkles_19 = true;
-  pingpongClickLoop.volume.value = -99;
-  pingpongClickLoop.start();
-  vibeSampler.volume.value = 0;
-  bellSampler.volume.value = 0;
-};
-tm.cue[19].updateTiltSounds = function() {
-  // fast clicking sounds accessible with phone tipped upside down
-  if (tm.accel.y < 0.5) {
-    sineTails.set({ detune: 0 });
-  } else {
-    // sine tails bend down (up to 1/4 tone) with phone tipped upside down
-    sineTails.set({ detune: -((tm.accel.y - 0.5) * 100) });
-  }
-  pingpongClickLoop.volume.value = -99 + tm.accel.y * 99; // -99 to 0
-  pingpongClickLoop.playbackRate = 0.5 + tm.accel.y * 2; // 0.5 to 2.5
-  // sineTails tremolo parameters NOT set by yTilt because I don't normally allow TILT changes to sound, and I don't hear zipper noise here
-  sinTremolo.frequency.value = 1 + tm.accel.y * 11;
-};
-tm.cue[19].triggerShakeSound = function() {
-  let time_19 = tm.getElapsedTimeInCue(19);
-  if (time_19 < 16000) {
-    // from [O] to around m. 188 is just shakers and bendable sine tails
-    shakerArr[count_19 % shakerArr.length].start();
-    sineTails.triggerAttackRelease(pitchArr_19[count_19 % pitchArr_19.length], 3);
-  } else if (triggerSparkles_19 && time_19 < 19000) {
-    // first SHAKE gesture in 3" window in m. 188 triggers sparkly bells
-    bellSampler.triggerAttackRelease('F5', 5);
-    bellSampler.triggerAttackRelease(randBellLo_19, 5, '+16n');
-    bellSampler.triggerAttackRelease(randBellHi_19, 5, '+8n');
-    triggerSparkles_19 = false; // you only get one set of sparkles
-  } else {
-    // after sparkly burst, shakers gradually replaced by falling metals
-    if (bellCountdown > 0) {
-      shakerArr[count_19 % shakerArr.length].start();
-      // gradual transposition from around m. 191 to m. 201
-      let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, 12]);
-      let pitch = Tone.Frequency(pitchArr_19[count_19 % pitchArr_19.length]).transpose(trans);
-      sineTails.triggerAttackRelease(pitch, 3);
-      bellCountdown--;
-    } else {
-      // F/A line falls octave lower while Eb/Eb falls only minor 7 lower
-      let trans = tm.getSectionBreakpoints(19, [0, 0, 29000, 0, 59000, transRange_19]);
-      if (count_19 % 2) {
-        // alternate between low note in vibes/glass and high note in handbells
-        let pitch = Tone.Frequency(metalPitchArr_19[0]).transpose(trans);
-        vibeSampler.triggerAttackRelease(pitch, 3);
-      } else {
-        let pitch = Tone.Frequency(metalPitchArr_19[1]).transpose(trans);
-        bellSampler.triggerAttackRelease(pitch, 5);
-      }
-      if (countdown_19 > 0) {
-        // at first there are 7 shakers between bells, then 7, 6, etc down to 0
-        bellCountdown = countdown_19--;
-      } else {
-        bellCountdown = 0;
-      }
-    }
-  }
-  count_19++;
-  // first shake gesture in randomly assigned time span triggers reversed cymbal
-  if (triggerCymRev && time_19 > revCymRange[0] && time_19 < revCymRange[1]) {
-    revCym.start();
-    triggerCymRev = false; // revCym only happens once per phone
-  }
-};
-tm.cue[19].stopCue = function() {
-  pingpongClickLoop.stop();
-  sineTails.releaseAll()
-};
-
-// *******************************************************************
-// CUE 20: [Q] - orchestra enters after cadenza, phones fade out
-let count_20 = 0;
-let fmPitch_20 = tm.pickRand(['E4', 'G4', 'E5']);
-
-// 4 beats @ 156 so audience may arrive a tiny bit earlier than orchestra at Q
-tm.cue[20] = new TMCue('shake', 1538, 1000);
-tm.cue[20].goCue = function() {
-  count_20 = 0;
-  vibeSampler.volume.value = 0;
-  bellSampler.volume.value = 0;
-  vibeSampler.volume.rampTo(-18, 6);
-  bellSampler.volume.rampTo(-18, 6);
-  fmSynthPreset2();
-  fmSynth.volume.value = -3;
-  fmSynth.triggerAttackRelease(fmPitch_20, 3.1);
-  sineTails.triggerAttackRelease(fmPitch_20, 5);
-};
-tm.cue[20].triggerShakeSound = function() {
-  // if anyone has NOT arrived at final pitches yet, it jumps to that loop here
-  if (count_20 % 2) {
-    bellSampler.triggerAttackRelease('G5', 5);
-  } else {
-    vibeSampler.triggerAttackRelease('E4', 3);
-  }
-  count_20++;
-};
-tm.cue[20].stopCue = function() {
-  fmSynth.triggerRelease();
-  sineTails.releaseAll()
-};
-
-// *******************************************************************
-// CUE 21: tacet after cadenza
-tm.cue[21] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[21].goCue = function() {
-  // nothing to play
-};
-tm.cue[21].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 22: [S] - TILT synth like cue 9 [F]
-let pitchArr_22 = ['G4', 'G4', 'G5', 'A5', 'Bb5', 'C6', 'E6', 'F6', 'G6', 'G6'];
-let pitchArr8ba_22 = ['G3', 'G3', 'G4', 'A4', 'Bb4', 'C5', 'E5', 'F5', 'G5', 'G5'];
-let pitchLo_22, pitchHi_22;
-let cue23WasTriggered = cue24WasTriggered = false;
-
-const harpLoop_22 = new Tone.Loop((time) => {
-  pitchLo_22 = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)];
-  pitchHi_22 = pitchArr_22[Math.floor(tm.accel.x * 0.99 * pitchArr_9.length)]
-  if (cue23WasTriggered) {
-    // pitch bend up whole step in second half of section
-    let trans = tm.getSectionBreakpoints(23, [0, 0, 12307, 2]);
-    pitchLo_22 = Tone.Frequency(pitchLo_22).transpose(trans);
-    pitchHi_22 = Tone.Frequency(pitchHi_22).transpose(trans);
-  }
-  harpSampler.triggerAttackRelease(pitchLo_22, 1);
-  harpSampler.triggerAttackRelease(pitchHi_22, 1, '+8n');
-}, '4n');
-
-tm.cue[22] = new TMCue('tilt', 1538, NO_LIMIT); // 4 beats @ 156 bpm
-tm.cue[22].goCue = function() {
-  harpSamplerVol.volume.value = 0;
-  harpLoop_22.start();
-  triangle.start();
-  fmSynthDefaults();
-  fmSynth.volume.value = -99; // prevent initial burst of unwanted sound
-  fmSynth.triggerAttack('G4');
-  cue23WasTriggered = cue24WasTriggered = false;
-};
-tm.cue[22].updateTiltSounds = function() {
-  // after HIDDEN cue 23 is triggered, pitches bend up whole step
-  if (cue23WasTriggered) {
-    fmSynth.detune.value = tm.getSectionBreakpoints(23, [0, 0, 12307, 200]);
-  }
-  if (cue24WasTriggered) {
-    // final harp sounds fade out (breakpoints at each downbeat)
-    harpSamplerVol.volume.value = tm.getSectionBreakpoints(24, [0, 0, 1538, 0, 3076, -9, 4614, -18, 6152, -40]);
-  }
-  // multiply tm.accel.x by 0.99 to prevent bad access to pitchArr_9
-  fmSynth.frequency.value = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)];
-  if (tm.accel.y < 0.4) {
-    // with phone mostly upright, synth is mostly silent and harp is soft
-    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
-    fmSynth.modulationIndex.value = 1;
-    fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
-  } else if (tm.accel.y < 0.7) {
-    // with phone in mid position, synth and harp cross fade, synth gets bright
-    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
-    fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
-    fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
-  } else {
-    // with phone mostly upside down, harp is soft and bright synth is heard
-    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
-    fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
-    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
-  }
-};
-tm.cue[22].stopCue = function() {
-  // stopped by cue 24 transition, but stop here too in case user stops
-  harpLoop_22.stop();
-  fmSynth.triggerRelease();
-};
-
-// *******************************************************************
-// CUE 23: m. 250 - hidden cue to bend pitches up
-tm.cue[23] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[23].goCue = function() {
-  // once this flag is set to true, pitch bend in cue 22 are triggered
-  cue23WasTriggered = true;
-};
-
-// *******************************************************************
-// CUE 24: m. 254 - hidden cue to fade out harp sounds
-tm.cue[24] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[24].goCue = function() {
-  cue24WasTriggered = true;
-};
-tm.cue[24].cueTransition = function() {
-  // called BEFORE tm.cue[22].stopCue()
-  harpLoop_22.stop();
-  vibeSampler.volume.value = 0;
-  vibeSampler.triggerAttackRelease('B4', 3);
-  vibeSampler.triggerAttackRelease('C5', 3, '+8n');
-  vibeSampler.triggerAttackRelease('D5', 3, '+4n');
-  fmSynth.triggerRelease();
-}
-
-// *******************************************************************
-// CUE 25: [U] - SHAKE sounds of piano samples playing same notes as piano
-let pitchArr1_25 = ['A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'B4', 'A5', 'A5', 'B4', 'A5', 'C#5', 'B5', 'B5', 'B5', 'D5', 'C#6', 'D5', 'C#6', 'D5', 'D6', 'D5', 'D6', 'D6', 'D5', 'D6', 'D6', 'A4', 'A5', 'A4', 'A5', 'A4', 'A5', 'A5', 'A4', 'G5', 'G5', 'A4', 'G5', 'G4', 'F#5', 'F#5', 'F#5', 'G4', 'F#5', 'F#4', 'E5', 'F#4', 'E5', 'E4', 'E5', 'E5', 'E4', 'E5', 'E5', 'E4', 'E6', 'E5'];
-let count1_25 = count2_25 = 0;
-
-tm.cue[25] = new TMCue('shake', 1538, NO_LIMIT); // 4 beats @ 156 bpm
-tm.cue[25].goCue = function() {
-  count1_25 = count2_25 = 0;
-  pianoSampler.volume.value = 0;
-  vibeSampler.volume.value = 0;
-  bellSampler.volume.value = 0;
-  sineTails.volume.value = -20;
-  sinTremolo.depth.value = 0;
-  bellSampler.triggerAttackRelease('C#6', 5);
-};
-tm.cue[25].triggerShakeSound = function() {
-  if (count1_25 < pitchArr1_25.length) {
-    pianoSampler.triggerAttackRelease(pitchArr1_25[count1_25], 3);
-    count1_25++;
-  } else {
-    // both upper sounds gradually slide up, lower E4 stays at pitch for now
-    let trans;
-    if (count2_25 > 30) {
-      trans = 5; // max transposition P4 to As
-    } else {
-      trans = (count2_25 / 30) * 5.0; // gradually slide up perfect 4
-    }
-    if (count2_25 % 3 === 0) {
-      pianoSampler.volume.value = tm.getSectionBreakpoints(25, [0, 0, 24615, 0, 43077, -18]);
-      pianoSampler.triggerAttackRelease('E4', 3);
-    } else if (count2_25 % 3 === 1) {
-      let pitch = Tone.Frequency('E6').transpose(trans);
-      bellSampler.triggerAttackRelease(pitch, 5);
-      sineTails.triggerAttackRelease(pitch, 1);
-    } else {
-      let pitch = Tone.Frequency('E5').transpose(trans);
-      vibeSampler.triggerAttackRelease(pitch, 3);
-      sineTails.triggerAttackRelease(pitch, 1);
-    }
-    count2_25++;
-  }
-};
-tm.cue[25].stopCue = function() {
-  sineTails.releaseAll()
-};
-
-// *******************************************************************
-// CUE 26: m. 286 - SHAKE sounds of piano/metal samples fading out
-let count_26 = 0;
-
-tm.cue[26] = new TMCue('shake', 0, NO_LIMIT);
-tm.cue[26].goCue = function() {
-  count_26 = 0;
-  pianoSampler.volume.value = -18;
-  vibeSampler.volume.value = 0;
-  bellSampler.volume.value = 0;
-  sineTails.volume.value = -20;
-  sinTremolo.depth.value = 0;
-  pianoSampler.volume.rampTo(-36, 6);
-  vibeSampler.volume.rampTo(-36, 6);
-  bellSampler.volume.rampTo(-36, 6);
-  sineTails.volume.rampTo(-40, 6);
-};
-tm.cue[26].triggerShakeSound = function() {
-  if (count2_25 % 3 === 0) {
-    // both upper As stay put, but E4 moves toward F4 while fading out
-    let trans = tm.getSectionBreakpoints(26, [0, 0, 3000, 0, 6000, 0.5]);
-    let pitch = Tone.Frequency('E4').transpose(trans);
-    pianoSampler.triggerAttackRelease(pitch, 3);
-  } else if (count2_25 % 3 === 1) {
-    bellSampler.triggerAttackRelease('A6', 5);
-    sineTails.triggerAttackRelease('A6', 1);
-  } else {
-    vibeSampler.triggerAttackRelease('A5', 3);
-    sineTails.triggerAttackRelease('A5', 1);
-  }
-  count2_25++;
-};
-tm.cue[26].stopCue = function() {
-  sineTails.releaseAll()
-};
-
-// *******************************************************************
-// CUE 27: [W] - TACET
-tm.cue[27] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[27].goCue = function() {
-  // nothing to play
-};
-tm.cue[27].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 28: [X] - TILT droning and warping synths
-// glass played on rim with pitch bending from D5 to Eb5, filtered on y-axis
-const glassFilter = new Tone.Filter(650, "lowpass").toDestination();
-const glassRimD5 = new Tone.Player(glass_sounds + 'glassRim-D5.mp3').connect(glassFilter);
-const glassFilterScale = new Tone.ScaleExp(20, 14000);
-glassFilterScale.exponent = 5;
-yTilt.chain(glassFilterScale, glassFilter.frequency);
-glassRimD5.loop = true;
-
-const chimesAndSugar = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3');
-const chimeSugarFade = new Tone.Volume(0);
-chimesAndSugar.chain(chimeSugarFade, Tone.Destination);
-chimesAndSugar.loop = true;
-
-tm.cue[28] = new TMCue('tilt', 0, NO_LIMIT);
-tm.cue[28].goCue = function() {
-  glassRimD5.volume.value = -24;
-  glassRimD5.start();
-  sineTails.volume.value = -99;
-  sinTremolo.depth.value = 0;
-  sineTails.triggerAttack('A6');
-  chimeSugarFade.volume.value = 0;
-  chimesAndSugar.volume.value = -99;
-  chimesAndSugar.start();
-  claveLoopFade.volume.value = 0;
-  claveLoopVol.volume.value = 0;
-  claveLoop.volume.value = -99;
-  claveLoop.start();
-  fmSynthPreset2();
-  fmSynth.volume.value = -99;
-  let fmSynPitch = tm.pickRand(['F4', 'F4', 'F5', 'A5']);
-  fmSynth.triggerAttack(fmSynPitch);
-};
-tm.cue[28].updateTiltSounds = function() {
-  if (tm.accel.x < 0.33) {
-    // glass plays continuously: D5 if device to left, at Eb5 if device to right
-    glassRimD5.playbackRate = 1;
-    // sinusoid sweeping from A6 to A7 (A6 here)
-    sineTails.set({ detune: 0 });
-    // sparkly sounds accessible with device tipped to left
-    chimesAndSugar.volume.value = -99 + (0.33 - tm.accel.x) * 300; // 0 to -99
-    claveLoop.volume.value = -99;
-  } else if (tm.accel.x < 0.67) {
-    // half step bend from D5 to Eb5
-    glassRimD5.playbackRate = 1 + (tm.accel.x - 0.33) * 0.17489;
-    sineTails.set({ detune: (tm.accel.x - 0.33) * 3529 }); // up to octave up
-    chimesAndSugar.volume.value = -99;
-    claveLoop.volume.value = -99;
-  } else {
-    glassRimD5.playbackRate = halfStep;
-    // sinusoid sweeping from A6 to A7 (A7 here)
-    sineTails.set({ detune: 1200 });
-    chimesAndSugar.volume.value = -99;
-    claveLoop.volume.value = -99 + (tm.accel.x - 0.67) * 300; // -99 to 0 dB
-  }
-  // speed and pitch of sparkly and clicky sounds controlled by y-axis
-  chimesAndSugar.playbackRate = 0.5 + tm.accel.y;
-  claveLoop.playbackRate = 0.5 + tm.accel.y * 2;
-  fmSynth.detune.value = tm.getSectionBreakpoints(28, [0, 0, 24615, 0, 49230, -100, 73845, -150]);
-  let fmSynVol;
-  if (tm.accel.y < 0.25) {
-    sineTails.volume.value = -99;
-    // set volume with rampTo to avoid zipper noise
-    fmSynVol = -28 - (0.25 - tm.accel.y) * 284; // -99 to -28 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 1.5 - (0.25 - tm.accel.y) * 2; // 1 to 1.5
-  } else if (tm.accel.y < 0.5) {
-    sineTails.volume.value = -99;
-    fmSynth.volume.rampTo(-28, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 4 - (0.5 - tm.accel.y) * 10; // 1.5 to 4
-  } else if (tm.accel.y < 0.75) {
-    sineTails.volume.value = -24 - (0.75 - tm.accel.y) * 300; // -99 to -24 dB
-    fmSynVol = -28 - (tm.accel.y - 0.5) * 48; // -28 to -40 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 6 - (0.75 - tm.accel.y) * 8; // 4 to 6
-  } else {
-    sineTails.volume.value = -24;
-    fmSynVol = -40 - (tm.accel.y - 0.75) * 236; // -40 to -99 dB
-    fmSynth.volume.rampTo(fmSynVol, tm.motionUpdateInSeconds);
-    fmSynth.modulationIndex.value = 8 - (1.0 - tm.accel.y) * 8; // 6 to 8
-  }
-};
-tm.cue[28].stopCue = function() {
-  glassRimD5.stop();
-  sineTails.releaseAll();
-  chimesAndSugar.stop();
-  claveLoop.stop();
-  fmSynth.triggerRelease();
-};
-
-// *******************************************************************
-// CUE 29: flurry of bells after downbeat of [Y]
-// randomly select two bell pitches at upper partials of E2
-let randBellLo_29 = 55 * ((2**(1/12))**7) * tm.pickRand([10, 14, 17, 20]);
-let randBellHi_29 = 55 * ((2**(1/12))**7) * tm.pickRand([23, 28, 36]);
-tm.cue[29] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[29].goCue = function() {
-  bellSampler.volume.value = 0;
-  bellSampler.triggerAttackRelease('E5', 5);
-  bellSampler.triggerAttackRelease(randBellLo_29, 5, '+16n');
-  bellSampler.triggerAttackRelease(randBellHi_29, 5, '+8n');
-};
-
-// *******************************************************************
-// CUE 30: m. 330 - hidden cue to fade out synths and audio file players
-tm.cue[30] = new TMCue('hidden', 0, NO_LIMIT);
-tm.cue[30].goCue = function() {
-  glassRimD5.volume.rampTo(-99, 15);
-  sineTails.releaseAll();
-  chimeSugarFade.volume.rampTo(-99, 15);
-  claveLoopFade.volume.rampTo(-99, 15);
-  fmSynth.triggerRelease();
-};
-
-// *******************************************************************
-// CUE 31: [Z] - TACET (audience is done playing)
-tm.cue[31] = new TMCue('tacet', 0, NO_LIMIT);
-tm.cue[31].goCue = function() {
-  // nothing to play
-};
-tm.cue[31].stopCue = function() {
-  // nothing to clean up
-};
-
-// *******************************************************************
-// CUE 32: finished
-tm.cue[32] = new TMCue('finished', 0, NO_LIMIT);
-tm.cue[32].goCue = function() {
-  // nothing to play
 };
