@@ -241,6 +241,7 @@ tm.cue[1].goCue = function() {
 };
 tm.cue[1].triggerShakeSound = function() {
   clave.start();
+  clave.start('+0.25');
 };
 tm.cue[1].stopCue = function() {
 };
