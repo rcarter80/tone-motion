@@ -236,7 +236,6 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: SHAKE tutorial
-
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
 };
@@ -427,7 +426,7 @@ tm.cue[6].triggerShakeSound = function() {
   displayShakesLeft(limit_6);
 };
 tm.cue[6].stopCue = function() {
-  // nothing to do here?
+  // nothing to do here
 };
 
 // *******************************************************************
@@ -513,7 +512,6 @@ tm.cue[8].triggerShakeSound = function() {
   displayShakesLeft(limit_8);
 };
 tm.cue[8].stopCue = function() {
-
 };
 
 // *******************************************************************
@@ -598,7 +596,9 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds (c. 30")
+
 // NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
+
 const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
 const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
@@ -850,7 +850,9 @@ tm.cue[12].stopCue = function() {
 let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+
 // NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
+
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease('C5', 2);
