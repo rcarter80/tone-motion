@@ -240,8 +240,7 @@ tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
 };
 tm.cue[1].triggerShakeSound = function() {
-  clave.start();
-  clave.start('+0.25');
+  // no need for tutorial
 };
 tm.cue[1].stopCue = function() {
 };
@@ -262,7 +261,7 @@ tm.cue[3].goCue = function() {
 tm.cue[3].updateTiltSounds = function() {
 };
 tm.cue[3].triggerDipSound = function() {
-  clave.start();
+  // no need for tutorial
 }
 tm.cue[3].stopCue = function() {
 };
@@ -303,8 +302,9 @@ tm.cue[4].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
+// CUE 5 (DIP): 1st section. "Fixed" media is silent
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
+// TODO: delete any unused declarations, including instruments above. I started the non-interactive script from the audience participatory script, so there will be a lot of unused code, but wait until all finish to delete everything.
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
@@ -313,121 +313,26 @@ tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
-  // volume is different in cue 13, so may need to reset here
-  monoSine.volume.value = -28;
-  monoSine.detune.value = 0;
 };
 tm.cue[5].updateTiltSounds = function() {
-  if (tm.accel.y < 0.3) {
-    pitchedIceLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
-    pitchedIceLoop.playbackRate = 1.15844; // retuned to D5
-  } else if (tm.accel.y < 0.7) {
-    pitchedIceLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; // 40 to -12dB
-    pitchedIceLoop.playbackRate = 1.15844 + (tm.accel.y - 0.3) * 0.17215; //D-Eb
-  } else {
-    pitchedIceLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to -99dB
-    pitchedIceLoop.playbackRate = 1.2273; // Eb5
-  }
 };
 tm.cue[5].triggerDipSound = function() {
-  pitchedIceLoop.stop();
-  if (limit_5 > 0) {
-    // still got DIPS left, so find time elapsed to determine pitch to play
-    let time_5 = tm.getElapsedTimeInCue(5);
-    // alternate selection from upper and lower voice of canon
-    let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
-    let index_5 = Math.floor(time_5 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_5 > arr_5.length - 1) {
-      index_5 = arr_5.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
-    // notes that will be followed by microtones are doubled with bending sine
-    if (arr_5 === loPitchArr_5) {
-      if (index_5 === 7) {
-        monoSine.triggerAttackRelease('Eb4', 4);
-        monoSine.frequency.rampTo('D4', 3);
-      } else if (index_5 === 13) {
-        monoSine.triggerAttackRelease('A4', 4);
-        monoSine.frequency.rampTo('Bb4', 3);
-      }
-    } else if (arr_5 === hiPitchArr_5) {
-      if (index_5 === 15) {
-        monoSine.triggerAttackRelease('Eb5', 4);
-        monoSine.frequency.rampTo('D5', 3);
-      } else if (index_5 === 27) {
-        monoSine.triggerAttackRelease('A5', 4);
-        monoSine.frequency.rampTo('Bb5', 3);
-      }
-    }
-    limit_5--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
-  }
-  displayDipsLeft(limit_5);
 };
 tm.cue[5].triggerDipReset = function() {
-  // slushy ice sounds only available when there are DIPS remaining
-  if (limit_5 > 0) {
-    pitchedIceLoop.start();
-  }
 };
 tm.cue[5].stopCue = function() {
-  pitchedIceLoop.stop();
 };
 
 // *******************************************************************
-// CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 60")
+// CUE 6 (SHAKE): non-interactive sound is silent
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
-tm.cue[6].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
-};
 tm.cue[6].goCue = function() {
-  sparklyTailSampler.volume.value = -18;
-  // volume is different in cue 13, so may need to reset here
-  monoSine.volume.value = -28;
-  monoSine.detune.value = 0;
-  if (tm.getElapsedTimeInCue(6) < CUE_SOUND_WINDOW) {
-    vibeSampler.triggerAttackRelease('Eb4', 5);
-    vibeSampler.triggerAttackRelease('C6', 5, '+0.1');
-  }
 };
 tm.cue[6].triggerShakeSound = function() {
-  if (limit_6 > 0) {
-    // still got SHAKES left, so find time elapsed to determine pitch to play
-    let time_6 = tm.getElapsedTimeInCue(6);
-    // alternate selection from upper and lower voice of canon
-    // (lower voice of canon is same pitches as cue 5)
-    let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
-    let index_6 = Math.floor(time_6 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_6 > arr_6.length - 1) {
-      index_6 = arr_6.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
-    // notes that will be followed by microtones are doubled with bending sine
-    if (arr_6 === loPitchArr_5) {
-      if (index_6 === 7) {
-        monoSine.triggerAttackRelease('Eb4', 4);
-        monoSine.frequency.rampTo('D4', 3);
-      } else if (index_6 === 13) {
-        monoSine.triggerAttackRelease('A4', 4);
-        monoSine.frequency.rampTo('Bb4', 3);
-      }
-    }
-    let sparklyPitch = 440 + Math.random() * 200;
-    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
-    limit_6--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
-  }
-  displayShakesLeft(limit_6);
 };
 tm.cue[6].stopCue = function() {
-  // nothing to do here
 };
 
 // *******************************************************************
@@ -436,81 +341,24 @@ bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
-tm.cue[7].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'D5'], 2);
-};
 tm.cue[7].goCue = function() {
-  if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
-    vibeSampler.triggerAttackRelease('C5', 5);
-    vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
-    sparklyTailSampler.triggerAttackRelease(440, 5);
-  }
-  count_7 = 0;
 };
 tm.cue[7].updateTiltSounds = function() {
-  if (tm.accel.y < 0.3) {
-    pingpongClickLoop.volume.value = -99 + tm.accel.y * 197; // -99 to -40dB
-    pingpongClickLoop.playbackRate = 0.75;
-  } else if (tm.accel.y < 0.7) {
-    pingpongClickLoop.volume.value = -40 + (tm.accel.y - 0.3) * 70; //-40 to -12
-    pingpongClickLoop.playbackRate = 0.75 + (tm.accel.y - 0.3) * 3.125; //.75-2x
-  } else {
-    pingpongClickLoop.volume.value = -12 - (tm.accel.y - 0.7) * 290; //-12 to-99
-    pingpongClickLoop.playbackRate = 2;
-  }
 };
 tm.cue[7].triggerDipSound = function() {
-  pingpongClickLoop.stop();
-  if (limit_7 > 0) {
-    bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
-    sineTails.triggerAttackRelease(pitchArr_7[count_7], 4);
-    count_7++;
-    limit_7--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
-  }
-  displayDipsLeft(limit_7);
 };
 tm.cue[7].triggerDipReset = function() {
-  if (limit_7 > 0) {
-    pingpongClickLoop.start();
-  }
 };
 tm.cue[7].stopCue = function() {
-  pingpongClickLoop.stop();
 };
 
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
 let count_8 = 0;
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
-tm.cue[8].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 2);
-};
 tm.cue[8].goCue = function() {
-  if (tm.getElapsedTimeInCue(8) < 200) {
-    vibeSampler.triggerAttackRelease('C4', 5);
-    vibeSampler.triggerAttackRelease('D6', 5, '+0.25');
-    sparklyTailSampler.triggerAttackRelease(440, 5);
-  }
-  count_8 = 0;
-  bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
 };
 tm.cue[8].triggerShakeSound = function() {
-  if (limit_8 > 0) {
-    // higher bell with feedback delay is 2 oct. higher. Get freq and mult by 4
-    let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
-    bellDelaySampler.triggerAttackRelease(hiPitch, 5);
-    bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
-    sineTails.triggerAttackRelease(pitchArr_8[count_8], 4);
-    count_8++;
-    limit_8--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
-  }
-  displayShakesLeft(limit_8);
 };
 tm.cue[8].stopCue = function() {
 };
@@ -527,10 +375,6 @@ let count_9 = 0;
 let playCanon_9 = true;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
-tm.cue[9].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
-};
 tm.cue[9].goCue = function() {
   if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('Eb4', 5);
