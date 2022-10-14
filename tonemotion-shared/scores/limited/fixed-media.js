@@ -81,6 +81,24 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
   },
   volume: -28,
 }).toDestination();
+// sineTails panned hard left
+// TODO: duplicate panned hard right
+const sineLeftPanner = new Tone.Panner(-1).toDestination();
+const sineTailsL = new Tone.PolySynth(Tone.Synth, {
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 3,
+    releaseCurve: "linear",
+  },
+  volume: -28,
+}).connect(sineLeftPanner);
 // monophonic sinusoid synth that allows pitch bend (not allowed with PolySynth)
 const monoSine = new Tone.Synth({
   oscillator: {
@@ -368,75 +386,31 @@ tm.cue[8].stopCue = function() {
 
 // NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
 
-// everyone is randomly assigned one of three clicky loops to control on y-axis
-const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
-const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
+let index_9 = 0;
+const sineLoop_9 = new Tone.Loop(function(time) {
+  let time_9 = tm.getElapsedTimeInCue(9);
+  let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
+  // only go through first 16 notes of canon voice
+  if (index_9 > 15) {
+    index_9 = 15;
+  }
+  // vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
+  sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
+},'2n');
 let count_9 = 0;
-let playCanon_9 = true;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
-    vibeSampler.triggerAttackRelease('Eb4', 5);
-    vibeSampler.triggerAttackRelease('C5', 5, '+0.1');
-  }
-  // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
-  if (Math.random() > 0.5) {
-    playCanon_9 = false;
-  } else {
-    playCanon_9 = true;
-  }
-  count_9 = 0;
-  clickLoop_9.volume.value = -99; // start clicks muted
-  clickLoop_9.start();
+  sineLoop_9.start();
 };
 tm.cue[9].updateTiltSounds = function() {
-  if (tm.accel.y < 0.2) {
-    clickLoop_9.volume.value = -99;
-    clickLoop_9.playbackRate = 0.5;
-  } else if (tm.accel.y < 0.4) {
-    clickLoop_9.volume.value = -99 + (tm.accel.y - 0.2) * 405; // -99 to -18 dB
-    clickLoop_9.playbackRate = 0.5 + (tm.accel.y - 0.2) * 2.5; // 0.5 to 1
-  } else if (tm.accel.y < 0.7) {
-    clickLoop_9.volume.value = -18 + (tm.accel.y - 0.4) * 30; // -18 to -9 dB
-    clickLoop_9.playbackRate = 1 + (tm.accel.y - 0.4) * 3.333; // 1 to 2
-  } else {
-    clickLoop_9.volume.value = -9;
-    clickLoop_9.playbackRate = 2 + (tm.accel.y - 0.7) * 3.33; // 2 to 3
-  }
 };
 tm.cue[9].triggerDipSound = function() {
-  if (limit_9 > 0) {
-    if (playCanon_9) {
-      // randomly assigned to play middle voice of canon
-      let time_9 = tm.getElapsedTimeInCue(9);
-      let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
-      // only go through first 16 notes of canon voice
-      if (index_9 > 15) {
-        index_9 = 15;
-      }
-      vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
-      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
-    } else {
-      // randomly assigned to play array-based loop
-      let index_9 = count_9 % loopArr_9.length;
-      bellSampler.triggerAttackRelease(loopArr_9[index_9], 5);
-      count_9++;
-    }
-    limit_9--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
-  }
-  if (limit_9 === 0) {
-    // no more clicky sounds if you've used all your dips, but stop on last dip
-    clickLoop_9.stop();
-  }
-  displayDipsLeft(limit_9);
 };
 tm.cue[9].triggerDipReset = function() {
 };
 tm.cue[9].stopCue = function() {
-  clickLoop_9.stop();
+  sineLoop_9.stop();
 };
 
 // *******************************************************************
