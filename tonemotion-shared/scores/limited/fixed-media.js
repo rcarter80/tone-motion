@@ -81,8 +81,7 @@ const sineTails = new Tone.PolySynth(Tone.Synth, {
   },
   volume: -28,
 }).toDestination();
-// sineTails panned hard left
-// TODO: duplicate panned hard right
+// same as sineTails instrument but panned hard left
 const sineLeftPanner = new Tone.Panner(-1).toDestination();
 const sineTailsL = new Tone.PolySynth(Tone.Synth, {
   oscillator: {
@@ -99,6 +98,23 @@ const sineTailsL = new Tone.PolySynth(Tone.Synth, {
   },
   volume: -28,
 }).connect(sineLeftPanner);
+// same as sineTails instrument but panned hard right
+const sineRightPanner = new Tone.Panner(1).toDestination();
+const sineTailsR = new Tone.PolySynth(Tone.Synth, {
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 1,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 3,
+    releaseCurve: "linear",
+  },
+  volume: -28,
+}).connect(sineRightPanner);
 // monophonic sinusoid synth that allows pitch bend (not allowed with PolySynth)
 const monoSine = new Tone.Synth({
   oscillator: {
@@ -387,21 +403,34 @@ tm.cue[8].stopCue = function() {
 // NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
 
 let index_9 = 0;
-const sineLoop_9 = new Tone.Loop(function(time) {
+const loopTimeL_9 = 2 + Math.random() * 2; // notes triggered every 2 to 4 sec.
+const sineLoopL_9 = new Tone.Loop(function(time) {
   let time_9 = tm.getElapsedTimeInCue(9);
   let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
   // only go through first 16 notes of canon voice
   if (index_9 > 15) {
     index_9 = 15;
   }
-  // vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
-  sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
-},'2n');
+  sineTailsL.volume.value = tm.getSectionBreakpoints(9, [0, -99, 20000, 0]);
+  sineTailsL.triggerAttackRelease(loPitchArr_5[index_9], 4);
+}, loopTimeL_9);
+const loopTimeR_9 = 2 + Math.random() * 2; // notes triggered every 2 to 4 sec.
+const sineLoopR_9 = new Tone.Loop(function(time) {
+  let time_9 = tm.getElapsedTimeInCue(9);
+  let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
+  // only go through first 16 notes of canon voice
+  if (index_9 > 15) {
+    index_9 = 15;
+  }
+  sineTailsR.volume.value = tm.getSectionBreakpoints(9, [0, -99, 20000, 0]);
+  sineTailsR.triggerAttackRelease(loPitchArr_5[index_9], 4);
+}, loopTimeR_9);
 let count_9 = 0;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].goCue = function() {
-  sineLoop_9.start();
+  sineLoopL_9.start();
+  sineLoopR_9.start();
 };
 tm.cue[9].updateTiltSounds = function() {
 };
@@ -410,7 +439,8 @@ tm.cue[9].triggerDipSound = function() {
 tm.cue[9].triggerDipReset = function() {
 };
 tm.cue[9].stopCue = function() {
-  sineLoop_9.stop();
+  sineLoopL_9.stop();
+  sineLoopR_9.stop();
 };
 
 // *******************************************************************
