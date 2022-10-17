@@ -448,54 +448,15 @@ tm.cue[9].stopCue = function() {
 
 // NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
 
-const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
-const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
-const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
-const ampEnvHi_10 = new Tone.AmplitudeEnvelope({
-  attack: 0.1,
-  decay: 0.2,
+// TODO: schedule clicks at slightly random intervals. could move to left and duplicate second on right
+const fadeInEnv = new Tone.AmplitudeEnvelope({
+  attack: 2,
+  decay: 0.1,
   sustain: 1.0,
-  release: 4
+  release: 0.1
 }).toDestination();
-const ampEnvLo_10 = new Tone.AmplitudeEnvelope({
-  attack: 0.1,
-  decay: 0.2,
-  sustain: 1.0,
-  release: 4
-}).toDestination();
-const ampEnvLo_11 = new Tone.AmplitudeEnvelope({
-  attack: 0.1,
-  decay: 0.2,
-  sustain: 1.0,
-  release: 4
-}).toDestination();
-let soundFileHi_10, soundFileLo_10, soundFileLo_11;
-let partSelector_10 = Math.random();
-if (partSelector_10 > 0.8) {
-  // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
-  soundFileHi_10 = 'clave-pingpong_loop.mp3';
-  soundFileLo_10 = 'clave-ziplock_loop.mp3';
-  // REVISION idea: could replace with different sound loop
-  soundFileLo_11 = 'clave-ziplock_loop.mp3';
-} else if (partSelector_10 > 0.4) {
-  // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
-  soundFileHi_10 = 'Eb-G_loop.mp3';
-  soundFileLo_10 = 'D-F_loop.mp3';
-  // Ds changed to Db in next cue, but other notes are the same
-  soundFileLo_11 = 'Db-F_loop.mp3';
-} else {
-  // 2 out of 5 people randomly assigned pitched loops alternating C/G - Bb/D
-  soundFileHi_10 = 'C-Eb_loop.mp3';
-  soundFileLo_10 = 'Bb-D_loop.mp3';
-  soundFileLo_11 = 'Bb-Db_loop.mp3';
-}
-const loopHi_10 = new Tone.Player(misc_sounds + soundFileHi_10).connect(ampEnvHi_10);
-loopHi_10.loop = true;
-const loopLo_10 = new Tone.Player(misc_sounds + soundFileLo_10).connect(ampEnvLo_10);
-loopLo_10.loop = true;
-const loopLo_11 = new Tone.Player(misc_sounds + soundFileLo_11).connect(ampEnvLo_11);
-loopLo_11.loop = true;
-let count_10 = 0;
+const fadeInClick = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').connect(fadeInEnv);
+fadeInClick.loop = true;
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].cueTransition = function() {
@@ -508,45 +469,13 @@ tm.cue[10].goCue = function() {
     clavePingpong.volume.rampTo(-99, 3);
   }
   // need to reset upper loop parameters, which could change in cue 11
-  loopHi_10.playbackRate = 1;
-  loopHi_10.volume.value = 0;
-  loopHi_10.start();
-  loopLo_10.start();
+  fadeInClick.start();
   count_10 = 0;
 };
 tm.cue[10].triggerShakeSound = function() {
-  if (limit_10 > 0) {
-    let time_10 = tm.getElapsedTimeInCue(10);
-    // rotate array selection among three voices (and separate arrays)
-    let arr_10;
-    if (count_10 % 3 === 2) {
-      arr_10 = hiPitchArr_10;
-    } else if (count_10 % 3 === 1) {
-      arr_10 = midPitchArr_10;
-    } else {
-      arr_10 = loPitchArr_10;
-    }
-    // select pitch index for array
-    let index_10 = Math.floor(time_10 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_10 > arr_10.length - 1) {
-      index_10 = arr_10.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_10[index_10], 5);
-    sineTails.triggerAttackRelease(arr_10[index_10], 4);
-    // alternate between envelopes that trigger higher and lower loops
-    let env = (count_10 % 2) ? ampEnvLo_10 : ampEnvHi_10;
-    env.triggerAttackRelease(0.1);
-    count_10++;
-    limit_10--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
-  }
-  displayShakesLeft(limit_10);
 };
 tm.cue[10].stopCue = function() {
-  loopHi_10.stop();
-  loopLo_10.stop();
+  fadeInClick.stop();
 };
 
 // *******************************************************************
