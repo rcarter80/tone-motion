@@ -399,11 +399,8 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9 (DIP) increased accel/decel clicks with restricted canon (c. 30")
-
-// NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
-
 let index_9 = 0;
-const loopTimeL_9 = 2 + Math.random() * 2; // notes triggered every 2 to 4 sec.
+const loopTimeL_9 = 4 + Math.random() * 2; // notes triggered every 4 to 6 sec.
 const sineLoopL_9 = new Tone.Loop(function(time) {
   let time_9 = tm.getElapsedTimeInCue(9);
   let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
@@ -411,10 +408,9 @@ const sineLoopL_9 = new Tone.Loop(function(time) {
   if (index_9 > 15) {
     index_9 = 15;
   }
-  sineTailsL.volume.value = tm.getSectionBreakpoints(9, [0, -99, 20000, 0]);
-  sineTailsL.triggerAttackRelease(loPitchArr_5[index_9], 4);
+  sineTailsL.triggerAttackRelease(loPitchArr_5[index_9], 2);
 }, loopTimeL_9);
-const loopTimeR_9 = 2 + Math.random() * 2; // notes triggered every 2 to 4 sec.
+const loopTimeR_9 = 4 + Math.random() * 2; // notes triggered every 4 to 6 sec.
 const sineLoopR_9 = new Tone.Loop(function(time) {
   let time_9 = tm.getElapsedTimeInCue(9);
   let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
@@ -422,13 +418,15 @@ const sineLoopR_9 = new Tone.Loop(function(time) {
   if (index_9 > 15) {
     index_9 = 15;
   }
-  sineTailsR.volume.value = tm.getSectionBreakpoints(9, [0, -99, 20000, 0]);
-  sineTailsR.triggerAttackRelease(loPitchArr_5[index_9], 4);
+  sineTailsR.triggerAttackRelease(loPitchArr_5[index_9], 2);
 }, loopTimeR_9);
-let count_9 = 0;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].goCue = function() {
+  sineTailsL.volume.value = -60;
+  sineTailsR.volume.value = -60;
+  sineTailsL.volume.rampTo(-6, 25);
+  sineTailsR.volume.rampTo(-6, 25);
   sineLoopL_9.start();
   sineLoopR_9.start();
 };
@@ -484,6 +482,8 @@ const loPitchArr_11 = ['G3', 'G3', 'G3', 'G3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3',
 const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4, 'Ab4', 'G4', 'Eb4', 'Eb4', 'Db4', CqS4, 'C4', 'Bb4', 'Ab4', 'G4', 'Eb4', 'Eb4', 'F4', 'F4', 'G4', 'Ab4', 'F4', 'F4', 'Eb4', 'Eb4', 'G4', 'G4', 'Ab4'];
 const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
 let count_11 = 0;
+
+// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?)
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].cueTransition = function() {

@@ -193,6 +193,7 @@ const pianoSampler = new Tone.Sampler({
   },
   baseUrl: piano_sounds,
 }).toDestination();
+pianoSampler.volume.value = -6;
 
 // 4-sec. "tail" of chimes/sugar. Not pitched, but Sampler manages retriggering
 const sparklyTailSampler = new Tone.Sampler({
@@ -483,6 +484,7 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
 let count_8 = 0;
+
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[8].cueTransition = function() {
   revVibeSampler.volume.value = -9;
@@ -516,9 +518,6 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9 (DIP) increased accel/decel clicks with restricted canon (c. 30")
-
-// NOTE: When composing fixed media, use gradually fading in sinusoids in this cue to match sineTails in phones, but start very subtle and gradually sweep up in frequency while getting fuller and louder
-
 // everyone is randomly assigned one of three clicky loops to control on y-axis
 const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
 const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
@@ -533,6 +532,7 @@ tm.cue[9].cueTransition = function() {
 tm.cue[9].goCue = function() {
   if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('Eb4', 5);
+    sineTails.triggerAttackRelease('Eb4', 8);
     vibeSampler.triggerAttackRelease('C5', 5, '+0.1');
   }
   // everyone is randomly assigned a part: either a time-based slow middle voice of canon, or an array-based loop based on opening of canon
@@ -596,9 +596,6 @@ tm.cue[9].stopCue = function() {
 
 // *******************************************************************
 // CUE 10 (SHAKE) synchronized pulse triggered by shake sounds (c. 30")
-
-// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
-
 const loPitchArr_10 = ['G3', 'G3', 'G3', 'G3', 'A3', 'A3', AeS3, AeS3, AqS3, AqS3, AteS3, AteS3, 'Bb3', 'Bb3', 'Bb3', 'Bb3'];
 const midPitchArr_10 = ['C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 const hiPitchArr_10 = ['D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
@@ -850,9 +847,6 @@ tm.cue[12].stopCue = function() {
 let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
-
-// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
-
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease('C5', 2);
@@ -861,7 +855,8 @@ tm.cue[13].cueTransition = function() {
 tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
     pianoSampler.triggerAttackRelease('Bb2', 10);
-    chimeSampler.triggerAttackRelease('Bb6', 5, '+0.2');
+    sineTails.triggerAttackRelease('Bb3', 10);
+    chimeSampler.triggerAttackRelease('Bb7', 5, '+0.2');
   }
   monoSine.volume.value = -40;
   count_13 = 0;
