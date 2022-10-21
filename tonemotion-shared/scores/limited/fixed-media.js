@@ -562,7 +562,7 @@ const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4
 const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
 let count_11 = 0;
 
-// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?)
+// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?). Could also continue clicking sounds but fade out before phones fade and gliss
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].cueTransition = function() {
@@ -642,6 +642,8 @@ tm.cue[11].stopCue = function() {
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
+// TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5
+
 const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
 // mid pitch line is same as from cue 10
 const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
