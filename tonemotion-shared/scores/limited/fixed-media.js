@@ -557,92 +557,36 @@ tm.cue[10].stopCue = function() {
 
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
-const loPitchArr_11 = ['G3', 'G3', 'G3', 'G3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Bb3', 'Bb3', 'Bb3', 'Bb3', 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'C4', 'C4', 'C4', 'C4', 'G3', 'G3', GeS3, GeS3];
-const midPitchArr_11 = ['G4', 'Ab4', 'G4', 'Eb4', 'Bb4', 'Ab4', 'C5', 'G4', GqS4, 'Ab4', 'G4', 'Eb4', 'Eb4', 'Db4', CqS4, 'C4', 'Bb4', 'Ab4', 'G4', 'Eb4', 'Eb4', 'F4', 'F4', 'G4', 'Ab4', 'F4', 'F4', 'Eb4', 'Eb4', 'G4', 'G4', 'Ab4'];
-const hiPitchArr_11 = ['G5', 'G5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Bb5', 'Bb5', 'Ab5', 'Ab5', 'C6', 'C6', 'G5', GeS5, GqS5, GteS5, 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'Db5', CteS5, CqS5, CeS5, 'C5', 'C5'];
-let count_11 = 0;
 
-// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?). Could also continue clicking sounds but fade out before phones fade and gliss
+// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?). Could also continue clicking sounds but fade out before phones fade and gliss. Downbeat sound: resonant perc sound (maybe from Seth's piece?) on Db3 (decay bends down to C3), higher sound like vibeSampler on F5 and chimeSampler or bellSampler on B natural 6? Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
+
+const downbeatThud_11 = new Tone.Player(misc_sounds + 'thud_Db2-C2.mp3').toDestination();
 
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
+  revVibeSampler.volume.value = -12;
   revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
 };
 tm.cue[11].goCue = function() {
   if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
-    vibeSampler.triggerAttackRelease('Db4', 5);
-    vibeSampler.triggerAttackRelease('Db5', 5, '+0.1');
+    downbeatThud_11.start();
+    // REVISION idea: could justly tune below (e.g., to 10 / 14th partial of Db)
+    vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
+    chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
   }
-  // upper of two loops is same as cue 10, but lower is different
-  loopHi_10.start();
-  loopLo_11.start();
-  count_11 = 0;
 };
 tm.cue[11].updateTiltSounds = function() {
 };
 tm.cue[11].triggerDipSound = function() {
-  if (limit_11 > 0) {
-    let time_11 = tm.getElapsedTimeInCue(11);
-    // rotate array selection among three voices (and separate arrays)
-    let arr_11, inst_11;
-    if (count_11 % 3 === 2) {
-      arr_11 = hiPitchArr_11;
-      inst_11 = bellSampler;
-    } else if (count_11 % 3 === 1) {
-      arr_11 = midPitchArr_11;
-      inst_11 = vibeSampler;
-    } else {
-      arr_11 = loPitchArr_11;
-      // REVISION idea: replace with a different instrument? like a pot or bowl
-      inst_11 = pianoSampler;
-    }
-    // select pitch index for array
-    let index_11 = Math.floor(time_11 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_11 > arr_11.length - 1) {
-      index_11 = arr_11.length - 1;
-    }
-    inst_11.triggerAttackRelease(arr_11[index_11], 5);
-    sineTails.triggerAttackRelease(arr_11[index_11], 4);
-    // alternating loops also gradually gliss apart then gliss up and fade out
-    let bend;
-    let bendSelector = Math.random();
-    if (bendSelector < 0.3) {
-      // randomly assigned to bend down half step
-      bend = halfStepDown;
-    } else if (bendSelector > 0.7) {
-      bend = halfStepUp;
-    } else {
-      // 40% of phones don't bend until end of section
-      bend = 1;
-    }
-    if (count_11 % 2) {
-      loopLo_11.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
-      loopLo_11.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
-      ampEnvLo_11.triggerAttackRelease(0.1);
-    } else {
-      loopHi_10.playbackRate = tm.getSectionBreakpoints(11, [0, 1, 20000, 1, 40000, bend, 50000, 2]);
-      loopHi_10.volume.value = tm.getSectionBreakpoints(11, [0, 0, 40000, 0, 50000, -24]);
-      ampEnvHi_10.triggerAttackRelease(0.1);
-    }
-    count_11++;
-    limit_11--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
-  }
-  displayDipsLeft(limit_11);
 };
 tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
-  loopHi_10.stop();
-  loopLo_11.stop();
 };
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
-// TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5
+// TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5.  Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
 
 const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
 // mid pitch line is same as from cue 10
@@ -710,7 +654,7 @@ let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 
-// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue()
+// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue(). Final woosh could be reversed sound but also use a whole big flurry of rising clicks? may need to go back and rescale previous clicks to softer. long sinusoidal tail in cue 13, but then tacet
 
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -9;

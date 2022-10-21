@@ -990,7 +990,6 @@ tm.cue[14].stopCue = function() {
 
 // *******************************************************************
 // CUE 15 (DIP) continuation of cue 14 with very few dips (c. 30"), followed by decelerating and dimin clave clicks
-// pitch idea: go to 3-vox canon but no more bend (so stable at up minor 3rd)
 let count_15 = 0;
 const hiPitchArr_15 = ['F5', 'F5', 'Ab5', 'Ab5', 'Ab5', 'Ab5', 'Bb5', 'Bb5', 'Bb5', 'Bb5', 'Gb5', 'Gb5', 'Gb5', 'Gb5', 'F5', 'F5'];
 const midPitchArr_15 = ['Eb4', 'F4', 'Gb4', 'Bb4', 'Bb4', 'Ab4', 'Ab4', 'Gb4', 'F4', 'Ab4', 'Ab4', 'Bb4', 'Bb4', 'Gb4', 'Gb4', 'F4'];
@@ -1044,8 +1043,8 @@ tm.cue[15].triggerDipSound = function() {
     vibeSampler.triggerAttackRelease(arr_15[index_15], 5);
     sineTails.triggerAttackRelease(arr_15[index_15], 4);
     // also trigger dimin/decel clave clicks, which continue until dip reset
-    claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.75]);
-    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -6, 10000, -6, 30000, -32]);
+    claveLoop_14.playbackRate = tm.getSectionBreakpoints(15, [0, 1, 10000, 1, 30000, 0.5]);
+    claveLoop_14.volume.value = tm.getSectionBreakpoints(15, [0, -12, 1000, -12, 30000, -36]);
     ampEnv_14.triggerAttack();
     count_15++;
     limit_15--;
