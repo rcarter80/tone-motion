@@ -479,6 +479,7 @@ const bowedMarLoopR_10 = new Tone.Loop(function(time) {
   bowedMarSamplerR.triggerAttackRelease(pitch, 8.5);
 }, 9);
 
+// synchronized pulse: clave ang ping pong loop with pp < ff and random panning
 const fadeInEnv = new Tone.AmplitudeEnvelope({
   attack: 2,
   attackCurve: 'sine',
@@ -486,9 +487,10 @@ const fadeInEnv = new Tone.AmplitudeEnvelope({
   sustain: 1.0,
   release: 0.1,
 });
-const fadeInPanner = new Tone.Panner(-1).toDestination();
+const fadeInPanner = new Tone.Panner(0).toDestination();
 const fadeInClick = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').chain(fadeInEnv, fadeInPanner);
 fadeInClick.loop = true;
+const fadeClickTime_10 = 5 + (2 * Math.random())
 const fadeClickLoop_10 = new Tone.Loop(function(time) {
   // set initial pan position randomly (-1 is hard left, 1, is hard right)
   let pan1 = -1 + (Math.random() * 2);
@@ -497,7 +499,29 @@ const fadeClickLoop_10 = new Tone.Loop(function(time) {
   // pan quickly to second random position
   let pan2 = -1 + (Math.random() * 2);
   fadeInPanner.pan.rampTo(pan2, 1.25);
-}, 3);
+}, fadeClickTime_10);
+// same as above but twice as fast (still synchronized, so rhythms interlock)
+const fastFadeInEnv = new Tone.AmplitudeEnvelope({
+  attack: 2,
+  attackCurve: 'sine',
+  decay: 0.1,
+  sustain: 1.0,
+  release: 0.1,
+});
+const fastFadeInPanner = new Tone.Panner(0).toDestination();
+const fastFadeInClick = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').chain(fastFadeInEnv, fastFadeInPanner);
+fastFadeInClick.playbackRate = 2;
+fastFadeInClick.loop = true;
+const fastFadeClickTime_10 = 5 + (2 * Math.random())
+const fastFadeClickLoop_10 = new Tone.Loop(function(time) {
+  // set initial pan position randomly (-1 is hard left, 1, is hard right)
+  let pan1 = -1 + (Math.random() * 2);
+  fastFadeInPanner.pan.value = pan1;
+  fastFadeInEnv.triggerAttackRelease(1);
+  // pan quickly to second random position
+  let pan2 = -1 + (Math.random() * 2);
+  fastFadeInPanner.pan.rampTo(pan2, 1);
+}, fastFadeClickTime_10);
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].cueTransition = function() {
@@ -509,15 +533,17 @@ tm.cue[10].goCue = function() {
     clavePingpong.start();
     clavePingpong.volume.rampTo(-99, 3);
   }
-  fadeInClick.start();
   bowedMarSamplerL.volume.value = -32;
   bowedMarSamplerL.volume.rampTo(-6, 25);
-  // bowedMarLoopL_10.start();
+  bowedMarLoopL_10.start();
   bowedMarSamplerR.volume.value = -32;
   bowedMarSamplerR.volume.rampTo(-6, 25);
   // right channel is staggered from left
-  // bowedMarLoopR_10.start('+4');
+  bowedMarLoopR_10.start('+4');
+  fadeInClick.start();
   fadeClickLoop_10.start();
+  fastFadeInClick.start();
+  fastFadeClickLoop_10.start('+6');
 };
 tm.cue[10].triggerShakeSound = function() {
 };
@@ -526,6 +552,7 @@ tm.cue[10].stopCue = function() {
   bowedMarLoopL_10.stop();
   bowedMarLoopR_10.stop();
   fadeClickLoop_10.stop();
+  fastFadeClickLoop_10.stop();
 };
 
 // *******************************************************************
