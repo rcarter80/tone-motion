@@ -152,11 +152,12 @@ const buzzySynth = new Tone.Synth({
 }).connect(buzzyTremolo);
 
 // bowed marimba time-stretched to 8-second sample (panned LEFT)
+// TODO: try to switch back to WAV file that I allude to below, which caused issues with pushing to github
 // NOTE: uses WAV, not MP3, because this is for good speaker playback
 const bowedMarLeftPanner = new Tone.Panner(-1).toDestination();
 const bowedMarSamplerL = new Tone.Sampler({
   urls: {
-    'A3': 'bowed_marimba-A3_8sec.wav',
+    'A3': 'bowed_marimba-A3_8sec.mp3',
   },
   baseUrl: marimba_sounds,
 }).connect(bowedMarLeftPanner);
@@ -165,7 +166,7 @@ const bowedMarSamplerL = new Tone.Sampler({
 const bowedMarRightPanner = new Tone.Panner(-1).toDestination();
 const bowedMarSamplerR = new Tone.Sampler({
   urls: {
-    'A3': 'bowed_marimba-A3_8sec.wav',
+    'A3': 'bowed_marimba-A3_8sec.mp3',
   },
   baseUrl: marimba_sounds,
 }).connect(bowedMarRightPanner);
