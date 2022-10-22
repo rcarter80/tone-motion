@@ -558,7 +558,25 @@ tm.cue[10].stopCue = function() {
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
 
-// TODO: this probably needs a fairly dramatic downbeat sound to compensate for loss of density in phone sounds. include change of pitch material (new Db?). Could also continue clicking sounds but fade out before phones fade and gliss. Downbeat sound: resonant perc sound (maybe from Seth's piece?) on Db3 (decay bends down to C3), higher sound like vibeSampler on F5 and chimeSampler or bellSampler on B natural 6? Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
+// TODO: Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade and gliss. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
+
+// 2-dimensional array uses 2nd element of subarray as pitch-bend flag
+const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
+let count_11 = 0;
+const droneLoop_11 = new Tone.Loop(function(time) {
+  // TODO: change release time of monoSine to 3 sec (or more) but consider that last Eb1 may be repeated if section goes beyond 64" so there may be overlap with drone of next section
+  // TODO: double sinusoidal sub-bass with stretched bowed marimba sampler. That needs to be duplicated with bending stretched bowed marimba sampler and I'll use 2nd element of subBassPitchArr_11 subarry as test whether to bend
+  monoSine.detune.value = 0;
+  monoSine.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
+  if (subBassPitchArr_11[count_11][1]) {
+    monoSine.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
+  }
+  if (count_11 < 3) {
+    count_11++;
+  } else {
+    count_11 = 3; // stay on last note of array if section continues beyond 64"
+  }
+}, 16);
 
 const downbeatThud_11 = new Tone.Player(misc_sounds + 'thud_Db2-C2.mp3').toDestination();
 
@@ -574,6 +592,10 @@ tm.cue[11].goCue = function() {
     vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
     chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
   }
+  droneCount_11 = 0;
+  // TODO: reset volume at goCue but then rampTo() higher volume in goCue too
+  monoSine.volume.value = 0; // // TODO: set much lower to start
+  droneLoop_11.start();
 };
 tm.cue[11].updateTiltSounds = function() {
 };
@@ -582,6 +604,8 @@ tm.cue[11].triggerDipSound = function() {
 tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
+  droneLoop_11.stop();
+  monoSine.triggerRelease();
 };
 
 // *******************************************************************
