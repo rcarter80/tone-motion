@@ -23,6 +23,7 @@ const marimba_sounds = 'tonemotion-shared/audio/marimba/';
 // interval and microtonal pitch definitions
 const halfStepUp = 2 ** (1 / 12);
 const halfStepDown = 1 / halfStepUp;
+const GqS2 = 55 * ((2 ** (1 / 48)) ** 42); // G quarter-sharp 2
 const CeS3 = 110 * ((2 ** (1 / 48)) ** 13); // C eighth-sharp 3
 const CqS3 = 110 * ((2 ** (1 / 48)) ** 14); // C quarter-sharp 3
 const CteS3 = 110 * ((2 ** (1 / 48)) ** 15); // C 3-eighths-sharp 3
@@ -122,12 +123,28 @@ const monoSine = new Tone.Synth({
     type: 'sine',
   },
   envelope: {
-    attack: 1,
+    attack: 3,
     attackCurve: "linear",
     decay: 0.1,
     decayCurve: "linear",
     sustain: 1,
-    release: 1,
+    release: 3,
+    releaseCurve: "linear",
+  },
+  volume: -28,
+}).toDestination();
+// a 2nd monophonic synth (identical to above) is needed for cue 11/12 overlap
+const monoSine2 = new Tone.Synth({
+  oscillator: {
+    type: 'sine',
+  },
+  envelope: {
+    attack: 3,
+    attackCurve: "linear",
+    decay: 0.1,
+    decayCurve: "linear",
+    sustain: 1,
+    release: 3,
     releaseCurve: "linear",
   },
   volume: -28,
@@ -170,6 +187,14 @@ const bowedMarSamplerR = new Tone.Sampler({
   },
   baseUrl: marimba_sounds,
 }).connect(bowedMarRightPanner);
+// bowed marimba time-stretched to 8-second sample (panned CENTER)
+const bowedMarSamplerC = new Tone.Sampler({
+  urls: {
+    'E2': 'bowed_marimba-E2_8sec.mp3',
+    'G2': 'bowed_marimba-E2_8sec.mp3',
+  },
+  baseUrl: marimba_sounds,
+}).toDestination();
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
 // REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
@@ -564,7 +589,6 @@ tm.cue[10].stopCue = function() {
 const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
 let count_11 = 0;
 const droneLoop_11 = new Tone.Loop(function(time) {
-  // TODO: change release time of monoSine to 3 sec (or more) but consider that last Eb1 may be repeated if section goes beyond 64" so there may be overlap with drone of next section
   // TODO: double sinusoidal sub-bass with stretched bowed marimba sampler. That needs to be duplicated with bending stretched bowed marimba sampler and I'll use 2nd element of subBassPitchArr_11 subarry as test whether to bend
   monoSine.detune.value = 0;
   monoSine.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
@@ -577,6 +601,16 @@ const droneLoop_11 = new Tone.Loop(function(time) {
     count_11 = 3; // stay on last note of array if section continues beyond 64"
   }
 }, 16);
+const bowedMarPitchArr_11 = ['G2', GqS2, 'Ab2', 'Ab2', 'G2', 'G2', 'Eb2', 'Eb2'];
+let countB_11 = 0;
+const bowedMarLoop_11 = new Tone.Loop(function(time) {
+  bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
+  if (countB_11 < 7) {
+    countB_11++;
+  } else {
+    countB_11 = 7; // stay on last note of array if section continues beyond 64"
+  }
+}, 8);
 
 const downbeatThud_11 = new Tone.Player(misc_sounds + 'thud_Db2-C2.mp3').toDestination();
 
@@ -586,16 +620,19 @@ tm.cue[11].cueTransition = function() {
   revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
 };
 tm.cue[11].goCue = function() {
-  if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
+  if (false && tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
     downbeatThud_11.start();
     // REVISION idea: could justly tune below (e.g., to 10 / 14th partial of Db)
     vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
     chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
   }
-  droneCount_11 = 0;
+  count_11 = countB_11 = 0;
   // TODO: reset volume at goCue but then rampTo() higher volume in goCue too
-  monoSine.volume.value = 0; // // TODO: set much lower to start
+  monoSine.volume.value = -12;
+  monoSine.envelope.release = 3; // release time changed in stopCue()
   droneLoop_11.start();
+  bowedMarSamplerC.volume.vale = -12;
+  bowedMarLoop_11.start();
 };
 tm.cue[11].updateTiltSounds = function() {
 };
@@ -605,12 +642,17 @@ tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
   droneLoop_11.stop();
+  monoSine.envelope.release = 1; // release quickly to minimize cue 12 overlap
   monoSine.triggerRelease();
+  bowedMarLoop_11.stop();
+  // TODO: change release of bowedMarSamplerC envelope to make gentler
+  bowedMarSamplerC.triggerRelease();
 };
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
 // TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5.  Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
+// NOTE: use monoSine2 NOT monoSine because there may be overlap in cue 11 to 12
 
 const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
 // mid pitch line is same as from cue 10
