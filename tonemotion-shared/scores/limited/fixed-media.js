@@ -585,15 +585,47 @@ tm.cue[10].stopCue = function() {
 
 // TODO: Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade and gliss. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
 
+const testBass_11 = new Tone.MonoSynth({
+  envelope: {
+    attack: 8,
+    attackCurve: "linear",
+    decay: 5,
+    decayCurve: "linear",
+    sustain: 0.8,
+    release: 3,
+    releaseCurve: "linear",
+  },
+  filterEnvelope: {
+    attack: 8,
+    attackCurve: "linear",
+    decay: 5,
+    decayCurve: "linear",
+    sustain: 0.8,
+    release: 3,
+    releaseCurve: "linear",
+  },
+}).toDestination();
+testBass_11.volume.value = -3;
+// waveform derived from my voice making nasal sound
+testBass_11.partials = [1, 0.5, 0.33, 0.25, 0.2, 0.166, 0.426667, 0.226667, 0.086667, 0, 0.333333, 0.280000, 0, 0.266667, 0, 0.233333, 0, 0.226667, 0.293333, 0.466667, 0.433333, 0.420000, 0.486667, 0.540000, 0.106667, 0.260000, 0, 0, 0.100000, 0.246667, 0.086667, 0, 0.093333, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.113333, 0.120000, 0.306667, 0.320000, 0.366667, 0.280000];
+const testBowedMarSampler = new Tone.Sampler({
+  urls: {
+    'G1': 'bowed_marimba-G3_16sec.mp3', // actually 2 octaves higher
+  },
+  baseUrl: marimba_sounds,
+}).toDestination();
+testBowedMarSampler.volume.value = -24;
+
 // 2-dimensional array uses 2nd element of subarray as pitch-bend flag
 const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
 let count_11 = 0;
 const droneLoop_11 = new Tone.Loop(function(time) {
   // TODO: double sinusoidal sub-bass with stretched bowed marimba sampler. That needs to be duplicated with bending stretched bowed marimba sampler and I'll use 2nd element of subBassPitchArr_11 subarry as test whether to bend
-  monoSine.detune.value = 0;
-  monoSine.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
+  testBass_11.detune.value = 0; // was monoSine
+  testBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
+  testBowedMarSampler.triggerAttackRelease(subBassPitchArr_11[count_11][0], 16);
   if (subBassPitchArr_11[count_11][1]) {
-    monoSine.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
+    testBass_11.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
   }
   if (count_11 < 3) {
     count_11++;
@@ -604,7 +636,7 @@ const droneLoop_11 = new Tone.Loop(function(time) {
 const bowedMarPitchArr_11 = ['G2', GqS2, 'Ab2', 'Ab2', 'G2', 'G2', 'Eb2', 'Eb2'];
 let countB_11 = 0;
 const bowedMarLoop_11 = new Tone.Loop(function(time) {
-  bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
+  // bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
   if (countB_11 < 7) {
     countB_11++;
   } else {
