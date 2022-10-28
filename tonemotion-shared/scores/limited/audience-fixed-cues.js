@@ -1071,3 +1071,16 @@ tm.cue[15].stopCue = function() {
 tm.cue[16] = new TMCue('finished', 0, NO_LIMIT);
 tm.cue[16].goCue = function() {
 };
+
+// *******************************************************************
+// Fixed cue timings
+tm.fixedCuesOnly = true;
+// timeline for fixed cues below
+Tone.Transport.schedule((time) => {
+  tm.scheduleFixedCues(cueArray);
+}, '0');
+const cueArray = [
+  [4, 0],
+  [5, 3000],
+  [6, 3000]
+];
