@@ -546,6 +546,11 @@ ToneMotion.prototype.bindButtonFunctions = function() {
       case 'readyToPlay':
       case 'stopped':
         if (this.fixedCuesOnly) {
+          if (this.status === 'stopped') {
+            // if status is 'readyToPlay' motion updates are running
+            // but if status is 'stopped' motion updates need to be restarted
+            this.startMotionUpdatesAndCueFetching();
+          }
           // NOW is the time when a fixed cue site starts the Transport
           Tone.Transport.start();
           this.hidePracticeButtons();
