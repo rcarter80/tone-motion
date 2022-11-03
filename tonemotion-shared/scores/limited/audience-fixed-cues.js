@@ -1081,7 +1081,6 @@ Tone.Transport.schedule((time) => {
 }, '0');
 // TODO: determine actual fixed cue timings (but try to keep whole piece < 10')
 const cueArray = [
-  [4, 0],
-  [5, 3000],
-  [6, 6000]
+  [5, 0],
+  [6, 62000, 2000]
 ];
