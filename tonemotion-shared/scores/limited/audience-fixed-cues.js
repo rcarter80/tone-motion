@@ -1079,8 +1079,17 @@ tm.fixedCuesOnly = true;
 Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
-// TODO: determine actual fixed cue timings (but try to keep whole piece < 10')
 const cueArray = [
   [5, 0],
-  [6, 62000, 2000]
+  [6, 62000, 2000],
+  [7, 124000, 2000],
+  [8, 154000, 2000],
+  [9, 184000, 2000],
+  [10, 214000, 2000],
+  [11, 244000, 2000],
+  [12, 306000, 2000],
+  [13, 368000, 2000],
+  [14, 430000, 2000],
+  [15, 460000, 2000],
+  [16, 490000, 2000]
 ];
