@@ -638,13 +638,40 @@ tm.cue[11].stopCue = function() {
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
-// TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5.  Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
-// NOTE: use monoSine2 NOT monoSine because there may be overlap in cue 11 to 12 OR just use super buzzy stretched low bowed marimba (mp < fff) and no other sounds
+// TODO: Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
 
-const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
-// mid pitch line is same as from cue 10
-const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
+const loBowedMarSampler = new Tone.Sampler({
+  urls: {
+    'Bb1': 'bowed-marimba_Bb1-16s.mp3'
+  },
+  baseUrl: marimba_sounds,
+}).toDestination();
+const loBentBowedMarSampler = new Tone.Sampler({
+  urls: {
+    'G1': 'bowed-marimba_G1_Ab1-16s.mp3'
+  },
+  baseUrl: marimba_sounds,
+}).toDestination();
+
+// 2-dimensional array uses 2nd element of subarray as pitch-bend flag
+const subBassPitchArr_12 = [['Bb1', 0], ['Ab1', 0], ['C2', 0], ['G1', 1]];
 let count_12 = 0;
+const droneLoop_12 = new Tone.Loop(function(time) {
+  let inst_12;
+  if (subBassPitchArr_12[count_12][1]) {
+    // bend flag is true, so select sampler with built-in pitch bend
+    inst_12 = loBentBowedMarSampler;
+  } else {
+    inst_12 = loBowedMarSampler;
+  }
+  inst_12.triggerAttackRelease(subBassPitchArr_12[count_12][0], 16);
+  // TODO: decide if I actually want to support possibility of repeating last note or if I should set iterations to 4
+  if (count_12 < 3) {
+    count_12++;
+  } else {
+    count_12 = 3; // stay on last note of array if section continues beyond 64"
+  }
+}, 16);
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
@@ -657,48 +684,17 @@ tm.cue[12].goCue = function() {
     vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
   }
   count_12 = 0;
+  // TODO: set actual start volume and then use rampTo() to crescendo
+  loBowedMarSampler.volume.value = -9;
+  loBentBowedMarSampler.volume.value = -9;
+  droneLoop_12.start();
 };
 tm.cue[12].triggerShakeSound = function() {
-  if (limit_12 > 0) {
-    let time_12 = tm.getElapsedTimeInCue(12);
-    // rotate array selection among three voices (and separate arrays) OR clicks
-    let arr_12, inst_12;
-    if (count_12 % 4 === 3) {
-      clickFading.playbackRate = tm.getSectionBreakpoints(12, [0, 1, 60000, 2]);
-      clickFading.start();
-    } else {
-      // pitched sounds only triggered if clicking sound is not
-      if (count_12 % 4 === 2) {
-        arr_12 = hiPitchArr_12;
-        inst_12 = bellSampler;
-      } else if (count_12 % 4 === 1) {
-        arr_12 = midPitchArr_11; // mid voice is same as cue 11
-        inst_12 = vibeSampler;
-      } else {
-        arr_12 = loPitchArr_12;
-        inst_12 = pianoSampler;
-      }
-      // select pitch index for array
-      let index_12 = Math.floor(time_12 / 2000);
-      // stay on last pitch of array if last pitch is reached
-      if (index_12 > arr_12.length - 1) {
-        index_12 = arr_12.length - 1;
-      }
-      inst_12.triggerAttackRelease(arr_12[index_12], 5);
-      sineTails.triggerAttackRelease(arr_12[index_12], 4);
-      // higher bell is 2 oct. higher and 0.1 sec later. Get freq and mult by 4
-      let index = count_12 % midPitchArr_11.length;
-      let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
-      bellSampler.triggerAttackRelease(hiPitch, 5, '+0.1');
-    }
-    count_12++;
-    limit_12--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
-  }
-  displayShakesLeft(limit_12);
 };
 tm.cue[12].stopCue = function() {
+  droneLoop_12.stop();
+  loBowedMarSampler.volume.rampTo(-60, 1);
+  loBentBowedMarSampler.volume.rampTo(-60, 1);
 };
 
 // *******************************************************************
