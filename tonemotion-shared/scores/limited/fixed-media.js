@@ -347,35 +347,10 @@ tm.cue[3].stopCue = function() {
 };
 
 // *******************************************************************
-// Section DIP/SHAKE limits
-// need to define pitch array here in order to set limit_7 / 8 from array length
-const pitchArr_7 = ['Eb5', 'Eb4', 'Eb5', 'D4', 'Eb4', 'D5', 'G4', 'D3', 'C4', 'Eb5', 'D4', 'Bb3', 'G5', 'Eb4', 'Eb3', DqS4, 'C5', 'D4', 'Eb4', 'D5', 'G4', 'G3', 'G4', 'Bb4', 'A4', AqS4, 'Eb5', 'Bb4'];
-const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5', 'F4', 'G5', 'F4', 'Eb4', 'Bb2', 'D4', 'G5', 'F4', 'A5', 'F4', 'G4', 'Eb3', 'G4', AqS5, 'Eb4', 'Bb5', 'Eb4', 'D4'];
-let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
-function resetCueLimits() {
-  // some dip and shake limits are higher for testing
-  limit_5 = (tm.debug) ? 931 : 31;
-  limit_6 = (tm.debug) ? 941 : 41;
-  limit_7 = pitchArr_7.length;
-  limit_8 = pitchArr_8.length;
-  limit_9 = (tm.debug) ? 917 : 17;
-  limit_10 = (tm.debug) ? 931 : 31;
-  limit_11 = (tm.debug) ? 941 : 41;
-  limit_12 = 129;
-  limit_13 = (tm.debug) ? 916 : 16;
-  limit_14 = (tm.debug) ? 99 : 9;
-  limit_15 = (tm.debug) ? 98 : 8;
-}
-// call once to initially set limits on page load, but can also reset in cue 4
-resetCueLimits();
-
-// *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
+// CUE 4: sets status to 'waitingForPieceToStart', resets all phone cue counters
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
-  // reset ALL counters here, so that people can start and stop during piece and keep their counters intact, but I can reset every counter with this cue
-  resetCueLimits();
 };
 tm.cue[4].stopCue = function() {
   // nothing to clean up
@@ -417,9 +392,6 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7 (DIP): accel clicks-> vibes 3-vox canon, pitches in array (c. 30-60")
-bellSampler.release = 0.8; // bells pitched very low require gentler fade out
-let count_7 = 0;
-
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[7].goCue = function() {
 };
@@ -434,7 +406,6 @@ tm.cue[7].stopCue = function() {
 
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
-let count_8 = 0;
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[8].goCue = function() {
 };
@@ -444,7 +415,7 @@ tm.cue[8].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 9 (DIP) increased accel/decel clicks with restricted canon (c. 30")
+// CUE 9 sine tails fading in (at first sounding like they come from phones)
 let index_9 = 0;
 const loopTimeL_9 = 4 + Math.random() * 2; // notes triggered every 4 to 6 sec.
 const sineLoopL_9 = new Tone.Loop(function(time) {
@@ -488,10 +459,7 @@ tm.cue[9].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 10 (SHAKE) synchronized pulse triggered by shake sounds (c. 30")
-// NOTE: When composing fixed media, could gradually fade in synchronized pulsed sounds. Could be mostly unpitched (like same clicks as phones) and could be multiple (pp < ff) gestures with stereo movement. Also could add high "drone" on A3 glissing to Bb3
-// TODO: schedule clicks at slightly random intervals. could move to left and duplicate second on right. OR have single sound move by random pan ranges
-
+// CUE 10 bowed marimba A3-Bb3, sporadic sync'd clicks pp < ff
 const Bb3 = 220 * halfStepUp;
 const bowedMarLoopL_10 = new Tone.Loop(function(time) {
   // linear slide from A3 to Bb3
@@ -554,14 +522,16 @@ tm.cue[10].cueTransition = function() {
 };
 tm.cue[10].goCue = function() {
   if (tm.getElapsedTimeInCue(10) < CUE_SOUND_WINDOW) {
-    clavePingpong.volume.value = 0;
+    vibeSampler.volume.value = -6;
+    vibeSampler.triggerAttackRelease('G3', 5);
+    clavePingpong.volume.value = -6;
     clavePingpong.start();
     clavePingpong.volume.rampTo(-99, 3);
   }
-  bowedMarSamplerL.volume.value = -32;
+  bowedMarSamplerL.volume.value = -60;
   bowedMarSamplerL.volume.rampTo(-6, 25);
   bowedMarLoopL_10.start();
-  bowedMarSamplerR.volume.value = -32;
+  bowedMarSamplerR.volume.value = -60;
   bowedMarSamplerR.volume.rampTo(-6, 25);
   // right channel is staggered from left
   bowedMarLoopR_10.start('+4');
@@ -575,7 +545,9 @@ tm.cue[10].triggerShakeSound = function() {
 tm.cue[10].stopCue = function() {
   fadeInClick.stop();
   bowedMarLoopL_10.stop();
+  bowedMarSamplerL.volume.rampTo(-60, 1);
   bowedMarLoopR_10.stop();
+  bowedMarSamplerR.volume.rampTo(-60, 1);
   fadeClickLoop_10.stop();
   fastFadeClickLoop_10.stop();
 };
@@ -585,29 +557,25 @@ tm.cue[10].stopCue = function() {
 
 // TODO: Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade and gliss. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
 
-const testBass_11 = new Tone.MonoSynth({
+// sub-bass is routed through tremolo to use LFO to control amplitude
+const tremolo_11 = new Tone.Tremolo(2, 0.5).toDestination().start();
+tremolo_11.spread = 0; // by default, LFOs are out of phase in each channel
+tremolo_11.type = "triangle";
+const wobbleBass_11 = new Tone.Synth({
+  // envelope times designed SPECIFICALLY for 16-second long notes
   envelope: {
     attack: 8,
     attackCurve: "linear",
     decay: 5,
     decayCurve: "linear",
-    sustain: 0.8,
+    sustain: 0.1,
     release: 3,
-    releaseCurve: "linear",
-  },
-  filterEnvelope: {
-    attack: 8,
-    attackCurve: "linear",
-    decay: 5,
-    decayCurve: "linear",
-    sustain: 0.8,
-    release: 3,
-    releaseCurve: "linear",
-  },
-}).toDestination();
-testBass_11.volume.value = -3;
+    releaseCurve: "sine",
+  }
+}).connect(tremolo_11);
+wobbleBass_11.partials = [1, 0.5];
 // waveform derived from my voice making nasal sound
-testBass_11.partials = [1, 0.5, 0.33, 0.25, 0.2, 0.166, 0.426667, 0.226667, 0.086667, 0, 0.333333, 0.280000, 0, 0.266667, 0, 0.233333, 0, 0.226667, 0.293333, 0.466667, 0.433333, 0.420000, 0.486667, 0.540000, 0.106667, 0.260000, 0, 0, 0.100000, 0.246667, 0.086667, 0, 0.093333, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.113333, 0.120000, 0.306667, 0.320000, 0.366667, 0.280000];
+// wobbleBass_11.partials = [1, 0.5, 0.33, 0.25, 0.2, 0.166, 0.426667, 0.226667, 0.086667, 0, 0.333333, 0.280000, 0, 0.266667, 0, 0.233333, 0, 0.226667, 0.293333, 0.466667, 0.433333, 0.420000, 0.486667, 0.540000, 0.106667, 0.260000, 0, 0, 0.100000, 0.246667, 0.086667, 0, 0.093333, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.113333, 0.120000, 0.306667, 0.320000, 0.366667, 0.280000];
 const testBowedMarSampler = new Tone.Sampler({
   urls: {
     'G1': 'bowed_marimba-G3_16sec.mp3', // actually 2 octaves higher
@@ -621,11 +589,11 @@ const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
 let count_11 = 0;
 const droneLoop_11 = new Tone.Loop(function(time) {
   // TODO: double sinusoidal sub-bass with stretched bowed marimba sampler. That needs to be duplicated with bending stretched bowed marimba sampler and I'll use 2nd element of subBassPitchArr_11 subarry as test whether to bend
-  testBass_11.detune.value = 0; // was monoSine
-  testBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
+  wobbleBass_11.detune.value = 0;
+  wobbleBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
   testBowedMarSampler.triggerAttackRelease(subBassPitchArr_11[count_11][0], 16);
   if (subBassPitchArr_11[count_11][1]) {
-    testBass_11.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
+    wobbleBass_11.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
   }
   if (count_11 < 3) {
     count_11++;
@@ -636,7 +604,7 @@ const droneLoop_11 = new Tone.Loop(function(time) {
 const bowedMarPitchArr_11 = ['G2', GqS2, 'Ab2', 'Ab2', 'G2', 'G2', 'Eb2', 'Eb2'];
 let countB_11 = 0;
 const bowedMarLoop_11 = new Tone.Loop(function(time) {
-  // bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
+  bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
   if (countB_11 < 7) {
     countB_11++;
   } else {
@@ -652,7 +620,7 @@ tm.cue[11].cueTransition = function() {
   revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
 };
 tm.cue[11].goCue = function() {
-  if (false && tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
+  if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
     downbeatThud_11.start();
     // REVISION idea: could justly tune below (e.g., to 10 / 14th partial of Db)
     vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
@@ -660,11 +628,11 @@ tm.cue[11].goCue = function() {
   }
   count_11 = countB_11 = 0;
   // TODO: reset volume at goCue but then rampTo() higher volume in goCue too
-  monoSine.volume.value = -12;
-  monoSine.envelope.release = 3; // release time changed in stopCue()
+  wobbleBass_11.volume.value = -3; // TODO: make this softer to start
+  wobbleBass_11.envelope.release = 3; // release time changed in stopCue()
   droneLoop_11.start();
-  bowedMarSamplerC.volume.vale = -12;
-  bowedMarLoop_11.start();
+  bowedMarSamplerC.volume.value = -12;
+  // bowedMarLoop_11.start();
 };
 tm.cue[11].updateTiltSounds = function() {
 };
@@ -674,8 +642,8 @@ tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
   droneLoop_11.stop();
-  monoSine.envelope.release = 1; // release quickly to minimize cue 12 overlap
-  monoSine.triggerRelease();
+  wobbleBass_11.envelope.release = 1; // release to minimize cue 12 overlap
+  wobbleBass_11.triggerRelease();
   bowedMarLoop_11.stop();
   // TODO: change release of bowedMarSamplerC envelope to make gentler
   bowedMarSamplerC.triggerRelease();
