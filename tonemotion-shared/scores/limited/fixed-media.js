@@ -558,7 +558,7 @@ tm.cue[10].stopCue = function() {
 // TODO: Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade and gliss. Bass could be sinusoidal sub bass starting on G1 but glissing to Ab1 for first note; fade from somewhat soft to gradually loud. double octave higher in time-stretched marimba sampler. turn volume down for previous clicks to save room for louder clicks later
 
 // sub-bass is routed through tremolo to use LFO to control amplitude
-const tremolo_11 = new Tone.Tremolo(2, 0.5).toDestination().start();
+const tremolo_11 = new Tone.Tremolo(1.5, 0.6).toDestination().start();
 tremolo_11.spread = 0; // by default, LFOs are out of phase in each channel
 tremolo_11.type = "triangle";
 const wobbleBass_11 = new Tone.Synth({
@@ -574,15 +574,13 @@ const wobbleBass_11 = new Tone.Synth({
   }
 }).connect(tremolo_11);
 wobbleBass_11.partials = [1, 0.5];
-// waveform derived from my voice making nasal sound
-// wobbleBass_11.partials = [1, 0.5, 0.33, 0.25, 0.2, 0.166, 0.426667, 0.226667, 0.086667, 0, 0.333333, 0.280000, 0, 0.266667, 0, 0.233333, 0, 0.226667, 0.293333, 0.466667, 0.433333, 0.420000, 0.486667, 0.540000, 0.106667, 0.260000, 0, 0, 0.100000, 0.246667, 0.086667, 0, 0.093333, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.113333, 0.120000, 0.306667, 0.320000, 0.366667, 0.280000];
-const testBowedMarSampler = new Tone.Sampler({
+
+const bowedMarSampler16s = new Tone.Sampler({
   urls: {
     'G1': 'bowed_marimba-G3_16sec.mp3', // actually 2 octaves higher
   },
   baseUrl: marimba_sounds,
 }).toDestination();
-testBowedMarSampler.volume.value = -24;
 
 // 2-dimensional array uses 2nd element of subarray as pitch-bend flag
 const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
@@ -591,7 +589,7 @@ const droneLoop_11 = new Tone.Loop(function(time) {
   // TODO: double sinusoidal sub-bass with stretched bowed marimba sampler. That needs to be duplicated with bending stretched bowed marimba sampler and I'll use 2nd element of subBassPitchArr_11 subarry as test whether to bend
   wobbleBass_11.detune.value = 0;
   wobbleBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
-  testBowedMarSampler.triggerAttackRelease(subBassPitchArr_11[count_11][0], 16);
+  bowedMarSampler16s.triggerAttackRelease(subBassPitchArr_11[count_11][0], 16);
   if (subBassPitchArr_11[count_11][1]) {
     wobbleBass_11.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
   }
@@ -601,16 +599,6 @@ const droneLoop_11 = new Tone.Loop(function(time) {
     count_11 = 3; // stay on last note of array if section continues beyond 64"
   }
 }, 16);
-const bowedMarPitchArr_11 = ['G2', GqS2, 'Ab2', 'Ab2', 'G2', 'G2', 'Eb2', 'Eb2'];
-let countB_11 = 0;
-const bowedMarLoop_11 = new Tone.Loop(function(time) {
-  bowedMarSamplerC.triggerAttackRelease(bowedMarPitchArr_11[countB_11], 7.9);
-  if (countB_11 < 7) {
-    countB_11++;
-  } else {
-    countB_11 = 7; // stay on last note of array if section continues beyond 64"
-  }
-}, 8);
 
 const downbeatThud_11 = new Tone.Player(misc_sounds + 'thud_Db2-C2.mp3').toDestination();
 
@@ -626,13 +614,12 @@ tm.cue[11].goCue = function() {
     vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
     chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
   }
-  count_11 = countB_11 = 0;
+  count_11 = 0;
   // TODO: reset volume at goCue but then rampTo() higher volume in goCue too
   wobbleBass_11.volume.value = -3; // TODO: make this softer to start
   wobbleBass_11.envelope.release = 3; // release time changed in stopCue()
+  bowedMarSampler16s.volume.value = -24;
   droneLoop_11.start();
-  bowedMarSamplerC.volume.value = -12;
-  // bowedMarLoop_11.start();
 };
 tm.cue[11].updateTiltSounds = function() {
 };
@@ -644,15 +631,13 @@ tm.cue[11].stopCue = function() {
   droneLoop_11.stop();
   wobbleBass_11.envelope.release = 1; // release to minimize cue 12 overlap
   wobbleBass_11.triggerRelease();
-  bowedMarLoop_11.stop();
-  // TODO: change release of bowedMarSamplerC envelope to make gentler
-  bowedMarSamplerC.triggerRelease();
+  bowedMarSampler16s.volume.rampTo(-60, 1);
 };
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
 // TODO: In peak section of non-interactive part, use synthesis instrument with waveform derived from bowed marimba (or maybe SPEAR file with clean up bowed marimba?) with slow filter sweep on each note of slow bass line. Could also create more complex sound for a sampler by doubling marimba at e.g P5.  Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
-// NOTE: use monoSine2 NOT monoSine because there may be overlap in cue 11 to 12
+// NOTE: use monoSine2 NOT monoSine because there may be overlap in cue 11 to 12 OR just use super buzzy stretched low bowed marimba (mp < fff) and no other sounds
 
 const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3', 'G3', 'G3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Eb3', 'Db3', 'Db3', CteS3, CteS3, CqS3, CqS3, CeS3, CeS3, 'C3', 'C3', 'C3', 'C3'];
 // mid pitch line is same as from cue 10
@@ -720,7 +705,7 @@ let count_13 = 0;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 
-// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue(). Final woosh could be reversed sound but also use a whole big flurry of rising clicks? may need to go back and rescale previous clicks to softer. long sinusoidal tail in cue 13, but then tacet
+// NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue(). Final woosh could be reversed sound but also use a whole big flurry of rising clicks? may need to go back and rescale previous clicks to softer. long sinusoidal tail in cue 13, but then tacet. Downbeat sound of cue 13 can also be flurry of detuned bells in stereo (single audio file made in Logic) + synthesized sinusoidal tail with very long decay 
 
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -9;
