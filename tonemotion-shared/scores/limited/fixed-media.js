@@ -390,9 +390,9 @@ tm.cue[10].cueTransition = function() {
 };
 tm.cue[10].goCue = function() {
   if (tm.getElapsedTimeInCue(10) < CUE_SOUND_WINDOW) {
-    vibeSampler.volume.value = -9;
+    vibeSampler.volume.value = -12;
     vibeSampler.triggerAttackRelease('G3', 5);
-    clavePingpong.volume.value = -6;
+    clavePingpong.volume.value = -12;
     clavePingpong.start();
     clavePingpong.volume.rampTo(-99, 3);
   }
@@ -424,7 +424,7 @@ tm.cue[10].stopCue = function() {
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
 
-// REVISION IDEA: Continuing clicks could now be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade
+// REVISION IDEA: could add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out
 
 // sub-bass is routed through tremolo to use LFO to control amplitude
 const tremolo_11 = new Tone.Tremolo(1.5, 1).toDestination().start();
@@ -477,10 +477,12 @@ tm.cue[11].cueTransition = function() {
 };
 tm.cue[11].goCue = function() {
   if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
-    downbeatThud_11.volume.value = -3;
+    downbeatThud_11.volume.value = -6;
     downbeatThud_11.start();
-    // REVISION idea: could justly tune below (e.g., to 10 / 14th partial of Db)
+    // REVISION IDEA: could justly tune below (e.g., to 10 / 14th partial of Db)
+    vibeSampler.volume.value = -6;
     vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
+    chimeSampler.volume.value = -3;
     chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
   }
   count_11 = 0;
@@ -551,9 +553,9 @@ tm.cue[12].goCue = function() {
     vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
   }
   count_12 = 0;
-  // TODO: set actual start volume and then use rampTo() to crescendo
-  loBowedMarSampler.volume.value = -9;
-  loBentBowedMarSampler.volume.value = -9;
+  // TODO: set both levels below (start level and final level)
+  loBowedMarSampler.volume.value = -12;
+  loBentBowedMarSampler.volume.value = -3;
   droneLoop_12.start();
 };
 tm.cue[12].triggerShakeSound = function() {
@@ -573,13 +575,17 @@ tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 // NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue(). Final woosh could be reversed sound but also use a whole big flurry of rising clicks? may need to go back and rescale previous clicks to softer. long sinusoidal tail in cue 13, but then tacet. Downbeat sound of cue 13 can also be flurry of detuned bells in stereo (single audio file made in Logic) + synthesized sinusoidal tail with very long decay
 
 tm.cue[13].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
+  revVibeSampler.volume.value = -6;
   revVibeSampler.triggerAttackRelease('C5', 2);
+  clickTransition.volume.value = -3;
   clickTransition.start();
 };
 tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
-    pianoSampler.triggerAttackRelease('Bb2', 10);
+    chimeSampler.volume.value = -6;
+    chimeSampler.attack = 0.1;
+    chimeSampler.triggerAttackRelease('Bb2', 20);
+    chimeSampler.attack = 0.0;
     chimeSampler.triggerAttackRelease('Bb6', 5, '+0.2');
   }
 };
