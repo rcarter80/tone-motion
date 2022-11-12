@@ -302,6 +302,8 @@ tm.cue[4].stopCue = function() {
   // nothing to clean up
 };
 
+// REVISION IDEA: improve transitions: extend transition time (maybe 3 seconds?) and fade out audience sounds during transition to allow piece to "breathe" more. 
+
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
