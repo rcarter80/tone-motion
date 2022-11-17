@@ -112,7 +112,6 @@ const bowedMarSamplerR = new Tone.Sampler({
 }).connect(bowedMarRightPanner);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
-// REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -424,7 +423,7 @@ tm.cue[10].stopCue = function() {
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
 
-// REVISION IDEA: could add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out
+// TODO: add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out
 
 // sub-bass is routed through tremolo to use LFO to control amplitude
 const tremolo_11 = new Tone.Tremolo(1.5, 1).toDestination().start();
@@ -504,14 +503,13 @@ tm.cue[11].stopCue = function() {
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
-// REVISION IDEA: Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
-
 const loBowedMarSampler = new Tone.Sampler({
   urls: {
     'Bb1': 'bowed-marimba_Bb1-16s.mp3'
   },
   baseUrl: marimba_sounds,
 }).toDestination();
+// same instrument as above, but the audio file contains a 1/2-step pitch bend
 const loBentBowedMarSampler = new Tone.Sampler({
   urls: {
     'G1': 'bowed-marimba_G1_Ab1-16s.mp3'
@@ -530,17 +528,20 @@ const droneLoop_12 = new Tone.Loop(function(time) {
   } else {
     inst_12 = loBowedMarSampler;
   }
-  inst_12.triggerAttackRelease(subBassPitchArr_12[count_12][0], 16);
-  // REVISION IDEA: decide if I actually want to support possibility of repeating last note or if I should set iterations to 4
+  // there's a 1-second overlap between tail of one note and beginning of next
+  inst_12.triggerAttackRelease(subBassPitchArr_12[count_12][0], 17);
   if (count_12 < 3) {
     count_12++;
   } else {
-    count_12 = 3; // stay on last note of array if section continues beyond 64"
+    // stay on last note of array if section continues beyond 64", but this shouldn't happen because droneLoop_12.iterations is limited to 4
+    count_12 = 3;
   }
 }, 16);
+droneLoop_12.iterations = 4;
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
+  // TODO: Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease([GqS4, GqS5], 2);
 };
@@ -550,9 +551,9 @@ tm.cue[12].goCue = function() {
     vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
   }
   count_12 = 0;
-  // TODO: set both levels below (start level and final level)
-  loBowedMarSampler.volume.value = -12;
-  loBentBowedMarSampler.volume.value = -3;
+  loBowedMarSampler.volume.value = -6;
+  loBowedMarSampler.volume.rampTo(-3, 32);
+  loBentBowedMarSampler.volume.value = -1; // only used for last note
   droneLoop_12.start();
 };
 tm.cue[12].triggerShakeSound = function() {
