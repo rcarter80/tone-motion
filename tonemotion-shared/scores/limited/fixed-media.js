@@ -429,20 +429,20 @@ tm.cue[10].stopCue = function() {
 // sub-bass is routed through tremolo to use LFO to control amplitude
 const tremolo_11 = new Tone.Tremolo(1.5, 1).toDestination().start();
 tremolo_11.spread = 0; // by default, LFOs are out of phase in each channel
-tremolo_11.type = "triangle";
+tremolo_11.type = "sine";
 const wobbleBass_11 = new Tone.Synth({
   // envelope times designed SPECIFICALLY for 16-second long notes
   envelope: {
     attack: 8,
     attackCurve: "linear",
-    decay: 5,
+    decay: 7,
     decayCurve: "linear",
     sustain: 0.1,
-    release: 3,
+    release: 1,
     releaseCurve: "sine",
   }
 }).connect(tremolo_11);
-wobbleBass_11.oscillator.partials = [1, 0.5];
+wobbleBass_11.oscillator.partials = [1, 0.5, 0, 0.125];
 
 const bowedMarSampler16s = new Tone.Sampler({
   urls: {
@@ -456,7 +456,7 @@ const subBassPitchArr_11 = [['G1', 1], ['Ab1', 0], ['G1', 0], ['Eb1', 0]];
 let count_11 = 0;
 const droneLoop_11 = new Tone.Loop(function(time) {
   wobbleBass_11.detune.value = 0;
-  wobbleBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 12.9);
+  wobbleBass_11.triggerAttackRelease(subBassPitchArr_11[count_11][0], 14.8);
   bowedMarSampler16s.triggerAttackRelease(subBassPitchArr_11[count_11][0], 16);
   if (subBassPitchArr_11[count_11][1]) {
     wobbleBass_11.detune.rampTo(100, 16); // bend flag is true, so bend pitch up
@@ -479,16 +479,14 @@ tm.cue[11].goCue = function() {
   if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
     downbeatThud_11.volume.value = -6;
     downbeatThud_11.start();
-    // REVISION IDEA: could justly tune below (e.g., to 10 / 14th partial of Db)
     vibeSampler.volume.value = -6;
-    vibeSampler.triggerAttackRelease('F5', 5, '+0.1');
+    vibeSampler.triggerAttackRelease(693, 5, '+0.166'); // 10th partial of Db2
     chimeSampler.volume.value = -3;
-    chimeSampler.triggerAttackRelease('B6', 5, '+0.2');
+    chimeSampler.triggerAttackRelease(1940.4, 5, '+0.33'); // 14th partial of Db2
   }
   count_11 = 0;
-  wobbleBass_11.volume.value = -18;
+  wobbleBass_11.volume.value = -9;
   wobbleBass_11.volume.rampTo(-6, 48);
-  wobbleBass_11.envelope.release = 3; // release time changed in stopCue()
   bowedMarSampler16s.volume.value = -24;
   droneLoop_11.start();
 };
@@ -500,7 +498,6 @@ tm.cue[11].triggerDipReset = function() {
 };
 tm.cue[11].stopCue = function() {
   droneLoop_11.stop();
-  wobbleBass_11.envelope.release = 1; // release to minimize cue 12 overlap
   wobbleBass_11.triggerRelease();
   bowedMarSampler16s.volume.rampTo(-60, 1);
 };
