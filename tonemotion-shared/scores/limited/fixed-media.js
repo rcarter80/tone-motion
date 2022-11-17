@@ -607,6 +607,7 @@ tm.cue[14].cueTransition = function() {
   revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 2);
 };
 tm.cue[14].goCue = function() {
+  // TODO: decide on transition and downbeat sounds
   if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('E4', 5);
     vibeSampler.triggerAttackRelease('E5', 5, '+0.25');
@@ -626,6 +627,7 @@ tm.cue[15].cueTransition = function() {
 };
 tm.cue[15].goCue = function() {
   if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
+    // TODO: decide on transition and downbeat sounds. I don't like this pianoSampler (at least not at this volume - too loud)
     pianoSampler.triggerAttackRelease('Bb3', 5);
     vibeSampler.triggerAttackRelease('F5', 5, '+0.25');
   }
