@@ -379,7 +379,7 @@ tm.cue[5].triggerDipReset = function() {
   }
 };
 tm.cue[5].stopCue = function() {
-  pitchedIceLoop.stop();
+  pitchedIceLoop.stop(); // also stopped in cue 6 transition
 };
 
 // *******************************************************************
@@ -389,9 +389,10 @@ let lock_6 = false;
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
+  lock_5 = true; // prevents sounds from being triggered during transition
+  pitchedIceLoop.stop(); // needed to prevent slushy sounds during transition
   revVibeSampler.volume.value = -3;
   revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
-  lock_5 = true; // prevents sounds from being triggered during transition
 };
 tm.cue[6].goCue = function() {
   lock_6 = false;
@@ -617,7 +618,7 @@ tm.cue[9].triggerDipSound = function() {
 tm.cue[9].triggerDipReset = function() {
 };
 tm.cue[9].stopCue = function() {
-  clickLoop_9.stop();
+  clickLoop_9.stop(); // also stopped during cue 10 transition
 };
 
 // *******************************************************************
@@ -675,6 +676,7 @@ let count_10 = 0;
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].cueTransition = function() {
   lock_9 = true;
+  clickLoop_9.stop(); // needed to prevent cue 9 DIP clicks during transition
   clickTransition.start();
 };
 tm.cue[10].goCue = function() {

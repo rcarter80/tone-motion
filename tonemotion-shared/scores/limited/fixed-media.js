@@ -423,7 +423,7 @@ tm.cue[10].stopCue = function() {
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
 
-// TODO: add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out
+// TODO: add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out. Use pitch-shifted down and initially quite loud clave, pingpong, ziplock click. rhythm skips downbeat: xcpczcpc (x = rest, c = clave, p = pingpong, z = ziplock). could add slight reverb?
 
 // sub-bass is routed through tremolo to use LFO to control amplitude
 const tremolo_11 = new Tone.Tremolo(1.5, 1).toDestination().start();
