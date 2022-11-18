@@ -373,8 +373,8 @@ tm.cue[5].triggerDipSound = function() {
   }
 };
 tm.cue[5].triggerDipReset = function() {
-  // slushy ice sounds only available when there are DIPS remaining
-  if (limit_5 > 0) {
+  // slushy ice sounds only available if DIPS remaining AND it's not transition
+  if (limit_5 > 0 && !lock_5) {
     pitchedIceLoop.start();
   }
 };
@@ -385,6 +385,7 @@ tm.cue[5].stopCue = function() {
 // *******************************************************************
 // CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 48")
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
+let lock_6 = false;
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
@@ -393,6 +394,7 @@ tm.cue[6].cueTransition = function() {
   lock_5 = true; // prevents sounds from being triggered during transition
 };
 tm.cue[6].goCue = function() {
+  lock_6 = false;
   sparklyTailSampler.volume.value = -18;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
@@ -403,35 +405,37 @@ tm.cue[6].goCue = function() {
   }
 };
 tm.cue[6].triggerShakeSound = function() {
-  if (limit_6 > 0) {
-    // still got SHAKES left, so find time elapsed to determine pitch to play
-    let time_6 = tm.getElapsedTimeInCue(6);
-    // alternate selection from upper and lower voice of canon
-    // (lower voice of canon is same pitches as cue 5)
-    let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
-    let index_6 = Math.floor(time_6 / 1500);
-    // stay on last pitch of array if last pitch is reached
-    if (index_6 > arr_6.length - 1) {
-      index_6 = arr_6.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
-    // notes that will be followed by microtones are doubled with bending sine
-    if (arr_6 === loPitchArr_5) {
-      if (index_6 === 7) {
-        monoSine.triggerAttackRelease('Eb4', 4);
-        monoSine.frequency.rampTo('D4', 3);
-      } else if (index_6 === 13) {
-        monoSine.triggerAttackRelease('A4', 4);
-        monoSine.frequency.rampTo('Bb4', 3);
+  if (!lock_6) {
+    if (limit_6 > 0) {
+      // still got SHAKES left, so find time elapsed to determine pitch to play
+      let time_6 = tm.getElapsedTimeInCue(6);
+      // alternate selection from upper and lower voice of canon
+      // (lower voice of canon is same pitches as cue 5)
+      let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
+      let index_6 = Math.floor(time_6 / 1500);
+      // stay on last pitch of array if last pitch is reached
+      if (index_6 > arr_6.length - 1) {
+        index_6 = arr_6.length - 1;
       }
+      vibeSampler.triggerAttackRelease(arr_6[index_6], 5);
+      // notes that will be followed by microtones are doubled with bending sine
+      if (arr_6 === loPitchArr_5) {
+        if (index_6 === 7) {
+          monoSine.triggerAttackRelease('Eb4', 4);
+          monoSine.frequency.rampTo('D4', 3);
+        } else if (index_6 === 13) {
+          monoSine.triggerAttackRelease('A4', 4);
+          monoSine.frequency.rampTo('Bb4', 3);
+        }
+      }
+      let sparklyPitch = 440 + Math.random() * 200;
+      sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
+      limit_6--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
     }
-    let sparklyPitch = 440 + Math.random() * 200;
-    sparklyTailSampler.triggerAttackRelease(sparklyPitch, 5);
-    limit_6--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+    displayShakesLeft(limit_6);
   }
-  displayShakesLeft(limit_6);
 };
 tm.cue[6].stopCue = function() {
   // nothing to do here
@@ -444,6 +448,7 @@ let count_7 = 0;
 
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[7].cueTransition = function() {
+  lock_6 = true;
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease(['D4', 'D5'], 3);
 };
