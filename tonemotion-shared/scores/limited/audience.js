@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -117,7 +117,6 @@ const buzzySynth = new Tone.Synth({
 }).connect(buzzyTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
-// REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -131,9 +130,9 @@ const vibeSampler = new Tone.Sampler({
   },
   baseUrl: vibes_sounds,
 }).toDestination();
-// same but 1.5-sec. reversed sounds (to use with cueTransition 2s. before cue)
+// same but 2.25-sec. reversed sounds (to use with cueTransition 3s. before cue)
 const revVibeSampler = new Tone.Sampler({
-  // each sound file is exactly 1.5 sec. - transposed could be shorter or longer
+  // each sound file is exactly 2.25 sec. - transposed could be shorter/longer
   urls: {
     'F4': 'rev_vibe_bell-F4.mp3',
     'A4': 'rev_vibe_bell-A4.mp3',
@@ -301,8 +300,6 @@ tm.cue[4].goCue = function() {
 tm.cue[4].stopCue = function() {
   // nothing to clean up
 };
-
-// REVISION IDEA: improve transitions: extend transition time (maybe 3 seconds?) and fade out audience sounds during transition to allow piece to "breathe" more.
 
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 48")
@@ -650,7 +647,6 @@ if (partSelector_10 > 0.8) {
   // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
   soundFileHi_10 = 'clave-pingpong_loop.mp3';
   soundFileLo_10 = 'clave-ziplock_loop.mp3';
-  // REVISION idea: could replace with different sound loop
   soundFileLo_11 = 'clave-ziplock_loop.mp3';
 } else if (partSelector_10 > 0.4) {
   // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
@@ -766,7 +762,6 @@ tm.cue[11].triggerDipSound = function() {
       inst_11 = vibeSampler;
     } else {
       arr_11 = loPitchArr_11;
-      // REVISION idea: replace with a different instrument? like a pot or bowl
       inst_11 = pianoSampler;
     }
     // select pitch index for array
