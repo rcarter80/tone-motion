@@ -445,6 +445,7 @@ tm.cue[6].stopCue = function() {
 // CUE 7 (DIP): accel clicks-> vibes 3-vox canon, pitches in array (c. 30-60")
 bellSampler.release = 0.8; // bells pitched very low require gentler fade out
 let count_7 = 0;
+let lock_7 = false;
 
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[7].cueTransition = function() {
@@ -453,6 +454,7 @@ tm.cue[7].cueTransition = function() {
   revVibeSampler.triggerAttackRelease(['D4', 'D5'], 3);
 };
 tm.cue[7].goCue = function() {
+  lock_7 = false;
   if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('C5', 5);
     vibeSampler.triggerAttackRelease('C6', 5, '+0.25');
@@ -474,18 +476,20 @@ tm.cue[7].updateTiltSounds = function() {
 };
 tm.cue[7].triggerDipSound = function() {
   pingpongClickLoop.stop();
-  if (limit_7 > 0) {
-    bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
-    sineTails.triggerAttackRelease(pitchArr_7[count_7], 4);
-    count_7++;
-    limit_7--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+  if (!lock_7) {
+    if (limit_7 > 0) {
+      bellSampler.triggerAttackRelease(pitchArr_7[count_7], 5);
+      sineTails.triggerAttackRelease(pitchArr_7[count_7], 4);
+      count_7++;
+      limit_7--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    }
+    displayDipsLeft(limit_7);
   }
-  displayDipsLeft(limit_7);
 };
 tm.cue[7].triggerDipReset = function() {
-  if (limit_7 > 0) {
+  if (limit_7 > 0 && !lock_7) {
     pingpongClickLoop.start();
   }
 };
@@ -496,13 +500,16 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 (SHAKE): 3-vox canon with 2-oct bells, higher note w/ delay (c. 30-60")
 let count_8 = 0;
+let lock_8 = false;
 
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[8].cueTransition = function() {
+  lock_7 = true;
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 3);
 };
 tm.cue[8].goCue = function() {
+  lock_8 = false;
   if (tm.getElapsedTimeInCue(8) < 200) {
     vibeSampler.triggerAttackRelease('C4', 5);
     vibeSampler.triggerAttackRelease('D6', 5, '+0.25');
@@ -512,18 +519,20 @@ tm.cue[8].goCue = function() {
   bellDelay.delayTime.value = 0.15 + Math.random() * 0.13;
 };
 tm.cue[8].triggerShakeSound = function() {
-  if (limit_8 > 0) {
-    // higher bell with feedback delay is 2 oct. higher. Get freq and mult by 4
-    let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
-    bellDelaySampler.triggerAttackRelease(hiPitch, 5);
-    bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
-    sineTails.triggerAttackRelease(pitchArr_8[count_8], 4);
-    count_8++;
-    limit_8--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+  if (!lock_8) {
+    if (limit_8 > 0) {
+      // higher bell with feedback delay is 2 oct. higher. Get freq and mult * 4
+      let hiPitch = (Tone.Frequency(pitchArr_8[count_8]).toFrequency()) * 4;
+      bellDelaySampler.triggerAttackRelease(hiPitch, 5);
+      bellSampler.triggerAttackRelease(pitchArr_8[count_8], 5);
+      sineTails.triggerAttackRelease(pitchArr_8[count_8], 4);
+      count_8++;
+      limit_8--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+    }
+    displayShakesLeft(limit_8);
   }
-  displayShakesLeft(limit_8);
 };
 tm.cue[8].stopCue = function() {
 };
@@ -535,13 +544,16 @@ const clickLoop_9 = tm.pickRand([claveLoop, ziplockLoop, pingpongClickLoop]);
 const loopArr_9 = ['Eb5', 'D5', 'Eb5', 'G5', 'C5', 'D5', DqS5, 'Eb5'];
 let count_9 = 0;
 let playCanon_9 = true;
+let lock_9 = false;
 
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].cueTransition = function() {
+  lock_8 = true;
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
 };
 tm.cue[9].goCue = function() {
+  lock_9 = false;
   if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('Eb4', 5);
     sineTails.triggerAttackRelease('Eb4', 8);
@@ -573,32 +585,34 @@ tm.cue[9].updateTiltSounds = function() {
   }
 };
 tm.cue[9].triggerDipSound = function() {
-  if (limit_9 > 0) {
-    if (playCanon_9) {
-      // randomly assigned to play middle voice of canon
-      let time_9 = tm.getElapsedTimeInCue(9);
-      let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
-      // only go through first 16 notes of canon voice
-      if (index_9 > 15) {
-        index_9 = 15;
+  if (!lock_9) {
+    if (limit_9 > 0) {
+      if (playCanon_9) {
+        // randomly assigned to play middle voice of canon
+        let time_9 = tm.getElapsedTimeInCue(9);
+        let index_9 = Math.floor(time_9 / 2000); // 2 seconds for each note
+        // only go through first 16 notes of canon voice
+        if (index_9 > 15) {
+          index_9 = 15;
+        }
+        vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
+        sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
+      } else {
+        // randomly assigned to play array-based loop
+        let index_9 = count_9 % loopArr_9.length;
+        bellSampler.triggerAttackRelease(loopArr_9[index_9], 5);
+        count_9++;
       }
-      vibeSampler.triggerAttackRelease(loPitchArr_5[index_9], 5);
-      sineTails.triggerAttackRelease(loPitchArr_5[index_9], 4);
+      limit_9--;
     } else {
-      // randomly assigned to play array-based loop
-      let index_9 = count_9 % loopArr_9.length;
-      bellSampler.triggerAttackRelease(loopArr_9[index_9], 5);
-      count_9++;
+      tm.publicWarning(`I'm sorry, but you're all out of dips.`);
     }
-    limit_9--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    if (limit_9 === 0) {
+      // no more clicky sounds if all dips used, but stop on last dip
+      clickLoop_9.stop();
+    }
+    displayDipsLeft(limit_9);
   }
-  if (limit_9 === 0) {
-    // no more clicky sounds if you've used all your dips, but stop on last dip
-    clickLoop_9.stop();
-  }
-  displayDipsLeft(limit_9);
 };
 tm.cue[9].triggerDipReset = function() {
 };
@@ -656,13 +670,17 @@ loopLo_10.loop = true;
 const loopLo_11 = new Tone.Player(misc_sounds + soundFileLo_11).connect(ampEnvLo_11);
 loopLo_11.loop = true;
 let count_10 = 0;
+// NOTE: cue 10 cue be played THROUGH transition (to keep energy moving forward)
 
 tm.cue[10] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[10].cueTransition = function() {
+  lock_9 = true;
   clickTransition.start();
 };
 tm.cue[10].goCue = function() {
   if (tm.getElapsedTimeInCue(10) < CUE_SOUND_WINDOW) {
+    chimeSampler.volume.value = -12;
+    chimeSampler.triggerAttackRelease('C7', 5);
     clavePingpong.volume.value = 0;
     clavePingpong.start();
     clavePingpong.volume.rampTo(-99, 3);
@@ -868,6 +886,7 @@ tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
     pianoSampler.triggerAttackRelease('Bb2', 10);
     sineTails.triggerAttackRelease('Bb3', 10);
+    chimeSampler.volume.value = -3;
     chimeSampler.triggerAttackRelease('Bb7', 5, '+0.2');
   }
   monoSine.volume.value = -40;
