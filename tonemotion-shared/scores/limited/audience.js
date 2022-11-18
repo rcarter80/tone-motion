@@ -50,7 +50,7 @@ const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
 const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
 
-const WAIT_TIME = 2000; // use to globally set standard wait time for cues
+const WAIT_TIME = 3000; // use to globally set standard wait time for cues
 const CUE_SOUND_WINDOW = 200; // short window at beginning of cue to play sound
 
 // shows number of shakes listener has left
@@ -302,7 +302,7 @@ tm.cue[4].stopCue = function() {
   // nothing to clean up
 };
 
-// REVISION IDEA: improve transitions: extend transition time (maybe 3 seconds?) and fade out audience sounds during transition to allow piece to "breathe" more. 
+// REVISION IDEA: improve transitions: extend transition time (maybe 3 seconds?) and fade out audience sounds during transition to allow piece to "breathe" more.
 
 // *******************************************************************
 // CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
@@ -311,7 +311,7 @@ const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
 
-tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[5] = new TMCue('dip', 1000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
@@ -385,7 +385,7 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
 };
 tm.cue[6].goCue = function() {
   sparklyTailSampler.volume.value = -18;
@@ -440,7 +440,7 @@ let count_7 = 0;
 tm.cue[7] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[7].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'D5'], 2);
+  revVibeSampler.triggerAttackRelease(['D4', 'D5'], 3);
 };
 tm.cue[7].goCue = function() {
   if (tm.getElapsedTimeInCue(7) < CUE_SOUND_WINDOW) {
@@ -490,7 +490,7 @@ let count_8 = 0;
 tm.cue[8] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[8].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 2);
+  revVibeSampler.triggerAttackRelease(['Bb4', DqS5], 3);
 };
 tm.cue[8].goCue = function() {
   if (tm.getElapsedTimeInCue(8) < 200) {
@@ -529,7 +529,7 @@ let playCanon_9 = true;
 tm.cue[9] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[9].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 2);
+  revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
 };
 tm.cue[9].goCue = function() {
   if (tm.getElapsedTimeInCue(9) < CUE_SOUND_WINDOW) {
@@ -709,7 +709,7 @@ let count_11 = 0;
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
+  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 3);
 };
 tm.cue[11].goCue = function() {
   if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
@@ -792,7 +792,7 @@ let count_12 = 0;
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 2);
+  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 3);
 };
 tm.cue[12].goCue = function() {
   if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
@@ -851,7 +851,7 @@ let count_13 = 0;
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease('C5', 2);
+  revVibeSampler.triggerAttackRelease('C5', 3);
   clickTransition.start();
 };
 tm.cue[13].goCue = function() {
@@ -941,7 +941,7 @@ claveLoop_14.loop = true;
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 2);
+  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 3);
 };
 tm.cue[14].goCue = function() {
   if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
@@ -1000,7 +1000,7 @@ const loPitchArr_15 = ['Bb3', 'Bb3', 'Bb3', 'Bb3', 'C4', 'C4', CeS4, CeS4, CqS4,
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 2);
+  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 3);
 };
 tm.cue[15].goCue = function() {
   if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
