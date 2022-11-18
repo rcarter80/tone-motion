@@ -1,5 +1,5 @@
 const tm = new ToneMotion();
-tm.debug = true; // if true, skips clock sync and shows console
+tm.debug = false; // if true, skips clock sync and shows console
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -52,7 +52,7 @@ const AsS5 = 880 * (2 ** (1 / 36)); // A sixth-sharp 5
 const AqS5 = 880 * (2 ** (1 / 24)); // A quarter-sharp 5
 const AtS5 = 880 * ((2 ** (1 / 36)) ** 2); // A third-sharp 5
 
-const WAIT_TIME = 2000; // use to globally set standard wait time for cues
+const WAIT_TIME = 3000; // use to globally set standard wait time for cues
 const CUE_SOUND_WINDOW = 200; // short window at beginning of cue to play sound
 
 // INSTRUMENTS
@@ -125,9 +125,9 @@ const vibeSampler = new Tone.Sampler({
   },
   baseUrl: vibes_sounds,
 }).toDestination();
-// same but 1.5-sec. reversed sounds (to use with cueTransition 2s. before cue)
+// same but 2.25-sec. reversed sounds (to use with cueTransition 3s. before cue)
 const revVibeSampler = new Tone.Sampler({
-  // each sound file is exactly 1.5 sec. - transposed could be shorter or longer
+  // each sound file is exactly 2.25 sec. - transposed could be shorter/longer
   urls: {
     'F4': 'rev_vibe_bell-F4.mp3',
     'A4': 'rev_vibe_bell-A4.mp3',
@@ -232,7 +232,7 @@ tm.cue[4].stopCue = function() {
 // lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 
-tm.cue[5] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+tm.cue[5] = new TMCue('dip', 1000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
@@ -472,7 +472,7 @@ const downbeatThud_11 = new Tone.Player(misc_sounds + 'thud_Db2-C2.mp3').toDesti
 tm.cue[11] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[11].cueTransition = function() {
   revVibeSampler.volume.value = -12;
-  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 2);
+  revVibeSampler.triggerAttackRelease(['D5', 'D6'], 3);
 };
 tm.cue[11].goCue = function() {
   if (tm.getElapsedTimeInCue(11) < CUE_SOUND_WINDOW) {
@@ -543,16 +543,17 @@ tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
   // TODO: Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 2);
+  revVibeSampler.triggerAttackRelease([GqS4, GqS5], 3);
 };
 tm.cue[12].goCue = function() {
   if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
+    vibeSampler.volume.value = -6;
     vibeSampler.triggerAttackRelease('Ab4', 5);
     vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
   }
   count_12 = 0;
-  loBowedMarSampler.volume.value = -6;
-  loBowedMarSampler.volume.rampTo(-3, 32);
+  loBowedMarSampler.volume.value = -5;
+  loBowedMarSampler.volume.rampTo(-2, 32);
   loBentBowedMarSampler.volume.value = -1; // only used for last note
   droneLoop_12.start();
 };
@@ -574,7 +575,7 @@ tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 
 tm.cue[13].cueTransition = function() {
   revVibeSampler.volume.value = -6;
-  revVibeSampler.triggerAttackRelease('C5', 2);
+  revVibeSampler.triggerAttackRelease('C5', 3);
   clickTransition.volume.value = -3;
   clickTransition.start();
 };
@@ -604,11 +605,12 @@ tm.cue[13].stopCue = function() {
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 2);
+  revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 3);
 };
 tm.cue[14].goCue = function() {
   // TODO: decide on transition and downbeat sounds
   if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
+    vibeSampler.volume.value = -9;
     vibeSampler.triggerAttackRelease('E4', 5);
     vibeSampler.triggerAttackRelease('E5', 5, '+0.25');
   }
@@ -623,12 +625,14 @@ tm.cue[14].stopCue = function() {
 tm.cue[15] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[15].cueTransition = function() {
   revVibeSampler.volume.value = -9;
-  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 2);
+  revVibeSampler.triggerAttackRelease(['Db5', 'Gb5'], 3);
 };
 tm.cue[15].goCue = function() {
   if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
     // TODO: decide on transition and downbeat sounds. I don't like this pianoSampler (at least not at this volume - too loud)
-    pianoSampler.triggerAttackRelease('Bb3', 5);
+    pianoSampler.volume.value = -18;
+    pianoSampler.triggerAttackRelease('Bb4', 8);
+    vibeSampler.volume.value = -12;
     vibeSampler.triggerAttackRelease('F5', 5, '+0.25');
   }
 };
