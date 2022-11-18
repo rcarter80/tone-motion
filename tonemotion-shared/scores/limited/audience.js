@@ -310,15 +310,16 @@ tm.cue[4].stopCue = function() {
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
+let lock_5 = false; // prevents sounds from being triggered during transition
 
 tm.cue[5] = new TMCue('dip', 1000, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  lock_5 = false; // allow sounds to be triggered (turned off during transition)
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
   monoSine.detune.value = 0;
-  vibeSampler.volume.value = 0; // fades out during transition
 };
 tm.cue[5].updateTiltSounds = function() {
   if (tm.accel.y < 0.3) {
@@ -334,40 +335,42 @@ tm.cue[5].updateTiltSounds = function() {
 };
 tm.cue[5].triggerDipSound = function() {
   pitchedIceLoop.stop();
-  if (limit_5 > 0) {
-    // still got DIPS left, so find time elapsed to determine pitch to play
-    let time_5 = tm.getElapsedTimeInCue(5);
-    // alternate selection from upper and lower voice of canon
-    let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
-    let index_5 = Math.floor(time_5 / 1500);
-    // stay on last pitch of array if last pitch is reached
-    if (index_5 > arr_5.length - 1) {
-      index_5 = arr_5.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
-    // notes that will be followed by microtones are doubled with bending sine
-    if (arr_5 === loPitchArr_5) {
-      if (index_5 === 7) {
-        monoSine.triggerAttackRelease('Eb4', 4);
-        monoSine.frequency.rampTo('D4', 3);
-      } else if (index_5 === 13) {
-        monoSine.triggerAttackRelease('A4', 4);
-        monoSine.frequency.rampTo('Bb4', 3);
+  if (!lock_5) {
+    if (limit_5 > 0) {
+      // still got DIPS left, so find time elapsed to determine pitch to play
+      let time_5 = tm.getElapsedTimeInCue(5);
+      // alternate selection from upper and lower voice of canon
+      let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
+      let index_5 = Math.floor(time_5 / 1500);
+      // stay on last pitch of array if last pitch is reached
+      if (index_5 > arr_5.length - 1) {
+        index_5 = arr_5.length - 1;
       }
-    } else if (arr_5 === hiPitchArr_5) {
-      if (index_5 === 15) {
-        monoSine.triggerAttackRelease('Eb5', 4);
-        monoSine.frequency.rampTo('D5', 3);
-      } else if (index_5 === 27) {
-        monoSine.triggerAttackRelease('A5', 4);
-        monoSine.frequency.rampTo('Bb5', 3);
+      vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
+      // notes that will be followed by microtones are doubled with bending sine
+      if (arr_5 === loPitchArr_5) {
+        if (index_5 === 7) {
+          monoSine.triggerAttackRelease('Eb4', 4);
+          monoSine.frequency.rampTo('D4', 3);
+        } else if (index_5 === 13) {
+          monoSine.triggerAttackRelease('A4', 4);
+          monoSine.frequency.rampTo('Bb4', 3);
+        }
+      } else if (arr_5 === hiPitchArr_5) {
+        if (index_5 === 15) {
+          monoSine.triggerAttackRelease('Eb5', 4);
+          monoSine.frequency.rampTo('D5', 3);
+        } else if (index_5 === 27) {
+          monoSine.triggerAttackRelease('A5', 4);
+          monoSine.frequency.rampTo('Bb5', 3);
+        }
       }
+      limit_5--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of dips.`);
     }
-    limit_5--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    displayDipsLeft(limit_5);
   }
-  displayDipsLeft(limit_5);
 };
 tm.cue[5].triggerDipReset = function() {
   // slushy ice sounds only available when there are DIPS remaining
@@ -385,12 +388,11 @@ const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
-  vibeSampler.volume.rampTo(-99, 2);
   revVibeSampler.volume.value = -3;
   revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
+  lock_5 = true; // prevents sounds from being triggered during transition
 };
 tm.cue[6].goCue = function() {
-  vibeSampler.volume.value = 0;
   sparklyTailSampler.volume.value = -18;
   // volume is different in cue 13, so may need to reset here
   monoSine.volume.value = -28;
