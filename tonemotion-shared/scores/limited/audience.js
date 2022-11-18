@@ -275,8 +275,8 @@ const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5'
 let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
 function resetCueLimits() {
   // some dip and shake limits are higher for testing
-  limit_5 = (tm.debug) ? 931 : 31;
-  limit_6 = (tm.debug) ? 941 : 41;
+  limit_5 = (tm.debug) ? 921 : 21;
+  limit_6 = (tm.debug) ? 925 : 25;
   limit_7 = pitchArr_7.length;
   limit_8 = pitchArr_8.length;
   limit_9 = (tm.debug) ? 917 : 17;
@@ -305,14 +305,16 @@ tm.cue[4].stopCue = function() {
 // REVISION IDEA: improve transitions: extend transition time (maybe 3 seconds?) and fade out audience sounds during transition to allow piece to "breathe" more.
 
 // *******************************************************************
-// CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 60-64")
-// lower voice of canon (32 notes @ 2sec. per note, so section should be ~64")
+// CUE 5 (DIP): 1st section. Ice crunch tilt with vibes (c. 48")
+// lower voice of canon (32 notes @ 1.5sec. per note, so section should be ~48")
 const loPitchArr_5 = ['Eb4', 'D4', 'Eb4', 'G4', 'C4', 'D4', 'Bb3', 'Eb4', DqS4, 'D4', 'Eb4', 'G4', 'G4', 'A4', AqS4, 'Bb4', 'C4', 'D4', 'Eb4', 'G4', 'G4', 'F4', 'F4', 'Eb4', 'D4', 'F4', 'F4', 'G4', 'G4', 'Eb4', 'Eb4', 'D4'];
 // upper voice of canon
 const hiPitchArr_5 = ['Eb5', 'Eb5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'C5', 'C5', 'D5', 'D5', 'Bb4', 'Bb4', 'Eb5', 'Eb5', DtS5, DsS5, 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'A5', 'A5', AsS5, AtS5, 'Bb5', 'Bb5'];
+let lock_5 = false; // prevents sounds from being triggered during transition
 
 tm.cue[5] = new TMCue('dip', 1000, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  lock_5 = false; // allow sounds to be triggered (turned off during transition)
   // turn off motion testing to optimize motionUpdateLoop
   tm.shouldTestMotion = false;
   // volume is different in cue 13, so may need to reset here
@@ -333,40 +335,42 @@ tm.cue[5].updateTiltSounds = function() {
 };
 tm.cue[5].triggerDipSound = function() {
   pitchedIceLoop.stop();
-  if (limit_5 > 0) {
-    // still got DIPS left, so find time elapsed to determine pitch to play
-    let time_5 = tm.getElapsedTimeInCue(5);
-    // alternate selection from upper and lower voice of canon
-    let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
-    let index_5 = Math.floor(time_5 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_5 > arr_5.length - 1) {
-      index_5 = arr_5.length - 1;
-    }
-    vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
-    // notes that will be followed by microtones are doubled with bending sine
-    if (arr_5 === loPitchArr_5) {
-      if (index_5 === 7) {
-        monoSine.triggerAttackRelease('Eb4', 4);
-        monoSine.frequency.rampTo('D4', 3);
-      } else if (index_5 === 13) {
-        monoSine.triggerAttackRelease('A4', 4);
-        monoSine.frequency.rampTo('Bb4', 3);
+  if (!lock_5) {
+    if (limit_5 > 0) {
+      // still got DIPS left, so find time elapsed to determine pitch to play
+      let time_5 = tm.getElapsedTimeInCue(5);
+      // alternate selection from upper and lower voice of canon
+      let arr_5 = (limit_5 % 2) ? loPitchArr_5 : hiPitchArr_5;
+      let index_5 = Math.floor(time_5 / 1500);
+      // stay on last pitch of array if last pitch is reached
+      if (index_5 > arr_5.length - 1) {
+        index_5 = arr_5.length - 1;
       }
-    } else if (arr_5 === hiPitchArr_5) {
-      if (index_5 === 15) {
-        monoSine.triggerAttackRelease('Eb5', 4);
-        monoSine.frequency.rampTo('D5', 3);
-      } else if (index_5 === 27) {
-        monoSine.triggerAttackRelease('A5', 4);
-        monoSine.frequency.rampTo('Bb5', 3);
+      vibeSampler.triggerAttackRelease(arr_5[index_5], 5);
+      // notes that will be followed by microtones are doubled with bending sine
+      if (arr_5 === loPitchArr_5) {
+        if (index_5 === 7) {
+          monoSine.triggerAttackRelease('Eb4', 4);
+          monoSine.frequency.rampTo('D4', 3);
+        } else if (index_5 === 13) {
+          monoSine.triggerAttackRelease('A4', 4);
+          monoSine.frequency.rampTo('Bb4', 3);
+        }
+      } else if (arr_5 === hiPitchArr_5) {
+        if (index_5 === 15) {
+          monoSine.triggerAttackRelease('Eb5', 4);
+          monoSine.frequency.rampTo('D5', 3);
+        } else if (index_5 === 27) {
+          monoSine.triggerAttackRelease('A5', 4);
+          monoSine.frequency.rampTo('Bb5', 3);
+        }
       }
+      limit_5--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of dips.`);
     }
-    limit_5--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    displayDipsLeft(limit_5);
   }
-  displayDipsLeft(limit_5);
 };
 tm.cue[5].triggerDipReset = function() {
   // slushy ice sounds only available when there are DIPS remaining
@@ -379,13 +383,14 @@ tm.cue[5].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 60")
+// CUE 6 (SHAKE): continuation of canon, vibes with sparkly tails (c. 48")
 const hiPitchArr_6 = ['C5', 'C5', 'D5', 'D5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'D5', 'D5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'D5', 'D5'];
 
 tm.cue[6] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[6].cueTransition = function() {
-  revVibeSampler.volume.value = -9;
+  revVibeSampler.volume.value = -3;
   revVibeSampler.triggerAttackRelease(['D4', 'Bb5'], 3);
+  lock_5 = true; // prevents sounds from being triggered during transition
 };
 tm.cue[6].goCue = function() {
   sparklyTailSampler.volume.value = -18;
@@ -404,7 +409,7 @@ tm.cue[6].triggerShakeSound = function() {
     // alternate selection from upper and lower voice of canon
     // (lower voice of canon is same pitches as cue 5)
     let arr_6 = (limit_6 % 2) ? loPitchArr_5 : hiPitchArr_6;
-    let index_6 = Math.floor(time_6 / 2000);
+    let index_6 = Math.floor(time_6 / 1500);
     // stay on last pitch of array if last pitch is reached
     if (index_6 > arr_6.length - 1) {
       index_6 = arr_6.length - 1;

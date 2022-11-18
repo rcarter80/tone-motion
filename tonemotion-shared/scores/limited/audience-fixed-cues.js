@@ -117,7 +117,6 @@ const buzzySynth = new Tone.Synth({
 }).connect(buzzyTremolo);
 
 // sampler using vibes (with rattan sticks) and struck glass "bell" sounds
-// REVISION idea: could also create some kind of struck glass bowl sampler or almglocken sampler and sometimes use that instead of vibeSampler
 const vibeSampler = new Tone.Sampler({
   urls: {
     'F3': 'vibe_bell-F3.mp3',
@@ -292,6 +291,7 @@ resetCueLimits();
 
 // *******************************************************************
 // CUE 4: sets status to 'waitingForPieceToStart' AND resets all cue counters
+// TODO: copy all changes from regular score (audience.js) to this when I'm done revising
 tm.cue[4] = new TMCue('waiting', 0, NO_LIMIT);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
@@ -623,7 +623,6 @@ if (partSelector_10 > 0.8) {
   // 1 out of 5 people is randomly assigned pair of clicky loops (no pitches)
   soundFileHi_10 = 'clave-pingpong_loop.mp3';
   soundFileLo_10 = 'clave-ziplock_loop.mp3';
-  // REVISION idea: could replace with different sound loop
   soundFileLo_11 = 'clave-ziplock_loop.mp3';
 } else if (partSelector_10 > 0.4) {
   // 2 out of 5 people randomly assigned pitched loops alternating Eb/G - D/F
@@ -734,7 +733,6 @@ tm.cue[11].triggerDipSound = function() {
       inst_11 = vibeSampler;
     } else {
       arr_11 = loPitchArr_11;
-      // REVISION idea: replace with a different instrument? like a pot or bowl
       inst_11 = pianoSampler;
     }
     // select pitch index for array
@@ -1079,6 +1077,7 @@ tm.fixedCuesOnly = true;
 Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
+// TODO: revise timings below (make cues 5 and 6 more like 48", 7 and 8 a little longer)
 const cueArray = [
   [5, 0],
   [6, 62000, 2000],
