@@ -877,6 +877,7 @@ tm.cue[12].stopCue = function() {
 // *******************************************************************
 // CUE 13 (DIP) much calmer, residual buzz, melty pitches (c. 60")
 let count_13 = 0;
+let lock_13 = false;
 
 tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
 tm.cue[13].cueTransition = function() {
@@ -885,6 +886,7 @@ tm.cue[13].cueTransition = function() {
   clickTransition.start();
 };
 tm.cue[13].goCue = function() {
+  lock_13 = false;
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
     pianoSampler.triggerAttackRelease('Bb2', 10);
     sineTails.triggerAttackRelease('Bb3', 10);
@@ -920,37 +922,39 @@ tm.cue[13].updateTiltSounds = function() {
   }
 };
 tm.cue[13].triggerDipSound = function() {
-  if (limit_13 > 0) {
-    let time_13 = tm.getElapsedTimeInCue(13);
-    // alternate selection from upper and lower voice of canon
-    let arr_13 = (count_13 % 2) ? hiPitchArr_5 : loPitchArr_5;
-    let index_13 = Math.floor(time_13 / 2000);
-    // stay on last pitch of array if last pitch is reached
-    if (index_13 > arr_13.length - 1) {
-      index_13 = arr_13.length - 1;
+  if (!lock_13) {
+    if (limit_13 > 0) {
+      let time_13 = tm.getElapsedTimeInCue(13);
+      // alternate selection from upper and lower voice of canon
+      let arr_13 = (count_13 % 2) ? hiPitchArr_5 : loPitchArr_5;
+      let index_13 = Math.floor(time_13 / 2000);
+      // stay on last pitch of array if last pitch is reached
+      if (index_13 > arr_13.length - 1) {
+        index_13 = arr_13.length - 1;
+      }
+      // pitches from earlier canon but transposed to Ab, then bending down
+      let P4 = halfStepUp ** 5;
+      let M3 = halfStepUp ** 4;
+      let bend = tm.getSectionBreakpoints(13, [0, P4, 32000, P4, 60000, M3]);
+      let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
+      let inst = (count_13 % 2) ? bellSampler : vibeSampler;
+      inst.triggerAttackRelease(pitch, 5);
+      buzzySynth.triggerAttack(pitch * 2);
+      monoSine.triggerAttack(pitch * 4);
+      limit_13--;
+      count_13++;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of dips.`);
     }
-    // pitches taken from earlier canon but transposed to Ab, then bending down
-    let P4 = halfStepUp ** 5;
-    let M3 = halfStepUp ** 4;
-    let bend = tm.getSectionBreakpoints(13, [0, P4, 32000, P4, 60000, M3]);
-    let pitch = (Tone.Frequency(arr_13[index_13]).toFrequency()) * bend;
-    let inst = (count_13 % 2) ? bellSampler : vibeSampler;
-    inst.triggerAttackRelease(pitch, 5);
-    buzzySynth.triggerAttack(pitch * 2);
-    monoSine.triggerAttack(pitch * 4);
-    limit_13--;
-    count_13++;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of dips.`);
+    displayDipsLeft(limit_13);
   }
-  displayDipsLeft(limit_13);
 };
 tm.cue[13].triggerDipReset = function() {
   buzzySynth.triggerRelease();
   monoSine.triggerRelease();
 };
 tm.cue[13].stopCue = function() {
-  buzzySynth.triggerRelease();
+  buzzySynth.triggerRelease(); // also released during transition
   monoSine.triggerRelease();
 };
 
@@ -971,6 +975,9 @@ claveLoop_14.loop = true;
 
 tm.cue[14] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[14].cueTransition = function() {
+  lock_13 = true;
+  buzzySynth.triggerRelease(); // also released during cue 13 stopCue
+  monoSine.triggerRelease();
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 3);
 };
