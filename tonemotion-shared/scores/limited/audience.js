@@ -813,6 +813,7 @@ const loPitchArr_12 = [GqS3, GqS3, GteS3, GteS3, 'Ab3', 'Ab3', 'Ab3', 'Ab3', 'G3
 // mid pitch line is same as from cue 10
 const hiPitchArr_12 = ['Bb5', 'Bb5', 'Ab5', 'Ab5', 'G5', 'G5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'F5', 'F5', 'F5', 'F5', 'G5', 'G5', 'Ab5', 'Ab5', 'F5', 'F5', 'F5', 'F5', 'Eb5', 'Eb5', 'Eb5', 'Eb5', 'G5', 'G5', 'G5', 'G5', 'Ab5', 'Ab5'];
 let count_12 = 0;
+let lock_12 = false;
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
@@ -820,6 +821,7 @@ tm.cue[12].cueTransition = function() {
   revVibeSampler.triggerAttackRelease([GqS4, GqS5], 3);
 };
 tm.cue[12].goCue = function() {
+  lock_12 = false;
   if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
     vibeSampler.triggerAttackRelease('Ab4', 5);
     vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
@@ -827,44 +829,46 @@ tm.cue[12].goCue = function() {
   count_12 = 0;
 };
 tm.cue[12].triggerShakeSound = function() {
-  if (limit_12 > 0) {
-    let time_12 = tm.getElapsedTimeInCue(12);
-    // rotate array selection among three voices (and separate arrays) OR clicks
-    let arr_12, inst_12;
-    if (count_12 % 4 === 3) {
-      clickFading.playbackRate = tm.getSectionBreakpoints(12, [0, 1, 60000, 2]);
-      clickFading.start();
-    } else {
-      // pitched sounds only triggered if clicking sound is not
-      if (count_12 % 4 === 2) {
-        arr_12 = hiPitchArr_12;
-        inst_12 = bellSampler;
-      } else if (count_12 % 4 === 1) {
-        arr_12 = midPitchArr_11; // mid voice is same as cue 11
-        inst_12 = vibeSampler;
+  if (!lock_12) {
+    if (limit_12 > 0) {
+      let time_12 = tm.getElapsedTimeInCue(12);
+      // rotate array selection among 3 voices (and separate arrays) OR clicks
+      let arr_12, inst_12;
+      if (count_12 % 4 === 3) {
+        clickFading.playbackRate = tm.getSectionBreakpoints(12, [0, 1, 60000, 2]);
+        clickFading.start();
       } else {
-        arr_12 = loPitchArr_12;
-        inst_12 = pianoSampler;
+        // pitched sounds only triggered if clicking sound is not
+        if (count_12 % 4 === 2) {
+          arr_12 = hiPitchArr_12;
+          inst_12 = bellSampler;
+        } else if (count_12 % 4 === 1) {
+          arr_12 = midPitchArr_11; // mid voice is same as cue 11
+          inst_12 = vibeSampler;
+        } else {
+          arr_12 = loPitchArr_12;
+          inst_12 = pianoSampler;
+        }
+        // select pitch index for array
+        let index_12 = Math.floor(time_12 / 2000);
+        // stay on last pitch of array if last pitch is reached
+        if (index_12 > arr_12.length - 1) {
+          index_12 = arr_12.length - 1;
+        }
+        inst_12.triggerAttackRelease(arr_12[index_12], 5);
+        sineTails.triggerAttackRelease(arr_12[index_12], 4);
+        // higher bell is 2 oct. higher and 0.1 sec later. Get freq, mult by 4
+        let index = count_12 % midPitchArr_11.length;
+        let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
+        bellSampler.triggerAttackRelease(hiPitch, 5, '+0.1');
       }
-      // select pitch index for array
-      let index_12 = Math.floor(time_12 / 2000);
-      // stay on last pitch of array if last pitch is reached
-      if (index_12 > arr_12.length - 1) {
-        index_12 = arr_12.length - 1;
-      }
-      inst_12.triggerAttackRelease(arr_12[index_12], 5);
-      sineTails.triggerAttackRelease(arr_12[index_12], 4);
-      // higher bell is 2 oct. higher and 0.1 sec later. Get freq and mult by 4
-      let index = count_12 % midPitchArr_11.length;
-      let hiPitch = (Tone.Frequency(midPitchArr_11[index]).toFrequency()) * 4;
-      bellSampler.triggerAttackRelease(hiPitch, 5, '+0.1');
+      count_12++;
+      limit_12--;
+    } else {
+      tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
     }
-    count_12++;
-    limit_12--;
-  } else {
-    tm.publicWarning(`I'm sorry, but you're all out of shakes.`);
+    displayShakesLeft(limit_12);
   }
-  displayShakesLeft(limit_12);
 };
 tm.cue[12].stopCue = function() {
 };
@@ -874,8 +878,10 @@ tm.cue[12].stopCue = function() {
 let count_13 = 0;
 let lock_13 = false;
 
-tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+// NOTE: there's an extra 1 second of wait time so that I can make this transition extra dramatic by waiting an additional second and then showing shake gesture right at beginning of cue 13
+tm.cue[13] = new TMCue('dip', 4000, NO_LIMIT);
 tm.cue[13].cueTransition = function() {
+  lock_12 = true;
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease('C5', 3);
   clickTransition.start();

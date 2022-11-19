@@ -171,6 +171,7 @@ const sparklyTailSampler = new Tone.Sampler({
 }).toDestination();
 
 const clickTransition = new Tone.Player(misc_sounds + 'click-transition.mp3').toDestination();
+const stereoClickTransition = new Tone.Player(misc_sounds + 'stereo-click-transition.mp3').toDestination();
 
 const clavePingpong = new Tone.Player(misc_sounds + 'clave-pingpong_loop.mp3').toDestination();
 
@@ -508,7 +509,7 @@ const loBowedMarSampler = new Tone.Sampler({
   baseUrl: marimba_sounds,
 }).toDestination();
 // same instrument as above, but the audio file contains a 1/2-step pitch bend
-// NOTE: there is also a WAV file of the same 
+// NOTE: there is also a WAV file of the same
 const loBentBowedMarSampler = new Tone.Sampler({
   urls: {
     'G1': 'bowed-marimba_G1_Ab1-16s.mp3'
@@ -568,15 +569,16 @@ tm.cue[12].stopCue = function() {
 // CUE 13 (DIP) much calmer, residual buzz, melty pitches (c. 60")
 let count_13 = 0;
 
-tm.cue[13] = new TMCue('dip', WAIT_TIME, NO_LIMIT);
+// NOTE: there's an extra 1 second of wait time so that I can make this transition extra dramatic by waiting an additional second and then showing shake gesture right at beginning of cue 13
+tm.cue[13] = new TMCue('dip', 4000, NO_LIMIT);
 
 // NOTE: in fixed media, use cueTransition() to trigger final whooshing sound with sudden cutoff (can also use to trigger release of fixed media drone). For fixed media sound that continues, use slow fade in triggered by [13].goCue(). Final woosh could be reversed sound but also use a whole big flurry of rising clicks? may need to go back and rescale previous clicks to softer. long sinusoidal tail in cue 13, but then tacet. Downbeat sound of cue 13 can also be flurry of detuned bells in stereo (single audio file made in Logic) + synthesized sinusoidal tail with very long decay
 
 tm.cue[13].cueTransition = function() {
-  revVibeSampler.volume.value = -6;
-  revVibeSampler.triggerAttackRelease('C5', 3);
-  clickTransition.volume.value = -3;
-  clickTransition.start();
+  // revVibeSampler.volume.value = -6;
+  // revVibeSampler.triggerAttackRelease('C5', 3);
+  stereoClickTransition.volume.value = -1;
+  stereoClickTransition.start();
 };
 tm.cue[13].goCue = function() {
   if (tm.getElapsedTimeInCue(13) < CUE_SOUND_WINDOW) {
