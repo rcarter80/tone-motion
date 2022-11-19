@@ -92,7 +92,7 @@ const sineTailsR = new Tone.PolySynth(Tone.Synth, {
 }).connect(sineRightPanner);
 
 // bowed marimba time-stretched to 8-second sample (panned LEFT)
-// REVISION IDEA: try to switch back to WAV file instead of MP3. This caused an issue when I tried to push to GitHub. Could try again, and coudl implement a "high-quality" audio flag to selectively load either MP3 or WAV. Could even make conditional based on testing whether browser supports WAV
+// REVISION IDEA: try to switch back to WAV file instead of MP3. This caused an issue when I tried to push to GitHub. Could try again, and could implement a "high-quality" audio flag to selectively load either MP3 or WAV. Could even make conditional based on testing whether browser supports WAV. UPDATE: pushing WAV to GitHub worked when I used the Terminal instead of Atom/GitHub Desktop
 const bowedMarLeftPanner = new Tone.Panner(-1).toDestination();
 const bowedMarSamplerL = new Tone.Sampler({
   urls: {
@@ -508,6 +508,7 @@ const loBowedMarSampler = new Tone.Sampler({
   baseUrl: marimba_sounds,
 }).toDestination();
 // same instrument as above, but the audio file contains a 1/2-step pitch bend
+// NOTE: there is also a WAV file of the same 
 const loBentBowedMarSampler = new Tone.Sampler({
   urls: {
     'G1': 'bowed-marimba_G1_Ab1-16s.mp3'
