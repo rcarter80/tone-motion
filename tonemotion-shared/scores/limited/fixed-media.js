@@ -92,8 +92,7 @@ const sineTailsR = new Tone.PolySynth(Tone.Synth, {
 }).connect(sineRightPanner);
 
 // bowed marimba time-stretched to 8-second sample (panned LEFT)
-// TODO: try to switch back to WAV file that I allude to below, which caused issues with pushing to github
-// NOTE: uses WAV, not MP3, because this is for good speaker playback
+// REVISION IDEA: try to switch back to WAV file instead of MP3. This caused an issue when I tried to push to GitHub. Could try again, and coudl implement a "high-quality" audio flag to selectively load either MP3 or WAV. Could even make conditional based on testing whether browser supports WAV
 const bowedMarLeftPanner = new Tone.Panner(-1).toDestination();
 const bowedMarSamplerL = new Tone.Sampler({
   urls: {
@@ -102,7 +101,6 @@ const bowedMarSamplerL = new Tone.Sampler({
   baseUrl: marimba_sounds,
 }).connect(bowedMarLeftPanner);
 // bowed marimba time-stretched to 8-second sample (panned RIGHT)
-// NOTE: uses WAV, not MP3, because this is for good speaker playback
 const bowedMarRightPanner = new Tone.Panner(1).toDestination();
 const bowedMarSamplerR = new Tone.Sampler({
   urls: {
