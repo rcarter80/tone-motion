@@ -1077,7 +1077,7 @@ tm.fixedCuesOnly = true;
 Tone.Transport.schedule((time) => {
   tm.scheduleFixedCues(cueArray);
 }, '0');
-// TODO: revise timings below (make cues 5 and 6 more like 48", 7 and 8 a little longer) INCLUDING changing transition time to 3000 ms.
+// TODO: revise timings below (make cues 5 and 6 more like 48", 7 and 8 a little longer) INCLUDING changing transition time to 3000 ms. AND that one 4000 ms transition
 const cueArray = [
   [5, 0],
   [6, 62000, 2000],

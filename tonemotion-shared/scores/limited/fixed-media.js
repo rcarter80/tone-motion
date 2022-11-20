@@ -421,8 +421,8 @@ tm.cue[10].stopCue = function() {
 
 // *******************************************************************
 // CUE 11 (DIP) rising/decaying pulse. increasingly chaotic sounds (c. 60")
-
-// TODO: add clicks that could be one 8-note clave/pingpong/ziplock pattern that keep looping but slowly fades out before phones fade out. Use pitch-shifted down and initially quite loud clave, pingpong, ziplock click. rhythm skips downbeat: xcpczcpc (x = rest, c = clave, p = pingpong, z = ziplock). could add slight reverb?
+const lowClickLoop = new Tone.Player(misc_sounds + 'low-click-loop.mp3').toDestination();
+lowClickLoop.loop = true;
 
 // sub-bass is routed through tremolo to use LFO to control amplitude
 const tremolo_11 = new Tone.Tremolo(1.5, 1).toDestination().start();
@@ -487,6 +487,9 @@ tm.cue[11].goCue = function() {
   wobbleBass_11.volume.rampTo(-6, 48);
   bowedMarSampler16s.volume.value = -24;
   droneLoop_11.start();
+  lowClickLoop.volume.value = -6;
+  lowClickLoop.start();
+  lowClickLoop.volume.rampTo(-99, 64);
 };
 tm.cue[11].updateTiltSounds = function() {
 };
@@ -498,10 +501,13 @@ tm.cue[11].stopCue = function() {
   droneLoop_11.stop();
   wobbleBass_11.triggerRelease();
   bowedMarSampler16s.volume.rampTo(-60, 1);
+  lowClickLoop.stop();
 };
 
 // *******************************************************************
 // CUE 12 (SHAKE) peak variety, cresc drone in fixed media, cutoff (c. 60")
+const downbeatThud_12 = new Tone.Player(misc_sounds + 'thud_Bb2-A2.mp3').toDestination();
+
 const loBowedMarSampler = new Tone.Sampler({
   urls: {
     'Bb1': 'bowed-marimba_Bb1-16s.mp3'
@@ -541,15 +547,17 @@ droneLoop_12.iterations = 4;
 
 tm.cue[12] = new TMCue('shake', WAIT_TIME, NO_LIMIT);
 tm.cue[12].cueTransition = function() {
-  // TODO: Transition could help boost tenor voice of canon (which is pianoSampler in phones). Downbeat sound maybe same as cue 11 but based on Bb2 and no gliss?
+  // TODO: Transition could help boost tenor voice of canon (which is pianoSampler in phones)
   revVibeSampler.volume.value = -9;
   revVibeSampler.triggerAttackRelease([GqS4, GqS5], 3);
 };
 tm.cue[12].goCue = function() {
   if (tm.getElapsedTimeInCue(12) < CUE_SOUND_WINDOW) {
+    downbeatThud_12.volume.value = -3;
+    downbeatThud_12.start();
     vibeSampler.volume.value = -6;
-    vibeSampler.triggerAttackRelease('Ab4', 5);
-    vibeSampler.triggerAttackRelease('Ab5', 5, '+0.1');
+    vibeSampler.triggerAttackRelease('Ab4', 5, '+0.166');
+    vibeSampler.triggerAttackRelease('Ab5', 5, '+0.33');
   }
   count_12 = 0;
   loBowedMarSampler.volume.value = -5;
@@ -609,7 +617,6 @@ tm.cue[14].cueTransition = function() {
   revVibeSampler.triggerAttackRelease(['F#4', 'D6'], 3);
 };
 tm.cue[14].goCue = function() {
-  // TODO: decide on transition and downbeat sounds
   if (tm.getElapsedTimeInCue(14) < CUE_SOUND_WINDOW) {
     vibeSampler.volume.value = -9;
     vibeSampler.triggerAttackRelease('E4', 5);
@@ -630,7 +637,6 @@ tm.cue[15].cueTransition = function() {
 };
 tm.cue[15].goCue = function() {
   if (tm.getElapsedTimeInCue(15) < CUE_SOUND_WINDOW) {
-    // TODO: decide on transition and downbeat sounds. I don't like this pianoSampler (at least not at this volume - too loud)
     pianoSampler.volume.value = -18;
     pianoSampler.triggerAttackRelease('Bb4', 8);
     vibeSampler.volume.value = -12;
