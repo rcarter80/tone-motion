@@ -371,6 +371,7 @@ tm.cue[9].goCue = function() {
   fmSynth.triggerAttack('E4');
   cue10WasTriggered = false;
 };
+// TODO: I should make these tilt sounds louder (also louder in other tilt section with similar sounds)
 tm.cue[9].updateTiltSounds = function() {
   // after HIDDEN cue 10 is triggered, pitches bend up perfect 4
   if (cue10WasTriggered) {
@@ -408,6 +409,7 @@ tm.cue[10].goCue = function() {
   // once this flag is set to true, pitch bend in cue 9 are triggered
   cue10WasTriggered = true;
 };
+// TODO: cueTransition() won't work correctly because I'm linking to new version of library so i need to move this
 tm.cue[10].cueTransition = function() {
   // this is called BEFORE tm.cue[9].stopCue
   harpLoop_9.stop();
