@@ -66,7 +66,7 @@ tm.cue[4].stopCue = function() {
 // CUE 5: actual beginning of piece
 const recording = new Tone.Player(demo_sounds + 'concerto-recording.mp3').toDestination();
 
-tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[5] = new TMCue('tacet', 1500, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
