@@ -11,14 +11,9 @@ window.onload = function() {
 };
 
 // Shortcuts to audio file paths
-const perc_sounds = 'tonemotion-shared/audio/perc/';
-const vibes_sounds = 'tonemotion-shared/audio/vibes/';
-const chime_sounds = 'tonemotion-shared/audio/chimes/';
-const bell_sounds = 'tonemotion-shared/audio/bells/';
-const harp_sounds = 'tonemotion-shared/audio/harp/';
-const granulated_sounds = 'tonemotion-shared/audio/granulated/';
-const piano_sounds = 'tonemotion-shared/audio/piano/';
-const glass_sounds = 'tonemotion-shared/audio/glass/';
+const demo_sounds = 'tonemotion-shared/audio/demo/';
+
+// NOTE: This score is linked to /bp-demo-orch.html which is used for demonstrating Concerto Molto Grosso (e.g., at a talk). I can load that site on the podium computer to play through the AV system and have people at the talk go to /bp-demo.html on their phones to participate. The tutorial cues are still triggered live, but cue 5 then triggers a) the playback of the concerto recording from this score, and b) the scheduled fixed cues on phones
 
 // *******************************************************************
 // CUE 0: piece is in "waiting" state by default
@@ -31,29 +26,25 @@ tm.cue[0].stopCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: SHAKE tutorial
+// CUE 1: SHAKE tutorial (triggers SHAKE tutorial for phones)
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
-  // nothing to do until shake gestures
 };
 tm.cue[1].triggerShakeSound = function() {
 };
 tm.cue[1].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[2].goCue = function() {
-  // nothing to play
 };
 tm.cue[2].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 3: TILT tutorial (volume and timbre on y-axis, pitch on x-axis)
+// CUE 3: TILT tutorial (triggers TILT tutorial on phones)
 tm.cue[3] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[3].goCue = function() {
 };
@@ -69,18 +60,19 @@ tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
 };
 tm.cue[4].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 5: actual beginning of piece (audience is tacet)
-// TODO: goCue here should trigger playback of orchestra recording
+// CUE 5: actual beginning of piece
+const recording = new Tone.Player(demo_sounds + 'concerto-recording.mp3').toDestination();
+
 tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
   tm.clearMotionErrorMessage();
+  recording.start();
 };
 tm.cue[5].stopCue = function() {
-  // nothing to clean up
+  recording.stop();
 };
