@@ -231,7 +231,7 @@ tm.cue[4].stopCue = function() {
 
 // *******************************************************************
 // CUE 5: actual beginning of piece (audience is tacet)
-tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
+tm.cue[5] = new TMCue('tacet', 1500, NO_LIMIT);
 tm.cue[5].goCue = function() {
   // schedule all cues to line up with recording playback (recording is played as fixed media from bp-demo-orch.html)
   tm.scheduleFixedCues(cueArray);
