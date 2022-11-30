@@ -233,6 +233,8 @@ tm.cue[4].stopCue = function() {
 // CUE 5: actual beginning of piece (audience is tacet)
 tm.cue[5] = new TMCue('tacet', 0, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  // schedule all cues to line up with recording playback (recording is played as fixed media from bp-demo-orch.html)
+  tm.scheduleFixedCues(cueArray);
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
   tm.publicMessage('The beginning of the piece is just for orchestra, but your part will start soon!');
@@ -1119,12 +1121,7 @@ tm.cue[32].goCue = function() {
 
 // *******************************************************************
 // timeline for fixed cues below
-// Tone.Transport.schedule((time) => {
-//   tm.scheduleFixedCues(cueArray);
-// }, '0');
-
 const cueArray = [
-  [5, 0],
   [6, 47399],
   [7, 116432],
   [8, 123255],
