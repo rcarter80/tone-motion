@@ -12,71 +12,68 @@
 </head>
 <body>
 
-<header>
-  <h1>Direct Attention</h1>
-  <button id="help_button" type="button">?</button>
-</header>
+  <header>
+    <h1>Direct Attention</h1>
+    <button id="help_button" type="button">?</button>
+  </header>
 
-<main> <!-- center panel showing app status, messages, controls -->
-  <div id="status_container">
-    <p id="status_label">loading</p>
-  </div>
-  <!-- button is not displayed until page loads, then shows "start" -->
-  <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
-  <!-- when piece is done, button goes away -->
-  <button id="start_stop_button" type="button" class="transport hidden"></button>
-  <div id="message_container" class="hidden">
-    <p id="message_label"> </p>
-  </div>
-  <button id="shake_test_button" type="button" class="transport hidden">practice shake mode</button>
-  <button id="tilt_test_button" type="button" class="transport hidden">practice tilt mode</button>
-
-  <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
-  <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
-
-  <!-- append sliders and "shake" button here -->
-  <fieldset id="sliderFieldset" class="hidden">
-    <legend>Motion simulation</legend>
-    <label for="x_slider">X-axis of accelerometer</label>
-    <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
-    <label for="y_slider">Y-axis of accelerometer</label>
-    <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
-    <button id="simulateShakeButton" type="button">shake device</button>
-  </fieldset>
-
-</main>
-
-<section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
-  <div>
-    <h2>About this piece</h2>
-    <p><i>Direct Attention</i> is a piece for string quartet and motion-controlled interactive sounds played from the mobile devices of the audience. This extends my previous work with music for mobile devices in <a href="https://ryancarter.org/suboptimal" target="_blank"><i>On the expressive potential of suboptimal speakers</i></a> (a web-based piece for any number of people) and <a href="http://itunes.apple.com/us/app/imonkeypants/id547532522?mt=8" target="_blank">iMonkeypants</a> (an iOS app album).</p>
-  </div>
-  <div>
-    <h2>Compatibility and accessibility</h2>
-    <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
-    <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to iOS 13.5 fixes the issue.)</p>
-    <p>I hope that the site I have designed is maximally accessible to all users. If you have thoughts on improving the accessibility of this site, please feel free to contact me at ryan (at) ryancarter (dot) org.</p>
-  </div>
-  <div>
-    <h2>Credits</h2>
-    <p>This project extends the <a href="https://github.com/Tonejs/Tone.js" target="_blank">Tone.js</a> framework for using Web Audio in supported browsers.</p>
-    <p>Aspects of this project were developed in partnership with the BounceWav Collective (Jamie Haberman, Jet Kwok, Eddie Mestre) with support from the Los Angeles Philharmonic.</p>
-  </div>
-  <div>
-    <h2>Motion monitor</h2>
-    <input type="checkbox" id="motion_data_checkbox">
-    <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
-    <div id="motion_container" class="hidden">
-      <p id="motion_data_label"></p>
+  <main> <!-- center panel showing app status, messages, controls -->
+    <div id="status_container">
+      <p id="status_label">loading</p>
     </div>
-  </div>
-  <div id="publicConsole">
-    <h2>Console</h2>
-    <input type="checkbox" id="console_checkbox">
-    <label for="console_checkbox">Show console messages (may affect performance)</label>
-    <div id="console_container" class="hidden">
+    <!-- button is not displayed until page loads, then shows "start" -->
+    <!-- then button shows "stop" unless error, which shows "try again" and programmatically reloads page -->
+    <!-- when piece is done, button goes away -->
+    <button id="start_stop_button" type="button" class="transport hidden"></button>
+    <div id="message_container" class="hidden">
+      <p id="message_label"> </p>
     </div>
-  </div>
+    <button id="shake_test_button" type="button" class="transport hidden">practice shake mode</button>
+    <button id="tilt_test_button" type="button" class="transport hidden">practice tilt mode</button>
+
+    <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
+    <audio id="silent_buffer"><source src="tonemotion-shared/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+
+    <!-- append sliders and "shake" button here -->
+    <fieldset id="sliderFieldset" class="hidden">
+      <legend>Motion simulation</legend>
+      <label for="x_slider">X-axis of accelerometer</label>
+      <input type="range" id="x_slider" name="accel_x" min="0" max="1" step="0.01" />
+      <label for="y_slider">Y-axis of accelerometer</label>
+      <input type="range" id="y_slider" name="accel_y" min="0" max="1" step="0.01" />
+      <button id="simulateShakeButton" type="button">shake device</button>
+    </fieldset>
+
+  </main>
+
+  <section id="help_panel" class="slide-out"> <!-- left panel with instructions and help -->
+    <div>
+      <h2>Instructions</h2>
+      <p>This site can be used to play along with a recording of <i>Direct Attention</i>. Once the site has loaded, you can tap the "complete setup" button at any time; you may also be asked for permission to access your motion data. Then wait to tap the "start" button until you're ready to play with the recording.</p>
+      <p>The label in the center of the screen indicates the mode of interactivity for the current section of the piece. "Shake" allows you to trigger individual sounds by gently shaking your device; a quick flick of the wrist will do. "Tilt" allows you to control certain aspects of the sound by tilting your phone to the left and right or up and down. "Tacet" is a musical indication that your part is silent for this section.</p>
+      <p>Even at maximum volume, the sound from your phone speakers may still be quite soft. If you hold your phone close to your ear, you'll be able to hear the sound you control more distinctly. (But be careful not to hold your phone too close to your ear! Use at your own risk and discretion. Use of this site implies acceptance of these terms.) On the other hand, if you hold your phone farther away, you'll hear a more balanced mix of all the sounds being made around you. Feel free to experiment with this balance!</p>
+    </div>
+    <div>
+      <h2>Compatibility and accessibility</h2>
+      <!-- note to self - tested Feb. 1, 2019 on iPhone 6s and it works, but does not work on iPhone 5 -->
+      <p>Compatible with iOS and Android. Older models and devices that have not been recently updated may not be supported. Recommended browsers are Safari and Chrome. (Please note that a bug in the version of Safari included with iOS 13.4 prevents the "shake" mode of interactivity from functioning; updating to any later version fixes the issue.)</p>
+      <p>I hope that the site I have designed is maximally accessible to all users. If you have thoughts on improving the accessibility of this site, please feel free to contact me at ryan (at) ryancarter (dot) org.</p>
+    </div>
+    <div>
+      <h2>Motion monitor</h2>
+      <input type="checkbox" id="motion_data_checkbox">
+      <label for="motion_data_checkbox">Show motion data (may affect performance)</label>
+      <div id="motion_container" class="hidden">
+        <p id="motion_data_label"></p>
+      </div>
+    </div>
+    <div id="publicConsole">
+      <h2>Console</h2>
+      <input type="checkbox" id="console_checkbox">
+      <label for="console_checkbox">Show console messages (may affect performance)</label>
+      <div id="console_container" class="hidden">
+      </div>
+    </div>
   </section>
 
   <!-- KEEP THIS VERSION OF Tone.js and don't link to different version -->
@@ -87,7 +84,7 @@
   <script src="tonemotion-shared/js/tonemotion-fixed-1.4.3.js"></script>
 
   <!-- Score for this piece -->
-  <script src="tonemotion-shared/scores/jack-fixed.js"></script>
+  <script src="tonemotion-shared/scores/direct-attention/jack-fixed.js"></script>
 
 </body>
 </html>

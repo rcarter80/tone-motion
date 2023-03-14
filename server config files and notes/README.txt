@@ -1,0 +1,3 @@
+I have two different .htacess files, one for ryancarter.org and the other for ryancarter.us. I don't want to accidentally upload the wrong file to the wrong server, so I keep them separate here. (Update: it turns out I wrote exactly the same code for both .htaccess files, but I'm still keeping them separate in case I change one and not the other.)
+
+Also: I activated CloudFlare on ryancarter.us and I noticed in the Cloudflare Dashboard an option to bypass CloudFlare for development mode. See image "to bypass Cloudflare.png" 

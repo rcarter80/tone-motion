@@ -13,6 +13,7 @@ const help_button = document.querySelector('#help_button');
 const status_container = document.querySelector('#status_container');
 const status_label = document.querySelector('#status_label');
 const start_stop_button = document.querySelector('#start_stop_button');
+const cue_container = document.querySelector('#cue_container');
 const message_container = document.querySelector('#message_container');
 const message_label = document.querySelector('#message_label');
 const help_panel = document.querySelector('#help_panel');
@@ -42,6 +43,7 @@ const yTilt = new Tone.Signal(0.5);
  * @param {boolean} showConsoleOnLaunch - Set to 'true' to show console
  * @param {boolean} shouldSyncToServer - Find time offset between client
  *    and server (clientServerOffset). If false, offset is 0.
+ * @param {number} shortestRoundtrip - shortest server ping (for time offset)
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
  * @param {string} motionPermissionStatus - Shows status of permission request to access motion & orientation data
@@ -96,6 +98,7 @@ function ToneMotion() {
   this.showConsoleOnLaunch = false;
   this.shouldSyncToServer = true;
   this.clientServerOffset = 0;
+  this.shortestRoundtrip = Number.POSITIVE_INFINITY;
   this.deviceIsAndroid = false;
   this.motionPermissionStatus = 'unknown';
   this.shouldTestMotion = true;
@@ -265,7 +268,7 @@ ToneMotion.prototype.setStatus = function(status) {
       this.setStartStopButton('stop', 'stop');
       break;
     case 'missedCue':
-      this.setStatusLabel('(wait for next cue)', 'default');
+      this.setStatusLabel('waiting for next cue', 'default');
       this.setStartStopButton('stop', 'stop');
       break;
     case 'stopped':
@@ -686,6 +689,17 @@ ToneMotion.prototype.setBackgroundBlue = function() {
   );
 };
 
+// Displays large-font cue number (or other message) in message container
+ToneMotion.prototype.displayCueNumber = function(cue) {
+  cue_container.classList.remove('hidden');
+  cue_label.innerHTML = cue;
+}
+ToneMotion.prototype.clearCueDisplay = function(cue) {
+  cue_container.classList.add('hidden');
+  cue_label.innerHTML = '';
+}
+
+
 /*********************************************************************
 ********************** DEVICE MOTION HANDLING ************************
 *********************************************************************/
@@ -794,7 +808,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
-      this.accel.y = 1;
+      this.accel.x = 1;
     }
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
@@ -933,7 +947,6 @@ ToneMotion.prototype.syncClocks = function() {
   if (this.shouldSyncToServer) {
     this.setStatus('synchronizing');
     let syncClockCounter = 0;
-    let shortestRoundtrip = Number.POSITIVE_INFINITY;
 
     let syncClockID = setInterval( () => {
       let syncTime1 = Date.now(); // client-side timestamp
@@ -945,12 +958,12 @@ ToneMotion.prototype.syncClocks = function() {
         let syncTime3 = Date.now(); // client-side timestamp on receipt
         let roundtrip = syncTime3 - syncTime1;
         this.publicLog('Time request number ' + syncClockCounter + ' sent at ' + syncTime1 + ' (client time). Response sent at ' + syncTime2 + ' (server time). Response received at ' + syncTime3 + ' (client time). Roundtrip latency: ' + roundtrip + ' milliseconds.');
-        if (roundtrip < shortestRoundtrip) {
+        if (roundtrip < this.shortestRoundtrip) {
           // Safari caches response despite my very nice request not to
           // It releases cache after first iteration, but first result
           // can't really be trusted
           if (syncClockCounter > 1) {
-            shortestRoundtrip = roundtrip;
+            this.shortestRoundtrip = roundtrip;
             // shortest roundtrip considered most accurate
             // subtract this.clientServerOffset from client time to sync
             this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
@@ -961,11 +974,11 @@ ToneMotion.prototype.syncClocks = function() {
           }
         }
         if (syncClockCounter === 6) { // last check
-          if (shortestRoundtrip > 2000) {
+          if (this.shortestRoundtrip > 2000) {
             ;
-            this.publicWarning('There seems to be a lot of latency in your connection to the server (' + shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
+            this.publicWarning('There seems to be a lot of latency in your connection to the server (' + this.shortestRoundtrip + ' milliseconds of round-trip delay). Your device may not be synchronized.');
           } else {
-            this.publicLog('Shortest roundtrip latency was ' + shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+            this.publicLog('Shortest roundtrip latency was ' + this.shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
           }
           this.setStatus('readyToPlay');
         }
@@ -1009,6 +1022,28 @@ ToneMotion.prototype.getCuesFromServer = function() {
     } // else no new cue and control falls through, on to next loop
   })
   .catch(error => this.publicError(error));
+
+  // This is also an opportunity to perform another synchronization test between the client and the server if the latency was high during the inital page load. Threshold currently set to 400 ms. roundtrip latency.
+  if (this.shortestRoundtrip > 400) {
+    if (this.shouldSyncToServer) {
+      this.publicLog('High latency was previously detected. Attempting again to synchronize with server.');
+      let syncTime1 = Date.now(); // client-side timestamp
+      fetch(urlForClockSync)
+      .then(response => response.text())
+      .then(response => {
+        let syncTime2 = response; // server-side timestamp
+        let syncTime3 = Date.now(); // client-side timestamp on receipt
+        let roundtrip = syncTime3 - syncTime1;
+        if (roundtrip < this.shortestRoundtrip) {
+          // there was less latency this time, so update clientServerOffset
+          this.shortestRoundtrip = roundtrip;
+          this.clientServerOffset = (syncTime3-syncTime2) - (roundtrip/2);
+          this.publicLog('New shortest roundtrip latency was ' + this.shortestRoundtrip + ' milliseconds. Client time is estimated to be ahead of server time by ' + this.clientServerOffset + ' milliseconds.');
+        }
+      })
+      .catch(error => this.publicError(error));
+    }
+  }
 };
 
 // Called when server has new cue
@@ -1072,7 +1107,7 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     // clear all current cues and previous messages
     this.clearActiveCues();
     this.setStatus('missedCue');
-    this.publicWarning('Your device missed its cue by ' + (-delay) + ' milliseconds! If this keeps happening, there may be a problem with your connection.');
+    this.publicWarning(`Your device missed its cue by ${(-(delay/1000))} seconds. You'll be able to rejoin at the next cue.`);
   } else if (delay < 20) {
     // clear all current cues and previous messages
     this.clearActiveCues();

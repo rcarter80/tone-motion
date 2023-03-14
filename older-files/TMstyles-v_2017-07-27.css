@@ -1,0 +1,385 @@
+/* COLOR PALETTE
+almost white (icey light blue) - #e8ffff
+light blue - #9df9f9
+bright blue - #00ffff
+light gray - #c8d1d1
+dark gray - #2e3a3a
+*/
+
+
+/* -------------------------  GENERAL STYLES ------------------------- */
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* apply a natural box layout model to all elements (suggestion from Paul Irish) */
+*, *:before, *:after { 
+  -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #2e3a3a;
+  color: #9df9f9;
+  font-size: 87%; 
+  font-family: 'Open Sans', Arial, sans-serif;
+  line-height: 1.5;
+}
+
+div, ul, ol, li {
+  margin: 0;
+  padding: 0;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.clearfix:after {
+  clear: both;
+}
+
+img {
+  display: block;
+  margin: 10px auto;
+  padding: 0;
+  max-width: 100%;
+  height: auto;
+  border: 0;
+  vertical-align: middle;
+  -ms-interpolation-mode: bicubic;
+}
+
+hr {
+  margin: 20px 0 10px 0;
+  border: 0;
+  border-top: 1px solid #b2b7b6;
+}
+
+
+/* -------------------------  GENERAL TEXT STYLES ------------------------- */
+a:link,
+a:visited {
+  display: block;
+  padding: 5px 10px;
+  background-color: #c8d1d1;
+  color: #2e3a3a;
+  text-decoration: none;
+}
+a:focus {
+  outline: thin dotted #333;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+  background-color: #fff;
+}
+a:active {
+  outline: 0;
+  background-color: #e8ffff;
+}
+/* background hover color on desktop only */
+@media (min-device-width: 1025px) {
+  a:hover {
+    outline: 0;
+    background-color: #e8ffff;
+  }
+}
+
+a,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 10px 0;
+  font-family: inherit;
+}
+
+h1 {
+  padding: 10px 0;
+  background-color: #9df9f9;
+  color: #2e3a3a;
+  text-align: center;
+  font-weight: bold;
+  font-size: 125%;
+}
+
+h2 {
+  /* margin-top: 20px; */ /* this top margin causes displayToggle sliding jiggle */
+  padding: 5px 0;
+  background-color: #9df9f9;
+  color: #2e3a3a;
+  text-align: center;
+  font-weight: bold;
+  font-size: 110%;
+}
+
+.moreInfoQuestion {
+  background-color: #9df9f9;
+  color: #2e3a3a;
+}
+.moreInfoAnswer {
+  font-size: 90%;
+  color: #e8ffff;
+}
+
+
+/* -------------------------  MAIN CONTENT ------------------------- */
+#Content {
+  margin: 25px auto 10px;
+  overflow: auto;
+}
+/* phone */
+@media (max-device-width: 767px) {
+  #Content {
+    width: 100%;
+    padding: 75px 10px 150px 10px; /* need extra bottom padding to make room for buttons */
+  }
+}
+/* tablet */
+@media (min-device-width: 768px) and (max-device-width: 1024px) {
+  #Content {
+    width: 750px;
+    border: 2px solid #9df9f9;
+    border-radius: 10px;
+  }
+}
+/* desktop */
+@media (min-device-width: 1025px) {
+  #Content {
+    width: 950px;
+    border: 2px solid #9df9f9;
+    border-radius: 10px;
+  }
+}
+
+/* tablet and desktop */
+@media (min-device-width: 768px) {
+  #HeaderWrapper {
+    border-bottom: 2px solid #9df9f9;
+  }
+  #HeaderWrapper p {
+    padding: 0 20px;
+  }
+  #InfoWrapper {
+    width: 50%;
+    float: left;
+    margin-top: 10px;
+    border-right: 2px solid #9df9f9;
+  }
+  #InfoWrapper p {
+    padding: 0 10px;
+  }
+  #ControlWrapper {
+    width: 50%;
+    float: right;
+    position: relative; /* left column (#InfoWrapper) has right border and right column (#ControlWrapper) has */
+    left: -2px; /* left border, but we don't know which has greater height, so offset right column to overlap */
+    border-left: 2px solid #9df9f9;
+  }
+}
+
+.hiddenContent {
+  display: none;
+}
+
+
+/* -------------------------  BUTTONS ------------------------- */
+button {
+  display: block;
+  height: 50px;
+  min-width: 30%;
+  margin: 10px auto;
+  color: #2e3a3a;
+  font-size: 110%;
+  background-color: #c8d1d1;
+  border: 1px solid #2e3a3a;
+  border-radius: 5px;
+  -webkit-animation-name: fadeIn; -moz-animation-name: fadeIn; animation-name: fadeIn;
+  -webkit-animation-duration: 1s; -moz-animation-duration: 1s; animation-duration: 1s;
+}
+@-webkit-keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+@-moz-keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+@keyframes fadeIn { from { opacity: 0.0; } to { opacity: 1.0 ; } }
+button:active {
+  background-color: #e8ffff;
+}
+/* background hover color on desktop only */
+@media (min-device-width: 1025px) {
+  button:hover {
+    background-color: #e8ffff;
+  }
+}
+#TransportButtonWrapper {
+  padding: 0 10px; /* need padding for warning text when user taps stop button */
+  width: 100%;
+}
+/* phone */
+@media (max-device-width: 767px) {
+  #TransportButtonWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    background-color: #e8ffff;
+    border-bottom: 1px solid #2e3a3a;
+    box-shadow: 0 1px 10px #e8ffff;
+  }
+  #ChimeButtonWrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    width: 100%;
+    background-color: #e8ffff;
+    border-top: 1px solid #2e3a3a;
+    box-shadow: 0 1px 10px #e8ffff;
+  }
+}
+/* tablet/desktop */
+@media (min-device-width: 768px) {
+  #TransportButtonWrapper {
+    border-bottom: 1px solid #9df9f9;
+  }
+  #ChimeButtonWrapper {
+    width: 100%;
+    border-top: 1px solid #9df9f9;
+  }
+}
+div.chimeButtonColumn {
+  width: 33%;
+  display: inline-block;
+  float: left;
+}
+/* OK, this kind of a kludge - 
+The three buttons need equal columns, but an empty div#ChimeButtonLeft column has no width, so it needs content
+I put a tiny &nbsp; and that means that the center column is always in the center even if left column is empty
+MUST prepend left chime button to p#ButtonPlaceholder */
+p#ButtonPlaceholder {
+  margin: 0;
+  padding: 0;
+  font-size: 1px;
+}
+/* phone */
+@media (max-device-width: 767px) {
+  p#ButtonPlaceholder {
+    line-height: 1px;
+  }
+}
+/* tablet/desktop */
+@media (min-device-width: 768px) {
+  p#ButtonPlaceholder {
+    line-height: 10px; /* give a little extra room for this element's top border on tablet/desktop */
+  }
+}
+button.resourcesAreLoading {
+  background-color: #e8ffff;
+}
+button.userMayStopMusic {
+  background-color: #e8ffff;
+}
+@media (max-device-width: 767px) {
+  p#ConfirmStopMessage {
+    color: #2e3a3a;
+  }
+}
+button#ConfirmStop {
+  background-color: white;
+  color: red;
+  border-color: red;
+}
+button#ConfirmStop:hover {
+  background-color: red;
+  color: white;
+}
+
+
+/* -------------------------  XY-PAD ("Dragger") ------------------------- */
+/* partially copied from styles from Interface.js */
+#Content #DragContainer {
+  margin: 20px auto;
+  position: relative;
+  clear: left;
+  display: none; /* container for XY-pad not displayed by default. if needed, will slide down to add. */
+}
+#Content #DragContainer.shouldHaveBorder {
+  border: 2px solid #c8d1d1;
+  border-radius: 5px;
+}
+/* phone (really shouldn't need this, but could still use XY-pad on mobile device) */
+@media (max-device-width: 767px) {
+  #DragContainer {
+    width: 250px;
+    height: 250px;
+  }
+}
+/* tablet (really shouldn't need this, but could still use XY-pad on mobile device) */
+@media (min-device-width: 768px) and (max-device-width: 1024px) {
+  #DragContainer {
+    width: 300px;
+    height: 300px;
+  }
+}
+/* desktop */
+@media (min-device-width: 1025px) {
+  #DragContainer {
+    width: 400px;
+    height: 400px;
+  }
+}
+#Content .Dragger {
+  width: 20px; /* changeMadeFrom 90px */
+  height: 20px; /* changeMadeFrom 90px */
+  position: absolute;
+  background-color: #c8d1d1; /* was black */
+  border-radius: 50%;
+  z-index: 1;
+  margin-top: -2px;
+  border: 2px solid #e8ffff;
+  cursor: -webkit-grab;
+}
+#Content .Dragger #Name { /* #Name adds text to the button in the XY-pad. I don't use this. */
+  width: 100%;
+  height: 100%;
+  position: relative;
+  text-align: center;
+  font-size: 12px;
+  line-height: 90px;
+  color: #e8ffff;
+}
+#Content .Dragger:hover {
+  background-color: #e8ffff;
+  color: #e8ffff;
+}
+#Content .Dragger.is-pointer-down {
+  cursor: -webkit-grabbing;
+  background-color: #2e3a3a;
+}
+#Content .Dragger.is-pointer-down #Name {
+  color: black; /* #Name adds text to the button in the XY-pad. I don't use this. */
+}
+#Content .Axis {
+  position: absolute;
+  background-color: #c8d1d1;
+  width: 3px;
+  height: 3px;
+  top: 3px;
+  left: 3px;
+  border-radius: 1.5px;
+  z-index: 0;
+}
+#Content #xAxis {
+  width: 98%; /* fallback for browsers without support for calc() */
+  width: calc(100% - 6px);
+}
+#Content #yAxis {
+  height: 98%; /* fallback for browsers without support for calc() */
+  height: calc(100% - 6px);
+}
+

@@ -124,7 +124,7 @@ ToneMotion.prototype.init = function(urlOfServer) {
     this.shouldSyncToServer = false;
   }
   // Can automatically show console in left panel when page loads
-  // This was previously NOT the default behavior, but a scrolling issue in iOS Safari is fixed by displaying console by default. If debug mode is on, lots of messages are generated, but otherwise few are. 
+  // This was previously NOT the default behavior, but a scrolling issue in iOS Safari is fixed by displaying console by default. If debug mode is on, lots of messages are generated, but otherwise few are.
   if (this.showConsoleOnLaunch) {
     console_checkbox.checked = true;
     console_container.className = '';
@@ -706,7 +706,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
-      this.accel.y = 1;
+      this.accel.x = 1;
     }
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
@@ -866,7 +866,7 @@ ToneMotion.prototype.getCuesFromServer = function() {
   })
   .catch(error => this.publicError(error));
 
-  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), 500);
+  this.cueFetchTimeout = setTimeout(this.getCuesFromServer.bind(this), this.cuePollingInterval);
 };
 
 // Called when server has new cue

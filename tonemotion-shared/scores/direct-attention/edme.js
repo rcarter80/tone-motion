@@ -5,9 +5,9 @@ window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
   if (tm.localTest) {
-    tm.init('http://localhost:3000/jack-server/current-cue');
+    tm.init('http://localhost:3000/edme-server/current-cue');
   } else {
-    tm.init('https://tonemotion-cue-manager.herokuapp.com/jack-server/current-cue');
+    tm.init('https://tonemotion-cue-manager.herokuapp.com/edme-server/current-cue');
   }
 };
 
@@ -29,31 +29,38 @@ tm.cue[0].goCue = function() {
 };
 
 // *******************************************************************
-// CUE 1: tilt practice
-var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
-claveLoop.loop = true;
-
+// CUE 1: tilt tutorial
+// Test tone for "tilt" tutorial
+var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
+var testTone = new Tone.Synth({
+  oscillator: {
+    type: "sawtooth"
+  },
+  envelope: {
+    attack: 0.005,
+    decay: 0.1,
+    sustain: 0.9,
+    release: 0.1
+  }
+}).connect(testToneFilter);
+testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
+var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
+var testToneFilterScale = new Tone.Scale(440, 10000);
+xTilt.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
+yTilt.chain(testToneFilterScale, testToneFilter.frequency);
 tm.cue[1] = new TMCue('tilt', -1);
 tm.cue[1].goCue = function() {
-  claveLoop.start();
-  tm.publicMessage('During a section marked "tilt," your device will make sounds that respond to the position of your phone. In this case, you can mute your phone by holding it right-side up. The short, repeated sound gets louder, faster, and higher as you tip your phone upside down.');
-};
+  testTone.triggerAttack(440);
+}
 tm.cue[1].updateTiltSounds = function() {
-  // sound is full scale if phone is mostly upright. muted if upside down.
-  if (tm.accel.y < 0.5) {
-    claveLoop.volume.value = (tm.accel.y * 198 - 99);
-  } else {
-    claveLoop.volume.value = 0;
-  }
-  // pitch and speed go up on y-axis
-  claveLoop.playbackRate = 0.1 + tm.accel.y * 2.9;
-};
+  // interactivity handled through tm.xTilt and yTilt signals
+}
 tm.cue[1].stopCue = function() {
-  claveLoop.stop();
-};
+  testTone.triggerRelease();
+}
 
 // *******************************************************************
-// CUE 2: tacet tutorial. NOT USED FOR FIXED CUE SITES.
+// CUE 2: tacet tutorial
 tm.cue[2] = new TMCue('tacet', -1);
 tm.cue[2].goCue = function() {
   // nothing to play
@@ -63,35 +70,31 @@ tm.cue[2].stopCue = function() {
 }
 
 // *******************************************************************
-// CUE 3: shake practice
-var clave = new Tone.Player(perc_sounds + 'clave.mp3').toMaster();
-
+// CUE 3: shake tutorial
+var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
-  tm.publicMessage('During a section marked "shake," you can trigger sounds by shaking your phone. If you hold your phone still, it will not make sound.');
+  // nothing to do until shake gestures
 };
 tm.cue[3].triggerShakeSound = function() {
-  clave.start();
+  cowbell.start();
 };
 tm.cue[3].stopCue = function() {
   // nothing to clean up
 };
 
 // *******************************************************************
-// CUE 4: sets status to 'waitingForPieceToStart'. NOT USED FOR FIXED CUES.
+// CUE 4: sets status to 'waitingForPieceToStart'
 tm.cue[4] = new TMCue('waiting', -1);
 tm.cue[4].goCue = function() {
   tm.publicLog('Waiting for piece to start');
-};
-tm.cue[4].stopCue = function() {
-  // nothing to clean up
 };
 
 // *******************************************************************
 // CUE 5: Actual beginning of piece, but first section is tacet
 tm.cue[5] = new TMCue('tacet', -1);
 tm.cue[5].goCue = function() {
-  tm.publicMessage('The beginning of the piece is just for string quartet, but your part will start soon!');
+  if (tm.debug) { tm.publicLog('The piece has started.'); }
 };
 
 // *******************************************************************
@@ -122,6 +125,7 @@ tm.cue[6].triggerShakeSound = function() {
   // DOLATER: refactor this to tonemotion library as tm.getSectionCounter()
   // and remove log of sectionCounter
   var elapsedTime = Date.now() - tm.clientServerOffset - tm.cue[6].startedAt;
+  console.log(tm.cue[6].startedAt);
   var durationOfSection = 50000; // just short of end of section
   // clamp counter at 1.0 (in case section takes longer than expected)
   var sectionCounter = (elapsedTime / durationOfSection <= 1) ? elapsedTime / durationOfSection : 1;
@@ -562,59 +566,24 @@ tm.cue[21].goCue = function() {
 }
 
 // *******************************************************************
-// timeline for fixed cues below. Starts at cue 5; earlier cues are practice
-Tone.Transport.schedule((time) => {
-	tm.triggerFixedCue(5);
-  scheduleAllCues();
-}, "0");
-
-function scheduleAllCues() {
-  tm.cue[6].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(6, 1579);
-  }, 49076);
-  tm.cue[7].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(7);
-  }, 95341);
-  tm.cue[8].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(8, 1579);
-  }, 99577);
-  tm.cue[9].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(9, 1579);
-  }, 124769);
-  tm.cue[10].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(10);
-  }, 147596);
-  tm.cue[11].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(11, 1579);
-  }, 150384);
-  tm.cue[12].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(12, 1579);
-  }, 175937);
-  tm.cue[13].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(13);
-  }, 198677);
-  tm.cue[14].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(14, 1579);
-  }, 279649);
-  tm.cue[15].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(15, 1579);
-  }, 307092);
-  tm.cue[16].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(16);
-  }, 353920);
-  tm.cue[17].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(17, 1579);
-  }, 357548);
-  tm.cue[18].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(18);
-  }, 407000);
-  tm.cue[19].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(19, 1579);
-  }, 411998);
-  tm.cue[20].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(20);
-  }, 520000);
-  tm.cue[21].timeoutID = window.setTimeout( () => {
-    tm.triggerFixedCue(21);
-  }, 581000);
-}
+// CUES 22-26: use for quartet to test pedal and cue counter
+tm.cue[22] = new TMCue('waiting', -1);
+tm.cue[22].goCue = function() {
+  tm.publicLog('Test cue 22 was triggered.');
+};
+tm.cue[23] = new TMCue('waiting', -1);
+tm.cue[23].goCue = function() {
+  tm.publicLog('Test cue 23 was triggered.');
+};
+tm.cue[24] = new TMCue('waiting', -1);
+tm.cue[24].goCue = function() {
+  tm.publicLog('Test cue 24 was triggered.');
+};
+tm.cue[25] = new TMCue('waiting', -1);
+tm.cue[25].goCue = function() {
+  tm.publicLog('Test cue 25 was triggered.');
+};
+tm.cue[26] = new TMCue('waiting', -1);
+tm.cue[26].goCue = function() {
+  tm.publicLog('Test cue 26 was triggered.');
+};

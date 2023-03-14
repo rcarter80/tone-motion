@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>On the expressive potential of suboptimal speakers</title>
+  <meta name="description" content="Web-based algorithmic generation of interactive music">
+  <meta name="author" content="Ryan Carter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="./TMassets/js/Tone.js"></script>
+  <script src="./TMassets/js/jquery.min.js"></script>
+  <script src="./TMassets/js/draggabilly.js"></script>
+  <script src="./TMassets/js/StartAudioContext.js"></script>
+  <!-- place ToneMotion.js at top and ToneMotionInterface.js at bottom of page -->
+  <script src="./TMassets/js/ToneMotion.js"></script>
+  
+  <link rel="stylesheet" type="text/css" href="./TMassets/css/TMstyles.css">
+
+</head>
+<body>
+ <div id="Content">
+
+  <div id="HeaderWrapper"> <!-- full-width wrapper used for responsive positioning -->
+    <h1>On the expressive potential of suboptimal speakers</h1>
+    <p><i>On the expressive potential of suboptimal speakers</i> is a piece of interactive electronic music for any number of people with mobile devices. The sound responds to the position of your phone or tablet, so tilting your device (left and right) or tipping your device (right-side up and upside down) will sculpt the music in real time. You can also explore the music on a laptop or desktop computer.</p>
+  </div> <!-- /#HeaderWrapper -->
+
+  <div id="InfoWrapper"> <!-- forms left column on tablet/desktop. no columns on phone -->
+    <div id="StatusLabels"> <!-- this element required to use status labels (for testing) -->
+    </div>
+    <div class="displayToggle"> <!-- "more information" -->
+      <a href="#" class="preventDefault"><span class="disclosureTriangle">&#9658; </span>More Information</a>
+    </div>
+    <div class="hiddenContent"> 
+      <p class="moreInfoQuestion">Does my device require any special setup?</p>
+      <p class="moreInfoAnswer">Once the page has loaded, you can set your device to Airplane Mode (to prevent phone calls and text messages during the performance) and you can set the Orientation Lock (so that the interface doesn't keep spinning as you move your device around). On an iOS device, you can access these settings from the Control Center by swiping up from the bottom of the screen.<br>You can also turn the volume up, and you might choose to turn down the screen brightness. No other setup is required.<br><br>TL;DR</p>
+      <img src="./TMassets/img/volume-setting.png">
+      <img src="./TMassets/img/recommended-settings.png">
+      <p class="moreInfoQuestion">How should this be performed?</p>
+      <p class="moreInfoAnswer">This piece is intended to be performed in a concert setting, with all members of the audience navigating to this site and tapping the start button at roughly the same time. (It's okay to be a couple seconds off.) There are no additional performers. The piece progresses through different sections, in which the specific aspects of the sound that are controlled by device motion are explained in the instructions below. Because device motion can be simulated on other platforms, this can really be experienced with any combinations of compatible browsers; you could have a number of people on laptops and others with phones and tablets.</p>
+      <p class="moreInfoQuestion">What if there's no data connection in the venue?</p>
+      <p class="moreInfoAnswer">You can load the page outside the venue and it will continue to work (even in Airplane Mode). Make sure not to hit the refresh button.</p>
+    </div>
+    <div class="displayToggle"> <!-- "test tone" -->
+      <a href="#" class="preventDefault"><span class="disclosureTriangle">&#9658; </span>Test tone</a>
+    </div>
+    <div id="TestToneLabel" class="hiddenContent"> 
+      <p>The button below will produce a filtered sawtooth wave (a buzzy sound) with the oscillator frequency controlled on the x-axis and filter cutoff frequency controlled on the y-axis. (When you tilt your device to the left, the sound will be lower; when you tip your device upside down, the sound will be more buzzy.)</p>
+      <button id="TestToneButton" class="soundOff">test</button>
+    </div>
+    <h2>Instructions</h2>
+    <div id="InstructionLabel"> <!-- used to communicate instructions to user -->
+      <p id='Instructions'>Please wait while the page is loading.</p>
+    </div>
+  </div> <!-- /#InfoWrapper -->
+
+  <div id="ControlWrapper"> <!-- forms right column on table/desktop. no columns on phone -->
+    <!-- transport button in separate wrapper because it's positioned at top of interface -->
+    <div id="TransportButtonWrapper">
+      <button id="TransportButton" class="resourcesAreLoading">Loading...</button>
+    </div> <!-- /#TransportButtonWrapper -->
+    <!-- container for XY-pad for devices that don't report motion. not displayed at load. -->
+    <div id="DragContainer">
+    </div> <!-- /#DragContainer -->
+    <!--  chime buttons are added dynamically at bottom of interface -->
+    <div id="ChimeButtonWrapper">
+      <div id="ChimeButtonLeft" class="chimeButtonColumn"><p id="ButtonPlaceholder">&nbsp;</p></div>
+      <div id="ChimeButtonCenter" class="chimeButtonColumn"></div>
+      <div id="ChimeButtonRight" class="chimeButtonColumn"></div>
+    </div> <!-- /#ChimeButtonwrapper -->
+  </div> <!-- /#ControlWrapper -->
+
+  <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->
+  <audio style="display:none;"><source src="./TMassets/audio/silent-buffer-to-set-audio-session.mp3"></audio>
+</div> <!-- /#Content -->
+
+
+<script>
+/*
+** ToneMotion is an object of global scope that exposes device motion
+** properties and default values:
+** x (current x-axis value): 0.5
+** y (current y-axis value): 0.5
+** xSig (a Tone.Signal object to connect x value to signals): 0.5
+** ySig (a Tone.Signal object to connect y value to signals): 0.5
+** updateInterval (time in seconds for sampling signal and linear ramp to next value): 0.05
+** status (whether device reports motion): "unknown"
+** showStatusLabels (should interface show motion values, etc.): false
+** delayBeforePlaying (schedules Tone.Transport events in future): "+0.1"
+** deviceShouldSelfCalibrate (allows device to continuously report new troughs and peaks): false
+** print (whether to print status messages to console): false
+** shutdown(): removes event listeners and clears intervals
+*/
+
+/******************************************************************
+************************* GENERAL PARAMETERS **********************
+*******************************************************************/
+ToneMotion.showStatusLabels = true;
+ToneMotion.updateInterval = 0.05;
+ToneMotion.delayBeforePlaying = "+0.3";
+ToneMotion.deviceShouldSelfCalibrate = false;
+ToneMotion.print = false;
+// sets lookAhead. "interactive": lookAhead = 0.1; "playback": 0.8; "balanced": 0.25; "fastest": 0.01; 
+Tone.context.latencyHint = ToneMotion.updateInterval / 2.0;
+
+/******************************************************************
+****************************SCORE MAP *****************************
+*******************************************************************/
+$("#TestToneLabel").append("<p id='IntroStatusLabel'></p>");
+// total duration: 7'16" + offset between first and last persons to tap "play"
+TMScore.durForCue[1] = 60; // cue 1: shiny crunchy bendy chime sparkles
+TMScore.durForCue[2] = 120; // cue 2: softer drier crunches with chimes triggered by button
+TMScore.durForCue[3] = 128; // cue 3: bendable low chime loop (duration should be 32*c3_loChimeDur)
+TMScore.durForCue[4] = 64;  // cue 4: just bendable and reversible chimes from previous loop
+TMScore.durForCue[5] = 64; // WAS 96 cue5: just final crunchies that focuses in on one sound at end w/short fade-out
+// use TMScore.setCue() to skip to a specific section for testing/composing
+TMScore.setCue(1);
+
+/******************************************************************
+****************************** CUE 1 ******************************
+*******************************************************************/
+// this sure is ugly! advances to next cue at current transport time. uses Tone.Draw for properly timed callback
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){ 
+  TMScore.nextCue();
+  setInstructions("Section 1: Explore the sound by tilting your device side to side.\
+    Some sounds are shiny, some are crunchy, some are crackly. Tipping your device upside bends the pitch upward.\
+    The pitch-bending range increases throughout the section, so tipping your device up and down will create\
+    dramatic swooping effects later in the section.");
+}, time) }, TMScore.st);
+
+// GRANULATOR
+var c1_granulatorGrainSize = 0.08;
+var c1_granulator = new Tone.GrainPlayer({
+  "url": "./TMassets/audio/c1_grFile.mp3",
+  "overlap": 0.02,
+  "grainSize": c1_granulatorGrainSize * 2, // expand grain size for smoother sound 
+  "loop": true,
+  "detune": 0 // in cents (will detune later in section)
+}).toMaster();
+var c1_granulatorDur = 33; // duration of sound file in seconds
+var c1_granulatorOffset = 16; // first .scrub() position (to be updated interactively)
+// much of the granulator sound file is quiet, so add some compression
+var c1_granulatorCompressor = new Tone.Compressor({
+  "threshold" : -6,
+  "ratio" : 20,
+  "attack" : 0.005,
+  "release" : 0.1
+});
+c1_granulator.chain(c1_granulatorCompressor);
+c1_granulator.volume.value = 6; // makeup gain
+// schedule .scrub() calls at rate of grain size and end just as reversed chime sounds
+Tone.Transport.scheduleRepeat(function(time) {
+  // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
+  try { c1_granulator.scrub(c1_granulatorOffset); } catch(e) { console.log(e); }
+}, c1_granulatorGrainSize, TMScore.st, TMScore.durForCue[1] - 0.1);
+
+// non-interactive REVERSED CHIME/CYMBAL to mark end of section
+var revCymLen = 9.4; // seconds. need to look up new dur if changing file but better than setting programmatically
+var revCym = new Tone.Player("./TMassets/audio/revChimeCym.mp3").toMaster();
+Tone.Transport.schedule(function(time) {
+  revCym.start();
+}, (TMScore.st + TMScore.durForCue[1]) - revCymLen );
+
+var c1_granulatorDetuneRange = 0; // will increase throughout section
+var c1_granulatorDetuneMax = 1200; // in cents
+function updateSoundsInCue1() {
+  if (ToneMotion.print) { console.log("updating cue 1 sounds"); }
+
+  c1_granulatorOffset = ToneMotion.x * c1_granulatorDur; // .scrub() invoked by .scheduleRepeat()
+  c1_granulatorDetuneRange = (Tone.Transport.seconds / TMScore.durForCue[1]) * c1_granulatorDetuneMax;
+  c1_granulator.detune = ToneMotion.y * c1_granulatorDetuneRange;
+}
+
+TMScore.st += TMScore.durForCue[1]; // duration of each section set by SCORE MAP at top
+// clean up
+Tone.Transport.schedule(function(time) {
+  c1_granulatorCompressor.dispose();
+}, TMScore.st);
+
+/******************************************************************
+****************************** CUE 2 ******************************
+*******************************************************************/
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() { 
+  TMScore.nextCue();
+  $("#ChimeButtonCenter").append("<button id='c2-button1'>play a chime</button>"); // add chimes button for this cue
+  $("#c2-button1").click(function() { chimeButtonClicked(1); });
+  setInstructions("Section 2: Move your device around to explore the crackly sounds; some positions are extra crackly and some are silent. The button plays a chime, and tipping your phone bends the pitch just a little bit.");
+}, time) }, TMScore.st);
+// Instructions for loud clave sound when phone is upside down and section is half over
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() { 
+  setInstructions("Try tipping your device upside down.");
+}, time) }, TMScore.st + TMScore.durForCue[2]/2);
+
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() {
+  $("<button id='c2-button2'>chimes</button>").insertBefore("#ButtonPlaceholder"); // second layer of chimes
+  $("#c2-button2").click(function() { chimeButtonClicked(2); });
+}, time) }, TMScore.st + (TMScore.durForCue[2] * 0.33) ); // add button after a third of section has elapsed
+
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() {
+  $("#ChimeButtonRight").append("<button id='c2-button3'>chimes</button>"); // bottom layer of chimes
+  $("#c2-button3").click(function() { chimeButtonClicked(3); });
+}, time) }, TMScore.st + (TMScore.durForCue[2] * 0.67) ); // add button after two thirds of section has elapsed
+
+// GRANULATOR: ziplock bag sounds
+var c2_granulator = new Tone.GrainPlayer({
+  "url": "./TMassets/audio/ziplockBag.mp3",
+  "overlap": 0.005, // keep short because phone sends lots of .scrub() messages
+  "grainSize": 0.04, // ditto (these get overridden anyway)
+  "loop": true,
+  "detune": 0 // in cents (will detune later in section)
+}).toMaster(); // INTERACTS_cue2
+c2_granulatorDur = 3 // duration of sound file in seconds
+// begin granulator with .scrub() calls invoked in updateSoundsInCue2() for faster scrubbing
+Tone.Transport.schedule(function(time) {
+  c2_granulator.start();
+}, TMScore.st);
+// end granulator at end of section
+Tone.Transport.schedule(function(time) {
+  c2_granulator.stop();
+}, TMScore.st + TMScore.durForCue[2]);
+
+// CHIMES triggered by button
+// commented-out files exist but are currently unused and should not be loaded unnecessarily
+var chimeMultiPlayer = new Tone.MultiPlayer({
+  // "ch1570G6": "./TMassets/audio/chime-1570Hz-G6.mp3",
+  "ch1607G6": "./TMassets/audio/chime-1607Hz-G6.mp3", // recorded chime with fundamental of 1607. closest to G6
+  // "ch1654Ab6": "./TMassets/audio/chime-1654Hz-Ab6.mp3",
+  // "ch1661Ab6": "./TMassets/audio/chime-1661Hz-Ab6.mp3",
+  // "ch1693Ab6": "./TMassets/audio/chime-1693Hz-Ab6.mp3",
+  // "ch1714A6": "./TMassets/audio/chime-1714Hz-A6.mp3",
+  // "ch1748A6": "./TMassets/audio/chime-1748Hz-A6.mp3",
+  "ch1772A6": "./TMassets/audio/chime-1772Hz-A6.mp3",
+  // "ch1812Bb6": "./TMassets/audio/chime-1812Hz-Bb6.mp3",
+  // "ch1885Bb6": "./TMassets/audio/chime-1885Hz-Bb6.mp3",
+  // "ch1929B6": "./TMassets/audio/chime-1929Hz-B6.mp3",
+  "ch2020B6": "./TMassets/audio/chime-2020Hz-B6.mp3",
+  "ch2144C7": "./TMassets/audio/chime-2144Hz-C7.mp3",
+  "ch2417D7": "./TMassets/audio/chime-2417Hz-D7.mp3",
+  // "ch2568E7": "./TMassets/audio/chime-2568Hz-E7.mp3",
+  "ch2570E7": "./TMassets/audio/chime-2570Hz-E7-BEATS.mp3",
+  // "ch2615E7": "./TMassets/audio/chime-2615Hz-E7.mp3",
+  // "ch302D4": "./TMassets/audio/chimeSPEAR-302Hz-D4.mp3",
+  // "ch327E4": "./TMassets/audio/chimeSPEAR-327Hz-E4.mp3",
+  // "ch380Gb4": "./TMassets/audio/chimeSPEAR-380Hz-Gb4.mp3",
+  // "ch402G4": "./TMassets/audio/chimeSPEAR-402Hz-G4.mp3",
+  "ch536C5": "./TMassets/audio/chimeSPEAR-536Hz-C5.mp3", // chimes pitch-shifted and processed in SPEAR
+  "ch604D5": "./TMassets/audio/chimeSPEAR-604Hz-D5.mp3",
+  "ch654E5": "./TMassets/audio/chimeSPEAR-654Hz-E5.mp3",
+  "ch1010B5": "./TMassets/audio/chimeSPEAR-1010Hz-B5.mp3",
+  "ch1072C6": "./TMassets/audio/chimeSPEAR-1072Hz-C6.mp3",
+  "ch1209D6": "./TMassets/audio/chimeSPEAR-1209Hz-D6.mp3",
+  "revCh1607G6": "./TMassets/audio/revChime-1607Hz-G6.mp3", // reversed chimes
+  "revCh1772A6": "./TMassets/audio/revChime-1772Hz-A6.mp3",
+  "revCh2020B6": "./TMassets/audio/revChime-2020Hz-B6.mp3",
+  "revCh2144C7": "./TMassets/audio/revChime-2144Hz-C7.mp3",
+  "revCh2417D7": "./TMassets/audio/revChime-2417Hz-D7.mp3",
+  // trying to load nonexistent file can be used to test load screen
+  // "no-file-here": "./TMassets/audio/NO-FILE-HERE-THIS-IS-JUST-TO-PREVENT-LOADING.mp3"
+}, function() {
+  // putting a callback here seems to be required
+}).toMaster();
+
+// SINUSOIDS to extend and bend tails of chimes (these loops continue past cue 2)
+var chimeLoop1Counter;
+var chimeLoop1Dur = 6; // seconds per note in chime melody loop (top voice)
+var chimeLoop1Arr = [ "ch1772A6", "ch2020B6", "ch2144C7", "ch2144C7"]; // top line of chimes
+var chimeLoop1Len = chimeLoop1Arr.length; // number of notes in a loop
+var chimeLoop1SynthArr = [1772, 2020, 2144, 2144]; // base frequencies for sinusoid tails to bend
+var chimeLoop1SynthPitch;
+var chimeLoop2Counter;
+var chimeLoop2Dur = 5;
+var chimeLoop2Arr = [ "ch1010B5", "ch1072C6", "ch1209D6", "ch1209D6" ] // middle line
+var chimeLoop2Len = chimeLoop2Arr.length;
+var chimeLoop2SynthArr = [1010, 1072, 1209, 1209];
+var chimeLoop2SynthPitch;
+var chimeLoop3Counter;
+var chimeLoop3Dur = 4;
+var chimeLoop3Arr = [ "ch536C5", "ch604D5", "ch654E5", "ch654E5" ]; // lowest line
+var chimeLoop3Len = chimeLoop3Arr.length;
+var chimeLoop3SynthArr = [536, 604, 654, 654]; // base frequencies for sinusoid tails to bend
+var chimeLoop3SynthPitch;
+var chimeSynth1 = new Tone.PolySynth(2, Tone.Synth).toMaster();
+chimeSynth1.set({
+  oscillator: {
+    type: "sine"
+  },
+  envelope: {
+    attack: chimeLoop1Dur / 2.0,
+    decay: chimeLoop1Dur / 2.0,
+    sustain: 0.1,
+    release: chimeLoop1Dur
+  },
+  volume: -24
+});
+var chimeSynth2 = new Tone.PolySynth(2, Tone.Synth).toMaster();
+chimeSynth2.set({
+  oscillator: {
+    type: "sine"
+  },
+  envelope: {
+    attack: chimeLoop2Dur / 2.0,
+    decay: chimeLoop2Dur / 2.0,
+    sustain: 0.1,
+    release: chimeLoop2Dur
+  },
+  volume: -24
+});
+var chimeSynth3 = new Tone.PolySynth(2, Tone.Synth).toMaster();
+chimeSynth3.set({
+  oscillator: {
+    type: "sine"
+  },
+  envelope: {
+    attack: chimeLoop3Dur / 2.0,
+    decay: chimeLoop3Dur / 2.0,
+    sustain: 0.1,
+    release: chimeLoop3Dur
+  },
+  volume: -24
+});
+
+// non-interactive REVERSED CHIME/CYMBAL to mark end of section
+Tone.Transport.schedule(function(time) {
+  revCym.start();
+}, (TMScore.st + TMScore.durForCue[2]) - revCymLen );
+
+// remove all the chime buttons. no buttons in section 3
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  $("#c2-button1").remove();
+  $("#c2-button2").remove();
+  $("#c2-button3").remove();
+}, time) }, TMScore.st + (TMScore.durForCue[2] - 3)); // buttons are removed 3 sec. before end of cue 2
+
+// Buttons added dynamically to allow listener to trigger chimes
+var timeElapsedInCue2; // seconds since this section began
+function chimeButtonClicked(voice) {
+  if (ToneMotion.print) { console.log("#ChimeButton" + voice + " clicked"); }
+
+  timeElapsedInCue2 = Tone.Transport.seconds-TMScore.durForCue[1];
+  // volume of chimes starts at 0 dBfs and gradually lowers to -18 dBfs
+  chimeMultiPlayer.volume.value = -18 + (1 - timeElapsedInCue2 / TMScore.durForCue[2]) * 18;
+  switch (voice) {
+    case 1:
+      // chimeLoop1Counter counts from 0 to 4 every 6 seconds (or other values set above)
+      chimeLoop1Counter = Math.floor(timeElapsedInCue2/chimeLoop1Dur)%chimeLoop1Len;
+      // plays current chime from chimeLoop1Arr
+      Tone.Transport.schedule(function(time) {chimeMultiPlayer.start(chimeLoop1Arr[chimeLoop1Counter]) });
+      // chimeSynth1 adds tail that listener can bend along x-axis
+      chimeLoop1SynthPitch = chimeLoop1SynthArr[chimeLoop1Counter];
+      chimeSynth1.triggerAttackRelease(chimeLoop1SynthPitch, chimeLoop1Dur);
+      break;
+    case 2:
+      chimeLoop2Counter = Math.floor(timeElapsedInCue2/chimeLoop2Dur)%chimeLoop2Len;
+      Tone.Transport.schedule(function(time) {chimeMultiPlayer.start(chimeLoop2Arr[chimeLoop2Counter]) });
+      chimeLoop2SynthPitch = chimeLoop2SynthArr[chimeLoop2Counter];
+      chimeSynth2.triggerAttackRelease(chimeLoop2SynthPitch, chimeLoop2Dur);
+      break;
+    case 3:
+      chimeLoop3Counter = Math.floor(timeElapsedInCue2/chimeLoop3Dur)%chimeLoop3Len;
+      Tone.Transport.schedule(function(time) {chimeMultiPlayer.start(chimeLoop3Arr[chimeLoop3Counter]) });
+      chimeLoop3SynthPitch = chimeLoop3SynthArr[chimeLoop3Counter];
+      chimeSynth3.triggerAttackRelease(chimeLoop3SynthPitch, chimeLoop3Dur);
+      break;
+    default:
+      console.log("Well this shouldn't happen. No voice found for chime loop.");
+      break;
+  }
+}
+
+var c2_chimeBendRange = 50; // in cents, so this can bend up or down 1/4-tone
+function updateSoundsInCue2() {
+  if (ToneMotion.print) { console.log("updating cue 2 sounds"); }
+
+  // if section 2 is half over and phone is tipped upside down, play clave sound
+  if (((Tone.Transport.seconds - TMScore.durForCue[1]) > (TMScore.durForCue[2] / 2)) && (ToneMotion.y > 0.85) ) {
+    c2_granulator.scrub(3.378); // found this to be a particularly nice clave scrubbing point
+    // clave sound gradually rises from no pitch bend to octave higher (no sound until halfway through cue)
+    c2_granulator.detune = -1200 + ((Tone.Transport.seconds - TMScore.durForCue[1]) / TMScore.durForCue[2]) * 2400;
+  }
+  else { // these are the ziplock bags sounds we normally hear
+    c2_granulator.scrub(ToneMotion.x * c2_granulatorDur); // first 3 sec. of file are just ziplock bag sounds
+    c2_granulator.detune = ToneMotion.y * 1200;
+  }
+
+  // bend the sinusoidal tails of struck chimes
+  chimeSynth1.set("detune", -c2_chimeBendRange + ToneMotion.x * (c2_chimeBendRange * 2));
+  chimeSynth2.set("detune", -c2_chimeBendRange + ToneMotion.x * (c2_chimeBendRange * 2));
+  chimeSynth3.set("detune", -c2_chimeBendRange + ToneMotion.x * (c2_chimeBendRange * 2));
+}
+
+TMScore.st += TMScore.durForCue[2];
+
+/******************************************************************
+****************************** CUE 3 ******************************
+*******************************************************************/
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  TMScore.nextCue(); 
+  setInstructions("Section 3: Bend the low chime sounds by tilting your device side to side.\
+    Tipping your device upside down will cause the sound to flutter. There are crunchy sounds when your\
+    device is tilted to the left.");
+}, time) }, TMScore.st);
+
+// beginning of cue 3 is signalled by BEATING CHIME ON E7 triggered automatically on downbeat
+Tone.Transport.schedule(function(time) {
+  chimeMultiPlayer.start("ch2570E7");
+}, TMScore.st);
+
+// to optimize performance and minimize dropouts, I had to combine all chimes into one looped sound file, BUT
+// this means the duration of each note is fixed at 4 seconds. would need to go back to Logic project to change
+const c3_loChimeDur = 4; // MUST be 4 sec.
+// LOW CHIMES that bend on x-axis (need 4 Tone.Player objects - MultiPlayer doesn't support .playbackRate)
+var c3_loChimePlayer = new Tone.Player("./TMassets/audio/c3-loChimeLoop.mp3").toMaster();
+var c3_loChimeLoop = new Tone.Loop(function(time) {
+  c3_loChimePlayer.start(time);
+}, c3_loChimeDur * 8).start(TMScore.st);
+c3_loChimeLoop.stop(TMScore.st + TMScore.durForCue[3]);
+
+// SINUSOIDS reproducing fundamentals of previous chime loops
+chimeLoop1Dur = 5.9; // was 6 sec in last section
+var chimeSynth1Loop = new Tone.Part(function(time, note) {
+  chimeSynth1.triggerAttackRelease(note, chimeLoop1Dur, time);
+}, [ [0, 1772], [chimeLoop1Dur, 2020], [chimeLoop1Dur * 2, 2144], [chimeLoop1Dur * 3, 2144]
+]).start(TMScore.st);
+chimeSynth1Loop.loop = Math.floor(TMScore.durForCue[3] / (chimeLoop1Dur * 4)); // loops only during this section
+chimeSynth1Loop.loopEnd = chimeLoop1Dur * 4;
+chimeLoop2Dur = 4.9; // was 5 sec in last section, but this will result in a longer phase
+var chimeSynth2Loop = new Tone.Part(function(time, note) {
+  chimeSynth2.triggerAttackRelease(note, chimeLoop2Dur, time);
+}, [ [0, 1010], [chimeLoop2Dur, 1072], [chimeLoop2Dur * 2, 1209], [chimeLoop2Dur * 3, 1209]
+]).start(TMScore.st);
+chimeSynth2Loop.loop = Math.floor(TMScore.durForCue[3] / (chimeLoop2Dur * 4));
+chimeSynth2Loop.loopEnd = chimeLoop2Dur * 4;
+chimeLoop3Dur = 3.9; // was 4 sec in last section
+var chimeSynth3Loop = new Tone.Part(function(time, note) {
+  chimeSynth3.triggerAttackRelease(note, chimeLoop3Dur, time);
+}, [ [0, 536], [chimeLoop3Dur, 604], [chimeLoop3Dur * 2, 654], [chimeLoop3Dur * 3, 654]
+]).start(TMScore.st);
+chimeSynth3Loop.loop = Math.floor(TMScore.durForCue[3] / (chimeLoop3Dur * 4));
+chimeSynth3Loop.loopEnd = chimeLoop3Dur * 4;
+
+// HIGH CHIMES triggered by button added halfway through section
+var c3_hiChimeLoopArr = [ "ch2417D7", "ch2144C7", "ch2144C7", "ch2020B6",
+    "ch1772A6", "ch1607G6", "ch1772A6", "ch2020B6" ]; // top line of chimes triggered by button
+var c3_hiChimeLoopArrLen = c3_hiChimeLoopArr.length; // number of notes in chime loop
+// halfway through section, add button for chimes layer (also controlled on LFO)
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() {
+  $("#ChimeButtonCenter").append("<button id='c3_4-button'>play a chime</button>");
+  $("#c3_4-button").click(function() { c3_chimeButtonClicked(); }); // button will also be used in cue 4
+}, time) }, TMScore.st + (TMScore.durForCue[3] * 0.5) ); // add button after section is half over
+
+var timeElapsedInCue3;
+function c3_chimeButtonClicked() {
+    timeElapsedInCue3 = Tone.Transport.seconds - (TMScore.durForCue[1] + TMScore.durForCue[2]);
+
+    // c3_chimeLoopCounter increments every c3_loChimeDur sec. (from 0 to 7, then restarts counter)
+    c3_chimeLoopCounter = Math.floor(timeElapsedInCue3 / c3_loChimeDur) % c3_hiChimeLoopArrLen;
+    // plays current chime from c3_hiChimeLoopArr
+    Tone.Transport.schedule(function(time) { chimeMultiPlayer.start(c3_hiChimeLoopArr[c3_chimeLoopCounter]) });
+}
+
+// LFO that causes all parts to beat if device is upside down. One LFO connects to all parts
+var c3_masterLFO = new Tone.LFO(10, -99, 0);
+c3_masterLFO.type = "sine";
+c3_masterLFO.connect(c3_loChimePlayer.volume);
+c3_masterLFO.connect(chimeSynth1.volume);
+c3_masterLFO.connect(chimeSynth2.volume);
+c3_masterLFO.connect(chimeSynth3.volume);
+c3_masterLFO.connect(chimeMultiPlayer.volume);
+Tone.Transport.schedule(function(time) {
+  c3_masterLFO.start();
+}, TMScore.st);
+Tone.Transport.schedule(function(time) {
+  c3_masterLFO.stop();
+}, TMScore.st + TMScore.durForCue[3]);
+
+// GRANULATOR: ping pong ball sounds (begins after first chime loop)
+var c3_granulator = new Tone.GrainPlayer({
+  "url": "./TMassets/audio/pingpong.mp3",
+  "overlap": 0.005, // keep short because phone sends lots of .scrub() messages
+  "grainSize": 0.04, // ditto (these get overridden anyway)
+  "loop": true,
+  "detune": 0 // in cents (will detune later in section)
+}).toMaster(); // INTERACTS_cue2
+c3_granulatorDur = 9 // duration of sound file in seconds
+// begin granulator
+Tone.Transport.schedule(function(time) {
+  c3_granulator.start();
+}, TMScore.st);
+// end granulator at end of section
+Tone.Transport.schedule(function(time) {
+  c3_granulator.stop();
+}, TMScore.st + TMScore.durForCue[3]);
+
+// CLICKING SOUNDS: non-interactive. starts shortly after section begins, then accelerates
+var ziplockClick = new Tone.Player("./TMassets/audio/ziplockClick.mp3").toMaster();
+var ziplockClickDur = 2; // initial time between clicks
+var ziplockClickSt = TMScore.st + 2; // start time of clicks (e.g., 2 seconds into section)
+
+Tone.Transport.scheduleRepeat(function(time) {
+  ziplockClick.start(time);
+}, ziplockClickDur, ziplockClickSt, TMScore.durForCue[3] * 0.5);
+
+Tone.Transport.scheduleRepeat(function(time) {
+  ziplockClick.start(time);
+}, ziplockClickDur / 2, ziplockClickSt + TMScore.durForCue[3] * 0.5, TMScore.durForCue[3] * 0.25);
+
+Tone.Transport.scheduleRepeat(function(time) {
+  ziplockClick.start(time);
+}, ziplockClickDur / 4, ziplockClickSt + TMScore.durForCue[3] * 0.75, TMScore.durForCue[3] * 0.125);
+
+Tone.Transport.scheduleRepeat(function(time) {
+  ziplockClick.start(time);
+}, ziplockClickDur / 8, ziplockClickSt + TMScore.durForCue[3] * 0.875, TMScore.durForCue[3] * 0.125 - 2);
+
+var c3_counter; // counter from 0.0 to 1.0 for gradual changes in section
+var c3_chimeSynthDetune; // in cents. detune amount rises gradually throughout section
+var c3_loChimeBendRange; // where playbackRate is normally 1, this goes from 0.95 to 1.05, and finally 0.92 to 1.08
+function updateSoundsInCue3() {
+  if (ToneMotion.print) { console.log("updating cue 3 sounds"); }
+
+  // counts from 0.0 to 1.0 throughout cue 3
+  c3_counter = (Tone.Transport.seconds-(TMScore.durForCue[1]+TMScore.durForCue[2]))/TMScore.durForCue[3];
+  c3_chimeSynthDetune = 25 + c3_counter * 275;
+  c3_loChimeBendRange = 0.05 + c3_counter * 0.03;
+
+  // bending sinusoids from previous section
+  chimeSynth1.set("detune", -c3_chimeSynthDetune + ToneMotion.x * (c3_chimeSynthDetune * 2));
+  chimeSynth2.set("detune", -c3_chimeSynthDetune + (1 - ToneMotion.x) * (c3_chimeSynthDetune * 2));
+  chimeSynth3.set("detune", -c3_chimeSynthDetune + ToneMotion.y * (c3_chimeSynthDetune * 2));
+
+  // bending entire low chime sounds (not just fundamentals)
+  c3_loChimePlayer.playbackRate = (1 - c3_loChimeBendRange) + ToneMotion.x * (c3_loChimeBendRange * 2);
+
+  // LFO affecting all parts but granulator toggles on y-axis
+  if (ToneMotion.y > 0.5) { c3_masterLFO.amplitude.value = (ToneMotion.y - 0.5) * 2; }
+  else { c3_masterLFO.amplitude.value = 0.0; }
+
+  // granulator with ping pong sounds has volume on x-axis and scrub on y-axis
+  c3_granulator.scrub(ToneMotion.y * c3_granulatorDur);
+  // granulator is silent unless x < 0.5, then scales from -48dBfs to -9dBfs in x = 0.0 - 0.5 range
+  if (ToneMotion.x <= 0.5) { c3_granulator.volume.value = -48 + ((0.5 - ToneMotion.x) * 2) * 39; }
+  else { c3_granulator.volume.value = -99; }
+}
+
+TMScore.st += TMScore.durForCue[3];
+
+/******************************************************************
+****************************** CUE 4 ******************************
+*******************************************************************/
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  TMScore.nextCue(); 
+  setInstructions("Section 4: The button plays chime sounds. Tilting your device bends the pitch.\
+    The chimes play backwards if your device is upside down.");
+}, time) }, TMScore.st);
+
+// button was added in cue 3, but add here if piece is starting at cue 4
+Tone.Transport.schedule(function(time) { Tone.Draw.schedule(function() {
+  if ($("#c3_4-button").length) { // button was already added in cue 3
+    $("#c3_4-button").off(); // remove previous function bound to this button
+  }
+  else { // starting at cue 4. need button
+    $("#ChimeButtonCenter").append("<button id='c3_4-button'>play a chime</button>");
+  }
+  // in any case, bind new function to #c3_4-button
+  $("#c3_4-button").click(function() { c4_chimeButtonClicked(); });
+}, time) }, TMScore.st);
+
+// REVERSED HIGH CHIMES triggered when device is upside down
+// (forward chimes loop array already declared in cue 3)
+var c4_hiRevChimeLoopArr = [ "revCh2417D7", "revCh2144C7", "revCh2144C7", "revCh2020B6",
+    "revCh1772A6", "revCh1607G6", "revCh1772A6", "revCh2020B6" ];
+
+// HIGH SINUSOIDS doubling forward chimes
+var c4_chimeSynthArr = [2417, 2144, 2144, 2020, 1772, 1607, 1772, 2020];
+var c4_chimeSynthDur = 4.5; // seconds
+// updated parameters to chimeSynth1 for use in this section
+chimeSynth1.set({
+  envelope: {
+    attack: c4_chimeSynthDur / 2,
+    decay: c4_chimeSynthDur / 3,
+    sustain: 0.1,
+    release: c4_chimeSynthDur / 2
+  },
+  volume: -20
+});
+
+var timeElapsedInCue4;
+var c4_chimeLoopCounter;
+var c4_chimeSynthDetune = 100; // in cents
+function c4_chimeButtonClicked() {
+    timeElapsedInCue4 = Tone.Transport.seconds-(TMScore.durForCue[1]+TMScore.durForCue[2]+TMScore.durForCue[3]);
+
+    // c4_chimeLoopCounter increments every c3_loChimeDur sec. (from 0 to 7, then restarts counter)
+    c4_chimeLoopCounter = Math.floor(timeElapsedInCue4 / c3_loChimeDur) % c3_hiChimeLoopArrLen;
+    if (ToneMotion.y > 0.5) {
+      // plays reversed chime when device is upside down
+      Tone.Transport.schedule(function(time) { chimeMultiPlayer.start(c4_hiRevChimeLoopArr[c4_chimeLoopCounter]) });
+    }
+    else {
+      // otherwise play forward chime from same loop as previous section
+      Tone.Transport.schedule(function(time) { chimeMultiPlayer.start(c3_hiChimeLoopArr[c4_chimeLoopCounter]) });
+      // and double with bendable sinusoid
+      chimeSynth1.triggerAttackRelease(c4_chimeSynthArr[c4_chimeLoopCounter], c4_chimeSynthDur);
+    }
+}
+
+function updateSoundsInCue4() {
+  if (ToneMotion.print) { console.log("updating cue 4 sounds"); }
+
+  // bending sinusoids that double forward (but not reversed) chimes
+  chimeSynth1.set("detune", -c4_chimeSynthDetune + ToneMotion.x * (c4_chimeSynthDetune * 2));
+}
+
+TMScore.st += TMScore.durForCue[4];
+
+// remove chime button
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  $("#c3_4-button").remove();
+}, time) }, TMScore.st);
+
+/******************************************************************
+****************************** CUE 5 ******************************
+*******************************************************************/
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  TMScore.nextCue(); 
+  setInstructions("Section 5: Lots of sounds to explore.");
+}, time) }, TMScore.st);
+
+// GRANULATOR
+var c5_granulatorGrainSize = 0.125; // determines how often .scrub() is called. actual grain size is longer
+var c5_granulator = new Tone.GrainPlayer({
+  "url": "./TMassets/audio/grFile5c.mp3",
+  "overlap": 0.01,
+  "grainSize": c5_granulatorGrainSize*3, // smoother sound with extended and overlapping grains
+  "loop": true,
+  "detune": 0
+}).toMaster();
+var c5_granulatorOffset = 0; // scrub position set interactively in updateSoundsInCue4() below
+var c5_granulatorDur = 23;
+Tone.Transport.scheduleRepeat(function(time) {
+  // GrainPlayer may not be ready for .scrub(). Catch InvalidStateError
+  try { c5_granulator.scrub(c5_granulatorOffset); } catch(e) { console.log(e); }
+}, c5_granulatorGrainSize, TMScore.st, TMScore.durForCue[5]);
+
+var timeElapsedInCue5;
+var c5_granulatorOffsetRange;
+var c5_offsetCounter;
+var c5_fadeOut = 1; // no fade-out until final moments of piece
+function updateSoundsInCue5() {
+  if (ToneMotion.print) console.log("updating cue 5 sounds");
+
+  timeElapsedInCue5 = 
+    Tone.Transport.seconds - 
+    (TMScore.durForCue[1] + TMScore.durForCue[2] + TMScore.durForCue[3] + TMScore.durForCue[4]);
+  if (timeElapsedInCue5 > (TMScore.durForCue[5] * 0.67)) { // only 1/3 of section remains
+    // c5_offsetCounter counts from 1.0 to 0.0 during final 1/3 of cue 5
+    c5_offsetCounter = 1 - (timeElapsedInCue5 - TMScore.durForCue[5] * 0.67) / (TMScore.durForCue[5] * 0.33);
+    c5_granulatorOffsetRange = c5_granulatorDur * c5_offsetCounter;
+  }
+  else {
+    c5_granulatorOffsetRange = c5_granulatorDur;
+  }
+  if (timeElapsedInCue5 > (TMScore.durForCue[5] * 0.9)) { // only 1/10 of section remains
+    // c5_fadeOut counts from 1.0 to 0.0 during final 1/10 of cue 5
+    c5_fadeOut = 1 - (timeElapsedInCue5 - TMScore.durForCue[5] * 0.9) / (TMScore.durForCue[5] * 0.1);
+  }
+
+  if (ToneMotion.y < 0.33) {
+    c5_granulator.volume.value = (-60 + (ToneMotion.y * 3) * 60) * c5_fadeOut;
+  }
+  else {
+    c5_granulator.volume.value = c5_fadeOut;
+  }
+
+  c5_granulatorOffset = ToneMotion.x * c5_granulatorOffsetRange;
+  c5_granulator.detune = -2400 + ToneMotion.y * 3600;
+}
+
+TMScore.st += TMScore.durForCue[5];
+Tone.Transport.schedule(function(time){ Tone.Draw.schedule(function(){
+  setInstructions("(All done)");
+  musicHasFinishedPlaying(); // clean-up and reset of interface handled in ToneMotionInterface.js
+}, time) }, TMScore.st);
+
+/******************************************************************
+**************************** TEST TONE ****************************
+*******************************************************************/
+
+var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
+var testTone = new Tone.Synth({
+  oscillator: {
+    type: "sawtooth"
+  },
+  envelope: {
+    attack: 0.005,
+    decay: 0.1,
+    sustain: 0.9,
+    release: 0.1
+  }
+}).connect(testToneFilter);
+testTone.volume.value = -12; // The music is not very loud, so let's encourage people to turn up volume.
+var testToneFreqScale = new Tone.Scale(440, 880); // scales control signal (0.0 - 1.0)
+var testToneFilterScale = new Tone.Scale(440, 10000);
+ToneMotion.xSig.chain(testToneFreqScale, testTone.frequency); // ctl sig is mapped to freq
+ToneMotion.ySig.chain(testToneFilterScale, testToneFilter.frequency);
+
+$("#TestToneButton").click(function() {
+  if ($(this).hasClass("soundOff")) {
+    testTone.triggerAttack(440);
+    $(this).html("stop");
+    $(this).removeClass("soundOff").addClass("soundOn");
+  }
+  else if ($(this).hasClass("soundOn")) {
+    testTone.triggerRelease();
+    $(this).html("test");
+    $(this).removeClass("soundOn").addClass("soundOff");
+  }
+  else if (ToneMotion.print) {
+    console.log("Error getting class of #TestToneButton");
+  }
+});
+
+/******************************************************************
+*********************** OUTPUT AND CLEAN-UP ***********************
+*******************************************************************/
+
+/*
+// I thought about adding some light compression on master output. Decided not to.
+var masterCompressor = new Tone.Compressor({
+  "threshold" : -3,
+  "ratio" : 20,
+  "attack" : 0.005,
+  "release" : 1 // 1 second is maximum value. Lots of long tails, so keep it here.
+});
+Tone.Master.chain(masterCompressor);
+Tone.Master.volume.value = 3; // makeup gain
+*/
+
+// In performance, this shouldn't be used, but stopping the piece will call this function
+function stopScript() {
+  // CUE 1 sounds
+  c1_granulator.stop();
+  // CUE 2 sounds
+  Tone.Transport.cancel();
+  c2_granulator.stop();
+  chimeSynth1.triggerRelease();
+  chimeSynth2.triggerRelease();
+  chimeSynth3.triggerRelease();
+  // CUE 3 sounds
+  c3_granulator.stop();
+  c3_masterLFO.stop();
+  // CUE 5 sound
+  c5_granulator.stop();
+
+
+  if (ToneMotion.print) { console.log("stopScript() called"); }
+  ToneMotion.shutdown();
+  ToneMotionInterface.shutdown();
+}
+
+</script>
+
+<script src="./TMassets/js/ToneMotionInterface.js"></script>
+
+</body>
+</html>

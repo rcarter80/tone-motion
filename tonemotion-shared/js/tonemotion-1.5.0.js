@@ -706,7 +706,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
-      this.accel.y = 1;
+      this.accel.x = 1;
     }
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1

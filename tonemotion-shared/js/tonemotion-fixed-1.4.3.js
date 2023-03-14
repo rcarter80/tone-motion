@@ -44,6 +44,7 @@ var yTilt = new Tone.Signal(0.5);
  *    and server (clientServerOffset). If false, offset is 0.
  * @param {number} clientServerOffset - (ms.) Adjustment to client time
  * @param {boolean} deviceIsAndroid - Otherwise, device is probably iOS
+ * @param {boolean} motionEventListenerAdded - tracks devicemotion handlers
  * @param {object} accel - x and y values for accelerometer. Values
  *    undefined by default, to be set by devicemotion OR desktop testing
  *    "raw" values are as reported by device before normalizing
@@ -64,6 +65,9 @@ var yTilt = new Tone.Signal(0.5);
  * @param {number} motionUpdateLoopInterval - (ms.) How often the main
  *    ToneMotion event loop happens. Tradeoff: responsiveness vs. cost
  * @param {number} cuePollingInterval - (ms.) How often server is polled
+ * @param {array} intervalIDArray - used to store all interval IDs to clear
+ * @param {number} motionUpdateCounter - used to check that motion is updating
+ * @param {number} lastMotionUpdateCounter - used with above for motion checks
  * @param {number} cueOnClient - Current cue number client side.
  *    Initialized as -1. Server starts at cue number 0.
  * @param {number} cueTimeFromServer - Time when last cue was set on the
@@ -86,6 +90,7 @@ function ToneMotion() {
   this.shouldSyncToServer = false;
   this.clientServerOffset = 0;
   this.deviceIsAndroid = false;
+  this.motionEventListenerAdded = false;
   this.accel = {
     rawX: undefined,
     rawY: undefined,
@@ -105,6 +110,9 @@ function ToneMotion() {
   this.colorCodeMode = true;
   this.motionUpdateLoopInterval = 50;
   this.cuePollingInterval = 500;
+  this.intervalIDArray = [];
+  this.motionUpdateCounter = 0;
+  this.lastMotionUpdateCounter = 0;
   // when server restarts, both cue number and time revert to 0
   // init with -1 for both so cue 0 is still triggered when server restarts
   this.cueOnClient = -1;
@@ -185,7 +193,7 @@ ToneMotion.prototype.beginMotionHandlingOnAndroid = function() {
       this.publicLog('This device appears to be an Android');
     }
     // Immediately begin polling motion sensors ONLY on Android
-    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    this.addMotionEventListener();
   }
   else {
     this.deviceIsAndroid = false;
@@ -299,6 +307,14 @@ ToneMotion.prototype.setStatus = function(status) {
     }
 };
 
+// registers event handler for devicemotion, but only once
+ToneMotion.prototype.addMotionEventListener = function() {
+  if (!this.motionEventListenerAdded) {
+    window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+    this.motionEventListenerAdded = true;
+  }
+};
+
 // Starts motion handling, but NOT cue fetching because there is none here
 var noSleep; // needs global scope
 ToneMotion.prototype.startMotionUpdates = function() {
@@ -326,7 +342,7 @@ ToneMotion.prototype.startMotionUpdates = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.addMotionEventListener();
       } else {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
@@ -341,7 +357,7 @@ ToneMotion.prototype.startMotionUpdates = function() {
     }
     if ('DeviceMotionEvent' in window) {
       // If device is Android, handleMotionEvent is already running
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      this.addMotionEventListener();
     } else {
       this.testWithoutMotion();
     }
@@ -377,7 +393,7 @@ ToneMotion.prototype.resumeMotionUpdates = function() {
     DeviceMotionEvent.requestPermission()
     .then(permissionState => {
       if (permissionState === 'granted') {
-        window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+        this.addMotionEventListener();
       } else {
         // user has not give permission for motion. Pretend device is desktop
         this.testWithoutMotion();
@@ -392,7 +408,7 @@ ToneMotion.prototype.resumeMotionUpdates = function() {
     }
     if ('DeviceMotionEvent' in window) {
       // If device is Android, handleMotionEvent is already running
-      window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), true);
+      this.addMotionEventListener();
     } else {
       this.testWithoutMotion();
     }
@@ -407,7 +423,12 @@ ToneMotion.prototype.shutEverythingDown = function() {
     window.clearTimeout(this.cue[i].timeoutID);
   }
 
-  clearInterval(this.motionUpdateLoopID);
+  // previously used clearInterval() for each ID below, but sometimes when I started and stopped repeatedly very fast, it didn't work. Testing showed that I could only stop these loops by clearing an OLDER interval ID, which I didn't understand, but clearing every ID should fix that.
+  for (let i of this.intervalIDArray) {
+    // clear every motionUpdateLoopID (stored in array)
+    clearInterval(i);
+  }
+
   this.publicLog('Shutting down Transport, sound, and motion handling');
   this.clearActiveCues();
   Tone.Transport.stop();
@@ -730,6 +751,7 @@ ToneMotion.prototype.setBackgroundBlue = function() {
 // Sets ToneMotion object accel properties and sets shake flag
 // Bound to 'devicemotion' event listener, so this is called very often
 // but the polling interval is read-only
+let motionTestCounterTM = 1; // starting at 1 prevents fail check on 1st loop
 ToneMotion.prototype.handleMotionEvent = function(event) {
   // Axes on Android on inverted relative to iOS
   if (this.deviceIsAndroid) {
@@ -747,12 +769,38 @@ ToneMotion.prototype.handleMotionEvent = function(event) {
     }
   }
 
+  // sometimes (inexplicably) the cue fetching and motion updates freeze. This event handler keeps running, so I can use it to check for problems
+  // At standard polling interval of 60 times/sec., this happens every 5 sec.
+  if (motionTestCounterTM % 300 == 0) {
+    this.checkForFailure();
+  }
+  motionTestCounterTM++;
+
   // For debugging, add properties to read DeviceMotionEvent interval and display acceleration (not including gravity), used for shake gesture
   // OPTIMIZE: This is the only place I can read the interval, and it shouldn't be expensive to test if debugging is on, but this code get called a lot, so it could be eliminated to streamline this loop.
   if (this.debug) {
     this.motionPollingInterval = event.interval;
     this.gyro_y = event.acceleration.y;
   }
+};
+
+// Uses the devicemotion handler to periodically check if everything is ok
+ToneMotion.prototype.checkForFailure = function() {
+  if (this.motionUpdateCounter === this.lastMotionUpdateCounter) {
+    // motionUpdateLoop hasn't been called since last check, which is only a problem if the app status is a playing mode, or waiting to play
+    if (this.status === 'waitingForPieceToStart' ||
+    this.status === 'playing_tacet' ||
+    this.status === 'playing_tilt' ||
+    this.status === 'playing_shake' ||
+    this.status === 'playing_tiltAndShake' ||
+    this.status === 'playing_listen') {
+      // start everything up again
+      this.cueTimeFromServer = 0;
+      // note that noSleep throws error (bc .enable() called w/o user input?)
+      this.resumeMotionUpdates();
+    }
+  }
+  this.lastMotionUpdateCounter = this.motionUpdateCounter;
 };
 
 // Tests if device actually reports motion or is lying. Starts motionUpdateLoop. Call this to restart motion updates.
@@ -783,6 +831,8 @@ ToneMotion.prototype.beginMotionUpdates = function() {
   }
 
   this.motionUpdateLoopID = setInterval(this.motionUpdateLoop.bind(this), this.motionUpdateLoopInterval);
+  // push ID to array so that I can clear everything later
+  this.intervalIDArray.push(this.motionUpdateLoopID);
 };
 
 // Primary event loop for ToneMotion. Normalizes motion data, manages shake gestures, and maps motion to sound
@@ -802,7 +852,7 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       this.accel.x = 0; // no need to normalize
     }
     else if (this.accel.rawX > 10) {
-      this.accel.y = 1;
+      this.accel.x = 1;
     }
     else {
       this.accel.x = (this.accel.rawX + 10) / 20; // normalize to 0 - 1
@@ -871,6 +921,8 @@ ToneMotion.prototype.motionUpdateLoop = function() {
       motion_data_label.insertAdjacentHTML('beforeend', '<br>' + 'gyro y: ' +  (this.gyro_y || 'n/a'));
     }
   }
+  // this counter is used by handleMotionEvent to test that this loop is running
+  this.motionUpdateCounter++;
 };
 
 /*********************************************************************
