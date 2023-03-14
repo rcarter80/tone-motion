@@ -18,7 +18,7 @@
 </header>
 
 <main> <!-- center panel showing app status, messages, controls -->
-  <div id="status_container">
+  <div id="status_container" class="mini">
     <p id="status_label">loading</p>
   </div>
   <!-- button is not displayed until page loads, then shows "start" -->
@@ -26,8 +26,8 @@
   <!-- when piece is done, button goes away -->
   <button id="start_stop_button" type="button" class="hidden"></button>
   <div id="message_container" class="hidden">
-    <p id="cue_label"> </p>
-    <p id="message_label"> </p>
+    <p id="cue_label"></p>
+    <p id="message_label"></p>
   </div>
 
   <!-- hidden <audio> element coerces iOS into playing audio when ring/silent switch is on silent-->

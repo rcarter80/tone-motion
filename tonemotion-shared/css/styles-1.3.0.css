@@ -251,7 +251,7 @@ header {
 
 main {
   background-color: transparent;
-  margin 0;
+  margin: 0;
   padding-bottom: 25px;
 }
 
@@ -274,6 +274,10 @@ main {
   font-size: 1.75rem;
   text-align: center;
   transition: all .2s linear;
+}
+/* use for cue site for A Shared Space (to make more space for other labels) */
+#status_container.mini {
+  height: 50px;
 }
 #status_container.active {
   animation: pulsing 2s ease-out 0s infinite alternate;
@@ -372,7 +376,6 @@ fieldset {
   opacity: 0;
 }
 
-/* TODO: get rid of #cue_label (change to "span.jumbo") and change site for shared-cues */
 #cue_label,
 span.jumbo {
   font-size: 500%;
