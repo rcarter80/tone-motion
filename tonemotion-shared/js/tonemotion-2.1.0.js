@@ -1054,10 +1054,10 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     // and does NOT clear currently playing cue
     // Use for additional sounds that don't interrupt current interaction
     if (this.cue[cue].mode === 'hidden') {
-      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
       // need timestamp for hidden cue to trigger getSectionBreakpoints
       // NB: time is only accurate if waitTime for hidden cue is 0
       this.cue[cue].startedAt = this.cueTimeFromServer;
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
       return;
     }
   } else {
@@ -1090,10 +1090,10 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
   if (this.cue[cue].waitTime == -1) {
     // clear all current cues and previous messages
     this.clearActiveCues();
-    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
     //  use this timestamp to facilitate gradual process during a section
     this.cue[cue].startedAt = this.cueTimeFromServer;
+    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     return;
   }
 
@@ -1112,8 +1112,8 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     // clear all current cues and previous messages
     this.clearActiveCues();
     // shorter delay than 20ms is definitely not aurally perceptible
-    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     this.setStatusForNewCue(cue);
+    try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
   } else {
     if (delay > this.MAX_DELAY) {
       this.publicError('Request to delay cue for ' + delay + ' milliseconds exceeds maximum delay of ' + this.MAX_DELAY + ' milliseconds.');
@@ -1122,8 +1122,8 @@ ToneMotion.prototype.triggerCue = function(cue, serverTime) {
     setTimeout( () => {
       // clear all current cues and previous messages
       this.clearActiveCues();
-      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
       this.setStatusForNewCue(cue);
+      try { this.cue[cue].goCue(); } catch(e) { this.publicError(e); }
     }, delay);
   }
 };

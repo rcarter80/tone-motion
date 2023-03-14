@@ -16,7 +16,19 @@ const cue_label = document.querySelector('#cue_label');
 // simple way to display cue number. If I ever use this in another piece, I can fold this into the tonemotion source file
 function displayCueNumber(cue) {
   tm.publicMessage('');
-  cue_label.innerHTML = cue;
+  let message;
+  if (pieceStartedAtTime) {
+    // Cue 1 has been triggered at least once, so piece has officially begun
+    let time = tm.currentCue.startedAt - pieceStartedAtTime;
+    let minutes = Math.floor(time / 60000);
+    let seconds = Math.floor((time - (minutes * 60000)) / 1000);
+    let formattedSeconds = seconds.toString().padStart(2, '0')
+    message = `${cue}<br><span style="font-size:75%">Time: ${minutes}'${formattedSeconds}"</span>`;
+  } else {
+    // piece hasn't officially begun (maybe it's a rehearsal)
+    message = cue;
+  }
+  cue_label.innerHTML = message;
 }
 
 // *******************************************************************
@@ -36,8 +48,14 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: First section (struck glass sounds)
+// once cue 1 is triggered for first time, record time that piece began
+let pieceStartedAtTime = undefined;
 tm.cue[1] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[1].goCue = function() {
+  if (!pieceStartedAtTime) {
+    pieceStartedAtTime = tm.currentCue.startedAt;
+    console.log('Piece started at ' + pieceStartedAtTime);
+  }
   displayCueNumber('1');
 };
 tm.cue[1].triggerShakeSound = function() {

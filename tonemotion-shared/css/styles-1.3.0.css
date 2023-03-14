@@ -379,6 +379,7 @@ fieldset {
 #cue_label,
 span.jumbo {
   font-size: 500%;
+  text-align: center;
 }
 span.large {
   font-size: 250%;
