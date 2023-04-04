@@ -274,8 +274,8 @@ const pitchArr_8 = ['C5', 'C4', DqS5, 'D4', 'Eb4', 'D5', 'G4', 'D3', 'G4', 'Eb5'
 let limit_5, limit_6, limit_7, limit_8, limit_9, limit_10, limit_11, limit_12, limit_13, limit_14, limit_15;
 function resetCueLimits() {
   // some dip and shake limits are higher for testing
-  limit_5 = (tm.debug) ? 921 : 21;
-  limit_6 = (tm.debug) ? 925 : 25;
+  limit_5 = (tm.debug) ? 913 : 13;
+  limit_6 = (tm.debug) ? 921 : 21;
   limit_7 = pitchArr_7.length;
   limit_8 = pitchArr_8.length;
   limit_9 = (tm.debug) ? 917 : 17;
