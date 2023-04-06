@@ -144,11 +144,84 @@ tm.cue[6].stopCue = function() {
 
 // *******************************************************************
 // CUE 7: CODA only accessible through private server - play at end of perf.
+// For San Diego version, musicians will join audience on phone for cue 7
+const chime_sounds = 'tonemotion-shared/audio/chimes/';
+const misc_sounds = 'tonemotion-shared/audio/misc/';
+// chime tuned to 4th partial above A (220Hz)
+var chP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+var chP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+var chP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+var chP10 = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+var chP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+var chP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
+// same chime sounds starting at 2 oct lower playback rate and bending up
+var chLoP4 = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+// use fade out to prevent clicking at end of sound
+chLoP4.fadeOut = 5;
+var chLoP4b = new Tone.Player(chime_sounds + "chimeBeats880Hz.mp3").toDestination();
+chLoP4b.fadeOut = 5;
+var chLoP6 = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+chLoP6.fadeOut = 5;
+var chLoP6b = new Tone.Player(chime_sounds + "chimeBeats1320Hz.mp3").toDestination();
+chLoP6b.fadeOut = 5;
+var chLoP7 = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+chLoP7.fadeOut = 5;
+var chLoP7b = new Tone.Player(chime_sounds + "chimeBeats1540Hz.mp3").toDestination();
+chLoP7b.fadeOut = 5;
+var chLoP10b = new Tone.Player(chime_sounds + "chimeBeats2200Hz.mp3").toDestination();
+chLoP10b.fadeOut = 5;
+var chLoP13 = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+chLoP13.fadeOut = 5;
+var chLoP13b = new Tone.Player(chime_sounds + "chimeBeats2860Hz.mp3").toDestination();
+chLoP13b.fadeOut = 5;
+var chLoP14 = new Tone.Player(chime_sounds + "chimeBeats3080Hz.mp3").toDestination();
+chLoP14.fadeOut = 5;
+
+var c7_drop = new Tone.Player(misc_sounds + "finalDrop.mp3").toDestination();
+
+var c7_chimeArr = [chP10, chP7, chP14, chP4, chP13, chP6, chP4b, chP6b, chP10b, chP13b, chP7b];
+// array of playback rates that represent targets of pitch bends
+var c7_chBendArr = [1.031786, 1.020448, 1.07714, 0.9921, 1.03789, 1.05824, 0.9921, 1.05824, 1.031786, 1.03789, 1.020448];
+var c7_chLoArr = [chLoP7, chLoP14, chLoP4, chLoP13, chLoP6, chLoP4b, chLoP6b, chLoP10b, chLoP13b];
+// low chimes start 2 oct lower but bend up to 1 oct lower than high chimes
+var c7_chLoBendArr = [0.510224, 0.53857, 0.49605, 0.518945, 0.52912, 0.49605, 0.52912, 0.515893, 0.518945];
+
+var c7_chCount, c7_chIndex, c7_thisCh, c7_chLoIndex, c7_thisLoCh;
+var c7_chArrLen = c7_chimeArr.length;
+var c7_chLoArrLen = c7_chLoArr.length;
+
 tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[7].goCue = function() {
+  // for cue display interface
   displayCueNumber('7');
+
+  // for actual chime sounds that musicians play
+  c7_chCount = 0;
+  c7_chLoCount = 0;
 };
 tm.cue[7].triggerShakeSound = function() {
+  // no sound until final "drop" sound 3.25 seconds into cue
+  if (tm.getElapsedTimeInCue(7) > 3250) {
+    // set pitch and properties of lower chime
+    c7_chLoIndex = c7_chCount % c7_chLoArrLen;
+    c7_thisLoCh = c7_chLoArr[c7_chLoIndex];
+    c7_thisLoCh.playbackRate = tm.getSectionBreakpoints(7, [0,0.25, 15000,0.25, 45000,c7_chLoBendArr[c7_chLoIndex]]);
+    c7_thisLoCh.volume.value = tm.getSectionBreakpoints(7, [0, -24, 60000, -24, 90000, -99]);
+    c7_thisLoCh.start();
+    // set pitch and properties of higher chime triggered just after low
+    c7_chIndex = c7_chCount % c7_chArrLen;
+    c7_thisCh = c7_chimeArr[c7_chIndex];
+    c7_thisCh.playbackRate = tm.getSectionBreakpoints(7, [0,1, 15000,1, 45000,c7_chBendArr[c7_chIndex]]);
+    c7_thisCh.volume.value = tm.getSectionBreakpoints(7, [0, -18, 60000, -18, 90000, -99]);
+    c7_thisCh.start('+0.05');
+    // increment counter used by BOTH chime layers
+    c7_chCount++;
+  }
 };
 tm.cue[7].stopCue = function() {
 };

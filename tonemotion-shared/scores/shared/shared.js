@@ -1,5 +1,7 @@
 const tm = new ToneMotion();
 tm.debug = false; // if true, skips clock sync and shows console
+// for San Diego performance, reduce number of requests to server 
+tm.cuePollingInterval = 1000;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
