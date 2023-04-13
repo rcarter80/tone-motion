@@ -17,6 +17,7 @@ const glass_sounds = 'tonemotion-shared/audio/glass/';
 const misc_sounds = 'tonemotion-shared/audio/misc/';
 const chime_sounds = 'tonemotion-shared/audio/chimes/';
 const bell_sounds = 'tonemotion-shared/audio/bells/';
+const vibes_sounds = 'tonemotion-shared/audio/vibes/';
 
 // *******************************************************************
 // CUE 0: ONLY used in performance to keep everything silent until start
@@ -60,7 +61,32 @@ const bellSampler = new Tone.Sampler({
   },
   baseUrl: bell_sounds,
 }).toDestination();
-bellSampler.volume.value = -6;
+bellSampler.volume.value = -2;
+
+// sampler using vibes (with rattan sticks) and struck glass "bell" sounds
+const vibeSampler = new Tone.Sampler({
+  urls: {
+    'F3': 'vibe_bell-F3.mp3',
+    'A3': 'vibe_bell-A3.mp3',
+    'Db4': 'vibe_bell-Db4.mp3',
+    'F4': 'vibe_bell-F4.mp3',
+    'A4': 'vibe_bell-A4.mp3',
+    'Db5': 'vibe_bell-Db5.mp3',
+    'A5': 'vibe_bell-A5.mp3',
+    'Db6': 'vibe_bell-Db6.mp3',
+  },
+  baseUrl: vibes_sounds,
+}).toDestination();
+vibeSampler.volume.value = -3;
+
+// sampler using a single (lower) struck glass sound
+const glassSampler = new Tone.Sampler({
+  urls: {
+    'C5': 'glassRealC5_15s.mp3',
+  },
+  baseUrl: glass_sounds,
+}).toDestination();
+glassSampler.volume.value = -5;
 
 var revGlassC5_7s = new Tone.Player(glass_sounds + "revGlassC5_7s.mp3").toDestination();
 // randomized playbackRate yields F#4, C5, D5, A5
@@ -103,7 +129,8 @@ tm.cue[1].goCue = function() {
   tm.publicMessage('Section 1');
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
-    bellSampler.triggerAttackRelease('E6', 5);
+    glassSampler.triggerAttackRelease('E5', 15);
+    bellSampler.triggerAttackRelease('E7', 5, '+0.2');
     c0_transitionFlag = false;
   }
   // set levels, which may have been turned down at end of previous section
