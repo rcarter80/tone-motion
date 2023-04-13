@@ -214,7 +214,11 @@ var c2_noiseLoop = new Tone.Loop(function(time) {
 tm.cue[2] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
   tm.publicMessage('Section 2');
-  bellSampler.triggerAttackRelease('C6', 5);
+  // only trigger downbeat sound at beginning of cue, not if restarted
+  if (tm.getElapsedTimeInCue(2) < 200) {
+    glassSampler.triggerAttackRelease('C6', 10);
+    bellSampler.triggerAttackRelease('C7', 5, '+0.2');
+  }
   // set levels - may have been turned down to -99 at end of section before
   glassRimC3andB2.volume.value = -9;
   glassRimA3.volume.value = -12;
@@ -304,7 +308,11 @@ var c3_bassLoop = new Tone.Loop(function(time) {
 tm.cue[3] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[3].goCue = function() {
   tm.publicMessage('Section 3');
-  bellSampler.triggerAttackRelease('D6', 5);
+  // only trigger downbeat sound at beginning of cue, not if restarted
+  if (tm.getElapsedTimeInCue(3) < 200) {
+    glassSampler.triggerAttackRelease('D6', 10);
+    bellSampler.triggerAttackRelease('D7', 5, '+0.2');
+  }
   modeledGlassD3.volume.value = -12;
   modeledGlassF3.volume.value = -12;
   modeledGlassE3.volume.value = -12;
@@ -505,6 +513,11 @@ var c5_droneLoop2 = new Tone.Loop(function(time) {
 tm.cue[5] = new TMCue('listen', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
   tm.publicMessage('Section 5');
+  // only trigger downbeat sound at beginning of cue, not if restarted
+  if (tm.getElapsedTimeInCue(5) < 200) {
+    vibeSampler.triggerAttackRelease('D6', 5);
+    bellSampler.triggerAttackRelease('D7', 5, '+0.2');
+  }
   c5_drone.volume.value = -12;
   c5_droneLoop.start();
   c5_drone2.volume.value = -12;
