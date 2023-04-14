@@ -101,6 +101,8 @@ tm.cue[1].goCue = function() {
   // optimize motion update loop by turning off motion testing when piece starts
   tm.shouldTestMotion = false;
   tm.clearMotionErrorMessage();
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(6, 0.5);
   if (c0_transitionFlag) {
     // piece has looped back around from cue 6 to 1. PLay downbeat sound
     bellSampler.triggerAttackRelease('E6', 5);
@@ -164,6 +166,8 @@ let c2_bellPitch = tm.pickRand(['C6', 'C6', 'E6']);
 
 tm.cue[2] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[2].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(6, 0.5);
   // prevent people from triggering downbeat sound if they stop and start
   if (tm.getElapsedTimeInCue(2) < 500) {
     bellSampler.triggerAttackRelease(c2_bellPitch, 5);
@@ -239,6 +243,8 @@ var c3_revGlassPitchArray = [1.122, 1.587, 3.175];
 tm.cue[3] = new TMCue('shake', 3000, NO_LIMIT);
 
 tm.cue[3].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(9, 0.5);
   // prevent people from triggering downbeat sound if they stop and start
   if (tm.getElapsedTimeInCue(3) < 500) {
     bellSampler.triggerAttackRelease('D6', 5);
@@ -343,6 +349,8 @@ var c4_bellLoop = new Tone.Loop(function(time) {
 
 tm.cue[4] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[4].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(4, 0.5);
   // prevent people from triggering downbeat sound if they stop and start
   if (tm.getElapsedTimeInCue(4) < 500) {
     bellSampler.triggerAttackRelease('D6', 5);
@@ -392,6 +400,8 @@ let c5_fadeCounter = 0;
 
 tm.cue[5] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[5].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(6, 2);
   c5_counter = c5_fadeCounter = 0;
   c5_fade = false;
   tm.publicMessage('Section 5: Shake your phone to play a sound.');
@@ -489,6 +499,8 @@ var c6_glassLoop = new Tone.Loop(function(time) {
 
 tm.cue[6] = new TMCue('tilt', 3000, NO_LIMIT);
 tm.cue[6].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(8, 0.5);
   c6_counter = 0;
   c6_glassLoop.start();
   ziplockClickLoop.volume.value = -99;
@@ -564,6 +576,8 @@ var c7_chLoArrLen = c7_chLoArr.length;
 
 tm.cue[7] = new TMCue('shake', 3000, NO_LIMIT);
 tm.cue[7].goCue = function() {
+  // slowly ramp down to 0dB to keep chimes (after drop) from clipping
+  Tone.Master.volume.rampTo(0, 4);
   // prevent people from triggering downbeat sound if they stop and start
   if (tm.getElapsedTimeInCue(7) < 500) {
     c7_drop.start();
@@ -645,7 +659,8 @@ clave.volume.value = -18;
 
 tm.cue[11] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[11].goCue = function() {
-  // nothing to do until shake gestures
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(0, 0.5);
 };
 tm.cue[11].triggerShakeSound = function() {
   clave.start();
@@ -687,6 +702,8 @@ let tiltPitchArr_tut = ['E4', 'E4', 'B4', 'E5', 'E5', 'F#5', 'G#5', 'A#5', 'B5']
 let len_tut = tiltPitchArr_tut.length;
 tm.cue[13] = new TMCue('tilt', 0, NO_LIMIT);
 tm.cue[13].goCue = function() {
+  // set levels for each section independently
+  Tone.Master.volume.rampTo(0, 0.5);
   fmSynth.volume.value = -99;
   fmSynth.triggerAttack('E4');
 };
