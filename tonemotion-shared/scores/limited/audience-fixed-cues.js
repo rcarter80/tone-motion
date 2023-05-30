@@ -236,6 +236,7 @@ tm.cue[0].stopCue = function() {
 
 // *******************************************************************
 // CUE 1: SHAKE tutorial
+// TODO: decide how to handle tutorials in fixed version (include separate tutorial buttons?)
 tm.cue[1] = new TMCue('shake', 0, NO_LIMIT);
 tm.cue[1].goCue = function() {
 };
