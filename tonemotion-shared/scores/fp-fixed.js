@@ -1,5 +1,7 @@
 const tm = new ToneMotion();
 tm.debug = false; // if true, skips clock sync and shows console
+tm.showPracticeButtons = false;
+tm.showConsoleOnLaunch = false;
 window.onload = function() {
   // must initialize with URL for cue server, which is unique to piece
   // fetch cues from localhost if tm.localTest is true
@@ -35,7 +37,7 @@ tm.cue[0].goCue = function() {
 // *******************************************************************
 // CUE 1: tilt tutorial
 // Test tone for "tilt" tutorial
-var testToneFilter = new Tone.Filter(440, "lowpass").toMaster();
+var testToneFilter = new Tone.Filter(440, "lowpass").toDestination();
 var testTone = new Tone.Synth({
   oscillator: {
     type: "sawtooth"
@@ -77,7 +79,7 @@ tm.cue[2].stopCue = function() {
 
 // *******************************************************************
 // CUE 3: shake tutorial
-var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toMaster();
+var cowbell = new Tone.Player(perc_sounds + 'cowbell.mp3').toDestination();
 tm.cue[3] = new TMCue('shake', -1);
 tm.cue[3].goCue = function() {
   // nothing to do until shake gestures
@@ -111,29 +113,29 @@ tm.cue[5].stopCue = function() {
 
 // *******************************************************************
 // CUE 6 [A] glass sounds (getting softer), then one chime, then lower plucked
-var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toMaster();
-var glF4 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toMaster();
-var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
-var glB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
-var glC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toMaster();
-var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
+var glE4 = new Tone.Player(glass_sounds + "glassRealE4.mp3").toDestination();
+var glF4 = new Tone.Player(glass_sounds + "glassRealF4.mp3").toDestination();
+var glA4 = new Tone.Player(glass_sounds + "glassRealA4.mp3").toDestination();
+var glB4 = new Tone.Player(glass_sounds + "glassRealB4.mp3").toDestination();
+var glC5 = new Tone.Player(glass_sounds + "glassRealC5.mp3").toDestination();
+var glE5 = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
 // duplicate file to avoid retriggering artifacts
-var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toMaster();
-var glF5 = new Tone.Player(glass_sounds + "glassRealF5.mp3").toMaster();
-var glA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
-var glB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
-var glC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toMaster();
-var glE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
-var chimeD7 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toMaster();
-var pluckedD3 = new Tone.Player(plucked_sounds + "pluckedD3.mp3").toMaster();
-var pluckedD4 = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toMaster();
-var pluckedD4b = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toMaster();
-var pluckedD5 = new Tone.Player(plucked_sounds + "pluckedD5.mp3").toMaster();
-var pluckedF3 = new Tone.Player(plucked_sounds + "pluckedF3.mp3").toMaster();
-var pluckedF4 = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
-var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toMaster();
-var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toMaster();
-var riser = new Tone.Player(misc_sounds + "revHatRiser.mp3").toMaster();
+var glE5b = new Tone.Player(glass_sounds + "glassRealE5.mp3").toDestination();
+var glF5 = new Tone.Player(glass_sounds + "glassRealF5.mp3").toDestination();
+var glA5 = new Tone.Player(glass_sounds + "glassRealA5.mp3").toDestination();
+var glB5 = new Tone.Player(glass_sounds + "glassRealB5.mp3").toDestination();
+var glC6 = new Tone.Player(glass_sounds + "glassRealC6.mp3").toDestination();
+var glE6 = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
+var chimeD7 = new Tone.Player(chime_sounds + "2sec-chime-D7.mp3").toDestination();
+var pluckedD3 = new Tone.Player(plucked_sounds + "pluckedD3.mp3").toDestination();
+var pluckedD4 = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toDestination();
+var pluckedD4b = new Tone.Player(plucked_sounds + "pluckedD4.mp3").toDestination();
+var pluckedD5 = new Tone.Player(plucked_sounds + "pluckedD5.mp3").toDestination();
+var pluckedF3 = new Tone.Player(plucked_sounds + "pluckedF3.mp3").toDestination();
+var pluckedF4 = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toDestination();
+var pluckedF4b = new Tone.Player(plucked_sounds + "pluckedF4.mp3").toDestination();
+var pluckedF5 = new Tone.Player(plucked_sounds + "pluckedF5.mp3").toDestination();
+var riser = new Tone.Player(misc_sounds + "revHatRiser.mp3").toDestination();
 
 // array of initial glass sounds for first part of cue
 var glassArr_c6 = [glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glC5, glE5, glC6, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glB4, glE5, glB5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glA4, glE5, glA5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glF4, glE5, glF5, glE6, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b, glE4, glE5, glE6, glE5b];
@@ -184,6 +186,8 @@ tm.cue[6].stopCue = function() {
   riser.start();
 };
 
+/*
+
 // *******************************************************************
 // CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
 var fmSynth_c7 = new Tone.FMSynth({
@@ -209,7 +213,7 @@ var peakVol_c7 = -3;
 var lfo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
 lfo_c7.connect(fmSynth_c7.volume);
 // additional gain stage on y-axis
-var synthMult_c7 = new Tone.Multiply().toMaster();
+var synthMult_c7 = new Tone.Multiply().toDestination();
 yTilt.connect(synthMult_c7, 0, 0);
 fmSynth_c7.connect(synthMult_c7, 0, 1);
 
@@ -259,7 +263,7 @@ tm.cue[7].stopCue = function() {
 // *******************************************************************
 // CUE 8 [C]
 // reverb for reversed chime sounds
-var reverb = new Tone.Freeverb().toMaster();
+var reverb = new Tone.Freeverb().toDestination();
 reverb.roomSize.value = 0.75;
 reverb.dampening.value = 5000;
 var glRevF4 = new Tone.Player(glass_sounds + "shortRevGlassF4.mp3").connect(reverb);
@@ -272,7 +276,7 @@ var glRevA5 = new Tone.Player(glass_sounds + "shortRevGlassA5.mp3").connect(reve
 var glRevB5 = new Tone.Player(glass_sounds + "shortRevGlassB5.mp3").connect(reverb);
 var glRevC6 = new Tone.Player(glass_sounds + "shortRevGlassC6.mp3").connect(reverb);
 var glRevE6 = new Tone.Player(glass_sounds + "shortRevGlassE6.mp3").connect(reverb);
-var faller = new Tone.Player(misc_sounds + "revHatFaller.mp3").toMaster();
+var faller = new Tone.Player(misc_sounds + "revHatFaller.mp3").toDestination();
 
 var revChimeArr_c8 = [glRevC5, glRevE5, glRevC6, glRevE6, glRevC5, glRevE5, glRevC6, glRevE6, glRevC5, glRevE5, glRevC6, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevB4, glRevE5, glRevB5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevA4, glRevE5, glRevA5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6, glRevF4, glRevE5, glRevF5, glRevE6];
 var loopArr_c8 = [glE4, glE5, glE6, glE5, glF4, glF5, glF4, glF5];
@@ -319,7 +323,7 @@ tm.cue[8].stopCue = function() {
 
 // *******************************************************************
 // CUE 9 [D] TACET (but glass sounds on downbeat)
-var downbeat_c9 = new Tone.Player(misc_sounds + "downbeatGlassCue9.mp3").toMaster();
+var downbeat_c9 = new Tone.Player(misc_sounds + "downbeatGlassCue9.mp3").toDestination();
 
 // tightly synchronized sound - ok if some phones don't play
 tm.cue[9] = new TMCue('tacet', 1667, 277);
@@ -359,7 +363,7 @@ var rightDownVolTilt = new Tone.Multiply();
 yTilt.connect(rightDownVolTilt, 0, 0);
 xTilt.connect(rightDownVolTilt, 0, 1);
 // next Tone.Multiply sets synth's volume from control signal
-var scaledSynth_c10 = new Tone.Multiply().toMaster();
+var scaledSynth_c10 = new Tone.Multiply().toDestination();
 rightDownVolTilt.connect(scaledSynth_c10, 0, 0);
 fmSynth_c10.connect(scaledSynth_c10, 0, 1);
 
@@ -376,10 +380,10 @@ var leftDownVolTilt = new Tone.Multiply();
 yTilt.connect(leftDownVolTilt, 0, 0);
 xTiltInverted.connect(leftDownVolTilt, 0, 1);
 // next Tone.Multiply sets sparkly sound's volume from control signal
-var sparkles_c10 = new Tone.Multiply().toMaster();
+var sparkles_c10 = new Tone.Multiply().toDestination();
 leftDownVolTilt.connect(sparkles_c10, 0, 0);
 sugarChimeLoop.connect(sparkles_c10, 0, 1);
-var chimeRiser = new Tone.Player(misc_sounds + "revChimeRiser.mp3").toMaster();
+var chimeRiser = new Tone.Player(misc_sounds + "revChimeRiser.mp3").toDestination();
 
 // pitch array for synth
 var pitchArr_c10 = ['C4', 'E4', 'C4', 'B3', 'E4', 'B3', 'B3', 'A3', 'G3', 'G3', 'D4', 'E4', 'C4', 'D4', 'B3', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4', 'E4', 'D4', 'F4'];
@@ -426,7 +430,7 @@ var delay = new Tone.FeedbackDelay({
   // delay time creates 16th-note effect
   delayTime: 0.208333,
   feedback: 0.2
-}).toMaster();
+}).toDestination();
 var chF5 = new Tone.Player(chime_sounds + "chime1secF5.mp3").connect(delay);
 var chG5 = new Tone.Player(chime_sounds + "chime1secG5.mp3").connect(delay);
 var chAb5 = new Tone.Player(chime_sounds + "chime1secAb5.mp3").connect(delay);
@@ -490,7 +494,7 @@ fmSynthLo_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 var lfoLo_c12 = new Tone.LFO('8t', -99, -3);
 lfoLo_c12.type = 'triangle';
 lfoLo_c12.connect(fmSynthLo_c12.volume);
-var scaledSynthLo_c12 = new Tone.Multiply().toMaster();
+var scaledSynthLo_c12 = new Tone.Multiply().toDestination();
 // this synth will sound when device is tipped to left
 leftDownVolTilt.connect(scaledSynthLo_c12, 0, 0);
 fmSynthLo_c12.connect(scaledSynthLo_c12, 0, 1);
@@ -516,7 +520,7 @@ var fmSynthHi_c12 = new Tone.FMSynth({
 fmSynthHi_c12.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 var lfoHi_c12 = new Tone.LFO('16t', -99, -24);
 lfoHi_c12.connect(fmSynthHi_c12.volume);
-var scaledSynthHi_c12 = new Tone.Multiply().toMaster();
+var scaledSynthHi_c12 = new Tone.Multiply().toDestination();
 // this synth will sound when device is tipped to right
 rightDownVolTilt.connect(scaledSynthHi_c12, 0, 0);
 fmSynthHi_c12.connect(scaledSynthHi_c12, 0, 1);
@@ -568,7 +572,7 @@ tm.cue[12].stopCue = function() {
 
 // *******************************************************************
 // CUE 13 [H] TACET
-var downbeat_c13 = new Tone.Player(misc_sounds + "downbeatGlassCue13.mp3").toMaster();
+var downbeat_c13 = new Tone.Player(misc_sounds + "downbeatGlassCue13.mp3").toDestination();
 
 tm.cue[13] = new TMCue('tacet', 1667, 277);
 tm.cue[13].goCue = function() {
@@ -580,21 +584,21 @@ tm.cue[13].stopCue = function() {
 
 // *******************************************************************
 // CUE 14 [I] SHAKE glass sounds (with fade out and gliss up). 1 chime/triangle
-var glGsharp4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toMaster();
+var glGsharp4 = new Tone.Player(glass_sounds + "glassRealG4.mp3").toDestination();
 glGsharp4.playbackRate = semitoneUp;
-var glGsharp5 = new Tone.Player(glass_sounds + "glassRealG5.mp3").toMaster();
+var glGsharp5 = new Tone.Player(glass_sounds + "glassRealG5.mp3").toDestination();
 glGsharp5.playbackRate = semitoneUp;
-var glGsharp6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toMaster();
+var glGsharp6 = new Tone.Player(glass_sounds + "glassRealG6.mp3").toDestination();
 glGsharp6.playbackRate = semitoneUp;
-var glCsharp5 = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toMaster();
-var glCsharp6 = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMaster();
-var glDsharp5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toMaster();
+var glCsharp5 = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toDestination();
+var glCsharp6 = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toDestination();
+var glDsharp5 = new Tone.Player(glass_sounds + "glassRealD5.mp3").toDestination();
 glDsharp5.playbackRate = semitoneUp;
-var glDsharp6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toMaster();
+var glDsharp6 = new Tone.Player(glass_sounds + "glassRealD6.mp3").toDestination();
 glDsharp6.playbackRate = semitoneUp;
-var chime_c14 = new Tone.Player(chime_sounds + "chime-1570Hz-G6.mp3").toMaster();
-var ride = new Tone.Player(perc_sounds + "rideCymbal.mp3").toMaster();
-var riser10sec = new Tone.Player(misc_sounds + "revRideRiser10sec.mp3").toMaster();
+var chime_c14 = new Tone.Player(chime_sounds + "chime-1570Hz-G6.mp3").toDestination();
+var ride = new Tone.Player(perc_sounds + "rideCymbal.mp3").toDestination();
+var riser10sec = new Tone.Player(misc_sounds + "revRideRiser10sec.mp3").toDestination();
 
 var glassArr_c14 = [glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glE5, glGsharp5, glE6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glDsharp5, glGsharp5, glDsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glCsharp5, glGsharp5, glCsharp6, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6, glA4, glGsharp5, glA5, glGsharp6];
 var loopArr_c14 = [glGsharp4, glGsharp5, glGsharp6];
@@ -696,7 +700,7 @@ var pnoRevE4 = new Tone.Player(piano_sounds + "pianoRevE4.mp3").connect(reverb);
 var pnoRevEb2 = new Tone.Player(piano_sounds + "pianoRevEb2.mp3").connect(reverb);
 var pnoRevEb3 = new Tone.Player(piano_sounds + "pianoRevEb3.mp3").connect(reverb);
 var pnoRevEb4 = new Tone.Player(piano_sounds + "pianoRevEb4.mp3").connect(reverb);
-var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toMaster();
+var claveLoop = new Tone.Player(granulated_sounds + "claveLoop.mp3").toDestination();
 claveLoop.loop = true;
 
 // arrays of octave-transposed piano samples (to select on y-axis)
@@ -796,23 +800,23 @@ tm.cue[15].stopCue = function() {
 // CUE 16 [K] SHAKE
 
 // some glass sounds declared earlier, some new here (some duplicates new)
-var glA4b = new Tone.Player(glass_sounds + "glassRealA4.mp3").toMaster();
-var glA5b = new Tone.Player(glass_sounds + "glassRealA5.mp3").toMaster();
-var glA6 = new Tone.Player(glass_sounds + "glassRealA6.mp3").toMaster();
-var glB4b = new Tone.Player(glass_sounds + "glassRealB4.mp3").toMaster();
-var glB5b = new Tone.Player(glass_sounds + "glassRealB5.mp3").toMaster();
-var glB6 = new Tone.Player(glass_sounds + "glassRealB6.mp3").toMaster();
-var glCsharp5b = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toMaster();
-var glCsharp6b = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toMaster();
-var glCsharp7 = new Tone.Player(glass_sounds + "glassRealCsharp7.mp3").toMaster();
+var glA4b = new Tone.Player(glass_sounds + "glassRealA4.mp3").toDestination();
+var glA5b = new Tone.Player(glass_sounds + "glassRealA5.mp3").toDestination();
+var glA6 = new Tone.Player(glass_sounds + "glassRealA6.mp3").toDestination();
+var glB4b = new Tone.Player(glass_sounds + "glassRealB4.mp3").toDestination();
+var glB5b = new Tone.Player(glass_sounds + "glassRealB5.mp3").toDestination();
+var glB6 = new Tone.Player(glass_sounds + "glassRealB6.mp3").toDestination();
+var glCsharp5b = new Tone.Player(glass_sounds + "glassRealCsharp5.mp3").toDestination();
+var glCsharp6b = new Tone.Player(glass_sounds + "glassRealCsharp6.mp3").toDestination();
+var glCsharp7 = new Tone.Player(glass_sounds + "glassRealCsharp7.mp3").toDestination();
 // earlier version of D# was just D pitched up. could change later.
-var glDsharpReal5 = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toMaster();
-var glDsharpReal5b = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toMaster();
-var glDsharpReal6 = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toMaster();
-var glDsharpReal6b = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toMaster();
-var glDsharpReal7 = new Tone.Player(glass_sounds + "glassRealDsharp7.mp3").toMaster();
-var glE6b = new Tone.Player(glass_sounds + "glassRealE6.mp3").toMaster();
-var glE7 = new Tone.Player(glass_sounds + "glassRealE7.mp3").toMaster();
+var glDsharpReal5 = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toDestination();
+var glDsharpReal5b = new Tone.Player(glass_sounds + "glassRealDsharp5.mp3").toDestination();
+var glDsharpReal6 = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toDestination();
+var glDsharpReal6b = new Tone.Player(glass_sounds + "glassRealDsharp6.mp3").toDestination();
+var glDsharpReal7 = new Tone.Player(glass_sounds + "glassRealDsharp7.mp3").toDestination();
+var glE6b = new Tone.Player(glass_sounds + "glassRealE6.mp3").toDestination();
+var glE7 = new Tone.Player(glass_sounds + "glassRealE7.mp3").toDestination();
 
 var counter_c16, thisGlass_c16, flag_c16;
 
@@ -849,7 +853,7 @@ tm.cue[16].stopCue = function() {
 
 // *******************************************************************
 // CUE 17 [L] TACET
-var downbeat_c17 = new Tone.Player(misc_sounds + "downbeatGlassCue17.mp3").toMaster();
+var downbeat_c17 = new Tone.Player(misc_sounds + "downbeatGlassCue17.mp3").toDestination();
 
 tm.cue[17] = new TMCue('tacet', 1667, 277);
 tm.cue[17].goCue = function() {
@@ -865,3 +869,22 @@ tm.cue[18] = new TMCue('finished', -1);
 tm.cue[18].goCue = function() {
   tm.publicLog('The piece is done.');
 }
+
+*/
+
+// *******************************************************************
+// timeline for fixed cues below
+Tone.Transport.schedule((time) => {
+  tm.scheduleFixedCues(cueArray);
+}, '0');
+
+// 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
+const cueArray = [
+  [0, 0],
+  [1, 2000],
+  [2, 3000],
+  [3, 4000],
+  [4, 5000],
+  [5, 6000],
+  [6, 7000]
+];
