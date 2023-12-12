@@ -333,7 +333,6 @@ tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
-/*
 // *******************************************************************
 // CUE 10 [E] crossfading synth and sparkles
 var fmSynth_c10 = new Tone.FMSynth({
@@ -360,12 +359,12 @@ var lfo_c10 = new Tone.LFO('16n', -99, peakVol_c10);
 lfo_c10.connect(fmSynth_c10.volume);
 // one control signal multiplies y- and x-axes to set volume on both
 var rightDownVolTilt = new Tone.Multiply();
-yTilt.connect(rightDownVolTilt, 0, 0);
-xTilt.connect(rightDownVolTilt, 0, 1);
+yTilt.connect(rightDownVolTilt.factor);
+xTilt.connect(rightDownVolTilt);
 // next Tone.Multiply sets synth's volume from control signal
 var scaledSynth_c10 = new Tone.Multiply().toDestination();
-rightDownVolTilt.connect(scaledSynth_c10, 0, 0);
-fmSynth_c10.connect(scaledSynth_c10, 0, 1);
+rightDownVolTilt.connect(scaledSynth_c10.factor);
+fmSynth_c10.connect(scaledSynth_c10);
 
 var sugarChimeLoop = new Tone.Player(granulated_sounds + 'chimesAndSugarLoop.mp3');
 sugarChimeLoop.loop = true;
@@ -373,16 +372,16 @@ sugarChimeLoop.volume.value = -9;
 // need to invert x-axis to set vol on mute when turned RIGHT
 var xTiltInverted = new Tone.Subtract();
 var inversionSig = new Tone.Signal(1);
-inversionSig.connect(xTiltInverted, 0, 0);
-xTilt.connect(xTiltInverted, 0, 1);
+inversionSig.connect(xTiltInverted);
+xTilt.connect(xTiltInverted);
 // one control signal multiplies y- and x-axes to set volume on both
 var leftDownVolTilt = new Tone.Multiply();
-yTilt.connect(leftDownVolTilt, 0, 0);
-xTiltInverted.connect(leftDownVolTilt, 0, 1);
+yTilt.connect(leftDownVolTilt.factor);
+xTiltInverted.connect(leftDownVolTilt);
 // next Tone.Multiply sets sparkly sound's volume from control signal
 var sparkles_c10 = new Tone.Multiply().toDestination();
-leftDownVolTilt.connect(sparkles_c10, 0, 0);
-sugarChimeLoop.connect(sparkles_c10, 0, 1);
+leftDownVolTilt.connect(sparkles_c10.factor);
+sugarChimeLoop.connect(sparkles_c10);
 var chimeRiser = new Tone.Player(misc_sounds + "revChimeRiser.mp3").toDestination();
 
 // pitch array for synth
@@ -496,8 +495,8 @@ lfoLo_c12.type = 'triangle';
 lfoLo_c12.connect(fmSynthLo_c12.volume);
 var scaledSynthLo_c12 = new Tone.Multiply().toDestination();
 // this synth will sound when device is tipped to left
-leftDownVolTilt.connect(scaledSynthLo_c12, 0, 0);
-fmSynthLo_c12.connect(scaledSynthLo_c12, 0, 1);
+leftDownVolTilt.connect(scaledSynthLo_c12.factor);
+fmSynthLo_c12.connect(scaledSynthLo_c12);
 
 var fmSynthHi_c12 = new Tone.FMSynth({
   harmonicity: 1.5,
@@ -522,8 +521,8 @@ var lfoHi_c12 = new Tone.LFO('16t', -99, -24);
 lfoHi_c12.connect(fmSynthHi_c12.volume);
 var scaledSynthHi_c12 = new Tone.Multiply().toDestination();
 // this synth will sound when device is tipped to right
-rightDownVolTilt.connect(scaledSynthHi_c12, 0, 0);
-fmSynthHi_c12.connect(scaledSynthHi_c12, 0, 1);
+rightDownVolTilt.connect(scaledSynthHi_c12.factor);
+fmSynthHi_c12.connect(scaledSynthHi_c12);
 
 // pitch array for synth
 var pitchArr_c12 = ['Db2', 'Db2', 'Db2', 'Eb2', 'Eb2', 'Eb2', 'F2', 'F2', 'F2', 'G2', 'G2', 'G2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'Ab2', 'G2', 'G2', 'G2', 'Bb2', 'Bb2', 'Bb2'];
@@ -569,8 +568,6 @@ tm.cue[12].stopCue = function() {
   chimeRiser.playbackRate = 1 + (0.2 * Math.random());
   chimeRiser.start();
 };
-
-*/
 
 // *******************************************************************
 // CUE 13 [H] TACET
@@ -880,6 +877,17 @@ Tone.Transport.schedule((time) => {
 
 // 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
-  [0, 0],
-  [7, 1000]
+  [5, 0],
+  [6, 15503],
+  [7, 77824, 1667],
+  [8, 136000, 1667],
+  [9, 194000, 1667],
+  [10, 214000, 1667],
+  [11, 274327, 1667],
+  [12, 334147, 1667],
+  [13, 392120, 1667],
+  [14, 412489, 1667],
+  [15, 474335, 1667],
+  [16, 531386, 1667],
+  [17, 589851]
 ];
