@@ -186,8 +186,6 @@ tm.cue[6].stopCue = function() {
   riser.start();
 };
 
-/*
-
 // *******************************************************************
 // CUE 7 [B] two pitch layers of FM synths with toggling LFO on amplitude
 var fmSynth_c7 = new Tone.FMSynth({
@@ -212,10 +210,11 @@ fmSynth_c7.oscillator.partials = [1, 0.5, 0, 0.25, 0, 0, 0, 0.125];
 var peakVol_c7 = -3;
 var lfo_c7 = new Tone.LFO('32n', -99, peakVol_c7);
 lfo_c7.connect(fmSynth_c7.volume);
+
 // additional gain stage on y-axis
-var synthMult_c7 = new Tone.Multiply().toDestination();
-yTilt.connect(synthMult_c7, 0, 0);
-fmSynth_c7.connect(synthMult_c7, 0, 1);
+var synthMult_c7 = new Tone.Multiply(1).toDestination();
+yTilt.connect(synthMult_c7.factor);
+fmSynth_c7.connect(synthMult_c7);
 
 var loArr_c7 = ['E3', 'E3', 'E3', 'E3', 'E3', 'E3', 'B2', 'B2', 'B2', 'C3', 'C3', 'C3', 'A2', 'A2', 'A2', 'B2', 'B2', 'B2', 'G2', 'G2', 'G2', 'G2', 'G2', 'G2'];
 
@@ -334,6 +333,7 @@ tm.cue[9].stopCue = function() {
   // nothing to clean up
 };
 
+/*
 // *******************************************************************
 // CUE 10 [E] crossfading synth and sparkles
 var fmSynth_c10 = new Tone.FMSynth({
@@ -569,6 +569,8 @@ tm.cue[12].stopCue = function() {
   chimeRiser.playbackRate = 1 + (0.2 * Math.random());
   chimeRiser.start();
 };
+
+*/
 
 // *******************************************************************
 // CUE 13 [H] TACET
@@ -870,8 +872,6 @@ tm.cue[18].goCue = function() {
   tm.publicLog('The piece is done.');
 }
 
-*/
-
 // *******************************************************************
 // timeline for fixed cues below
 Tone.Transport.schedule((time) => {
@@ -881,10 +881,5 @@ Tone.Transport.schedule((time) => {
 // 1st el: cue number. 2nd: trigger time. 3rd (optional): gapTime for transition
 const cueArray = [
   [0, 0],
-  [1, 2000],
-  [2, 3000],
-  [3, 4000],
-  [4, 5000],
-  [5, 6000],
-  [6, 7000]
+  [7, 1000]
 ];
