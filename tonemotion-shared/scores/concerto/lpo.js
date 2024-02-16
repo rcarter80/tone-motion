@@ -859,19 +859,19 @@ tm.cue[22].updateTiltSounds = function() {
   fmSynth.frequency.value = pitchArr8ba_22[Math.floor(tm.accel.x * 0.99 * pitchArr8ba_22.length)];
   if (tm.accel.y < 0.4) {
     // with phone mostly upright, synth is mostly silent and harp is soft
-    harpSampler.volume.value = -12 - (0.4 - tm.accel.y) * 70; // -40 to -12 dB
+    harpSampler.volume.value = -6 - (0.4 - tm.accel.y) * 85; // -40 to -6 dB
     fmSynth.modulationIndex.value = 1;
     fmSynth.volume.value = -36 - (0.4 - tm.accel.y) * 157.5; // -99 to -36 dB
   } else if (tm.accel.y < 0.7) {
     // with phone in mid position, synth and harp cross fade, synth gets bright
-    harpSampler.volume.value = -40 + (0.7 - tm.accel.y) * 93.4; // -12 to -40 dB
+    harpSampler.volume.value = -6; // constant -6 dB
     fmSynth.modulationIndex.value = 5 - (0.7 - tm.accel.y) * 13.33; // 1 to 5
     fmSynth.volume.value = -30 - (0.7 - tm.accel.y) * 20; // -36 to -30 dB
   } else {
     // with phone mostly upside down, harp is soft and bright synth is heard
-    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 196; // -40 to -99 dB
+    harpSampler.volume.value = -99 + (1.0 - tm.accel.y) * 310; // -6 to -99 dB
     fmSynth.modulationIndex.value = 20 - (1.0 - tm.accel.y) * 50; // 5 to 20
-    fmSynth.volume.value = -24 - (1.0 - tm.accel.y) * 20; // -30 to -24 dB
+    fmSynth.volume.value = 0 - (1.0 - tm.accel.y) * 100; // -30 to 0 dB
   }
 };
 tm.cue[22].stopCue = function() {
